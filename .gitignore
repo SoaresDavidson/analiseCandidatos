@@ -1,0 +1,8 @@
+# dados baixados: manter as pastas, ignorar o conteúdo
+/dados/raw/*
+!/dados/raw/.gitkeep
+/dados/processed/*
+!/dados/processed/.gitkeep
+
+.venv/
+__pycache__/

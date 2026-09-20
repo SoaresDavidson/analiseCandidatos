@@ -76,7 +76,7 @@ def coletar_sidra(force: bool) -> None:
         r.raise_for_status()
         parte = r.json()
         linhas.extend(parte if not linhas else parte[1:])  # cabeçalho só uma vez
-    destino.write_text(json.dumps(linhas, ensure_ascii=False))
+    destino.write_text(json.dumps(linhas, ensure_ascii=False), encoding="utf-8")
     log(f"  baixado {destino.relative_to(ROOT)} ({len(linhas) - 1} linhas)")
 
 

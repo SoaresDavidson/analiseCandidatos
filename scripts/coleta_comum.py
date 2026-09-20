@@ -113,7 +113,8 @@ def baixar_json(url: str, destino: Path, force: bool = False) -> None:
     destino.parent.mkdir(parents=True, exist_ok=True)
     r = session.get(url, headers=JSON, timeout=600)
     r.raise_for_status()
-    destino.write_text(json.dumps(r.json(), ensure_ascii=False))
+    # encoding explícito: sem ele o Windows grava em cp1252 e o JSON fica ilegível
+    destino.write_text(json.dumps(r.json(), ensure_ascii=False), encoding="utf-8")
     log(f"  baixado {destino.relative_to(ROOT)}")
 
 

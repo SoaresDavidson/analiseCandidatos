@@ -75,6 +75,35 @@ Fontes que não existem para um ano (ex.: prestação de contas de 2026, ainda e
 curso) aparecem no log como `404` e são ignoradas — não é erro. Um coletor que
 falhe não interrompe os outros.
 
+### 🚨 Espaço em disco e OneDrive
+
+A coleta completa ocupa **~28 GB**, dos quais ~9,5 GB são os `.zip` originais (podem
+ser apagados depois de extrair). Distribuição medida:
+
+| Tema | Tamanho |
+|---|---|
+| `resultados` | 11 GB |
+| `prestacao_contas` | 5,1 GB |
+| `eleitorado` | 5,1 GB |
+| `candidatos` | 4,0 GB |
+| `proposta_governo` | 2,0 GB |
+| `abstencao` | 1,1 GB |
+| `ibge` + `territorio` + `extras` | ~112 MB |
+
+**Se o repositório estiver dentro de uma pasta do OneDrive, Google Drive ou Dropbox,
+tire `dados/` de lá antes de rodar.** O `.gitignore` impede o git de versionar, mas
+não impede o serviço de sincronização de subir os 28 GB para a nuvem. Duas saídas:
+
+- excluir a pasta `dados/` da sincronização nas configurações do cliente; ou
+- manter `dados/` fora da árvore sincronizada e apontar para lá com um link
+  simbólico (`mklink /D dados C:\dados-analisecandidatos` no Windows).
+
+Para recuperar espaço depois da extração:
+
+```bash
+find dados/raw -name "*.zip" -delete
+```
+
 > TSE e PNUD ficam atrás de um CDN que rejeita `curl`/`requests` (HTTP 403).
 > Os scripts usam `curl_cffi` impersonando o Chrome, já incluído nas dependências.
 

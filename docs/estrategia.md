@@ -152,7 +152,7 @@ hierarquia geográfica (FTP do PIB) e a malha GeoJSON para o mapa.
 |---|---|
 | **Q10** eleito/não eleito × recurso público × privado | classificação da receita |
 | **Q11** onde o candidato investe em propaganda | texto livre da despesa |
-| **Q12** linha do tempo do político | 2002–2024, por CPF |
+| **Q12** linha do tempo do político | 2002–2026, por título de eleitor |
 
 **Arquivos:** `receitas_*`, `despesas_*` (todos os anos), `consulta_cand` 2002–2024.
 
@@ -200,14 +200,17 @@ Os quatro diagramas se encontram nestas colunas. Nome e tipo são fixos:
 | Chave | Tipo | Onde nasce |
 |---|---|---|
 | `municipio.cod_ibge` | `INTEGER` (7 dígitos) | `municipio_tse_ibge.csv` |
-| `municipio.cod_tse` | **`VARCHAR(5)`** — tem zero à esquerda (`"01007"`) | `municipio_tse_ibge.csv` |
+| `municipio.cod_tse` | **`VARCHAR(5)`** — zero à esquerda em ambos os lados (`"01007"`) | `municipio_tse_ibge.csv` |
 | `candidatura.sq_candidato` | `BIGINT` | `consulta_cand.SQ_CANDIDATO` |
 | `politico.nr_titulo_eleitoral` | `VARCHAR(12)` | `consulta_cand.NR_TITULO_ELEITORAL_CANDIDATO` |
 | `eleicao.ano` + `nr_turno` | `INTEGER` | qualquer arquivo do TSE |
 | `partido.nr_partido` | `INTEGER` | `consulta_cand.NR_PARTIDO` |
 
-⚠️ `cod_tse` como inteiro **quebra o join em silêncio** — o registro simplesmente
-não casa, e ninguém percebe até os totais saírem errados.
+⚠️ Sobre o `cod_tse`: **testado, o join casa** — 5.569 municípios da votação de
+2024, 5.569 pares encontrados, zero órfãos. Os dois lados trazem o zero à esquerda,
+então texto com texto funciona, e inteiro com inteiro também. O que quebra é
+**misturar**: converter só um lado para número, ou deixar o pandas inferir `int` num
+arquivo e `str` noutro. Fixem `VARCHAR(5)` nos dois lados e o problema não existe.
 
 ⚠️ `candidatura` **não tem coluna de município**. O vínculo é por `SG_UE`, que em
 eleição municipal é o código TSE do município.
@@ -315,9 +318,10 @@ entidades, atributos e cardinalidades — não é a entrega.
 
 Não mexi no [`der.md`](der.md) — são notas para quem for desenhar.
 
-1. **`MUNICIPIO.cod_tse` é texto, não inteiro.** Na tabela-ponte oficial ele vem
-   como `"01007"`, com zero à esquerda. Modelar como `int` quebra o join
-   silenciosamente. Use `VARCHAR(5)`.
+1. **`MUNICIPIO.cod_tse` deve ser `VARCHAR(5)`.** Vem como `"01007"` na ponte e
+   também nos arquivos de votação, com o zero à esquerda dos dois lados — então o
+   join casa (testado: 5.569 de 5.569, zero órfãos). Fixar o tipo como texto nos
+   dois lados evita que alguém converta só um deles e perca registros sem erro.
 2. **Falta a entidade `FEDERACAO`** (2022+): `nr_federacao`, `sg_federacao`,
    `nm_federacao`, `ds_composicao`. `CANDIDATURA` ganha FK opcional para ela, e a
    Q5 passa a somar legenda por federação quando ela existir.

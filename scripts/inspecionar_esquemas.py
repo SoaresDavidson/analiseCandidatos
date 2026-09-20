@@ -50,12 +50,14 @@ def ler_cabecalho(con: duckdb.DuckDBPyConnection, arq: Path) -> tuple[str, ...]:
         return ()
 
 
-def inspecionar_tabular(con: duckdb.DuckDBPyConnection, arq: Path) -> dict | None:
-    """Colunas, contagem e primeira linha de um CSV/TXT do TSE."""
+def inspecionar_tabular(con: duckdb.DuckDBPyConnection, arq: Path, contar: bool = False) -> dict | None:
+    """Colunas e primeira linha de um CSV/TXT do TSE. `contar` varre o arquivo
+    inteiro para dar o número de linhas — em arquivos de alguns GB isso leva
+    minutos, e para desenhar o DER não faz falta. Por isso é opcional."""
     origem = f"read_csv({_sql_str(arq.as_posix())}, {CSV_OPTS})"
     try:
         cols = [r[0] for r in con.sql(f"DESCRIBE SELECT * FROM {origem}").fetchall()]
-        n = con.sql(f"SELECT count(*) FROM {origem}").fetchone()[0]
+        n = con.sql(f"SELECT count(*) FROM {origem}").fetchone()[0] if contar else None
         amostra = con.sql(f"SELECT * FROM {origem} LIMIT 1").fetchall()
     except Exception as e:  # arquivo corrompido ou vazio
         return {"erro": str(e)[:200]}
@@ -66,22 +68,37 @@ def inspecionar_tabular(con: duckdb.DuckDBPyConnection, arq: Path) -> dict | Non
     }
 
 
+def _ler_texto(arq: Path) -> str:
+    """Tolera arquivo gravado em cp1252 por engano (ver coleta_comum.baixar_json)."""
+    b = arq.read_bytes()
+    for enc in ("utf-8", "cp1252", "latin-1"):
+        try:
+            return b.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return b.decode("utf-8", errors="replace")
+
+
 def inspecionar_sidra(arq: Path) -> dict:
     """O primeiro registro de uma resposta do SIDRA é o dicionário de dimensões."""
-    dados = json.loads(arq.read_text(encoding="utf-8"))
+    dados = json.loads(_ler_texto(arq))
     if not isinstance(dados, list) or not dados:
         return {"erro": "resposta do SIDRA vazia ou em formato inesperado"}
     cabecalho, *linhas = dados
+    # o rótulo da coluna vira "D1C = Município (Código)"; o exemplo precisa da
+    # mesma chave para casar na hora de montar a tabela
+    rotulo = {k: f"{k} = {v}" for k, v in cabecalho.items()}
+    primeira = {rotulo.get(k, k): v for k, v in (linhas[0] if linhas else {}).items()}
     return {
-        "colunas": [f"{k} = {v}" for k, v in cabecalho.items()],
+        "colunas": list(rotulo.values()),
         "linhas": len(linhas),
-        "exemplo": linhas[0] if linhas else {},
+        "exemplo": primeira,
         "municipios": len({x.get("D1C") for x in linhas}) if linhas else 0,
     }
 
 
 def inspecionar_geojson(arq: Path) -> dict:
-    g = json.loads(arq.read_text(encoding="utf-8"))
+    g = json.loads(_ler_texto(arq))
     feats = g.get("features", [])
     return {
         "colunas": sorted(feats[0].get("properties", {})) if feats else [],
@@ -142,6 +159,8 @@ def escrever(saida: Path, secoes: dict[str, list[tuple[Path, dict]]]) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--saida", default="docs/esquemas.md")
+    ap.add_argument("--contar", action="store_true",
+                    help="conta as linhas de cada arquivo (varre tudo; leva minutos em GBs)")
     args = ap.parse_args()
 
     con = duckdb.connect()
@@ -160,14 +179,15 @@ def main() -> None:
     for arq in sorted(RAW.rglob("*.csv")) + sorted(RAW.rglob("*.txt")):
         if "ibge" in arq.parts or arq.stat().st_size == 0:
             continue
+        print(f"  cabeçalho de {arq.relative_to(RAW)}", flush=True)
         cols = ler_cabecalho(con, arq)
         if cols:
             por_esquema.setdefault((familia(arq), cols), []).append(arq)
 
     for (fam, cols), arquivos in por_esquema.items():
         rep = max(arquivos, key=lambda p: p.stat().st_size)  # o maior representa
-        print(f"  contando {rep.relative_to(RAW)} ({len(cols)} colunas)")
-        info = inspecionar_tabular(con, rep)
+        print(f"  lendo {rep.relative_to(RAW)} ({len(cols)} colunas)", flush=True)
+        info = inspecionar_tabular(con, rep, contar=args.contar)
         info["anos"] = sorted({a for p in arquivos for a in _ANO_UF.findall(p.stem) for a in [a[0]]})
         secoes["TSE"].append((rep, info))
 

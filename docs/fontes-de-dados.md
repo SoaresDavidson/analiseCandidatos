@@ -87,9 +87,11 @@ exatamente o que precisamos:
 "13/09/2026";"09:00:12";24;12;"AC";"Acre";"01007";"Bujari";1200138;"Bujari"
 ```
 
-⚠️ **`CD_MUNICIPIO_TSE` vem com zero à esquerda (`"01007"`).** Ler como inteiro
-quebra o join sem dar erro — o registro simplesmente não casa. Modelar como
-`VARCHAR(5)`.
+**`CD_MUNICIPIO_TSE` vem com zero à esquerda (`"01007"`)** — e os arquivos de
+votação do TSE também, então o join casa direto. Testado contra
+`detalhe_votacao_munzona_2024`: **5.569 municípios, 5.569 pares, zero órfãos.**
+Ainda assim, modele como `VARCHAR(5)` nos dois lados: o risco não é o zero em si,
+é alguém converter só um dos lados para número e perder registros sem erro.
 
 ### 1.4 Propostas de governo (Q6) — ✅ existe em lote, risco derrubado
 
@@ -149,22 +151,29 @@ antes de prometer qualquer coisa que dependa deles.
 Esta é a pegadinha que mais custa tempo. **`union_by_name=true` não resolve**,
 porque os nomes das colunas são diferentes, não ausentes.
 
-**`consulta_cand`** — conferido abrindo o cabeçalho real de 2002, 2010, 2014, 2018,
-2020, 2022 e 2024:
+**`consulta_cand`** — medido com DuckDB sobre os 13 arquivos baixados. **Não são
+duas gerações com um corte limpo: o TSE foi removendo colunas ao longo do tempo**, e
+o arquivo mais rico é o de 2016.
 
-| | ≤ 2010 | ≥ 2014 |
-|---|---|---|
-| nº de colunas | 62 | 50 |
-| `NR_CPF_CANDIDATO` | ✅ | ✅ (mas `-4` em 2024) |
-| `NR_TITULO_ELEITORAL_CANDIDATO` | ✅ | ✅ |
-| `NR_FEDERACAO`, `SG_FEDERACAO` | ❌ | ✅ |
-| `VR_DESPESA_MAX_CAMPANHA` | ✅ | ❌ |
-| `NR_IDADE_DATA_POSSE` | ✅ | ❌ |
-| `CD_MUNICIPIO_NASCIMENTO` | ✅ | ❌ |
-| `CD_DETALHE_SITUACAO_CAND` | ✅ | ❌ |
+| Grupo de anos | Colunas |
+|---|---|
+| 2002–2012 | 63 |
+| **2016** | **75** ← o mais completo |
+| 2014 e 2018–2026 | 50 |
 
-**CPF existe desde 2002, mas não serve como chave.** Em 2024 o TSE o suprimiu:
-todas as 463.859 linhas trazem `NR_CPF_CANDIDATO = '-4'` (código de dado protegido,
+**Núcleo comum aos três: 45 colunas.** É nele que o modelo deve se apoiar; tudo
+fora dele precisa ser anulável e documentado por ano.
+
+O que 2016 tem e 2024 não tem (26 colunas), entre elas:
+`VR_DESPESA_MAX_CAMPANHA`, `NR_IDADE_DATA_POSSE`, `CD_MUNICIPIO_NASCIMENTO`,
+`NM_MUNICIPIO_NASCIMENTO`, `CD_NACIONALIDADE`, `CD_DETALHE_SITUACAO_CAND`,
+`ST_REELEICAO`, `ST_DECLARAR_BENS`, `NR_PROCESSO`, `NR_PROTOCOLO_CANDIDATURA`.
+
+E o contrário: 2024 ganhou só `DS_EMAIL` (que em 2016 se chamava `NM_EMAIL`) —
+renomeação de coluna, que `union_by_name` trata como duas colunas diferentes.
+
+🚨 **`NR_CPF_CANDIDATO` existe em todos os anos, mas não serve como chave.** Em 2024
+o TSE o suprimiu: todas as 463.859 linhas trazem `-4` (código de dado protegido,
 LGPD). A coluna não fica vazia, fica com um valor — então checagem de nulo passa e a
 eleição inteira colapsa numa pessoa só. **Use `NR_TITULO_ELEITORAL_CANDIDATO`**, que
 está preenchido em todos os anos (pior caso 1,74% de ruim, em 2002). Tabela completa

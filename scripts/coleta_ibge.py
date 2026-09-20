@@ -31,7 +31,7 @@ IDADES_9606 = [
 def coletar_sidra(force: bool) -> None:
     pasta = RAW / "ibge" / "sidra"
     log("[ibge/sidra]")
-    for tabela in (6579, 9606, 10061):
+    for tabela in (6579, 9606, 10061, 10062, 10295):
         baixar_json(f"{AGREGADOS}/{tabela}/metadados", pasta / f"{tabela}_metadados.json", force)
 
     # estimativa de população por município, último ano
@@ -41,6 +41,24 @@ def coletar_sidra(force: bool) -> None:
     baixar_json(
         f"{SIDRA}/t/10061/n6/all/v/2667/p/last/c1568/all/c58/95253/c2/6794/c86/95251",
         pasta / "10061_instrucao_municipios.json",
+        force,
+    )
+
+    # --- substitutos municipais e recentes para o IDHM (ver coleta_pnud.py) ---
+    # O IDHM por município só existe até o Censo 2010. Duas das suas três dimensões
+    # (Renda e Educação) têm equivalente direto no Censo 2022, por município:
+
+    # Renda: rendimento domiciliar per capita, médio (13431) e mediano (13534).
+    baixar_json(
+        f"{SIDRA}/t/10295/n6/all/v/13431,13534/p/2022/c2/6794/c86/95251/c58/95253",
+        pasta / "10295_renda_domiciliar_municipios.json",
+        force,
+    )
+
+    # Educação: número médio de anos de estudo das pessoas de 11 anos ou mais.
+    baixar_json(
+        f"{SIDRA}/t/10062/n6/all/v/13285/p/2022/c58/95253/c2/6794/c86/95251",
+        pasta / "10062_anos_estudo_municipios.json",
         force,
     )
 
@@ -58,19 +76,29 @@ def coletar_sidra(force: bool) -> None:
         r.raise_for_status()
         parte = r.json()
         linhas.extend(parte if not linhas else parte[1:])  # cabeçalho só uma vez
-    destino.write_text(json.dumps(linhas, ensure_ascii=False))
+    destino.write_text(json.dumps(linhas, ensure_ascii=False), encoding="utf-8")
     log(f"  baixado {destino.relative_to(ROOT)} ({len(linhas) - 1} linhas)")
 
 
 def coletar_pib(force: bool) -> None:
-    """PIB dos municípios: pega a última edição publicada no FTP."""
+    """PIB dos municípios: pega a última edição publicada no FTP.
+
+    Traz PIB e PIB per capita já calculado (o SIDRA não publica o per capita em
+    nenhuma das tabelas de PIB municipal) e a hierarquia geográfica completa:
+    meso, micro, região imediata e intermediária, hierarquia urbana, semiárido.
+
+    As pastas de edição nem sempre são um ano só — a mais recente é `2022_2023/`.
+    Casar apenas `\\d{4}/` pulava essa pasta em silêncio e baixava a edição de 2021,
+    perdendo justamente 2022 e 2023.
+    """
     base = "https://ftp.ibge.gov.br/Pib_Municipios/"
     log("[ibge/pib_municipios]")
-    anos = re.findall(r'href="(\d{4})/"', session.get(base, timeout=120).text)
-    ano = max(anos)
-    listagem = session.get(f"{base}{ano}/base/", timeout=120).text
+    edicoes = re.findall(r'href="(\d{4}(?:_\d{4})?)/"', session.get(base, timeout=120).text)
+    edicao = max(edicoes, key=lambda e: e[-4:])  # ordena pelo ano final da edição
+    log(f"  edição mais recente: {edicao}")
+    listagem = session.get(f"{base}{edicao}/base/", timeout=120).text
     for arq in re.findall(r'href="(base_de_dados_\d{4}_\d{4}_xlsx\.zip)"', listagem):
-        baixar_zip(f"{base}{ano}/base/{arq}", RAW / "ibge" / "pib_municipios" / arq, force)
+        baixar_zip(f"{base}{edicao}/base/{arq}", RAW / "ibge" / "pib_municipios" / arq, force)
 
 
 def coletar_malha(force: bool) -> None:
@@ -91,8 +119,16 @@ COLETORES = {
 
 
 def coletar(force: bool = False) -> None:
-    for c in COLETORES.values():
-        c(force)
+    """Um coletor que falhe nao impede os outros; o erro e relatado no fim."""
+    falhas = []
+    for nome, c in COLETORES.items():
+        try:
+            c(force)
+        except Exception as e:
+            falhas.append(f"{nome} ({e})")
+            log(f"  ERRO em {nome}: {e}")
+    if falhas:
+        raise RuntimeError(", ".join(falhas))
 
 
 if __name__ == "__main__":

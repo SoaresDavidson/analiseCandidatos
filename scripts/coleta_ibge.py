@@ -63,14 +63,24 @@ def coletar_sidra(force: bool) -> None:
 
 
 def coletar_pib(force: bool) -> None:
-    """PIB dos municípios: pega a última edição publicada no FTP."""
+    """PIB dos municípios: pega a última edição publicada no FTP.
+
+    Traz PIB e PIB per capita já calculado (o SIDRA não publica o per capita em
+    nenhuma das tabelas de PIB municipal) e a hierarquia geográfica completa:
+    meso, micro, região imediata e intermediária, hierarquia urbana, semiárido.
+
+    As pastas de edição nem sempre são um ano só — a mais recente é `2022_2023/`.
+    Casar apenas `\\d{4}/` pulava essa pasta em silêncio e baixava a edição de 2021,
+    perdendo justamente 2022 e 2023.
+    """
     base = "https://ftp.ibge.gov.br/Pib_Municipios/"
     log("[ibge/pib_municipios]")
-    anos = re.findall(r'href="(\d{4})/"', session.get(base, timeout=120).text)
-    ano = max(anos)
-    listagem = session.get(f"{base}{ano}/base/", timeout=120).text
+    edicoes = re.findall(r'href="(\d{4}(?:_\d{4})?)/"', session.get(base, timeout=120).text)
+    edicao = max(edicoes, key=lambda e: e[-4:])  # ordena pelo ano final da edição
+    log(f"  edição mais recente: {edicao}")
+    listagem = session.get(f"{base}{edicao}/base/", timeout=120).text
     for arq in re.findall(r'href="(base_de_dados_\d{4}_\d{4}_xlsx\.zip)"', listagem):
-        baixar_zip(f"{base}{ano}/base/{arq}", RAW / "ibge" / "pib_municipios" / arq, force)
+        baixar_zip(f"{base}{edicao}/base/{arq}", RAW / "ibge" / "pib_municipios" / arq, force)
 
 
 def coletar_malha(force: bool) -> None:
@@ -91,8 +101,16 @@ COLETORES = {
 
 
 def coletar(force: bool = False) -> None:
-    for c in COLETORES.values():
-        c(force)
+    """Um coletor que falhe nao impede os outros; o erro e relatado no fim."""
+    falhas = []
+    for nome, c in COLETORES.items():
+        try:
+            c(force)
+        except Exception as e:
+            falhas.append(f"{nome} ({e})")
+            log(f"  ERRO em {nome}: {e}")
+    if falhas:
+        raise RuntimeError(", ".join(falhas))
 
 
 if __name__ == "__main__":

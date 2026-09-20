@@ -45,12 +45,35 @@ uv run scripts/coleta_tse.py --force                # rebaixa mesmo se já exist
 
 | Script | O que baixa | Destino em `dados/raw/` |
 |---|---|---|
-| `coleta_tse.py` | candidatos, eleitorado, prestação de contas, resultados (`votacao_*_munzona`), comparecimento/abstenção, propostas de governo (PI), de-para município TSE↔IBGE — anos 2016 a 2026 | `<tema>/<ano>/`, `extras/` |
+| `coleta_tse.py` | candidatos, eleitorado, prestação de contas, resultados (`votacao_*_munzona` e `detalhe_votacao_munzona`), comparecimento/abstenção, propostas de governo (PI), de-para município TSE↔IBGE | `<tema>/<ano>/`, `extras/` |
 | `coleta_ibge.py` | SIDRA: população (6579), população por idade (9606), instrução (10061); PIB dos municípios (FTP); malha dos municípios do PI (GeoJSON) | `ibge/sidra/`, `ibge/pib_municipios/`, `territorio/` |
-| `coleta_pnud.py` | Painel IDHM (planilhas) | `pnud/idhm/` |
+| `coleta_pnud.py` | Painel IDHM — ⚠️ só Brasil e UF, **não tem município** (ver docstring) | `pnud/idhm/` |
 
-Fontes que não existem para um ano (ex.: abstenção 2026) aparecem no log como `404` e
-são ignoradas. A coleta completa do TSE ocupa ~100 GB.
+### Anos coletados
+
+| Tema | Anos | Por quê |
+|---|---|---|
+| geral | 2016–2026 | cobre a maioria das perguntas |
+| `historico` (só `consulta_cand`) | 2002–2014 | Q12 pede o maior período possível; `NR_CPF_CANDIDATO` existe desde 2002, então dá para ligar a mesma pessoa entre eleições por CPF |
+| `prestacao_contas` | 2014–2026 | Q8 precisa de 2014: o STF derrubou a doação de PJ em set/2015 (ADI 4650), logo 2016 já foi sem PJ |
+
+### Recorte por UF
+
+Os zips do TSE trazem um arquivo por UF **e** um `_BRASIL` que é a concatenação de
+todos. Extrair tudo dobra o volume à toa. Os temas pesados são extraídos só com os
+arquivos do PI (`manter_uf` em `coleta_tse.py`):
+
+| Tema | Recorte | Motivo |
+|---|---|---|
+| `prestacao_contas`, `eleitorado`, `abstencao` | só PI | prestação de contas de 2024: ~12 GB completos contra ~92 MB só do PI |
+| `candidatos`, `resultados` | completo | leves (`detalhe_votacao_munzona` de 2024 tem 1,4 MB) e as Q3/Q9 comparam o PI com o resto do país |
+
+Para mudar o recorte, edite `UF` no topo do `coleta_tse.py`. Zip que não é quebrado
+por UF é extraído inteiro automaticamente.
+
+Fontes que não existem para um ano (ex.: prestação de contas de 2026, ainda em
+curso) aparecem no log como `404` e são ignoradas — não é erro. Um coletor que
+falhe não interrompe os outros.
 
 > TSE e PNUD ficam atrás de um CDN que rejeita `curl`/`requests` (HTTP 403).
 > Os scripts usam `curl_cffi` impersonando o Chrome, já incluído nas dependências.

@@ -9,7 +9,7 @@ foi possível validar está marcado como ⚠️.
 
 Não existe API de consulta. O portal é um CKAN que só aponta para `.zip` no
 `cdn.tse.jus.br`, com padrão de URL fixo por recurso e por ano — é o que o
-[`scripts/baixar_candidatos_tse.py`](../scripts/baixar_candidatos_tse.py) já explora.
+`scripts/coleta_tse.py` já explora.
 
 > **Atenção operacional:** todo o domínio `*.tse.jus.br` está atrás de Akamai e
 > devolve `403 Access Denied` para cliente que não pareça navegador. O script já
@@ -155,14 +155,20 @@ porque os nomes das colunas são diferentes, não ausentes.
 | | ≤ 2010 | ≥ 2014 |
 |---|---|---|
 | nº de colunas | 62 | 50 |
-| `NR_CPF_CANDIDATO` | ✅ | ✅ |
+| `NR_CPF_CANDIDATO` | ✅ | ✅ (mas `-4` em 2024) |
+| `NR_TITULO_ELEITORAL_CANDIDATO` | ✅ | ✅ |
 | `NR_FEDERACAO`, `SG_FEDERACAO` | ❌ | ✅ |
 | `VR_DESPESA_MAX_CAMPANHA` | ✅ | ❌ |
 | `NR_IDADE_DATA_POSSE` | ✅ | ❌ |
 | `CD_MUNICIPIO_NASCIMENTO` | ✅ | ❌ |
 | `CD_DETALHE_SITUACAO_CAND` | ✅ | ❌ |
 
-**CPF existe desde 2002** — isso derruba o principal risco da Q12.
+**CPF existe desde 2002, mas não serve como chave.** Em 2024 o TSE o suprimiu:
+todas as 463.859 linhas trazem `NR_CPF_CANDIDATO = '-4'` (código de dado protegido,
+LGPD). A coluna não fica vazia, fica com um valor — então checagem de nulo passa e a
+eleição inteira colapsa numa pessoa só. **Use `NR_TITULO_ELEITORAL_CANDIDATO`**, que
+está preenchido em todos os anos (pior caso 1,74% de ruim, em 2002). Tabela completa
+na seção 5 do [`estrategia.md`](estrategia.md).
 
 **Prestação de contas** — a fronteira é outra, entre 2016 e 2018:
 

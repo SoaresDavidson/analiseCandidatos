@@ -19,6 +19,13 @@ ANOS = [2016, 2018, 2020, 2022, 2024, 2026]
 UF = "PI"
 CDN = "https://cdn.tse.jus.br/estatistica/sead/odsele"
 
+# Nos zips quebrados por UF o arquivo _BRASIL é a concatenação EXATA de todas as
+# UFs — conferido em detalhe_votacao_munzona 2020: 12.630 linhas e 5.568
+# municípios distintos dos dois lados. Extrair os dois dobra o disco à toa, então
+# cada tema escolhe um recorte: NACIONAL onde a pergunta compara o PI com o país,
+# UF onde o arquivo nacional é grande demais para valer a pena.
+NACIONAL = "BRASIL"
+
 # Q8 (doação de PJ) precisa de 2014: o STF derrubou a doação empresarial em
 # setembro de 2015 (ADI 4650), então a eleição de 2016 já foi sem PJ.
 ANOS_PRESTACAO = [2014, *ANOS]
@@ -88,12 +95,12 @@ def _coletar_tema(
 
 
 def coletar_candidatos(force: bool) -> None:
-    _coletar_tema("candidatos", CANDIDATOS, force)
+    _coletar_tema("candidatos", CANDIDATOS, force, manter_uf=NACIONAL)
 
 
 def coletar_historico(force: bool) -> None:
     """Só consulta_cand de 2002 a 2014, para a linha do tempo da Q12."""
-    _coletar_tema("candidatos", HISTORICO, force, anos=ANOS_HISTORICO)
+    _coletar_tema("candidatos", HISTORICO, force, anos=ANOS_HISTORICO, manter_uf=NACIONAL)
 
 
 def coletar_eleitorado(force: bool) -> None:
@@ -108,9 +115,8 @@ def coletar_prestacao_contas(force: bool) -> None:
 
 
 def coletar_resultados(force: bool) -> None:
-    # sem manter_uf de propósito: Q3 e Q9 comparam o Piauí com o resto do país, e
-    # estes arquivos são leves (detalhe_votacao_munzona de 2024 tem 1,4 MB).
-    _coletar_tema("resultados", RESULTADOS, force)
+    # NACIONAL e não UF: Q3 e Q9 precisam comparar o Piauí com o resto do país.
+    _coletar_tema("resultados", RESULTADOS, force, manter_uf=NACIONAL)
 
 
 def coletar_abstencao(force: bool) -> None:

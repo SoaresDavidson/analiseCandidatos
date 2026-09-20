@@ -32,9 +32,11 @@ sql/
   03_marts.sql        uma view por pergunta: mart_q01, mart_q02, ...
 
 scripts/
-  baixar_candidatos_tse.py   (já existe — precisa ganhar os recursos que faltam)
-  baixar_ibge.py             (a criar)
-  coletar_propostas.py       (a criar — Q6, risco alto)
+  coleta_comum.py     infra: download com retomada, extração com filtro de UF
+  coleta_tse.py       candidatos, resultados, contas, eleitorado, abstenção, propostas
+  coleta_ibge.py      SIDRA, FTP do PIB, malha municipal
+  coleta_pnud.py      IDHM (só Brasil/UF — ver seção 4)
+  coletar_dados.py    roda os três de uma vez
 ```
 
 **Por que DuckDB e não PostgreSQL:** já está no `pyproject.toml`, lê CSV e JSON
@@ -61,43 +63,154 @@ começa a modelar aquele domínio.
 
 ---
 
-## 3. Divisão dos módulos do DER
+## 3. Divisão por pergunta — quem faz o quê
 
-O **Módulo 1 é pré-requisito dos outros três** (aparece em 7 das 12 perguntas).
-Por isso ele não é desenhado sozinho: sai do kickoff, feito pelos 4 juntos no
-quadro, e depois **uma** pessoa formaliza.
+Cada um desenha o próprio diagrama, do jeito que preferir (à mão, ferramenta, IA).
+O que **não** é livre são as chaves compartilhadas: sem isso os quatro diagramas
+não encaixam. Ver "Contrato de chaves" no fim desta seção.
 
-| Membro | Módulo do DER | Perguntas que o módulo sustenta | Domínio no pipeline |
-|---|---|---|---|
-| **A** | 1 — Núcleo eleitoral | Q4, Q7, Q12 | `consulta_cand`, `consulta_coligacao`, `municipio_tse_ibge` |
-| **B** | 2 — Resultados e votos | Q1, Q2, Q3, Q5, Q9, Q10 | `votacao_*_munzona`, `detalhe_votacao_munzona`, `consulta_vagas` |
-| **C** | 3 — Finanças de campanha | Q1, Q2, Q8, Q10, Q11 | `prestacao_contas` (todos os anos) |
-| **D** | 4 — Contexto + texto | Q3, Q4, Q6, Q7 | SIDRA, `localidades`, `perfil_eleitorado`, propostas |
+Todos os esquemas citados aqui estão em [`esquemas.md`](esquemas.md), gerado a
+partir dos arquivos baixados de verdade. **Modele por ele, não pela documentação
+do TSE** — as colunas mudam de ano para ano.
 
-**Carga de trabalho não é igual, e está de propósito assim:**
+### Davi — Q1, Q2, Q3
 
-- **A** tem o módulo mais central e o mais difícil de acertar (deduplicar
-  `POLITICO` entre eleições). Menos tabelas, mais pensamento. Deve ser quem está
-  mais confortável com modelagem.
-- **B** tem o volume maior de linhas, mas o modelo mais simples (4 tabelas-fato
-  quase idênticas). Bom para quem quer produzir rápido.
-- **C** tem a parte com mais decisão de negócio (classificar fonte de recurso em
-  público/privado, separar PF de PJ, marcar o que é propaganda). Bom para quem
-  gosta de mexer nos dados.
-- **D** tem o maior número de fontes diferentes e o único item de risco alto (Q6).
-  Deve ser quem tiver mais folga na semana.
+| | |
+|---|---|
+| **Q1** $ por cadeira | despesas de campanha ÷ vagas em disputa |
+| **Q2** taxa de sucesso × $$ | despesa por candidatura × `CD_SIT_TOT_TURNO` |
+| **Q3** perfil do município × partido × votação × abstenção | o cruzamento TSE × IBGE |
 
-### Regra de acoplamento
+**Arquivos:** `despesas_*` (prestação de contas — consumir do Enrico, ver abaixo),
+`consulta_vagas`, `detalhe_votacao_munzona`, `votacao_candidato_munzona`,
+PIB per capita (FTP do IBGE), renda domiciliar e população (SIDRA).
 
-Todo módulo referencia `MUNICIPIO` e/ou `CANDIDATURA`, que são do A. Então:
+**Entidades no diagrama:** `DESPESA_CAMPANHA`, `VAGA`, `CANDIDATURA`,
+`SITUACAO_TOTALIZACAO`, `COMPARECIMENTO_MUNICIPIO`, `MUNICIPIO_ANO`, `PARTIDO`.
 
-1. No kickoff, **A escreve o contrato**: nome exato e tipo de `MUNICIPIO.cod_ibge`,
-   `MUNICIPIO.cod_tse` e `CANDIDATURA.sq_candidato`. Cola no grupo. Ninguém inventa
-   nome de FK depois.
-2. B, C e D desenham contra esse contrato, cada um no seu arquivo `.md`.
-3. Quarta 23/09 à noite: consolidação. Uma pessoa (sugestão: **B**, que tem o módulo
-   mais mecânico e sobra tempo) junta os quatro diagramas e roda a checagem da
-   seção 6.
+**Atenção:**
+- A Q1 precisa do `consulta_vagas` — é o arquivo que todo mundo esquece de baixar,
+  e sem ele "por cadeira" não existe.
+- A abstenção da Q3 vem do `detalhe_votacao_munzona` (tem cargo), **não** do grupo
+  Comparecimento e Abstenção (que não tem cargo).
+- O eixo "rico/pobre" é **PIB per capita + renda domiciliar do Censo 2022**, não
+  IDHM — ver seção 4 do [`fontes-de-dados.md`](fontes-de-dados.md).
+
+### Dudu — Q4, Q5, Q6
+
+| | |
+|---|---|
+| **Q4** instrução do candidato × população | `CD_GRAU_INSTRUCAO` × Censo 2022 |
+| **Q5** votos de legenda × partido | `votacao_partido_munzona` |
+| **Q6** proposta de governo → nuvem de palavras | PDFs do TSE |
+
+**Arquivos:** `consulta_cand`, `votacao_partido_munzona`, `proposta_governo_*_PI.zip`,
+SIDRA 10061 (nível de instrução) e 10062 (anos médios de estudo).
+
+**Entidades:** `GRAU_INSTRUCAO`, `CENSO_INSTRUCAO`, `VOTACAO_LEGENDA_MUNICIPIO`,
+`PARTIDO`, `FEDERACAO`, `PROPOSTA_GOVERNO`, `TERMO_PROPOSTA`.
+
+**Atenção:**
+- **Federação partidária muda a Q5 de 2022 em diante.** O voto de legenda vai para
+  a federação, não para o partido isolado. `consulta_cand` tem `NR_FEDERACAO`,
+  `SG_FEDERACAO` e `DS_COMPOSICAO_FEDERACAO`.
+- Na Q6, a chave de join sai do **nome do arquivo** PDF
+  (`2024PI180001881915_01.pdf` → `SQ_CANDIDATO = 180001881915`).
+- Medir cedo quantos PDFs são imagem escaneada: rodar a extração em 20 arquivos e
+  ver a taxa de retorno vazio. Se for alta, restringir o corpus e declarar.
+
+### Duda — Q7, Q8, Q9
+
+| | |
+|---|---|
+| **Q7** jovens × não jovens × viés político | idade do candidato × idade do eleitorado |
+| **Q8** PJ × viés político (doação) | doação empresarial, 2002–2014 |
+| **Q9** viés do município na linha do tempo | série histórica + mapa |
+
+**Arquivos:** `consulta_cand` (`DT_NASCIMENTO`), `perfil_comparecimento_abstencao`
+(único com abstenção por faixa etária), SIDRA 9606 (idade da população),
+`receitas_*` de 2014 (leiaute antigo), `votacao_candidato_munzona` de todos os anos,
+hierarquia geográfica (FTP do PIB) e a malha GeoJSON para o mapa.
+
+**Entidades:** `POLITICO`, `CENSO_FAIXA_ETARIA`, `COMPARECIMENTO_PERFIL`,
+`AGENTE_FINANCEIRO`, `RECEITA_CAMPANHA`, `PARTIDO` (com `cd_espectro`),
+`VOTACAO_CANDIDATO_MUNICIPIO`, `MUNICIPIO`.
+
+**Atenção:**
+- **A Q8 é a pergunta mais chata do trabalho** e a razão é o leiaute: 2014 é `.txt`
+  com colunas em português e espaço no nome (`"CPF/CNPJ do doador"`,
+  `"Setor econômico do doador"`). Nada do staging de 2018+ serve. Combine com o
+  Enrico: ele é o dono dessa carga.
+- A premissa da Q8 precisa de ajuste no relatório: o STF derrubou a doação de PJ em
+  setembro de 2015 (ADI 4650), então **2016 já foi sem PJ**. O período real é
+  2002–2014, e 2016 vira o marco zero — o que melhora a pergunta.
+- A Q9 depende da decisão ③ (espectro partidário em vez de sucessão de sigla).
+
+### Enrico — Q10, Q11, Q12 + **dono da prestação de contas**
+
+| | |
+|---|---|
+| **Q10** eleito/não eleito × recurso público × privado | classificação da receita |
+| **Q11** onde o candidato investe em propaganda | texto livre da despesa |
+| **Q12** linha do tempo do político | 2002–2024, por CPF |
+
+**Arquivos:** `receitas_*`, `despesas_*` (todos os anos), `consulta_cand` 2002–2024.
+
+**Entidades:** `RECEITA_CAMPANHA`, `FONTE_RECURSO`, `DESPESA_CAMPANHA`,
+`TIPO_DESPESA`, `AGENTE_FINANCEIRO`, `POLITICO`, `CANDIDATURA`.
+
+**Atenção:**
+- 🚨 **Não use CPF para identificar a pessoa. Use o título de eleitor.** Em 2024 o
+  TSE suprimiu o CPF: as 463.859 linhas trazem `NR_CPF_CANDIDATO = '-4'`, que é o
+  código de dado protegido (LGPD). Um `POLITICO` chaveado por CPF perde 2024
+  inteiro e ninguém percebe, porque a coluna não fica vazia — fica com um valor.
+  O `NR_TITULO_ELEITORAL_CANDIDATO` está preenchido em **todos** os anos (pior
+  caso 1,74% de ruim, em 2002). Medição completa na seção 5.
+- A Q12 está comprovada de ponta a ponta: 1.856.271 pessoas distintas entre 2002 e
+  2026, das quais **599.547 (32,3%) se candidataram em duas ou mais eleições**. A
+  carreira mais longa do Piauí tem 12 eleições (2004–2026) e passou por 5 partidos.
+- A classificação público/privado da Q10 **não vem pronta**: sai da combinação de
+  `DS_FONTE_RECEITA` e `DS_ORIGEM_RECEITA`. É uma tabela de-para escrita à mão, e
+  vale como contribuição do trabalho — documentem o critério.
+
+#### Por que o Enrico é o dono da prestação de contas
+
+A prestação de contas é necessária por **três dos quatro**: Davi (Q1, Q2), Duda
+(Q8) e Enrico (Q10, Q11). E é a fonte com **dois leiautes incompatíveis**. Se os
+três escreverem staging separado, fazem três vezes o trabalho mais difícil do
+projeto e chegam a três números diferentes para "quanto o candidato gastou".
+
+O Enrico tem duas das três perguntas inteiramente dentro dessa fonte, então ele
+entrega **duas views canônicas** que os outros consomem sem tocar no arquivo cru:
+
+```sql
+stg_receita(sq_candidato, ano, dt, vr_receita, cpf_cnpj_doador, tp_pessoa,
+            cd_cnae_doador, ds_fonte, ds_origem, ds_natureza)
+stg_despesa(sq_candidato, ano, dt, vr_despesa, cpf_cnpj_fornecedor,
+            cd_cnae_fornecedor, ds_despesa, ds_tipo_despesa)
+```
+
+Cada view lê os dois leiautes e renomeia para esses nomes. **Esse é o primeiro
+entregável do Enrico, antes de Q10 e Q11** — o Davi e a Duda estão bloqueados nele.
+
+### Contrato de chaves
+
+Os quatro diagramas se encontram nestas colunas. Nome e tipo são fixos:
+
+| Chave | Tipo | Onde nasce |
+|---|---|---|
+| `municipio.cod_ibge` | `INTEGER` (7 dígitos) | `municipio_tse_ibge.csv` |
+| `municipio.cod_tse` | **`VARCHAR(5)`** — tem zero à esquerda (`"01007"`) | `municipio_tse_ibge.csv` |
+| `candidatura.sq_candidato` | `BIGINT` | `consulta_cand.SQ_CANDIDATO` |
+| `politico.nr_titulo_eleitoral` | `VARCHAR(12)` | `consulta_cand.NR_TITULO_ELEITORAL_CANDIDATO` |
+| `eleicao.ano` + `nr_turno` | `INTEGER` | qualquer arquivo do TSE |
+| `partido.nr_partido` | `INTEGER` | `consulta_cand.NR_PARTIDO` |
+
+⚠️ `cod_tse` como inteiro **quebra o join em silêncio** — o registro simplesmente
+não casa, e ninguém percebe até os totais saírem errados.
+
+⚠️ `candidatura` **não tem coluna de município**. O vínculo é por `SG_UE`, que em
+eleição municipal é o código TSE do município.
 
 ---
 
@@ -279,18 +392,42 @@ triangulada via partido). São 193 MB o zip inteiro. É o ano mais rico da Q8 e 
 isso ele entrou como obrigatório na decisão ② — ⚠️ a URL dele é
 `prestacao_final_2014.zip`, **sem** o `_contas_`, diferente de todos os outros anos.
 
-### Q12 — risco rebaixado
+### Q12 — resolvida, mas a chave não é a que parecia
 
-**Resolvido.** O `SQ_CANDIDATO` é único por eleição e não serve para ligar a pessoa
-entre anos, mas `NR_CPF_CANDIDATO` **existe desde 2002** — conferi o cabeçalho real
-dos arquivos de 2002, 2010, 2014, 2018, 2020, 2022 e 2024. Dá para montar `POLITICO`
-por CPF em toda a série, sem casar por nome.
+O `SQ_CANDIDATO` é único por eleição e não liga a pessoa entre anos. A coluna
+`NR_CPF_CANDIDATO` existe desde 2002 e parecia resolver — **mas não resolve.**
 
-Sobra uma verificação pequena, que continua sendo do membro A: **coluna existir não
-é coluna preenchida.** Rodar um `COUNT(*) FILTER (WHERE NR_CPF_CANDIDATO IS NULL OR
-NR_CPF_CANDIDATO = '')` por ano e reportar. Se a taxa de vazio for alta em algum ano,
-aí sim entra o casamento por `nome + data de nascimento + UF` como reserva **para
-aquele ano**.
+Contagem feita sobre os 13 arquivos `consulta_cand_*_BRASIL.csv` baixados:
+
+| ano | linhas | CPFs distintos | CPF inutilizável | títulos distintos | título inutilizável |
+|---|---|---|---|---|---|
+| 2002 | 18.109 | 17.662 | 1,91% | 17.676 | 1,74% |
+| 2004 | 402.157 | 400.037 | 0,19% | 400.376 | 0,06% |
+| 2006 | 19.303 | 19.209 | 0,00% | 19.203 | 0,00% |
+| 2008 | 382.079 | 380.885 | 0,00% | 380.846 | 0,00% |
+| 2010 | 22.577 | 22.325 | 0,00% | 22.323 | 0,00% |
+| 2012 | 483.741 | 480.300 | 0,23% | 480.303 | 0,23% |
+| 2014 | 26.263 | 26.018 | 0,11% | 26.040 | 0,00% |
+| 2016 | 498.391 | 496.417 | 0,02% | 496.415 | 0,02% |
+| 2018 | 29.287 | 28.984 | 0,37% | 28.984 | 0,37% |
+| 2020 | 558.804 | 556.528 | 0,05% | 556.527 | 0,05% |
+| 2022 | 29.322 | 28.946 | 0,10% | 28.946 | 0,10% |
+| **2024** | **463.859** | **1** | **100,00%** | **462.865** | **0,01%** |
+| 2026 | 20.984 | 20.873 | 0,01% | 20.873 | 0,01% |
+
+🚨 **Em 2024 o TSE suprimiu o CPF.** Todas as 463.859 linhas trazem
+`NR_CPF_CANDIDATO = '-4'`, o código de dado protegido (LGPD). A armadilha é que a
+coluna **não fica vazia** — fica com um valor. Uma verificação de nulo passa, o
+`GROUP BY` roda, e a eleição municipal de 2024 inteira colapsa numa pessoa só.
+
+**Decisão: `POLITICO` é chaveado por `NR_TITULO_ELEITORAL_CANDIDATO`.** Ele está
+preenchido em todos os anos e sobrevive a 2024. O CPF fica como atributo
+informativo, nunca como chave.
+
+Validado de ponta a ponta: 1.856.271 pessoas distintas entre 2002 e 2026, das quais
+**599.547 (32,3%) se candidataram em duas ou mais eleições** — é exatamente esse
+recorte que a Q12 analisa. A carreira mais longa do Piauí tem 12 eleições
+(2004–2026) e passou por PTC, MDB, PSD, PSDB e PV.
 
 ### Leiaute muda entre anos — o risco que substituiu o da Q12
 
@@ -320,7 +457,7 @@ view de staging, não depois.
 ### Bloqueio de rede do TSE
 
 Todo o domínio `*.tse.jus.br` está atrás de Akamai e devolve `403` para cliente que
-não pareça navegador. O `baixar_candidatos_tse.py` já manda `User-Agent` de browser
+não pareça navegador. O `coleta_comum.py` usa `curl_cffi` impersonando o Chrome
 — **não remova**. Se der 403 em massa algum dia, é bloqueio de borda; tentar de
 outra rede antes de mexer no código.
 
@@ -369,5 +506,5 @@ Correções aplicadas sobre a primeira versão dos scripts:
 | zips extraídos inteiros | ~100 GB em disco, metade duplicata `_BRASIL` |
 | 416 renomeava `.part` sem conferir tamanho | download corrompido virava arquivo final |
 
-⚠️ Pendência: o `scripts/baixar_candidatos_tse.py` ficou obsoleto — o
-`coleta_tse.py` faz o mesmo e mais. Apagar quando ninguém estiver usando.
+O `scripts/baixar_candidatos_tse.py` foi removido: o `coleta_tse.py` faz o mesmo
+e mais, e nada mais o referenciava.

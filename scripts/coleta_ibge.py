@@ -31,7 +31,7 @@ IDADES_9606 = [
 def coletar_sidra(force: bool) -> None:
     pasta = RAW / "ibge" / "sidra"
     log("[ibge/sidra]")
-    for tabela in (6579, 9606, 10061):
+    for tabela in (6579, 9606, 10061, 10062, 10295):
         baixar_json(f"{AGREGADOS}/{tabela}/metadados", pasta / f"{tabela}_metadados.json", force)
 
     # estimativa de população por município, último ano
@@ -41,6 +41,24 @@ def coletar_sidra(force: bool) -> None:
     baixar_json(
         f"{SIDRA}/t/10061/n6/all/v/2667/p/last/c1568/all/c58/95253/c2/6794/c86/95251",
         pasta / "10061_instrucao_municipios.json",
+        force,
+    )
+
+    # --- substitutos municipais e recentes para o IDHM (ver coleta_pnud.py) ---
+    # O IDHM por município só existe até o Censo 2010. Duas das suas três dimensões
+    # (Renda e Educação) têm equivalente direto no Censo 2022, por município:
+
+    # Renda: rendimento domiciliar per capita, médio (13431) e mediano (13534).
+    baixar_json(
+        f"{SIDRA}/t/10295/n6/all/v/13431,13534/p/2022/c2/6794/c86/95251/c58/95253",
+        pasta / "10295_renda_domiciliar_municipios.json",
+        force,
+    )
+
+    # Educação: número médio de anos de estudo das pessoas de 11 anos ou mais.
+    baixar_json(
+        f"{SIDRA}/t/10062/n6/all/v/13285/p/2022/c58/95253/c2/6794/c86/95251",
+        pasta / "10062_anos_estudo_municipios.json",
         force,
     )
 

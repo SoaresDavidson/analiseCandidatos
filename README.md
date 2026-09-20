@@ -78,6 +78,23 @@ falhe não interrompe os outros.
 > TSE e PNUD ficam atrás de um CDN que rejeita `curl`/`requests` (HTTP 403).
 > Os scripts usam `curl_cffi` impersonando o Chrome, já incluído nas dependências.
 
+## Esquemas dos arquivos
+
+Antes de modelar qualquer coisa, gere o inventário do que existe de verdade:
+
+```bash
+uv run scripts/inspecionar_esquemas.py
+```
+
+Ele lê `dados/raw/` e escreve `docs/esquemas.md` com as colunas, a contagem de
+linhas e uma linha de exemplo de cada arquivo. Os blocos são agrupados por
+**esquema distinto**, não por arquivo — então as duas gerações de leiaute do TSE
+aparecem separadas, cada uma dizendo em que anos vale.
+
+Modele o DER por esse arquivo, não pela documentação do TSE: as colunas mudam de
+ano para ano, e às vezes o conteúdo também (o CPF, por exemplo, foi suprimido em
+2024 — ver `docs/estrategia.md`).
+
 ## Conversão para Parquet
 
 Consolida os CSVs de candidatos de todos os anos em um único Parquet e registra a view

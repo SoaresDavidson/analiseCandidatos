@@ -108,7 +108,8 @@ erDiagram
     }
     POLITICO {
         int id_politico PK
-        char nr_cpf UK "so existe de 2010 em diante"
+        varchar nr_titulo_eleitoral UK "CHAVE - preenchido em todos os anos"
+        varchar nr_cpf "informativo - suprimido (-4) em 2024 por LGPD"
         varchar nm_completo
         date dt_nascimento
         char cd_genero
@@ -157,9 +158,10 @@ erDiagram
 - Atributos que **mudam entre eleições** (grau de instrução, ocupação, estado civil,
   partido) ficam em `CANDIDATURA`, não em `POLITICO`. Só nascimento, CPF, nome e
   sexo ficam na pessoa.
-- Deduplicar `POLITICO`: CPF onde existir; nos anos antigos, `nome + data_nascimento
-  + UF`. ⚠️ **Verificar localmente a partir de que ano o `consulta_cand` traz CPF** —
-  isso define até onde a Q12 consegue voltar com segurança.
+- Deduplicar `POLITICO` por **`NR_TITULO_ELEITORAL_CANDIDATO`**, nunca por CPF: em
+  2024 o CPF vem `-4` (dado protegido, LGPD) em 100% das linhas, e como a coluna não
+  fica vazia a falha é silenciosa. Medição por ano na seção 5 do
+  [`estrategia.md`](estrategia.md).
 - Partidos mudam de nome e número (PFL → DEM → União Brasil). Para a Q9 (viés na
   linha do tempo) isso é um problema real: ou se adota a sigla vigente no ano, ou se
   cria uma tabela `PARTIDO_SUCESSAO`. **Decidir e documentar.**

@@ -72,6 +72,22 @@ def baixar(url: str, destino: Path, force: bool = False) -> Path | None:
 # Os CSVs do TSE terminam em _<UF>; _BRASIL (ou _brasil/_BR) é a concatenação de todos.
 _SUFIXO_UF = re.compile(r"_(BRASIL|BR|ZZ|[A-Z]{2})\.(csv|txt)$", re.IGNORECASE)
 
+# Recorte que o TSE coloca depois do ano: sigla da UF, BRASIL/BR (país todo),
+# ZZ (exterior) ou sup (eleição suplementar). Nos arquivos que o TSE não quebra
+# por UF — fefc_genero_2022.csv, perfil_eleitorado_2018.csv — não há recorte.
+_RECORTE = re.compile(r"_\d{4}_([A-Za-z]{2,6})(?=\.|$)")
+NACIONAIS = {"BRASIL", "BR"}
+
+
+def eh_nacional(nome: str) -> bool:
+    """O arquivo cobre o país todo: tem sufixo _BRASIL/_BR ou não tem recorte.
+
+    Um arquivo sem recorte nenhum é nacional porque naquele ano o TSE publicou
+    um único arquivo para o Brasil inteiro, sem quebrar por UF.
+    """
+    m = _RECORTE.search(Path(nome).name)
+    return m is None or m.group(1).upper() in NACIONAIS
+
 
 def filtrar_uf(nomes: list[str], uf: str) -> list[str]:
     """Só os arquivos da UF pedida, mais os que não são quebrados por UF (leiautes, PDFs).
@@ -88,9 +104,10 @@ def baixar_zip(url: str, destino: Path, force: bool = False, manter_uf: str | No
     """Baixa o zip e extrai para pasta com o mesmo nome (sem .zip) ao lado.
 
     manter_uf: nos zips que o TSE quebra por UF (prestação de contas, eleitorado,
-    comparecimento), extrai só os arquivos dessa UF. Como o `_BRASIL` é a
-    concatenação de todas as UFs, extrair o zip inteiro dobra o volume à toa:
-    prestação de contas de 2024 são ~12 GB completos contra ~92 MB só do PI.
+    comparecimento), extrai só os arquivos desse recorte — uma sigla de UF ou
+    BRASIL. Como o `_BRASIL` é a concatenação de todas as UFs, extrair o zip
+    inteiro dobra o volume à toa: prestação de contas de 2024 são ~12 GB
+    completos contra ~6,7 GB só do nacional ou ~92 MB só do PI.
     """
     pasta = destino.with_suffix("")
     if pasta.is_dir() and destino.exists() and not force:

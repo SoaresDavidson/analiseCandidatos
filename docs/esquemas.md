@@ -10,7 +10,7 @@ e uma linha de exemplo. Use isto para desenhar o DER, não a documentação.
 
 ### `perfil_comparecimento_abstencao` (2016–2024)
 
-Fonte: `dados/raw/abstencao/2022/comparecimento_abstencao_2022/perfil_comparecimento_abstencao_2022_PI.csv`
+Fonte: `dados/raw/abstencao/2024/comparecimento_abstencao_2024/perfil_comparecimento_abstencao_2024_BRASIL.csv`
 
 Anos com este mesmo esquema: **2016, 2018, 2020, 2022, 2024**
 
@@ -19,13 +19,13 @@ Anos com este mesmo esquema: **2016, 2018, 2020, 2022, 2024**
 | # | coluna | exemplo |
 |---|---|---|
 | 1 | `DT_GERACAO` | 29/04/2025 |
-| 2 | `HH_GERACAO` | 22:31:40 |
-| 3 | `ANO_ELEICAO` | 2022 |
+| 2 | `HH_GERACAO` | 16:22:43 |
+| 3 | `ANO_ELEICAO` | 2024 |
 | 4 | `NR_TURNO` | 1 |
-| 5 | `SG_UF` | PI |
-| 6 | `CD_MUNICIPIO` | 10006 |
-| 7 | `NM_MUNICIPIO` | BRASILEIRA |
-| 8 | `NR_ZONA` | 11 |
+| 5 | `SG_UF` | PR |
+| 6 | `CD_MUNICIPIO` | 74004 |
+| 7 | `NM_MUNICIPIO` | GODOY MOREIRA |
+| 8 | `NR_ZONA` | 132 |
 | 9 | `CD_GENERO` | 2 |
 | 10 | `DS_GENERO` | MASCULINO |
 | 11 | `CD_ESTADO_CIVIL` | 1 |
@@ -34,27 +34,27 @@ Anos com este mesmo esquema: **2016, 2018, 2020, 2022, 2024**
 | 14 | `DS_FAIXA_ETARIA` | 16 anos |
 | 15 | `CD_GRAU_ESCOLARIDADE` | 3 |
 | 16 | `DS_GRAU_ESCOLARIDADE` | ENSINO FUNDAMENTAL INCOMPLETO |
-| 17 | `CD_COR_RACA` | -1 |
-| 18 | `DS_COR_RACA` | NÃO INFORMADO |
-| 19 | `CD_QUILOMBOLA` | -1 |
-| 20 | `DS_QUILOMBOLA` | NÃO INFORMADO |
-| 21 | `CD_INTERPRETE_LIBRAS` | -1 |
-| 22 | `DS_INTERPRETE_LIBRAS` | NÃO INFORMADO |
-| 23 | `CD_IDENTIDADE_GENERO` | -1 |
-| 24 | `DS_IDENTIDADE_GENERO` | NÃO INFORMADO |
+| 17 | `CD_COR_RACA` | 3 |
+| 18 | `DS_COR_RACA` | Parda |
+| 19 | `CD_QUILOMBOLA` | 2 |
+| 20 | `DS_QUILOMBOLA` | NÃO |
+| 21 | `CD_INTERPRETE_LIBRAS` | 2 |
+| 22 | `DS_INTERPRETE_LIBRAS` | NÃO |
+| 23 | `CD_IDENTIDADE_GENERO` | 1 |
+| 24 | `DS_IDENTIDADE_GENERO` | Cisgênero |
 | 25 | `CD_IDIOMA_INDIGENA` | -1 |
 | 26 | `DS_IDIOMA_INDIGENA` | NÃO INFORMADO |
 | 27 | `CD_GRUPO_INDIGENA` | -1 |
 | 28 | `DS_GRUPO_INDIGENA` | NÃO INFORMADO |
-| 29 | `QT_APTOS` | 7 |
-| 30 | `QT_COMPARECIMENTO` | 6 |
-| 31 | `QT_ABSTENCAO` | 1 |
+| 29 | `QT_APTOS` | 1 |
+| 30 | `QT_COMPARECIMENTO` | 1 |
+| 31 | `QT_ABSTENCAO` | 0 |
 | 32 | `QT_COMPARECIMENTO_DEFICIENCIA` | 0 |
 | 33 | `QT_ABSTENCAO_DEFICIENCIA` | 0 |
 | 34 | `QT_COMPARECIMENTO_TTE` | 0 |
 | 35 | `QT_ABSTENCAO_TTE` | 0 |
-| 36 | `QT_COMPAREC_FACULTATIVO` | 6 |
-| 37 | `QT_ABST_FACULTATIVO` | 1 |
+| 36 | `QT_COMPAREC_FACULTATIVO` | 1 |
+| 37 | `QT_ABST_FACULTATIVO` | 0 |
 | 38 | `QT_COMPAREC_OBRIGATORIO` | 0 |
 | 39 | `QT_ABST_OBRIGATORIO` | 0 |
 | 40 | `QT_COMPAREC_DEFIC_FACULTATIVO` | 0 |
@@ -508,28 +508,6 @@ Anos com este mesmo esquema: **2018, 2020**
 | 14 | `CD_MOTIVO` | 6 |
 | 15 | `DS_MOTIVO` | Ausência de requisito de registro  |
 
-### `rede_social_candidato` (2018–2020)
-
-Fonte: `dados/raw/candidatos/2020/redes_sociais_2020/rede_social_candidato_2020_BRASIL.csv`
-
-Anos com este mesmo esquema: **2018, 2020**
-
-11 colunas
-
-| # | coluna | exemplo |
-|---|---|---|
-| 1 | `DT_GERACAO` | 06/01/2026 |
-| 2 | `HH_GERACAO` | 16:44:34 |
-| 3 | `AA_ELEICAO` | 2020 |
-| 4 | `SG_UF` | PE |
-| 5 | `CD_TIPO_ELEICAO` | 2 |
-| 6 | `NM_TIPO_ELEICAO` | ELEIÇÃO ORDINÁRIA |
-| 7 | `CD_ELEICAO` | 426 |
-| 8 | `DS_ELEICAO` | ELEIÇÕES MUNICIPAIS 2020 |
-| 9 | `SQ_CANDIDATO` | 170001206517 |
-| 10 | `NR_ORDEM_REDE_SOCIAL` | 1 |
-| 11 | `DS_URL` | CLEITON.SANTOS65 |
-
 ### `consulta_vagas` (2018–2026)
 
 Fonte: `dados/raw/candidatos/2020/vagas_2020/consulta_vagas_2020_BRASIL.csv`
@@ -566,26 +544,26 @@ Anos com este mesmo esquema: **2022, 2024, 2026**
 
 | # | coluna | exemplo |
 |---|---|---|
-| 1 | `DT_GERACAO` | 20/09/2026 |
-| 2 | `HH_GERACAO` | 02:15:57 |
+| 1 | `DT_GERACAO` | 16/09/2026 |
+| 2 | `HH_GERACAO` | 02:16:29 |
 | 3 | `ANO_ELEICAO` | 2024 |
 | 4 | `CD_ELEICAO` | 619 |
-| 5 | `SQ_CANDIDATO` | 240002141004 |
+| 5 | `SQ_CANDIDATO` | 110002198148 |
 | 6 | `CD_DETALHE_SITUACAO_CAND` | -3 |
 | 7 | `DS_DETALHE_SITUACAO_CAND` | #NE |
 | 8 | `CD_NACIONALIDADE` | 1 |
 | 9 | `DS_NACIONALIDADE` | BRASILEIRA NATA |
 | 10 | `CD_MUNICIPIO_NASCIMENTO` | -3 |
-| 11 | `NM_MUNICIPIO_NASCIMENTO` | LEBON RÉGIS |
-| 12 | `NR_IDADE_DATA_POSSE` | 48 |
+| 11 | `NM_MUNICIPIO_NASCIMENTO` | SÃO FÉLIX DO ARAGUAIA |
+| 12 | `NR_IDADE_DATA_POSSE` | 41 |
 | 13 | `ST_QUILOMBOLA` | N |
-| 14 | `CD_ETNIA_INDIGENA` | 0 |
-| 15 | `DS_ETNIA_INDIGENA` | NÃO INFORMADA |
+| 14 | `CD_ETNIA_INDIGENA` | -1 |
+| 15 | `DS_ETNIA_INDIGENA` | #NULO |
 | 16 | `VR_DESPESA_MAX_CAMPANHA` | 15985.08 |
-| 17 | `ST_REELEICAO` | S |
+| 17 | `ST_REELEICAO` | N |
 | 18 | `ST_DECLARAR_BENS` | S |
 | 19 | `NR_PROTOCOLO_CANDIDATURA` | -1 |
-| 20 | `NR_PROCESSO` | 06002260420246240077 |
+| 20 | `NR_PROCESSO` | 06002557720246110057 |
 | 21 | `CD_SITUACAO_CANDIDATO_PLEITO` | -3 |
 | 22 | `DS_SITUACAO_CANDIDATO_PLEITO` | #NE |
 | 23 | `CD_SITUACAO_CANDIDATO_URNA` | -3 |
@@ -597,8 +575,8 @@ Anos com este mesmo esquema: **2022, 2024, 2026**
 | 29 | `ST_PREST_CONTAS` | S |
 | 30 | `ST_SUBSTITUIDO` | N |
 | 31 | `SQ_SUBSTITUIDO` | -1 |
-| 32 | `SQ_ORDEM_SUPLENCIA` | -1 |
-| 33 | `DT_ACEITE_CANDIDATURA` | 2024-08-12 13:03:16 |
+| 32 | `SQ_ORDEM_SUPLENCIA` | 5 |
+| 33 | `DT_ACEITE_CANDIDATURA` | 2024-08-13 11:05:22 |
 | 34 | `CD_SITUACAO_JULGAMENTO` | 2 |
 | 35 | `DS_SITUACAO_JULGAMENTO` | DEFERIDO |
 | 36 | `CD_SITUACAO_JULGAMENTO_PLEITO` | 2 |
@@ -626,8 +604,8 @@ Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 
 | # | coluna | exemplo |
 |---|---|---|
-| 1 | `DT_GERACAO` | 20/09/2026 |
-| 2 | `HH_GERACAO` | 02:15:50 |
+| 1 | `DT_GERACAO` | 16/09/2026 |
+| 2 | `HH_GERACAO` | 02:15:27 |
 | 3 | `ANO_ELEICAO` | 2024 |
 | 4 | `CD_TIPO_ELEICAO` | 2 |
 | 5 | `NM_TIPO_ELEICAO` | ELEIÇÃO ORDINÁRIA |
@@ -635,9 +613,9 @@ Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 | 7 | `CD_ELEICAO` | 619 |
 | 8 | `DS_ELEICAO` | Eleições Municipais 2024 |
 | 9 | `DT_ELEICAO` | 06/10/2024 |
-| 10 | `SG_UF` | GO |
-| 11 | `SG_UE` | 95311 |
-| 12 | `NM_UE` | PETROLINA DE GOIÁS |
+| 10 | `SG_UF` | BA |
+| 11 | `SG_UE` | 35637 |
+| 12 | `NM_UE` | IBITITÁ |
 | 13 | `CD_CARGO` | 11 |
 | 14 | `DS_CARGO` | PREFEITO |
 | 15 | `TP_AGREMIACAO` | COLIGAÇÃO |
@@ -646,14 +624,14 @@ Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 | 18 | `NM_PARTIDO` | PARTIDO DA SOCIAL DEMOCRACIA BRASILEIRA |
 | 19 | `NR_FEDERACAO` | 100 |
 | 20 | `NM_FEDERACAO` | Federação PSDB CIDADANIA |
-| 21 | `SG_FEDERACAO` | 45-PSDB/23-CIDADANIA |
-| 22 | `DS_COMPOSICAO_FEDERACAO` | 45-PSDB/23-CIDADANIA |
-| 23 | `SQ_COLIGACAO` | 90001749887 |
-| 24 | `NM_COLIGACAO` | LIBERTA PETROLINA |
-| 25 | `DS_COMPOSICAO_COLIGACAO` | Federação PSDB CIDADANIA (45-PSDB / 23-CIDADANIA) / Federaçã |
+| 21 | `SG_FEDERACAO` | PSDB/CIDADANIA |
+| 22 | `DS_COMPOSICAO_FEDERACAO` | PSDB/CIDADANIA |
+| 23 | `SQ_COLIGACAO` | 50001699216 |
+| 24 | `NM_COLIGACAO` | BORA MUDAR IBITITÁ |
+| 25 | `DS_COMPOSICAO_COLIGACAO` | MDB / PSB / UNIÃO / Federação PSDB CIDADANIA (PSDB / CIDADAN |
 | 26 | `CD_SITUACAO_LEGENDA` | D |
 | 27 | `DS_SITUACAO` | DEFERIDO |
-| 28 | `NM_TIPO_DESTINACAO_VOTOS` | Válido |
+| 28 | `NM_TIPO_DESTINACAO_VOTOS` | #NE |
 
 ### `motivo_cassacao` (2022–2026)
 
@@ -665,8 +643,8 @@ Anos com este mesmo esquema: **2022, 2024, 2026**
 
 | # | coluna | exemplo |
 |---|---|---|
-| 1 | `DT_GERACAO` | 20/09/2026 |
-| 2 | `HH_GERACAO` | 02:16:37 |
+| 1 | `DT_GERACAO` | 16/09/2026 |
+| 2 | `HH_GERACAO` | 02:16:51 |
 | 3 | `ANO_ELEICAO` | 2024 |
 | 4 | `CD_TIPO_ELEICAO` | 2 |
 | 5 | `NM_TIPO_ELEICAO` | Eleição Ordinária |
@@ -678,7 +656,29 @@ Anos com este mesmo esquema: **2022, 2024, 2026**
 | 11 | `SQ_CANDIDATO` | 140002247123 |
 | 12 | `NR_PROCESSO` | 06002631120246140012 |
 | 13 | `DS_TP_MOTIVO` | Fundamentos legais de cassação |
-| 14 | `DS_MOTIVO` | Abuso de poder político |
+| 14 | `DS_MOTIVO` | Abuso de poder econômico |
+
+### `rede_social_candidato` (2018–2026)
+
+Fonte: `dados/raw/candidatos/2024/redes_sociais_2024/rede_social_candidato_2024_BRASIL.csv`
+
+Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
+
+11 colunas
+
+| # | coluna | exemplo |
+|---|---|---|
+| 1 | `DT_GERACAO` | 16/09/2026 |
+| 2 | `HH_GERACAO` | 02:16:54 |
+| 3 | `AA_ELEICAO` | 2024 |
+| 4 | `SG_UF` | SC |
+| 5 | `CD_TIPO_ELEICAO` | 2 |
+| 6 | `NM_TIPO_ELEICAO` | ELEIÇÃO ORDINÁRIA |
+| 7 | `CD_ELEICAO` | 619 |
+| 8 | `DS_ELEICAO` | ELEIÇÕES MUNICIPAIS 2024 |
+| 9 | `SQ_CANDIDATO` | 240002230988 |
+| 10 | `NR_ORDEM_REDE_SOCIAL` | 1 |
+| 11 | `DS_URL` | https://www.instagram.com/rosanads23 |
 
 ### `perfil_eleitorado` (2016–2020)
 
@@ -805,7 +805,7 @@ Anos com este mesmo esquema: **2016, 2018, 2020, 2022, 2024, 2026**
 
 ### `perfil_eleitorado` (2022–2026)
 
-Fonte: `dados/raw/eleitorado/2026/perfil_eleitorado_2026/perfil_eleitorado_2026_PI.csv`
+Fonte: `dados/raw/eleitorado/2026/perfil_eleitorado_2026/perfil_eleitorado_2026_BRASIL.csv`
 
 Anos com este mesmo esquema: **2022, 2024, 2026**
 
@@ -816,28 +816,28 @@ Anos com este mesmo esquema: **2022, 2024, 2026**
 | 1 | `DT_GERACAO` | 14/07/2026 |
 | 2 | `HH_GERACAO` | 18:03:33 |
 | 3 | `AA_ELEICAO` | 2026 |
-| 4 | `SG_UF` | PI |
-| 5 | `CD_MUNICIPIO` | 11576 |
-| 6 | `NM_MUNICIPIO` | PEDRO II |
-| 7 | `NR_ZONA` | 12 |
+| 4 | `SG_UF` | MA |
+| 5 | `CD_MUNICIPIO` | 09490 |
+| 6 | `NM_MUNICIPIO` | VIANA |
+| 7 | `NR_ZONA` | 20 |
 | 8 | `CD_GENERO` | 2 |
 | 9 | `DS_GENERO` | MASCULINO |
 | 10 | `CD_ESTADO_CIVIL` | 1 |
 | 11 | `DS_ESTADO_CIVIL` | SOLTEIRO |
-| 12 | `CD_FAIXA_ETARIA` | 2124 |
-| 13 | `DS_FAIXA_ETARIA` | 21 a 24 anos |
-| 14 | `CD_GRAU_ESCOLARIDADE` | 8 |
-| 15 | `DS_GRAU_ESCOLARIDADE` | SUPERIOR COMPLETO |
-| 16 | `CD_RACA_COR` | 3 |
-| 17 | `DS_RACA_COR` | Parda |
+| 12 | `CD_FAIXA_ETARIA` | 5559 |
+| 13 | `DS_FAIXA_ETARIA` | 55 a 59 anos |
+| 14 | `CD_GRAU_ESCOLARIDADE` | 2 |
+| 15 | `DS_GRAU_ESCOLARIDADE` | LÊ E ESCREVE |
+| 16 | `CD_RACA_COR` | 2 |
+| 17 | `DS_RACA_COR` | Preta |
 | 18 | `CD_IDENTIDADE_GENERO` | 1 |
 | 19 | `DS_IDENTIDADE_GENERO` | Cisgênero |
 | 20 | `CD_QUILOMBOLA` | 2 |
 | 21 | `DS_QUILOMBOLA` | NÃO |
 | 22 | `CD_INTERPRETE_LIBRAS` | 2 |
 | 23 | `DS_INTERPRETE_LIBRAS` | NÃO |
-| 24 | `QT_ELEITORES` | 2 |
-| 25 | `QT_ELEITORES_BIOMETRIA` | 2 |
+| 24 | `QT_ELEITORES` | 4 |
+| 25 | `QT_ELEITORES_BIOMETRIA` | 4 |
 | 26 | `QT_ELEITORES_DEFICIENCIA` | 0 |
 | 27 | `QT_ELEITORES_NOME_SOCIAL` | 0 |
 
@@ -849,8 +849,8 @@ Fonte: `dados/raw/extras/municipio_tse_ibge/municipio_tse_ibge.csv`
 
 | # | coluna | exemplo |
 |---|---|---|
-| 1 | `DT_GERACAO` | 20/09/2026 |
-| 2 | `HH_GERACAO` | 09:00:06 |
+| 1 | `DT_GERACAO` | 13/09/2026 |
+| 2 | `HH_GERACAO` | 09:00:12 |
 | 3 | `CD_UF_TSE` | 24 |
 | 4 | `CD_UF_IBGE` | 12 |
 | 5 | `SG_UF` | AC |
@@ -862,7 +862,7 @@ Fonte: `dados/raw/extras/municipio_tse_ibge/municipio_tse_ibge.csv`
 
 ### `despesas_candidatos` (2014)
 
-Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/despesas_candidatos_2014_PI.txt`
+Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/despesas_candidatos_2014_brasil.txt`
 
 Anos com este mesmo esquema: **2014**
 
@@ -873,63 +873,29 @@ Anos com este mesmo esquema: **2014**
 | 1 | `Cód. Eleição` | 143 |
 | 2 | `Desc. Eleição` | Eleições Gerais 2014 |
 | 3 | `Data e hora` | 09/07/2016 17:17:36 |
-| 4 | `CNPJ Prestador Conta` | 20551591000100 |
-| 5 | `Sequencial Candidato` | 180000000008 |
-| 6 | `UF` | PI |
+| 4 | `CNPJ Prestador Conta` | 20497869000109 |
+| 5 | `Sequencial Candidato` | 280000000001 |
+| 6 | `UF` | BR |
 | 7 | `Sigla Partido` | PSTU |
-| 8 | `Número candidato` | 16100 |
-| 9 | `Cargo` | Deputado Estadual |
-| 10 | `Nome candidato` | JADER BARROZO DE CARVALHO |
-| 11 | `CPF do candidato` | 00947181300 |
-| 12 | `Tipo do documento` | #NULO |
-| 13 | `Número do documento` | #NULO |
-| 14 | `CPF/CNPJ do fornecedor` | 02722202301 |
-| 15 | `Nome do fornecedor` | RAMSES EDUARDO PINHEIRO DE MORAIS SOUSA |
-| 16 | `Nome do fornecedor (Receita Federal)` | RAMSES EDUARDO PINHEIRO DE MORAIS SOUSA |
-| 17 | `Cod setor econômico do fornecedor` | #NULO |
-| 18 | `Setor econômico do fornecedor` | #NULO |
-| 19 | `Data da despesa` | 03/10/2014 |
-| 20 | `Valor despesa` | 1000 |
-| 21 | `Tipo despesa` | Baixa de Estimaveis - Serviços prestados por terceiros |
-| 22 | `Descriçao da despesa` | SERVIÇOS DE ASSESSORIA JURIDICA |
-
-### `despesas_candidatos_prestacao_contas_final_2014_sup`
-
-Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/despesas_candidatos_prestacao_contas_final_2014_sup.txt`
-
-25 colunas
-
-| # | coluna | exemplo |
-|---|---|---|
-| 1 | `Cód. Eleição` | 268 |
-| 2 | `Desc. Eleição` | Eleição Suplementar Governador AM |
-| 3 | `Data e hora` | 17/08/2017 16:59:30 |
-| 4 | `CNPJ Prestador Conta` | 27992004000150 |
-| 5 | `Sequencial Candidato` | 40000012071 |
-| 6 | `UF` | AM |
-| 7 | `Sigla da UE` | AM |
-| 8 | `Nome da UE` | AMAZONAS |
-| 9 | `Sigla  Partido` | PP |
-| 10 | `Número candidato` | 11 |
-| 11 | `Cargo` | Governador |
-| 12 | `Nome candidato` | REBECCA MARTINS GARCIA |
-| 13 | `CPF do candidato` | 43935117272 |
-| 14 | `CPF do vice/suplente` | 38487365272 |
-| 15 | `Tipo de documento` | Recibo |
-| 16 | `Número do documento` | 023 |
-| 17 | `CPF/CNPJ do fornecedor` | 92077528249 |
-| 18 | `Nome do fornecedor` | TIAGO CONDE DE LIMA |
-| 19 | `Nome do fornecedor (Receita Federal)` | #NULO |
-| 20 | `Cod setor econômico do fornecedor` | #NULO |
-| 21 | `Setor econômico do fornecedor` | #NULO |
-| 22 | `Data da despesa` | 11/07/201700:00:00 |
-| 23 | `Valor despesa` | 300 |
-| 24 | `Tipo despesa` | Atividades de militância e mobilização de rua |
-| 25 | `Descriçao da despesa` | CABO ELEITORAL (4 HORAS) - CV |
+| 8 | `Número candidato` | 16 |
+| 9 | `Cargo` | Presidente |
+| 10 | `Nome candidato` | JOSÉ MARIA DE ALMEIDA |
+| 11 | `CPF do candidato` | 03325634800 |
+| 12 | `Tipo do documento` | Cupom Fiscal |
+| 13 | `Número do documento` | 0044 |
+| 14 | `CPF/CNPJ do fornecedor` | 34028316225962 |
+| 15 | `Nome do fornecedor` | EMPRESA BRASILEIRA DE CORREIOS E TELEGRAFOS |
+| 16 | `Nome do fornecedor (Receita Federal)` | EMPRESA BRASILEIRA DE CORREIOS E TELEGRAFOS |
+| 17 | `Cod setor econômico do fornecedor` | 5310501 |
+| 18 | `Setor econômico do fornecedor` | Atividades do Correio Nacional |
+| 19 | `Data da despesa` | 19/09/2014 |
+| 20 | `Valor despesa` | 288,7 |
+| 21 | `Tipo despesa` | Correspondências e despesas postais |
+| 22 | `Descriçao da despesa` | ENVIO DE NATERIAIS DE CAMPANHA |
 
 ### `despesas_comites` (2014)
 
-Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/despesas_comites_2014_PI.txt`
+Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/despesas_comites_2014_brasil.txt`
 
 Anos com este mesmo esquema: **2014**
 
@@ -940,26 +906,26 @@ Anos com este mesmo esquema: **2014**
 | 1 | `Cód. Eleição` | 143 |
 | 2 | `Desc. Eleição` | Eleições Gerais 2014 |
 | 3 | `Data e hora` | 09/07/2016 17:24:17 |
-| 4 | `CNPJ Prestador Conta` | 20674715000137 |
-| 5 | `Sequencial Comite` | 1575901 |
-| 6 | `UF` | PI |
+| 4 | `CNPJ Prestador Conta` | 20618280000103 |
+| 5 | `Sequencial Comite` | 687823 |
+| 6 | `UF` | SP |
 | 7 | `Tipo Comite` | Comitê Financeiro Único |
-| 8 | `Sigla  Partido` | PPS |
-| 9 | `Tipo do documento` | #NULO |
-| 10 | `Número do documento` | #NULO |
-| 11 | `CPF/CNPJ do fornecedor` | 66972183391 |
-| 12 | `Nome do fornecedor` | LAINE NARA SANTOS COSTA |
-| 13 | `Nome do fornecedor (Receita Federal)` | LAINE NARA SANTOS COSTA |
-| 14 | `Cod setor econômico do fornecedor` | #NULO |
-| 15 | `Setor econômico do fornecedor` | #NULO |
-| 16 | `Data da despesa` | 13/08/201400:00:00 |
-| 17 | `Valor despesa` | 1000 |
-| 18 | `Tipo despesa` | Baixa de Estimaveis - Serviços prestados por terceiros |
-| 19 | `Descrição da despesa` | SERVIÇOS DE ASSESSORIA JURIDICA PARA PRESTAÇÃO DE CONTAS ELE |
+| 8 | `Sigla  Partido` | PSC |
+| 9 | `Tipo do documento` | Nota Fiscal |
+| 10 | `Número do documento` | 244 - SN |
+| 11 | `CPF/CNPJ do fornecedor` | 11828188000187 |
+| 12 | `Nome do fornecedor` | ARIANA DE PAULA CANTEIRO - ME |
+| 13 | `Nome do fornecedor (Receita Federal)` | ARIANA DE PAULA CANTEIRO - ME |
+| 14 | `Cod setor econômico do fornecedor` | 8299799 |
+| 15 | `Setor econômico do fornecedor` | Outras atividades de serviços prestados principalmente às em |
+| 16 | `Data da despesa` | 05/09/201400:00:00 |
+| 17 | `Valor despesa` | 70 |
+| 18 | `Tipo despesa` | Diversas a especificar |
+| 19 | `Descrição da despesa` | #NULO |
 
 ### `despesas_partidos` (2014)
 
-Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/despesas_partidos_2014_PI.txt`
+Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/despesas_partidos_2014_brasil.txt`
 
 Anos com este mesmo esquema: **2014**
 
@@ -970,56 +936,26 @@ Anos com este mesmo esquema: **2014**
 | 1 | `Cód. Eleição` | 143 |
 | 2 | `Desc. Eleição` | Eleições Gerais 2014 |
 | 3 | `Data e hora` | 09/07/2016 17:23:26 |
-| 4 | `CNPJ Prestador Conta` | 03831447000109 |
-| 5 | `Sequencial Diretorio` | 49021 |
-| 6 | `UF` | PI |
+| 4 | `CNPJ Prestador Conta` | 61064465000109 |
+| 5 | `Sequencial Diretorio` | 41672 |
+| 6 | `UF` | SP |
 | 7 | `Tipo diretorio` | Direção Estadual/Distrital |
-| 8 | `Sigla  Partido` | PSB |
-| 9 | `Tipo do documento` | #NULO |
-| 10 | `Número do documento` | #NULO |
-| 11 | `CPF/CNPJ do fornecedor` | 20578260000156 |
-| 12 | `Nome do fornecedor` | ELEICAO 2014 HERACLITO DE SOUSA FORTES DEPUTADO FEDERAL |
-| 13 | `Nome do fornecedor (Receita Federal)` | ELEICAO 2014 HERACLITO DE SOUSA FORTES DEPUTADO FEDERAL |
-| 14 | `Cod setor econômico do fornecedor` | 9492800 |
-| 15 | `Setor econômico do fornecedor` | Atividades de organizações políticas |
-| 16 | `Data da despesa` | 01-OCT-14 |
-| 17 | `Valor despesa` | 40000 |
-| 18 | `Tipo despesa` | Doações financeiras a outros candidatos/comitês financeiros/ |
+| 8 | `Sigla  Partido` | PTC |
+| 9 | `Tipo do documento` | Cupom Fiscal |
+| 10 | `Número do documento` | 208784 |
+| 11 | `CPF/CNPJ do fornecedor` | 46470449000114 |
+| 12 | `Nome do fornecedor` | AUTO POSTO PASIL LTDA - ME |
+| 13 | `Nome do fornecedor (Receita Federal)` | AUTO POSTO PASIL LTDA - ME |
+| 14 | `Cod setor econômico do fornecedor` | 4731800 |
+| 15 | `Setor econômico do fornecedor` | Comércio varejista de combustíveis para veículos automotores |
+| 16 | `Data da despesa` | 09-SEP-14 |
+| 17 | `Valor despesa` | 119,6 |
+| 18 | `Tipo despesa` | Combustíveis e lubrificantes |
 | 19 | `Descrição da despesa` | #NULO |
-
-### `despesas_partidos_prestacao_contas_final_2014_sup`
-
-Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/despesas_partidos_prestacao_contas_final_2014_sup.txt`
-
-21 colunas
-
-| # | coluna | exemplo |
-|---|---|---|
-| 1 | `Cód. Eleição` | 268 |
-| 2 | `Desc. Eleição` | Eleição Suplementar Governador AM |
-| 3 | `Data e hora` | 17/08/2017 20:03:28 |
-| 4 | `CNPJ Prestador Conta` | 02479718000138 |
-| 5 | `Sequencial do Prestador de conta` | 93684638 |
-| 6 | `UF` | AM |
-| 7 | `Sigla da UE` | AM |
-| 8 | `Nome da UE` | AMAZONAS |
-| 9 | `Tipo diretorio` | Direção Estadual/Distrital |
-| 10 | `Sigla  Partido` | PHS |
-| 11 | `Tipo do documento` | Nota Fiscal |
-| 12 | `Número do documento` | 000003027 - 1 |
-| 13 | `CPF/CNPJ do fornecedor` | 03573596000107 |
-| 14 | `Nome do fornecedor` | SCORE INDÚSTRIA E COMÉRCIO DE CONFECÇÃO LTDA |
-| 15 | `Nome do fornecedor (Receita Federal)` | #NULO |
-| 16 | `Cod setor econômico do fornecedor` | #NULO |
-| 17 | `Setor econômico do fornecedor` | #NULO |
-| 18 | `Data da despesa` | 04-AUG-17 |
-| 19 | `Valor despesa` | 1800 |
-| 20 | `Tipo despesa` | Publicidade por materiais impressos |
-| 21 | `Descrição da despesa` | CONFECÇÃO DE BANDEIRAS |
 
 ### `receitas_candidatos` (2014)
 
-Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/receitas_candidatos_2014_PI.txt`
+Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/receitas_candidatos_2014_brasil.txt`
 
 Anos com este mesmo esquema: **2014**
 
@@ -1030,123 +966,39 @@ Anos com este mesmo esquema: **2014**
 | 1 | `Cód. Eleição` | 143 |
 | 2 | `Desc. Eleição` | Eleições Gerais 2014 |
 | 3 | `Data e hora` | 09/07/201617:15:01 |
-| 4 | `CNPJ Prestador Conta` | 20578262000145 |
-| 5 | `Sequencial Candidato` | 180000000046 |
-| 6 | `UF` | PI |
-| 7 | `Sigla  Partido` | PSB |
-| 8 | `Numero candidato` | 400 |
-| 9 | `Cargo` | Senador |
-| 10 | `Nome candidato` | WILSON NUNES MARTINS |
-| 11 | `CPF do candidato` | 06444555353 |
-| 12 | `Numero Recibo Eleitoral` | 004000500000PI000086 |
-| 13 | `Numero do documento` | #NULO |
-| 14 | `CPF/CNPJ do doador` | 20574446000137 |
-| 15 | `Nome do doador` | ELEICAO 2014 GUSTAVO SOUSA DE NEIVA |
-| 16 | `Nome do doador (Receita Federal)` | ELEICAO 2014 GUSTAVO SOUSA DE NEIVA DEPUTADO ESTADUAL |
-| 17 | `Sigla UE doador` | PI |
-| 18 | `Número partido doador` | 40 |
-| 19 | `Número candidato doador` | 400 |
-| 20 | `Cod setor econômico do doador` | 9492800 |
-| 21 | `Setor econômico do doador` | Atividades de organizações políticas |
-| 22 | `Data da receita` | 18/07/201400:00:00 |
-| 23 | `Valor receita` | 725 |
-| 24 | `Tipo receita` | Recursos de outros candidatos/comitês |
-| 25 | `Fonte recurso` | Outros Recursos nao descritos |
-| 26 | `Especie recurso` | Estimado |
-| 27 | `Descricao da receita` | CARTAZ F2 5000 UNID NF 29663 CONF TERMO |
-| 28 | `CPF/CNPJ do doador originário` | 39817806391 |
-| 29 | `Nome do doador originário` | GUSTAVO SOUSA DE NEIVA |
-| 30 | `Tipo doador originário` | F |
+| 4 | `CNPJ Prestador Conta` | 20578194000114 |
+| 5 | `Sequencial Candidato` | 90000000637 |
+| 6 | `UF` | GO |
+| 7 | `Sigla  Partido` | PSDB |
+| 8 | `Numero candidato` | 45 |
+| 9 | `Cargo` | Governador |
+| 10 | `Nome candidato` | MARCONI FERREIRA PERILLO JUNIOR |
+| 11 | `CPF do candidato` | 03553821809 |
+| 12 | `Numero Recibo Eleitoral` | 000450300000GO000064 |
+| 13 | `Numero do documento` | 20141550000 |
+| 14 | `CPF/CNPJ do doador` | 01256007000131 |
+| 15 | `Nome do doador` | GOVESA GOIANIA VEICULOS SA |
+| 16 | `Nome do doador (Receita Federal)` | GOVESA GOIANIA VEICULOS SA |
+| 17 | `Sigla UE doador` | #NULO |
+| 18 | `Número partido doador` | #NULO |
+| 19 | `Número candidato doador` | 45 |
+| 20 | `Cod setor econômico do doador` | 4511101 |
+| 21 | `Setor econômico do doador` | Comércio a varejo de automóveis, camionetas e utilitários no |
+| 22 | `Data da receita` | 02/10/201400:00:00 |
+| 23 | `Valor receita` | 145000 |
+| 24 | `Tipo receita` | Recursos de pessoas jurídicas |
+| 25 | `Fonte recurso` | Nao especificado |
+| 26 | `Especie recurso` | Transferência eletrônica |
+| 27 | `Descricao da receita` | #NULO |
+| 28 | `CPF/CNPJ do doador originário` | #NULO |
+| 29 | `Nome do doador originário` | #NULO |
+| 30 | `Tipo doador originário` | #NULO |
 | 31 | `Setor econômico do doador originário` | #NULO |
-| 32 | `Nome do doador originário (Receita Federal)` | GUSTAVO SOUSA DE NEIVA |
-
-### `receitas_candidatos_prestacao_contas_final_2014_sup`
-
-Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/receitas_candidatos_prestacao_contas_final_2014_sup.txt`
-
-35 colunas
-
-| # | coluna | exemplo |
-|---|---|---|
-| 1 | `Cód. Eleição` | 268 |
-| 2 | `Desc. Eleição` | Eleição Suplementar Governador AM |
-| 3 | `Data e hora` | 17/08/201716:27:53 |
-| 4 | `CNPJ Prestador Conta` | 28033024000166 |
-| 5 | `Sequencial Candidato` | 40000012073 |
-| 6 | `UF` | AM |
-| 7 | `Sigla da UE` | AM |
-| 8 | `Nome da UE` | AMAZONAS |
-| 9 | `Sigla  Partido` | PPL |
-| 10 | `Numero candidato` | 54 |
-| 11 | `Cargo` | Governador |
-| 12 | `Nome candidato` | JADELVONE NOGUEIRA DELTRUDES |
-| 13 | `CPF do candidato` | 44179669234 |
-| 14 | `CPF do vice/suplente` | 61804975249 |
-| 15 | `Numero Recibo Eleitoral` | 000540300000AM000002E |
-| 16 | `Numero do documento` | #NULO |
-| 17 | `CPF/CNPJ do doador` | 22957049287 |
-| 18 | `Nome do doador` | ANTONIO CARLOS DOS SANTOS NOEL |
-| 19 | `Nome do doador (Receita Federal)` | #NULO |
-| 20 | `Sigla UE doador` | #NULO |
-| 21 | `Número partido doador` | 54 |
-| 22 | `Número candidato doador` | 54 |
-| 23 | `Cod setor econômico do doador` | #NULO |
-| 24 | `Setor econômico do doador` | #NULO |
-| 25 | `Data da receita` | 28/06/201700:00:00 |
-| 26 | `Valor receita` | 1000 |
-| 27 | `Tipo receita` | Recursos de pessoas físicas |
-| 28 | `Fonte recurso` | Outros Recursos |
-| 29 | `Especie recurso` | Estimado |
-| 30 | `Descricao da receita` | DOAÇÃO DE SERVIÇOS CONTABEIS |
-| 31 | `CPF/CNPJ do doador originário` | #NULO |
-| 32 | `Nome do doador originário` | #NULO |
-| 33 | `Tipo doador originário` | #NULO |
-| 34 | `Setor econômico do doador originário` | #NULO |
-| 35 | `Nome do doador originário (Receita Federal)` | #NULO |
-
-### `receitas_comites` (2014)
-
-Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/receitas_comites_2014_PI.txt`
-
-Anos com este mesmo esquema: **2014**
-
-29 colunas
-
-| # | coluna | exemplo |
-|---|---|---|
-| 1 | `Cód. Eleição` | 143 |
-| 2 | `Desc. Eleição` | Eleições Gerais 2014 |
-| 3 | `Data e hora` | 09/07/2016 17:24:00 |
-| 4 | `CNPJ Prestador Conta` | 20674715000137 |
-| 5 | `Sequencial Comite` | 1575901 |
-| 6 | `UF` | PI |
-| 7 | `Tipo Comite` | Comitê Financeiro Único |
-| 8 | `Sigla  Partido` | PPS |
-| 9 | `Tipo do documento` | C23000512190PI000001 |
-| 10 | `Número do documento` | #NULO |
-| 11 | `CPF/CNPJ do doador` | 04164251352 |
-| 12 | `Nome do doador` | ITALO BRUNO DA SILVA BARBOSA |
-| 13 | `Nome do doador (Receita Federal)` | ITALO BRUNO DA SILVA BARBOSA |
-| 14 | `Sigla UE doador` | #NULO |
-| 15 | `Número partido doador` | #NULO |
-| 16 | `Número candidato doador` | #NULO |
-| 17 | `Cod setor econômico do doador` | #NULO |
-| 18 | `Setor econômico do doador` | #NULO |
-| 19 | `Data da receita` | 02/09/201400:00:00 |
-| 20 | `Valor receita` | 1000 |
-| 21 | `Tipo receita` | Recursos de pessoas físicas |
-| 22 | `Fonte recurso` | Nao especificado |
-| 23 | `Espécie recurso` | Estimado |
-| 24 | `Descrição da receita` | ERVIÇOS DE CONTABILIDADE PARA A PRESTAÇÃO DE CONTAS ELEITORA |
-| 25 | `CPF/CNPJ do doador originário` | #NULO |
-| 26 | `Nome do doador originário` | #NULO |
-| 27 | `Tipo doador originário` | #NULO |
-| 28 | `Setor econômico do doador originário` | #NULO |
-| 29 | `Nome do doador originário (Receita Federal)` | #NULO |
+| 32 | `Nome do doador originário (Receita Federal)` | #NULO |
 
 ### `receitas_partidos` (2014)
 
-Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/receitas_partidos_2014_PI.txt`
+Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/receitas_partidos_2014_brasil.txt`
 
 Anos com este mesmo esquema: **2014**
 
@@ -1157,76 +1009,36 @@ Anos com este mesmo esquema: **2014**
 | 1 | `Cód. Eleição` | 143 |
 | 2 | `Desc. Eleição` | Eleições Gerais 2014 |
 | 3 | `Data e hora` | 09/07/2016 17:23:04 |
-| 4 | `CNPJ Prestador Conta` | 07473085000174 |
-| 5 | `Sequencial Diretorio` | 43510 |
-| 6 | `UF` | PI |
+| 4 | `CNPJ Prestador Conta` | 59941682000180 |
+| 5 | `Sequencial Diretorio` | 41682 |
+| 6 | `UF` | SP |
 | 7 | `Tipo diretorio` | Direção Estadual/Distrital |
-| 8 | `Sigla  Partido` | PT |
-| 9 | `Tipo do documento` | P13000312190PI000007 |
-| 10 | `Número do documento` | 553572000131303 |
-| 11 | `CPF/CNPJ do doador` | 20570274000123 |
-| 12 | `Nome do doador` | ELEICAO 2014 DILMA VANA ROUSSEFF PRESIDENTE |
-| 13 | `Nome do doador (Receita Federal)` | ELEICAO 2014 DILMA VANA ROUSSEFF PRESIDENTE |
+| 8 | `Sigla  Partido` | PSDB |
+| 9 | `Tipo do documento` | P45000371072SP000182 |
+| 10 | `Número do documento` | 662945000452014 |
+| 11 | `CPF/CNPJ do doador` | 03653474000120 |
+| 12 | `Nome do doador` | Direção Nacional |
+| 13 | `Nome do doador (Receita Federal)` | PARTIDO DA SOCIAL DEMOCRACIA BRASILEIRA |
 | 14 | `Sigla UE doador` | BR |
-| 15 | `Número partido doador` | 13 |
+| 15 | `Número partido doador` | 45 |
 | 16 | `Número candidato doador` | #NULO |
 | 17 | `Cod setor econômico do doador` | 9492800 |
 | 18 | `Setor econômico do doador` | Atividades de organizações políticas |
-| 19 | `Data da receita` | 12-SEP-14 |
-| 20 | `Valor receita` | 62000 |
-| 21 | `Tipo receita` | Recursos de outros candidatos/comitês |
+| 19 | `Data da receita` | 25-SEP-14 |
+| 20 | `Valor receita` | 50000 |
+| 21 | `Tipo receita` | Recursos de partido político |
 | 22 | `Fonte recurso` | Outros Recursos nao descritos |
 | 23 | `Espécie recurso` | Transferência eletrônica |
 | 24 | `Descrição da receita` | #NULO |
-| 25 | `CPF/CNPJ do doador originário` | 07359641000186 |
-| 26 | `Nome do doador originário` | GERDAU ACOS ESPECIAIS S.A. |
+| 25 | `CPF/CNPJ do doador originário` | 51990695000137 |
+| 26 | `Nome do doador originário` | BRADESCO VIDA E PREVIDENCIA S/A |
 | 27 | `Tipo doador originário` | J |
-| 28 | `Setor econômico do doador originário` | Produção de laminados longos de aço, exceto tubos |
-| 29 | `Nome do doador originário (Receita Federal)` | GERDAU ACOS ESPECIAIS S.A. |
-
-### `receitas_partidos_prestacao_contas_final_2014_sup`
-
-Fonte: `dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/receitas_partidos_prestacao_contas_final_2014_sup.txt`
-
-31 colunas
-
-| # | coluna | exemplo |
-|---|---|---|
-| 1 | `Cód. Eleição` | 268 |
-| 2 | `Desc. Eleição` | Eleição Suplementar Governador AM |
-| 3 | `Data e hora` | 17/08/2017 20:00:02 |
-| 4 | `CNPJ Prestador Conta` | 02479718000138 |
-| 5 | `Sequencial prestador conta` | 93684638 |
-| 6 | `UF` | AM |
-| 7 | `Sigla da UE` | AM |
-| 8 | `Nome da UE` | AMAZONAS |
-| 9 | `Tipo diretorio` | Direção Estadual/Distrital |
-| 10 | `Sigla  Partido` | PHS |
-| 11 | `Número recibo eleitoral` | P31000302550AM000001E |
-| 12 | `Número do documento` | #NULO |
-| 13 | `CPF/CNPJ do doador` | 58811508215 |
-| 14 | `Nome do doador` | ELISSANDRO DA SILVA PINHEIRO |
-| 15 | `Nome do doador (Receita Federal)` | #NULO |
-| 16 | `Sigla UE doador` | #NULO |
-| 17 | `Número partido doador` | 31 |
-| 18 | `Número candidato doador` | #NULO |
-| 19 | `Cod setor econômico do doador` | #NULO |
-| 20 | `Setor econômico do doador` | #NULO |
-| 21 | `Data da receita` | 10-JUL-17 |
-| 22 | `Valor receita` | 2000 |
-| 23 | `Tipo receita` | Recursos de pessoas físicas |
-| 24 | `Fonte recurso` | Outros Recursos |
-| 25 | `Espécie recurso` | Estimado |
-| 26 | `Descrição da receita` | DESPESA REFERENTE A HONORÁRIOS SERVIÇO DE PRESTAÇÃO DE CONTA |
-| 27 | `CPF/CNPJ do doador originário` | #NULO |
-| 28 | `Nome do doador originário` | #NULO |
-| 29 | `Tipo doador originário` | #NULO |
-| 30 | `Setor econômico do doador originário` | #NULO |
-| 31 | `Nome do doador originário (Receita Federal)` | #NULO |
+| 28 | `Setor econômico do doador originário` | Previdência complementar aberta |
+| 29 | `Nome do doador originário (Receita Federal)` | BRADESCO VIDA E PREVIDENCIA S.A. |
 
 ### `despesas_candidatos_prestacao_contas_final` (2016)
 
-Fonte: `dados/raw/prestacao_contas/2016/prestacao_contas_final_2016/despesas_candidatos_prestacao_contas_final_2016_PI.txt`
+Fonte: `dados/raw/prestacao_contas/2016/prestacao_contas_final_2016/despesas_candidatos_prestacao_contas_final_2016_brasil.txt`
 
 Anos com este mesmo esquema: **2016**
 
@@ -1237,66 +1049,32 @@ Anos com este mesmo esquema: **2016**
 | 1 | `Cód. Eleição` | 220 |
 | 2 | `Desc. Eleição` | Eleições Municipais 2016 |
 | 3 | `Data e hora` | 02/06/2018 06:13:40 |
-| 4 | `CNPJ Prestador Conta` | 25592543000176 |
-| 5 | `Sequencial Candidato` | 180000004430 |
-| 6 | `UF` | PI |
-| 7 | `Sigla da UE` | 11479 |
-| 8 | `Nome da UE` | PALMEIRA DO PIAUÍ |
-| 9 | `Sigla  Partido` | PT |
-| 10 | `Número candidato` | 13 |
-| 11 | `Cargo` | Prefeito |
-| 12 | `Nome candidato` | JOÃO EMILIO LEMOS PINHEIRO |
-| 13 | `CPF do candidato` | 24045110330 |
-| 14 | `CPF do vice/suplente` | 42087457387 |
+| 4 | `CNPJ Prestador Conta` | 25491188000149 |
+| 5 | `Sequencial Candidato` | 240000002396 |
+| 6 | `UF` | SC |
+| 7 | `Sigla da UE` | 80934 |
+| 8 | `Nome da UE` | CURITIBANOS |
+| 9 | `Sigla  Partido` | PSDB |
+| 10 | `Número candidato` | 45678 |
+| 11 | `Cargo` | Vereador |
+| 12 | `Nome candidato` | FRANCIELLE CAMARGO |
+| 13 | `CPF do candidato` | 06300150909 |
+| 14 | `CPF do vice/suplente` | #NULO |
 | 15 | `Tipo de documento` | Nota Fiscal |
-| 16 | `Número do documento` | 00001 - A |
-| 17 | `CPF/CNPJ do fornecedor` | 01842601326 |
-| 18 | `Nome do fornecedor` | EMANOEL HONORIO RIO BRANCO |
-| 19 | `Nome do fornecedor (Receita Federal)` | EMANOEL HONORIO RIO BRANCO |
-| 20 | `Cod setor econômico do fornecedor` | #NULO |
-| 21 | `Setor econômico do fornecedor` | #NULO |
-| 22 | `Data da despesa` | 22/09/201600:00:00 |
-| 23 | `Valor despesa` | 2000 |
-| 24 | `Tipo despesa` | Publicidade por materiais impressos |
-| 25 | `Descriçao da despesa` | REFERENTE A PRESTAÇÃO DE SERVIÇOS IMPRESSOS NA PRODUÇÃO DE 5 |
-
-### `despesas_candidatos_prestacao_contas_final_2016_sup`
-
-Fonte: `dados/raw/prestacao_contas/2016/prestacao_contas_final_2016/despesas_candidatos_prestacao_contas_final_2016_sup.txt`
-
-25 colunas
-
-| # | coluna | exemplo |
-|---|---|---|
-| 1 | `Cód. Eleição` |  |
-| 2 | `Desc. Eleição` |  |
-| 3 | `Data e hora` |  |
-| 4 | `CNPJ Prestador Conta` |  |
-| 5 | `Sequencial Candidato` |  |
-| 6 | `UF` |  |
-| 7 | `Sigla da UE` |  |
-| 8 | `Nome da UE` |  |
-| 9 | `Sigla  Partido` |  |
-| 10 | `Número candidato` |  |
-| 11 | `Cargo` |  |
-| 12 | `Nome candidato` |  |
-| 13 | `CPF do candidato` |  |
-| 14 | `CPF do vice/suplente` |  |
-| 15 | `Tipo de documento` |  |
-| 16 | `Número do documento` |  |
-| 17 | `CPF/CNPJ do fornecedor` |  |
-| 18 | `Nome do fornecedor` |  |
-| 19 | `Nome do fornecedor (Receita Federal)` |  |
-| 20 | `Cod setor econômico do fornecedor` |  |
-| 21 | `Setor econômico do fornecedor` |  |
-| 22 | `Data da despesa` |  |
-| 23 | `Valor despesa` |  |
-| 24 | `Tipo despesa` |  |
-| 25 | `Descriçao da despesa` |  |
+| 16 | `Número do documento` | 329 - U |
+| 17 | `CPF/CNPJ do fornecedor` | 02940983000171 |
+| 18 | `Nome do fornecedor` | JOAO BENTO DA SILVA NETO - ME |
+| 19 | `Nome do fornecedor (Receita Federal)` | JOAO BENTO DA SILVA NETO - ME |
+| 20 | `Cod setor econômico do fornecedor` | 1813001 |
+| 21 | `Setor econômico do fornecedor` | Impressão de material para uso publicitário |
+| 22 | `Data da despesa` | 28/09/201600:00:00 |
+| 23 | `Valor despesa` | 3 |
+| 24 | `Tipo despesa` | Publicidade por adesivos |
+| 25 | `Descriçao da despesa` | CONFECÇÃO DE BOTONS |
 
 ### `despesas_partidos_prestacao_contas_final` (2016)
 
-Fonte: `dados/raw/prestacao_contas/2016/prestacao_contas_final_2016/despesas_partidos_prestacao_contas_final_2016_PI.txt`
+Fonte: `dados/raw/prestacao_contas/2016/prestacao_contas_final_2016/despesas_partidos_prestacao_contas_final_2016_brasil.txt`
 
 Anos com este mesmo esquema: **2016**
 
@@ -1307,58 +1085,28 @@ Anos com este mesmo esquema: **2016**
 | 1 | `Cód. Eleição` | 220 |
 | 2 | `Desc. Eleição` | Eleições Municipais 2016 |
 | 3 | `Data e hora` | 02/06/2018 20:34:23 |
-| 4 | `CNPJ Prestador Conta` | 10013652000114 |
-| 5 | `Sequencial do Prestador de conta` | 323868 |
-| 6 | `UF` | PI |
-| 7 | `Sigla da UE` | 10375 |
-| 8 | `Nome da UE` | BOM JESUS |
-| 9 | `Tipo diretorio` | Direção Municipal/Comissão Provisória |
-| 10 | `Sigla  Partido` | PP |
+| 4 | `CNPJ Prestador Conta` | 14125041000119 |
+| 5 | `Sequencial do Prestador de conta` | 311916 |
+| 6 | `UF` | PA |
+| 7 | `Sigla da UE` | PA |
+| 8 | `Nome da UE` | PARÁ |
+| 9 | `Tipo diretorio` | Direção Estadual/Distrital |
+| 10 | `Sigla  Partido` | PPS |
 | 11 | `Tipo do documento` | Nota Fiscal |
-| 12 | `Número do documento` | 148 - 01 |
-| 13 | `CPF/CNPJ do fornecedor` | 41269291000103 |
-| 14 | `Nome do fornecedor` | J COELHO - ME |
-| 15 | `Nome do fornecedor (Receita Federal)` | J COELHO - ME |
-| 16 | `Cod setor econômico do fornecedor` | 9001902 |
-| 17 | `Setor econômico do fornecedor` | Produção musical |
-| 18 | `Data da despesa` | 26-AUG-16 |
-| 19 | `Valor despesa` | 4000 |
-| 20 | `Tipo despesa` | Produção de jingles, vinhetas e slogans |
-| 21 | `Descrição da despesa` | VALOR CORRESPONDENTE A PRODUÇÃO DE JINGLES PARA A CAMPANHA E |
-
-### `despesas_partidos_prestacao_contas_final_2016_sup`
-
-Fonte: `dados/raw/prestacao_contas/2016/prestacao_contas_final_2016/despesas_partidos_prestacao_contas_final_2016_sup.txt`
-
-21 colunas
-
-| # | coluna | exemplo |
-|---|---|---|
-| 1 | `Cód. Eleição` |  |
-| 2 | `Desc. Eleição` |  |
-| 3 | `Data e hora` |  |
-| 4 | `CNPJ Prestador Conta` |  |
-| 5 | `Sequencial do Prestador de conta` |  |
-| 6 | `UF` |  |
-| 7 | `Sigla da UE` |  |
-| 8 | `Nome da UE` |  |
-| 9 | `Tipo diretorio` |  |
-| 10 | `Sigla  Partido` |  |
-| 11 | `Tipo do documento` |  |
-| 12 | `Número do documento` |  |
-| 13 | `CPF/CNPJ do fornecedor` |  |
-| 14 | `Nome do fornecedor` |  |
-| 15 | `Nome do fornecedor (Receita Federal)` |  |
-| 16 | `Cod setor econômico do fornecedor` |  |
-| 17 | `Setor econômico do fornecedor` |  |
-| 18 | `Data da despesa` |  |
-| 19 | `Valor despesa` |  |
-| 20 | `Tipo despesa` |  |
-| 21 | `Descrição da despesa` |  |
+| 12 | `Número do documento` | 1263 - NFSE |
+| 13 | `CPF/CNPJ do fornecedor` | 17940670000190 |
+| 14 | `Nome do fornecedor` | C. KZAN - ME |
+| 15 | `Nome do fornecedor (Receita Federal)` | C. KZAN - ME |
+| 16 | `Cod setor econômico do fornecedor` | 1813001 |
+| 17 | `Setor econômico do fornecedor` | Impressão de material para uso publicitário |
+| 18 | `Data da despesa` | 30-SEP-16 |
+| 19 | `Valor despesa` | 110 |
+| 20 | `Tipo despesa` | Publicidade por materiais impressos |
+| 21 | `Descrição da despesa` | SANTINHO MED 9X6CM ANANINDEUA |
 
 ### `receitas_candidatos_prestacao_contas_final` (2016)
 
-Fonte: `dados/raw/prestacao_contas/2016/prestacao_contas_final_2016/receitas_candidatos_prestacao_contas_final_2016_PI.txt`
+Fonte: `dados/raw/prestacao_contas/2016/prestacao_contas_final_2016/receitas_candidatos_prestacao_contas_final_2016_brasil.txt`
 
 Anos com este mesmo esquema: **2016**
 
@@ -1369,29 +1117,29 @@ Anos com este mesmo esquema: **2016**
 | 1 | `Cód. Eleição` | 220 |
 | 2 | `Desc. Eleição` | Eleições Municipais 2016 |
 | 3 | `Data e hora` | 08/09/201821:36:21 |
-| 4 | `CNPJ Prestador Conta` | 25748862000128 |
-| 5 | `Sequencial Candidato` | 180000006990 |
-| 6 | `UF` | PI |
-| 7 | `Sigla da UE` | 11410 |
-| 8 | `Nome da UE` | DOMINGOS MOURÃO |
-| 9 | `Sigla  Partido` | SD |
-| 10 | `Numero candidato` | 77777 |
+| 4 | `CNPJ Prestador Conta` | 25360253000105 |
+| 5 | `Sequencial Candidato` | 210000003005 |
+| 6 | `UF` | RS |
+| 7 | `Sigla da UE` | 89524 |
+| 8 | `Nome da UE` | WESTFÁLIA |
+| 9 | `Sigla  Partido` | PDT |
+| 10 | `Numero candidato` | 12222 |
 | 11 | `Cargo` | Vereador |
-| 12 | `Nome candidato` | JOSE EVANDO DE OLIVEIRA |
-| 13 | `CPF do candidato` | 27903708856 |
+| 12 | `Nome candidato` | MIRGON SCHUMANN |
+| 13 | `CPF do candidato` | 42315794072 |
 | 14 | `CPF do vice/suplente` | #NULO |
-| 15 | `Numero Recibo Eleitoral` | 777771311410PI000001E |
-| 16 | `Numero do documento` | 21 |
-| 17 | `CPF/CNPJ do doador` | 27903708856 |
-| 18 | `Nome do doador` | JOSE EVANDO DE OLIVEIRA |
-| 19 | `Nome do doador (Receita Federal)` | JOSE EVANDO DE OLIVEIRA |
-| 20 | `Sigla UE doador` | 11410 |
-| 21 | `Número partido doador` | 77 |
-| 22 | `Número candidato doador` | 77777 |
+| 15 | `Numero Recibo Eleitoral` | 122221389524RS000001E |
+| 16 | `Numero do documento` | 3BEFAC91988BD6CBD89E |
+| 17 | `CPF/CNPJ do doador` | 42315794072 |
+| 18 | `Nome do doador` | MIRGON SCHUMANN |
+| 19 | `Nome do doador (Receita Federal)` | MIRGON SCHUMANN |
+| 20 | `Sigla UE doador` | 89524 |
+| 21 | `Número partido doador` | 12 |
+| 22 | `Número candidato doador` | 12222 |
 | 23 | `Cod setor econômico do doador` | #NULO |
 | 24 | `Setor econômico do doador` | #NULO |
-| 25 | `Data da receita` | 31/08/201600:00:00 |
-| 26 | `Valor receita` | 550 |
+| 25 | `Data da receita` | 19/08/201600:00:00 |
+| 26 | `Valor receita` | 250 |
 | 27 | `Tipo receita` | Recursos próprios |
 | 28 | `Fonte recurso` | Outros Recursos |
 | 29 | `Especie recurso` | Depósito em espécie |
@@ -1402,53 +1150,9 @@ Anos com este mesmo esquema: **2016**
 | 34 | `Setor econômico do doador originário` | #NULO |
 | 35 | `Nome do doador originário (Receita Federal)` | #NULO |
 
-### `receitas_candidatos_prestacao_contas_final_2016_sup`
-
-Fonte: `dados/raw/prestacao_contas/2016/prestacao_contas_final_2016/receitas_candidatos_prestacao_contas_final_2016_sup.txt`
-
-35 colunas
-
-| # | coluna | exemplo |
-|---|---|---|
-| 1 | `Cód. Eleição` |  |
-| 2 | `Desc. Eleição` |  |
-| 3 | `Data e hora` |  |
-| 4 | `CNPJ Prestador Conta` |  |
-| 5 | `Sequencial Candidato` |  |
-| 6 | `UF` |  |
-| 7 | `Sigla da UE` |  |
-| 8 | `Nome da UE` |  |
-| 9 | `Sigla  Partido` |  |
-| 10 | `Numero candidato` |  |
-| 11 | `Cargo` |  |
-| 12 | `Nome candidato` |  |
-| 13 | `CPF do candidato` |  |
-| 14 | `CPF do vice/suplente` |  |
-| 15 | `Numero Recibo Eleitoral` |  |
-| 16 | `Numero do documento` |  |
-| 17 | `CPF/CNPJ do doador` |  |
-| 18 | `Nome do doador` |  |
-| 19 | `Nome do doador (Receita Federal)` |  |
-| 20 | `Sigla UE doador` |  |
-| 21 | `Número partido doador` |  |
-| 22 | `Número candidato doador` |  |
-| 23 | `Cod setor econômico do doador` |  |
-| 24 | `Setor econômico do doador` |  |
-| 25 | `Data da receita` |  |
-| 26 | `Valor receita` |  |
-| 27 | `Tipo receita` |  |
-| 28 | `Fonte recurso` |  |
-| 29 | `Especie recurso` |  |
-| 30 | `Descricao da receita` |  |
-| 31 | `CPF/CNPJ do doador originário` |  |
-| 32 | `Nome do doador originário` |  |
-| 33 | `Tipo doador originário` |  |
-| 34 | `Setor econômico do doador originário` |  |
-| 35 | `Nome do doador originário (Receita Federal)` |  |
-
 ### `receitas_partidos_prestacao_contas_final` (2016)
 
-Fonte: `dados/raw/prestacao_contas/2016/prestacao_contas_final_2016/receitas_partidos_prestacao_contas_final_2016_PI.txt`
+Fonte: `dados/raw/prestacao_contas/2016/prestacao_contas_final_2016/receitas_partidos_prestacao_contas_final_2016_brasil.txt`
 
 Anos com este mesmo esquema: **2016**
 
@@ -1459,74 +1163,64 @@ Anos com este mesmo esquema: **2016**
 | 1 | `Cód. Eleição` | 220 |
 | 2 | `Desc. Eleição` | Eleições Municipais 2016 |
 | 3 | `Data e hora` | 02/06/2018 20:24:08 |
-| 4 | `CNPJ Prestador Conta` | 09660360000194 |
-| 5 | `Sequencial prestador conta` | 322706 |
-| 6 | `UF` | PI |
-| 7 | `Sigla da UE` | 11576 |
-| 8 | `Nome da UE` | PEDRO II |
+| 4 | `CNPJ Prestador Conta` | 01266559000120 |
+| 5 | `Sequencial prestador conta` | 346779 |
+| 6 | `UF` | SC |
+| 7 | `Sigla da UE` | 80055 |
+| 8 | `Nome da UE` | AGRONÔMICA |
 | 9 | `Tipo diretorio` | Direção Municipal/Comissão Provisória |
-| 10 | `Sigla  Partido` | PRB |
-| 11 | `Número recibo eleitoral` | P10000411576PI000001E |
+| 10 | `Sigla  Partido` | PMDB |
+| 11 | `Número recibo eleitoral` | P15000480055SC000004E |
 | 12 | `Número do documento` | #NULO |
-| 13 | `CPF/CNPJ do doador` | 34069887334 |
-| 14 | `Nome do doador` | RAIMUNDO JOAO DA SILVA |
-| 15 | `Nome do doador (Receita Federal)` | RAIMUNDO JOAO DA SILVA |
+| 13 | `CPF/CNPJ do doador` | 09295964985 |
+| 14 | `Nome do doador` | NATHIERI LUANA DA SILVA |
+| 15 | `Nome do doador (Receita Federal)` | NATHIERI KAUANA DA SILVA |
 | 16 | `Sigla UE doador` | #NULO |
-| 17 | `Número partido doador` | 10 |
+| 17 | `Número partido doador` | 15 |
 | 18 | `Número candidato doador` | #NULO |
 | 19 | `Cod setor econômico do doador` | #NULO |
 | 20 | `Setor econômico do doador` | #NULO |
-| 21 | `Data da receita` | 15-AUG-16 |
-| 22 | `Valor receita` | 39,04 |
+| 21 | `Data da receita` | 30-SEP-16 |
+| 22 | `Valor receita` | 440 |
 | 23 | `Tipo receita` | Recursos de pessoas físicas |
 | 24 | `Fonte recurso` | Outros Recursos |
 | 25 | `Espécie recurso` | Estimado |
-| 26 | `Descrição da receita` | DOAÇÃO ENERGIA DO PARTIDO AGOSTO 2016 |
+| 26 | `Descrição da receita` | 50 PORCENTO DO SALARIO DA SECRETÁRIA DO COMITE ELEITORAL PMD |
 | 27 | `CPF/CNPJ do doador originário` | #NULO |
 | 28 | `Nome do doador originário` | #NULO |
 | 29 | `Tipo doador originário` | #NULO |
 | 30 | `Setor econômico do doador originário` | #NULO |
 | 31 | `Nome do doador originário (Receita Federal)` | #NULO |
 
-### `receitas_partidos_prestacao_contas_final_2016_sup`
+### `receitas_orgaos_partidarios_doador_originario` (2018–2026)
 
-Fonte: `dados/raw/prestacao_contas/2016/prestacao_contas_final_2016/receitas_partidos_prestacao_contas_final_2016_sup.txt`
+Fonte: `dados/raw/prestacao_contas/2018/prestacao_contas_orgaos_partidarios_2018/receitas_orgaos_partidarios_doador_originario_2018_BRASIL.csv`
 
-31 colunas
+Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
+
+19 colunas
 
 | # | coluna | exemplo |
 |---|---|---|
-| 1 | `Cód. Eleição` |  |
-| 2 | `Desc. Eleição` |  |
-| 3 | `Data e hora` |  |
-| 4 | `CNPJ Prestador Conta` |  |
-| 5 | `Sequencial prestador conta` |  |
-| 6 | `UF` |  |
-| 7 | `Sigla da UE` |  |
-| 8 | `Nome da UE` |  |
-| 9 | `Tipo diretorio` |  |
-| 10 | `Sigla  Partido` |  |
-| 11 | `Número recibo eleitoral` |  |
-| 12 | `Número do documento` |  |
-| 13 | `CPF/CNPJ do doador` |  |
-| 14 | `Nome do doador` |  |
-| 15 | `Nome do doador (Receita Federal)` |  |
-| 16 | `Sigla UE doador` |  |
-| 17 | `Número partido doador` |  |
-| 18 | `Número candidato doador` |  |
-| 19 | `Cod setor econômico do doador` |  |
-| 20 | `Setor econômico do doador` |  |
-| 21 | `Data da receita` |  |
-| 22 | `Valor receita` |  |
-| 23 | `Tipo receita` |  |
-| 24 | `Fonte recurso` |  |
-| 25 | `Espécie recurso` |  |
-| 26 | `Descrição da receita` |  |
-| 27 | `CPF/CNPJ do doador originário` |  |
-| 28 | `Nome do doador originário` |  |
-| 29 | `Tipo doador originário` |  |
-| 30 | `Setor econômico do doador originário` |  |
-| 31 | `Nome do doador originário (Receita Federal)` |  |
+| 1 | `DT_GERACAO` | 20/09/2026 |
+| 2 | `HH_GERACAO` | 03:00:18 |
+| 3 | `AA_ELEICAO` | 2018 |
+| 4 | `CD_TIPO_ELEICAO` | 2 |
+| 5 | `NM_TIPO_ELEICAO` | Ordinária |
+| 6 | `TP_PRESTACAO_CONTAS` | Final |
+| 7 | `DT_PRESTACAO_CONTAS` | 03/11/2022 |
+| 8 | `SQ_PRESTADOR_CONTAS` | 246938272 |
+| 9 | `SG_UF` | BR |
+| 10 | `NR_CPF_CNPJ_DOADOR_ORIGINARIO` | 17268885334 |
+| 11 | `NM_DOADOR_ORIGINARIO` | ANTONIO DEIJALMA PEREIRA ALENCAR |
+| 12 | `NM_DOADOR_ORIGINARIO_RFB` | ANTONIO DEIJALMA PEREIRA ALENCAR |
+| 13 | `TP_DOADOR_ORIGINARIO` | F |
+| 14 | `CD_CNAE_DOADOR_ORIGINARIO` | -1 |
+| 15 | `DS_CNAE_DOADOR_ORIGINARIO` | #NULO |
+| 16 | `SQ_RECEITA` | 30254127 |
+| 17 | `DT_RECEITA` | 27/09/2018 |
+| 18 | `DS_RECEITA` | Recursos de partido político |
+| 19 | `VR_RECEITA` | 48,06 |
 
 ### `fefc_cor_raca` (2020–2024)
 
@@ -1550,8 +1244,8 @@ Anos com este mesmo esquema: **2020, 2022, 2024**
 | 10 | `VR_TOTAL_RECEBIDO_FEFC` | 3494615,98 |
 | 11 | `PE_VALOR_FEFC_GENERO` | 37,67 |
 | 12 | `ST_RENUNCIA` | 0 |
-| 13 | `DT_GERACAO` | 19/09/2026 |
-| 14 | `HH_GERACAO` | 03:08 |
+| 13 | `DT_GERACAO` | 22/09/2026 |
+| 14 | `HH_GERACAO` | 03:09 |
 
 ### `fefc_genero` (2020–2024)
 
@@ -1574,115 +1268,12 @@ Anos com este mesmo esquema: **2020, 2022, 2024**
 | 9 | `VR_TOTAL_RECEBIDO_FEFC` | 7834668,88 |
 | 10 | `PE_VALOR_FEFC_GENERO` | 27,86 |
 | 11 | `ST_RENUNCIA` | 0 |
-| 12 | `DT_GERACAO` | 19/09/2026 |
-| 13 | `HH_GERACAO` | 03:08 |
-
-### `despesas_contratadas_candidatos` (2018–2026)
-
-Fonte: `dados/raw/prestacao_contas/2020/prestacao_contas_candidatos_2020/despesas_contratadas_candidatos_2020_PI.csv`
-
-Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
-
-53 colunas
-
-| # | coluna | exemplo |
-|---|---|---|
-| 1 | `DT_GERACAO` | 19/09/2026 |
-| 2 | `HH_GERACAO` | 15:00:13 |
-| 3 | `AA_ELEICAO` | 2020 |
-| 4 | `CD_TIPO_ELEICAO` | 2 |
-| 5 | `NM_TIPO_ELEICAO` | Ordinária |
-| 6 | `CD_ELEICAO` | 426 |
-| 7 | `DS_ELEICAO` | Eleições Municipais 2020 |
-| 8 | `DT_ELEICAO` | 15/11/2020 |
-| 9 | `ST_TURNO` | 1 |
-| 10 | `TP_PRESTACAO_CONTAS` | Final |
-| 11 | `DT_PRESTACAO_CONTAS` | 14/12/2020 |
-| 12 | `SQ_PRESTADOR_CONTAS` | 1847600543 |
-| 13 | `SG_UF` | PI |
-| 14 | `SG_UE` | 11215 |
-| 15 | `NM_UE` | MATIAS OLÍMPIO |
-| 16 | `NR_CNPJ_PRESTADOR_CONTA` | 39103487000173 |
-| 17 | `CD_CARGO` | 13 |
-| 18 | `DS_CARGO` | Vereador |
-| 19 | `SQ_CANDIDATO` | 180001104326 |
-| 20 | `NR_CANDIDATO` | 77999 |
-| 21 | `NM_CANDIDATO` | FABIANO DE SOUSA SANTOS |
-| 22 | `NR_CPF_CANDIDATO` | 06800359319 |
-| 23 | `NR_CPF_VICE_CANDIDATO` | None |
-| 24 | `NR_PARTIDO` | 77 |
-| 25 | `SG_PARTIDO` | SOLIDARIEDADE |
-| 26 | `NM_PARTIDO` | Solidariedade |
-| 27 | `CD_TIPO_FORNECEDOR` | 1 |
-| 28 | `DS_TIPO_FORNECEDOR` | PESSOA JURÍDICA |
-| 29 | `CD_CNAE_FORNECEDOR` | 18130 |
-| 30 | `DS_CNAE_FORNECEDOR` | Impressão de materiais para outros usos |
-| 31 | `NR_CPF_CNPJ_FORNECEDOR` | 39243268000190 |
-| 32 | `NM_FORNECEDOR` | JAILSON DAYLON OLIVEIRA SILVA |
-| 33 | `NM_FORNECEDOR_RFB` | JAILSON DAYLON OLIVEIRA SILVA |
-| 34 | `CD_ESFERA_PART_FORNECEDOR` | -1 |
-| 35 | `DS_ESFERA_PART_FORNECEDOR` | #NULO |
-| 36 | `SG_UF_FORNECEDOR` | #NULO# |
-| 37 | `CD_MUNICIPIO_FORNECEDOR` | -1 |
-| 38 | `NM_MUNICIPIO_FORNECEDOR` | #NULO |
-| 39 | `SQ_CANDIDATO_FORNECEDOR` | -1 |
-| 40 | `NR_CANDIDATO_FORNECEDOR` | -1 |
-| 41 | `CD_CARGO_FORNECEDOR` | -1 |
-| 42 | `DS_CARGO_FORNECEDOR` | #NULO |
-| 43 | `NR_PARTIDO_FORNECEDOR` | -1 |
-| 44 | `SG_PARTIDO_FORNECEDOR` | #NULO |
-| 45 | `NM_PARTIDO_FORNECEDOR` | #NULO |
-| 46 | `DS_TIPO_DOCUMENTO` | Nota Fiscal |
-| 47 | `NR_DOCUMENTO` | 4693036 |
-| 48 | `CD_ORIGEM_DESPESA` | 20140000 |
-| 49 | `DS_ORIGEM_DESPESA` | Publicidade por materiais impressos |
-| 50 | `SQ_DESPESA` | 37118245 |
-| 51 | `DT_DESPESA` | 06/11/2020 |
-| 52 | `DS_DESPESA` | SERVIÇOS GRAFICOS |
-| 53 | `VR_DESPESA_CONTRATADA` | 500,00 |
-
-### `despesas_pagas_candidatos` (2018–2026)
-
-Fonte: `dados/raw/prestacao_contas/2020/prestacao_contas_candidatos_2020/despesas_pagas_candidatos_2020_PI.csv`
-
-Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
-
-28 colunas
-
-| # | coluna | exemplo |
-|---|---|---|
-| 1 | `DT_GERACAO` | 19/09/2026 |
-| 2 | `HH_GERACAO` | 15:00:14 |
-| 3 | `AA_ELEICAO` | 2020 |
-| 4 | `CD_TIPO_ELEICAO` | 2 |
-| 5 | `NM_TIPO_ELEICAO` | Ordinária |
-| 6 | `CD_ELEICAO` | 426 |
-| 7 | `DS_ELEICAO` | Eleições Municipais 2020 |
-| 8 | `DT_ELEICAO` | 15/11/2020 |
-| 9 | `ST_TURNO` | 1 |
-| 10 | `TP_PRESTACAO_CONTAS` | Final |
-| 11 | `DT_PRESTACAO_CONTAS` | 15/12/2021 |
-| 12 | `SQ_PRESTADOR_CONTAS` | 1843742927 |
-| 13 | `SG_UF` | PI |
-| 14 | `DS_TIPO_DOCUMENTO` | Nota Fiscal |
-| 15 | `NR_DOCUMENTO` | 486671 |
-| 16 | `CD_FONTE_DESPESA` | 1 |
-| 17 | `DS_FONTE_DESPESA` | Outros Recursos |
-| 18 | `CD_ORIGEM_DESPESA` | 20140000 |
-| 19 | `DS_ORIGEM_DESPESA` | Publicidade por materiais impressos |
-| 20 | `CD_NATUREZA_DESPESA` | 1 |
-| 21 | `DS_NATUREZA_DESPESA` | Financeiro |
-| 22 | `CD_ESPECIE_RECURSO` | 1 |
-| 23 | `DS_ESPECIE_RECURSO` | Transferência eletrônica |
-| 24 | `SQ_DESPESA` | 41342541 |
-| 25 | `SQ_PARCELAMENTO_DESPESA` | 27989030 |
-| 26 | `DT_PAGTO_DESPESA` | 09/11/2021 |
-| 27 | `DS_DESPESA` | REF DOIS MILHEIROS DE PRAGUINHAS ADESIVOS 7X7CM \| REF TRES M |
-| 28 | `VR_PAGTO_DESPESA` | 550,00 |
+| 12 | `DT_GERACAO` | 22/09/2026 |
+| 13 | `HH_GERACAO` | 03:09 |
 
 ### `receitas_candidatos` (2018–2026)
 
-Fonte: `dados/raw/prestacao_contas/2020/prestacao_contas_candidatos_2020/receitas_candidatos_2020_PI.csv`
+Fonte: `dados/raw/prestacao_contas/2020/prestacao_contas_candidatos_2020/receitas_candidatos_2020_BRASIL.csv`
 
 Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 
@@ -1700,22 +1291,22 @@ Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 | 8 | `DT_ELEICAO` | 15/11/2020 |
 | 9 | `ST_TURNO` | 1 |
 | 10 | `TP_PRESTACAO_CONTAS` | FINAL |
-| 11 | `DT_PRESTACAO_CONTAS` | 24/01/2021 |
-| 12 | `SQ_PRESTADOR_CONTAS` | 1849862252 |
-| 13 | `SG_UF` | PI |
-| 14 | `SG_UE` | 10189 |
-| 15 | `NM_UE` | COIVARAS |
-| 16 | `NR_CNPJ_PRESTADOR_CONTA` | 39105153000139 |
+| 11 | `DT_PRESTACAO_CONTAS` | 15/12/2020 |
+| 12 | `SQ_PRESTADOR_CONTAS` | 1850467950 |
+| 13 | `SG_UF` | SP |
+| 14 | `SG_UE` | 62197 |
+| 15 | `NM_UE` | BAURU |
+| 16 | `NR_CNPJ_PRESTADOR_CONTA` | 39180080000140 |
 | 17 | `CD_CARGO` | 13 |
 | 18 | `DS_CARGO` | Vereador |
-| 19 | `SQ_CANDIDATO` | 180001222458 |
-| 20 | `NR_CANDIDATO` | 22227 |
-| 21 | `NM_CANDIDATO` | ANTONIO MARIA DE CARVALHO |
-| 22 | `NR_CPF_CANDIDATO` | 09709762320 |
+| 19 | `SQ_CANDIDATO` | 250001249175 |
+| 20 | `NR_CANDIDATO` | 28177 |
+| 21 | `NM_CANDIDATO` | FRANCISCO ANTONIO JERONYMO GUERREIRO |
+| 22 | `NR_CPF_CANDIDATO` | 04711441859 |
 | 23 | `NR_CPF_VICE_CANDIDATO` | None |
-| 24 | `NR_PARTIDO` | 22 |
-| 25 | `SG_PARTIDO` | PL |
-| 26 | `NM_PARTIDO` | Partido Liberal |
+| 24 | `NR_PARTIDO` | 28 |
+| 25 | `SG_PARTIDO` | PRTB |
+| 26 | `NM_PARTIDO` | Partido Renovador Trabalhista Brasileiro |
 | 27 | `CD_FONTE_RECEITA` | 1 |
 | 28 | `DS_FONTE_RECEITA` | OUTROS RECURSOS |
 | 29 | `CD_ORIGEM_RECEITA` | 10040000 |
@@ -1726,34 +1317,34 @@ Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 | 34 | `DS_ESPECIE_RECEITA` | Estimado |
 | 35 | `CD_CNAE_DOADOR` | 94928 |
 | 36 | `DS_CNAE_DOADOR` | Atividades de organizações políticas |
-| 37 | `NR_CPF_CNPJ_DOADOR` | 39089274000134 |
-| 38 | `NM_DOADOR` | ELEICAO 2020 MARCELINO ALMEIDA DE ARAUJO |
-| 39 | `NM_DOADOR_RFB` | ELEICAO 2020 MARCELINO ALMEIDA DE ARAUJO PREFEITO |
+| 37 | `NR_CPF_CNPJ_DOADOR` | 39079563000152 |
+| 38 | `NM_DOADOR` | RAUL APARECIDO GONÇALVES PAULA |
+| 39 | `NM_DOADOR_RFB` | ELEICAO 2020 RAUL APARECIDO GONCALVES PAULA PREFEITO |
 | 40 | `CD_ESFERA_PARTIDARIA_DOADOR` | -1 |
 | 41 | `DS_ESFERA_PARTIDARIA_DOADOR` | #NULO |
-| 42 | `SG_UF_DOADOR` | PI |
-| 43 | `CD_MUNICIPIO_DOADOR` | 10189 |
-| 44 | `NM_MUNICIPIO_DOADOR` | COIVARAS |
-| 45 | `SQ_CANDIDATO_DOADOR` | 180001102506 |
-| 46 | `NR_CANDIDATO_DOADOR` | 13 |
+| 42 | `SG_UF_DOADOR` | SP |
+| 43 | `CD_MUNICIPIO_DOADOR` | 62197 |
+| 44 | `NM_MUNICIPIO_DOADOR` | BAURU |
+| 45 | `SQ_CANDIDATO_DOADOR` | 250001180711 |
+| 46 | `NR_CANDIDATO_DOADOR` | 25 |
 | 47 | `CD_CARGO_CANDIDATO_DOADOR` | 11 |
 | 48 | `DS_CARGO_CANDIDATO_DOADOR` | Prefeito |
-| 49 | `NR_PARTIDO_DOADOR` | 13 |
-| 50 | `SG_PARTIDO_DOADOR` | PT |
-| 51 | `NM_PARTIDO_DOADOR` | Partido dos Trabalhadores |
-| 52 | `NR_RECIBO_DOACAO` | 222271310189PI000002E |
+| 49 | `NR_PARTIDO_DOADOR` | 25 |
+| 50 | `SG_PARTIDO_DOADOR` | DEM |
+| 51 | `NM_PARTIDO_DOADOR` | Democratas |
+| 52 | `NR_RECIBO_DOACAO` | 281771362197SP000003E |
 | 53 | `NR_DOCUMENTO_DOACAO` | #NULO# |
-| 54 | `SQ_RECEITA` | 19618453 |
-| 55 | `DT_RECEITA` | 22/10/2020 |
-| 56 | `DS_RECEITA` | PRAGUINHA 7X7 CM (MARCELINO/ANTONIO MARIA) |
-| 57 | `VR_RECEITA` | 200,00 |
+| 54 | `SQ_RECEITA` | 18793095 |
+| 55 | `DT_RECEITA` | 12/11/2020 |
+| 56 | `DS_RECEITA` | SANTINHOS |
+| 57 | `VR_RECEITA` | 133,00 |
 | 58 | `DS_NATUREZA_RECURSO_ESTIMAVEL` | Publicidade por materiais impressos |
 | 59 | `DS_GENERO` | Masculino |
 | 60 | `DS_COR_RACA` | Parda |
 
 ### `receitas_candidatos_doador_originario` (2018–2026)
 
-Fonte: `dados/raw/prestacao_contas/2020/prestacao_contas_candidatos_2020/receitas_candidatos_doador_originario_2020_PI.csv`
+Fonte: `dados/raw/prestacao_contas/2020/prestacao_contas_candidatos_2020/receitas_candidatos_doador_originario_2020_BRASIL.csv`
 
 Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 
@@ -1771,9 +1362,9 @@ Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 | 8 | `DT_ELEICAO` | 15/11/2020 |
 | 9 | `ST_TURNO` | 1 |
 | 10 | `TP_PRESTACAO_CONTAS` | Final |
-| 11 | `DT_PRESTACAO_CONTAS` | 21/01/2021 |
-| 12 | `SQ_PRESTADOR_CONTAS` | 1845088346 |
-| 13 | `SG_UF` | PI |
+| 11 | `DT_PRESTACAO_CONTAS` | 15/12/2020 |
+| 12 | `SQ_PRESTADOR_CONTAS` | 1846422038 |
+| 13 | `SG_UF` | SC |
 | 14 | `NR_CPF_CNPJ_DOADOR_ORIGINARIO` | -1 |
 | 15 | `NM_DOADOR_ORIGINARIO` | #NULO |
 | 16 | `NM_DOADOR_ORIGINARIO_RFB` | #NULO |
@@ -1787,7 +1378,7 @@ Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 
 ### `despesas_contratadas_orgaos_partidarios` (2018–2026)
 
-Fonte: `dados/raw/prestacao_contas/2020/prestacao_contas_orgaos_partidarios_2020/despesas_contratadas_orgaos_partidarios_2020_PI.csv`
+Fonte: `dados/raw/prestacao_contas/2020/prestacao_contas_orgaos_partidarios_2020/despesas_contratadas_orgaos_partidarios_2020_BRASIL.csv`
 
 Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 
@@ -1801,50 +1392,50 @@ Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 | 4 | `CD_TIPO_ELEICAO` | 2 |
 | 5 | `NM_TIPO_ELEICAO` | ORDINÁRIA |
 | 6 | `TP_PRESTACAO_CONTAS` | FINAL |
-| 7 | `DT_PRESTACAO_CONTAS` | 20/05/2022 |
-| 8 | `SQ_PRESTADOR_CONTAS` | 1220394960 |
-| 9 | `CD_ESFERA_PARTIDARIA` | F |
-| 10 | `DS_ESFERA_PARTIDARIA` | Federal (Estadual/Distrital) |
-| 11 | `SG_UF` | PI |
-| 12 | `SG_UE` | PI |
-| 13 | `NM_UE` | PIAUÍ |
-| 14 | `CD_MUNICIPIO` | -1 |
-| 15 | `NM_MUNICIPIO` | #NULO |
-| 16 | `NR_CNPJ_PRESTADOR_CONTA` | 06844237000135 |
-| 17 | `NR_PARTIDO` | 11 |
-| 18 | `SG_PARTIDO` | PP |
-| 19 | `NM_PARTIDO` | PROGRESSISTAS |
+| 7 | `DT_PRESTACAO_CONTAS` | 15/12/2020 |
+| 8 | `SQ_PRESTADOR_CONTAS` | 1220565651 |
+| 9 | `CD_ESFERA_PARTIDARIA` | M |
+| 10 | `DS_ESFERA_PARTIDARIA` | Municipal |
+| 11 | `SG_UF` | SP |
+| 12 | `SG_UE` | 69299 |
+| 13 | `NM_UE` | PRESIDENTE PRUDENTE |
+| 14 | `CD_MUNICIPIO` | 69299 |
+| 15 | `NM_MUNICIPIO` | PRESIDENTE PRUDENTE |
+| 16 | `NR_CNPJ_PRESTADOR_CONTA` | 25362761000114 |
+| 17 | `NR_PARTIDO` | 51 |
+| 18 | `SG_PARTIDO` | PATRIOTA |
+| 19 | `NM_PARTIDO` | Patriota |
 | 20 | `CD_TIPO_FORNECEDOR` | 1 |
 | 21 | `DS_TIPO_FORNECEDOR` | PESSOA JURÍDICA |
-| 22 | `CD_CNAE_FORNECEDOR` | 94928 |
-| 23 | `DS_CNAE_FORNECEDOR` | Atividades de organizações políticas |
-| 24 | `NR_CPF_CNPJ_FORNECEDOR` | 38515884000190 |
-| 25 | `NM_FORNECEDOR` | JOSE DE SENA MACHADO FILHO |
-| 26 | `NM_FORNECEDOR_RFB` | ELEICAO 2020 JOSE DE SENA MACHADO FILHO VICE-PREFEITO |
-| 27 | `CD_ESFERA_PART_FORNECEDOR` | F |
-| 28 | `DS_ESFERA_PART_FORNECEDOR` | Federal (Estadual/Distrital) |
-| 29 | `SG_UF_FORNECEDOR` | PI |
-| 30 | `CD_MUNICIPIO_FORNECEDOR` | 10529 |
-| 31 | `NM_MUNICIPIO_FORNECEDOR` | SÃO JOSÉ DO DIVINO |
+| 22 | `CD_CNAE_FORNECEDOR` | -1 |
+| 23 | `DS_CNAE_FORNECEDOR` | #NULO |
+| 24 | `NR_CPF_CNPJ_FORNECEDOR` | -1 |
+| 25 | `NM_FORNECEDOR` | #NULO |
+| 26 | `NM_FORNECEDOR_RFB` | #NULO |
+| 27 | `CD_ESFERA_PART_FORNECEDOR` | M |
+| 28 | `DS_ESFERA_PART_FORNECEDOR` | Municipal |
+| 29 | `SG_UF_FORNECEDOR` | #NULO# |
+| 30 | `CD_MUNICIPIO_FORNECEDOR` | -1 |
+| 31 | `NM_MUNICIPIO_FORNECEDOR` | #NULO |
 | 32 | `SQ_CANDIDATO_FORNECEDOR` | -1 |
-| 33 | `NR_CANDIDATO_FORNECEDOR` | 15 |
-| 34 | `CD_CARGO_FORNECEDOR` | 12 |
-| 35 | `DS_CARGO_FORNECEDOR` | Vice-prefeito |
-| 36 | `NR_PARTIDO_FORNECEDOR` | 15 |
-| 37 | `SG_PARTIDO_FORNECEDOR` | MDB |
-| 38 | `NM_PARTIDO_FORNECEDOR` | Movimento Democrático Brasileiro |
+| 33 | `NR_CANDIDATO_FORNECEDOR` | -1 |
+| 34 | `CD_CARGO_FORNECEDOR` | -1 |
+| 35 | `DS_CARGO_FORNECEDOR` | #NULO |
+| 36 | `NR_PARTIDO_FORNECEDOR` | -1 |
+| 37 | `SG_PARTIDO_FORNECEDOR` | #NULO |
+| 38 | `NM_PARTIDO_FORNECEDOR` | #NULO |
 | 39 | `DS_TIPO_DOCUMENTO` | #NULO |
 | 40 | `NR_DOCUMENTO` | #NULO# |
-| 41 | `CD_ORIGEM_DESPESA` | 20240000 |
-| 42 | `DS_ORIGEM_DESPESA` | Doações financeiras a outros candidatos/partidos |
-| 43 | `SQ_DESPESA` | 41466689 |
-| 44 | `DT_DESPESA` | 29/10/2020 |
-| 45 | `DS_DESPESA` | #NULO |
-| 46 | `VR_DESPESA_CONTRATADA` | 6700,00 |
+| 41 | `CD_ORIGEM_DESPESA` | 20210000 |
+| 42 | `DS_ORIGEM_DESPESA` | Encargos financeiros, taxas bancárias e/ou op. cartão de cré |
+| 43 | `SQ_DESPESA` | 37853595 |
+| 44 | `DT_DESPESA` | 06/10/2020 |
+| 45 | `DS_DESPESA` | TARIFA |
+| 46 | `VR_DESPESA_CONTRATADA` | 35,00 |
 
 ### `despesas_pagas_orgaos_partidarios` (2018–2026)
 
-Fonte: `dados/raw/prestacao_contas/2020/prestacao_contas_orgaos_partidarios_2020/despesas_pagas_orgaos_partidarios_2020_PI.csv`
+Fonte: `dados/raw/prestacao_contas/2020/prestacao_contas_orgaos_partidarios_2020/despesas_pagas_orgaos_partidarios_2020_BRASIL.csv`
 
 Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 
@@ -1858,28 +1449,28 @@ Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 | 4 | `CD_TIPO_ELEICAO` | 2 |
 | 5 | `NM_TIPO_ELEICAO` | Ordinária |
 | 6 | `TP_PRESTACAO_CONTAS` | Final |
-| 7 | `DT_PRESTACAO_CONTAS` | 19/05/2022 |
-| 8 | `SQ_PRESTADOR_CONTAS` | 1228640967 |
-| 9 | `SG_UF` | PI |
-| 10 | `DS_TIPO_DOCUMENTO` | #NULO |
-| 11 | `NR_DOCUMENTO` | 020047 |
+| 7 | `DT_PRESTACAO_CONTAS` | 10/12/2020 |
+| 8 | `SQ_PRESTADOR_CONTAS` | 1220492911 |
+| 9 | `SG_UF` | PR |
+| 10 | `DS_TIPO_DOCUMENTO` | Nota Fiscal |
+| 11 | `NR_DOCUMENTO` | 900011 |
 | 12 | `CD_FONTE_DESPESA` | 2 |
 | 13 | `DS_FONTE_DESPESA` | Fundo Especial de Financiamento de Campanha |
-| 14 | `CD_ORIGEM_DESPESA` | 20240000 |
-| 15 | `DS_ORIGEM_DESPESA` | Doações financeiras a outros candidatos/partidos |
+| 14 | `CD_ORIGEM_DESPESA` | 20140000 |
+| 15 | `DS_ORIGEM_DESPESA` | Publicidade por materiais impressos |
 | 16 | `CD_NATUREZA_DESPESA` | 1 |
 | 17 | `DS_NATUREZA_DESPESA` | Financeiro |
-| 18 | `CD_ESPECIE_RECURSO` | 1 |
-| 19 | `DS_ESPECIE_RECURSO` | Transferência eletrônica |
-| 20 | `SQ_DESPESA` | 41461286 |
-| 21 | `SQ_PARCELAMENTO_DESPESA` | 28082324 |
-| 22 | `DT_PAGTO_DESPESA` | 29/10/2020 |
-| 23 | `DS_DESPESA` | #NULO |
-| 24 | `VR_PAGTO_DESPESA` | 1300,00 |
+| 18 | `CD_ESPECIE_RECURSO` | 0 |
+| 19 | `DS_ESPECIE_RECURSO` | Cheque |
+| 20 | `SQ_DESPESA` | 35908992 |
+| 21 | `SQ_PARCELAMENTO_DESPESA` | 23520798 |
+| 22 | `DT_PAGTO_DESPESA` | 26/10/2020 |
+| 23 | `DS_DESPESA` | BANNERS 0·40X0·50CM \| BANNERS 1·50X2·50CM \| BOTOM 7X7CM/VERE |
+| 24 | `VR_PAGTO_DESPESA` | 13100,00 |
 
 ### `receitas_orgaos_partidarios` (2018–2026)
 
-Fonte: `dados/raw/prestacao_contas/2020/prestacao_contas_orgaos_partidarios_2020/receitas_orgaos_partidarios_2020_PI.csv`
+Fonte: `dados/raw/prestacao_contas/2020/prestacao_contas_orgaos_partidarios_2020/receitas_orgaos_partidarios_2020_BRASIL.csv`
 
 Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 
@@ -1893,30 +1484,30 @@ Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 | 4 | `CD_TIPO_ELEICAO` | 2 |
 | 5 | `NM_TIPO_ELEICAO` | Ordinária |
 | 6 | `TP_PRESTACAO_CONTAS` | Final |
-| 7 | `DT_PRESTACAO_CONTAS` | 20/09/2021 |
-| 8 | `SQ_PRESTADOR_CONTAS` | 1475497792 |
+| 7 | `DT_PRESTACAO_CONTAS` | 12/12/2020 |
+| 8 | `SQ_PRESTADOR_CONTAS` | 1220481948 |
 | 9 | `CD_ESFERA_PARTIDARIA` | M |
 | 10 | `DS_ESFERA_PARTIDARIA` | Municipal |
-| 11 | `SG_UF` | PI |
-| 12 | `CD_MUNICIPIO` | 10227 |
-| 13 | `NM_MUNICIPIO` | COLÔNIA DO PIAUÍ |
-| 14 | `NR_CNPJ_PRESTADOR_CONTA` | 15757509000150 |
-| 15 | `NR_PARTIDO` | 14 |
-| 16 | `SG_PARTIDO` | PTB |
-| 17 | `NM_PARTIDO` | Partido Trabalhista Brasileiro |
-| 18 | `CD_FONTE_RECEITA` | -1 |
-| 19 | `DS_FONTE_RECEITA` | #NULO |
-| 20 | `CD_ORIGEM_RECEITA` | -1 |
-| 21 | `DS_ORIGEM_RECEITA` | #NULO |
-| 22 | `CD_NATUREZA_RECEITA` | -1 |
-| 23 | `DS_NATUREZA_RECEITA` | #NULO |
-| 24 | `CD_ESPECIE_RECEITA` | -1 |
-| 25 | `DS_ESPECIE_RECEITA` | #NULO |
+| 11 | `SG_UF` | RS |
+| 12 | `CD_MUNICIPIO` | 88145 |
+| 13 | `NM_MUNICIPIO` | XANGRI-LÁ |
+| 14 | `NR_CNPJ_PRESTADOR_CONTA` | 03891443000108 |
+| 15 | `NR_PARTIDO` | 12 |
+| 16 | `SG_PARTIDO` | PDT |
+| 17 | `NM_PARTIDO` | Partido Democrático Trabalhista |
+| 18 | `CD_FONTE_RECEITA` | 1 |
+| 19 | `DS_FONTE_RECEITA` | Outros Recursos |
+| 20 | `CD_ORIGEM_RECEITA` | 10010200 |
+| 21 | `DS_ORIGEM_RECEITA` | Recursos de pessoas físicas |
+| 22 | `CD_NATUREZA_RECEITA` | 0 |
+| 23 | `DS_NATUREZA_RECEITA` | Estimável |
+| 24 | `CD_ESPECIE_RECEITA` | 2 |
+| 25 | `DS_ESPECIE_RECEITA` | Estimado |
 | 26 | `CD_CNAE_DOADOR` | -1 |
 | 27 | `DS_CNAE_DOADOR` | #NULO |
-| 28 | `NR_CPF_CNPJ_DOADOR` | -1 |
-| 29 | `NM_DOADOR` | #NULO |
-| 30 | `NM_DOADOR_RFB` | #NULO |
+| 28 | `NR_CPF_CNPJ_DOADOR` | 04180792001 |
+| 29 | `NM_DOADOR` | LETICIA MARTINI BITENCLOURT |
+| 30 | `NM_DOADOR_RFB` | LETICIA MARTINI BITENCOURT |
 | 31 | `CD_ESFERA_PARTIDARIA_DOADOR` | -1 |
 | 32 | `DS_ESFERA_PARTIDARIA_DOADOR` | #NULO |
 | 33 | `SG_UF_DOADOR` | #NULO# |
@@ -1929,42 +1520,12 @@ Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
 | 40 | `NR_PARTIDO_DOADOR` | -1 |
 | 41 | `SG_PARTIDO_DOADOR` | #NULO |
 | 42 | `NM_PARTIDO_DOADOR` | #NULO |
-| 43 | `NR_RECIBO_DOACAO` | #NULO# |
+| 43 | `NR_RECIBO_DOACAO` | P12000488145RS000013A |
 | 44 | `NR_DOCUMENTO_DOACAO` | #NULO# |
-| 45 | `SQ_RECEITA` | -1 |
-| 46 | `DT_RECEITA` | None |
-| 47 | `DS_RECEITA` | #NULO |
-| 48 | `VR_RECEITA` | 0,00 |
-
-### `receitas_orgaos_partidarios_doador_originario` (2018–2026)
-
-Fonte: `dados/raw/prestacao_contas/2020/prestacao_contas_orgaos_partidarios_2020/receitas_orgaos_partidarios_doador_originario_2020_PI.csv`
-
-Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
-
-19 colunas
-
-| # | coluna | exemplo |
-|---|---|---|
-| 1 | `DT_GERACAO` | 19/09/2026 |
-| 2 | `HH_GERACAO` | 15:00:13 |
-| 3 | `AA_ELEICAO` | 2020 |
-| 4 | `CD_TIPO_ELEICAO` | 2 |
-| 5 | `NM_TIPO_ELEICAO` | Ordinária |
-| 6 | `TP_PRESTACAO_CONTAS` | Final |
-| 7 | `DT_PRESTACAO_CONTAS` | 08/04/2021 |
-| 8 | `SQ_PRESTADOR_CONTAS` | 1220400709 |
-| 9 | `SG_UF` | PI |
-| 10 | `NR_CPF_CNPJ_DOADOR_ORIGINARIO` | -1 |
-| 11 | `NM_DOADOR_ORIGINARIO` | #NULO |
-| 12 | `NM_DOADOR_ORIGINARIO_RFB` | #NULO |
-| 13 | `TP_DOADOR_ORIGINARIO` | #NULO |
-| 14 | `CD_CNAE_DOADOR_ORIGINARIO` | -1 |
-| 15 | `DS_CNAE_DOADOR_ORIGINARIO` | #NULO |
-| 16 | `SQ_RECEITA` | -1 |
-| 17 | `DT_RECEITA` | None |
-| 18 | `DS_RECEITA` | #NULO |
-| 19 | `VR_RECEITA` | 0,00 |
+| 45 | `SQ_RECEITA` | 18145812 |
+| 46 | `DT_RECEITA` | 01/10/2020 |
+| 47 | `DS_RECEITA` | SERVIÇO DE MILITÂNCIA |
+| 48 | `VR_RECEITA` | 1320,00 |
 
 ### `fp_cor_raca` (2020–2024)
 
@@ -1991,8 +1552,8 @@ Anos com este mesmo esquema: **2020, 2022, 2024**
 | 13 | `VR_DESPESA_MINIMO_COTA` | 0,00 |
 | 14 | `VR_TOTAL_RECEBIDO_FP` | 0,00 |
 | 15 | `PE_VALOR_FP_GENERO` | 0,00 |
-| 16 | `DT_GERACAO` | 18/09/2026 |
-| 17 | `HH_GERACAO` | 01:02 |
+| 16 | `DT_GERACAO` | 21/09/2026 |
+| 17 | `HH_GERACAO` | 01:03 |
 
 ### `fp_genero` (2020–2024)
 
@@ -2018,8 +1579,111 @@ Anos com este mesmo esquema: **2020, 2022, 2024**
 | 12 | `VR_DESPESA_MINIMO_COTA` | 0,00 |
 | 13 | `VR_TOTAL_RECEBIDO_FP` | 0,00 |
 | 14 | `PE_VALOR_FP_GENERO` | 0,00 |
-| 15 | `DT_GERACAO` | 18/09/2026 |
-| 16 | `HH_GERACAO` | 01:02 |
+| 15 | `DT_GERACAO` | 21/09/2026 |
+| 16 | `HH_GERACAO` | 01:03 |
+
+### `despesas_contratadas_candidatos` (2018–2026)
+
+Fonte: `dados/raw/prestacao_contas/2024/prestacao_contas_candidatos_2024/despesas_contratadas_candidatos_2024_BRASIL.csv`
+
+Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
+
+53 colunas
+
+| # | coluna | exemplo |
+|---|---|---|
+| 1 | `DT_GERACAO` | 21/09/2026 |
+| 2 | `HH_GERACAO` | 23:00:13 |
+| 3 | `AA_ELEICAO` | 2024 |
+| 4 | `CD_TIPO_ELEICAO` | 2 |
+| 5 | `NM_TIPO_ELEICAO` | Ordinária |
+| 6 | `CD_ELEICAO` | 619 |
+| 7 | `DS_ELEICAO` | Eleições Municipais 2024 |
+| 8 | `DT_ELEICAO` | 06/10/2024 |
+| 9 | `ST_TURNO` | 1 |
+| 10 | `TP_PRESTACAO_CONTAS` | Final |
+| 11 | `DT_PRESTACAO_CONTAS` | 24/10/2024 |
+| 12 | `SQ_PRESTADOR_CONTAS` | 5257095434 |
+| 13 | `SG_UF` | RS |
+| 14 | `SG_UE` | 86797 |
+| 15 | `NM_UE` | GIRUÁ |
+| 16 | `NR_CNPJ_PRESTADOR_CONTA` | 56290985000191 |
+| 17 | `CD_CARGO` | 13 |
+| 18 | `DS_CARGO` | Vereador |
+| 19 | `SQ_CANDIDATO` | 210001955284 |
+| 20 | `NR_CANDIDATO` | 15123 |
+| 21 | `NM_CANDIDATO` | CARLOS FERREIRA DA SILVA |
+| 22 | `NR_CPF_CANDIDATO` | -4 |
+| 23 | `NR_CPF_VICE_CANDIDATO` | -4 |
+| 24 | `NR_PARTIDO` | 15 |
+| 25 | `SG_PARTIDO` | MDB |
+| 26 | `NM_PARTIDO` | Movimento Democrático Brasileiro |
+| 27 | `CD_TIPO_FORNECEDOR` | 0 |
+| 28 | `DS_TIPO_FORNECEDOR` | PESSOA FÍSICA |
+| 29 | `CD_CNAE_FORNECEDOR` | -1 |
+| 30 | `DS_CNAE_FORNECEDOR` | #NULO |
+| 31 | `NR_CPF_CNPJ_FORNECEDOR` | 96707518020 |
+| 32 | `NM_FORNECEDOR` | MARCIA ZAVASKI SOARES KEGLER |
+| 33 | `NM_FORNECEDOR_RFB` | MARCIA ZAVASKI SOARES KEGLER |
+| 34 | `CD_ESFERA_PART_FORNECEDOR` | -1 |
+| 35 | `DS_ESFERA_PART_FORNECEDOR` | #NULO |
+| 36 | `SG_UF_FORNECEDOR` | #NULO# |
+| 37 | `CD_MUNICIPIO_FORNECEDOR` | -1 |
+| 38 | `NM_MUNICIPIO_FORNECEDOR` | #NULO |
+| 39 | `SQ_CANDIDATO_FORNECEDOR` | -1 |
+| 40 | `NR_CANDIDATO_FORNECEDOR` | -1 |
+| 41 | `CD_CARGO_FORNECEDOR` | -1 |
+| 42 | `DS_CARGO_FORNECEDOR` | #NULO |
+| 43 | `NR_PARTIDO_FORNECEDOR` | -1 |
+| 44 | `SG_PARTIDO_FORNECEDOR` | #NULO |
+| 45 | `NM_PARTIDO_FORNECEDOR` | #NULO |
+| 46 | `DS_TIPO_DOCUMENTO` | Recibo |
+| 47 | `NR_DOCUMENTO` | 003 |
+| 48 | `CD_ORIGEM_DESPESA` | 20360002 |
+| 49 | `DS_ORIGEM_DESPESA` | Serviços contábeis |
+| 50 | `SQ_DESPESA` | 63493787 |
+| 51 | `DT_DESPESA` | 16/08/2024 |
+| 52 | `DS_DESPESA` | SERV. CONTÁBEIS PRESTAÇÃO CONTAS ELEIÇÕES 2024 |
+| 53 | `VR_DESPESA_CONTRATADA` | 500,00 |
+
+### `despesas_pagas_candidatos` (2018–2026)
+
+Fonte: `dados/raw/prestacao_contas/2024/prestacao_contas_candidatos_2024/despesas_pagas_candidatos_2024_BRASIL.csv`
+
+Anos com este mesmo esquema: **2018, 2020, 2022, 2024, 2026**
+
+28 colunas
+
+| # | coluna | exemplo |
+|---|---|---|
+| 1 | `DT_GERACAO` | 21/09/2026 |
+| 2 | `HH_GERACAO` | 23:00:14 |
+| 3 | `AA_ELEICAO` | 2024 |
+| 4 | `CD_TIPO_ELEICAO` | 2 |
+| 5 | `NM_TIPO_ELEICAO` | Ordinária |
+| 6 | `CD_ELEICAO` | 619 |
+| 7 | `DS_ELEICAO` | Eleições Municipais 2024 |
+| 8 | `DT_ELEICAO` | 06/10/2024 |
+| 9 | `ST_TURNO` | 2 |
+| 10 | `TP_PRESTACAO_CONTAS` | Final |
+| 11 | `DT_PRESTACAO_CONTAS` | 15/11/2024 |
+| 12 | `SQ_PRESTADOR_CONTAS` | 5285471259 |
+| 13 | `SG_UF` | RO |
+| 14 | `DS_TIPO_DOCUMENTO` | Nota Fiscal |
+| 15 | `NR_DOCUMENTO` | 092003 |
+| 16 | `CD_FONTE_DESPESA` | 2 |
+| 17 | `DS_FONTE_DESPESA` | Fundo Especial de Financiamento de Campanha |
+| 18 | `CD_ORIGEM_DESPESA` | 20140000 |
+| 19 | `DS_ORIGEM_DESPESA` | Publicidade por materiais impressos |
+| 20 | `CD_NATUREZA_DESPESA` | 1 |
+| 21 | `DS_NATUREZA_DESPESA` | Financeiro |
+| 22 | `CD_ESPECIE_RECURSO` | 19 |
+| 23 | `DS_ESPECIE_RECURSO` | PIX |
+| 24 | `SQ_DESPESA` | 70154096 |
+| 25 | `SQ_PARCELAMENTO_DESPESA` | 52600396 |
+| 26 | `DT_PAGTO_DESPESA` | 20/09/2024 |
+| 27 | `DS_DESPESA` | ADESIVOS BOLA 30X30 \| BOTONS 10X10 \| CARTAZ 43 COUCHE \| CART |
+| 28 | `VR_PAGTO_DESPESA` | 127170,00 |
 
 ### `detalhe_votacao_munzona` (2016–2026)
 
@@ -2197,28 +1861,28 @@ Anos com este mesmo esquema: **2016, 2020, 2022, 2024, 2026**
 
 | # | coluna | exemplo |
 |---|---|---|
-| 1 | `DT_GERACAO` | 20/09/2026 |
-| 2 | `HH_GERACAO` | 03:16:49 |
+| 1 | `DT_GERACAO` | 19/09/2026 |
+| 2 | `HH_GERACAO` | 03:16:36 |
 | 3 | `ANO_ELEICAO` | 2022 |
 | 4 | `CD_TIPO_ELEICAO` | 2 |
 | 5 | `NM_TIPO_ELEICAO` | Eleição Ordinária |
 | 6 | `NR_TURNO` | 1 |
-| 7 | `CD_ELEICAO` | 546 |
-| 8 | `DS_ELEICAO` | ELEIÇÕES GERAIS ESTADUAIS 2022 |
+| 7 | `CD_ELEICAO` | 544 |
+| 8 | `DS_ELEICAO` | ELEIÇÃO GERAL FEDERAL 2022 |
 | 9 | `DT_ELEICAO` | 02/10/2022 |
-| 10 | `TP_ABRANGENCIA` | E |
-| 11 | `SG_UF` | SP |
-| 12 | `SG_UE` | SP |
-| 13 | `NM_UE` | SÃO PAULO |
-| 14 | `CD_MUNICIPIO` | 61417 |
-| 15 | `NM_MUNICIPIO` | ANDRADINA |
-| 16 | `NR_ZONA` | 9 |
-| 17 | `CD_CARGO` | 7 |
-| 18 | `DS_CARGO` | Deputado Estadual |
-| 19 | `SQ_CANDIDATO` | 250001612292 |
-| 20 | `NR_CANDIDATO` | 11018 |
-| 21 | `NM_CANDIDATO` | EVANDRO GONÇALVES PESSOA |
-| 22 | `NM_URNA_CANDIDATO` | SOLDADO EVANDRO GONÇALVES |
+| 10 | `TP_ABRANGENCIA` | F |
+| 11 | `SG_UF` | BA |
+| 12 | `SG_UE` | BR |
+| 13 | `NM_UE` | BRASIL |
+| 14 | `CD_MUNICIPIO` | 34975 |
+| 15 | `NM_MUNICIPIO` | CURAÇÁ |
+| 16 | `NR_ZONA` | 85 |
+| 17 | `CD_CARGO` | 1 |
+| 18 | `DS_CARGO` | Presidente |
+| 19 | `SQ_CANDIDATO` | 280001618036 |
+| 20 | `NR_CANDIDATO` | 22 |
+| 21 | `NM_CANDIDATO` | JAIR MESSIAS BOLSONARO |
+| 22 | `NM_URNA_CANDIDATO` | JAIR BOLSONARO |
 | 23 | `NM_SOCIAL_CANDIDATO` | #NULO |
 | 24 | `CD_SITUACAO_CANDIDATURA` | 12 |
 | 25 | `DS_SITUACAO_CANDIDATURA` | APTO |
@@ -2230,23 +1894,23 @@ Anos com este mesmo esquema: **2016, 2020, 2022, 2024, 2026**
 | 31 | `DS_SITUACAO_CASSACAO` | #NE |
 | 32 | `CD_SITUACAO_DCONST_DIPLOMA` | -3 |
 | 33 | `DS_SITUACAO_DCONST_DIPLOMA` | #NE |
-| 34 | `TP_AGREMIACAO` | PARTIDO ISOLADO |
-| 35 | `NR_PARTIDO` | 11 |
-| 36 | `SG_PARTIDO` | PP |
-| 37 | `NM_PARTIDO` | PROGRESSISTAS |
+| 34 | `TP_AGREMIACAO` | COLIGAÇÃO |
+| 35 | `NR_PARTIDO` | 22 |
+| 36 | `SG_PARTIDO` | PL |
+| 37 | `NM_PARTIDO` | Partido Liberal |
 | 38 | `NR_FEDERACAO` | -1 |
 | 39 | `NM_FEDERACAO` | #NULO# |
 | 40 | `SG_FEDERACAO` | #NULO# |
 | 41 | `DS_COMPOSICAO_FEDERACAO` | #NULO# |
-| 42 | `SQ_COLIGACAO` | 250001681607 |
-| 43 | `NM_COLIGACAO` | PARTIDO ISOLADO |
-| 44 | `DS_COMPOSICAO_COLIGACAO` | PP |
+| 42 | `SQ_COLIGACAO` | 280001682069 |
+| 43 | `NM_COLIGACAO` | PELO BEM DO BRASIL |
+| 44 | `DS_COMPOSICAO_COLIGACAO` | PP / REPUBLICANOS / PL |
 | 45 | `ST_VOTO_EM_TRANSITO` | N |
-| 46 | `QT_VOTOS_NOMINAIS` | 14 |
+| 46 | `QT_VOTOS_NOMINAIS` | 3457 |
 | 47 | `NM_TIPO_DESTINACAO_VOTOS` | Válido |
-| 48 | `QT_VOTOS_NOMINAIS_VALIDOS` | 14 |
-| 49 | `CD_SIT_TOT_TURNO` | 5 |
-| 50 | `DS_SIT_TOT_TURNO` | SUPLENTE |
+| 48 | `QT_VOTOS_NOMINAIS_VALIDOS` | 3457 |
+| 49 | `CD_SIT_TOT_TURNO` | 6 |
+| 50 | `DS_SIT_TOT_TURNO` | 2º TURNO |
 
 ### `votacao_partido_munzona` (2016–2026)
 
@@ -2258,8 +1922,8 @@ Anos com este mesmo esquema: **2016, 2020, 2022, 2024, 2026**
 
 | # | coluna | exemplo |
 |---|---|---|
-| 1 | `DT_GERACAO` | 20/09/2026 |
-| 2 | `HH_GERACAO` | 03:16:49 |
+| 1 | `DT_GERACAO` | 19/09/2026 |
+| 2 | `HH_GERACAO` | 03:16:36 |
 | 3 | `ANO_ELEICAO` | 2022 |
 | 4 | `CD_TIPO_ELEICAO` | 2 |
 | 5 | `NM_TIPO_ELEICAO` | Eleição Ordinária |
@@ -2268,30 +1932,30 @@ Anos com este mesmo esquema: **2016, 2020, 2022, 2024, 2026**
 | 8 | `DS_ELEICAO` | Eleições Gerais Estaduais 2022 |
 | 9 | `DT_ELEICAO` | 02/10/2022 |
 | 10 | `TP_ABRANGENCIA` | E |
-| 11 | `SG_UF` | RS |
-| 12 | `SG_UE` | RS |
-| 13 | `NM_UE` | RIO GRANDE DO SUL |
-| 14 | `CD_MUNICIPIO` | 86134 |
-| 15 | `NM_MUNICIPIO` | CONSTANTINA |
-| 16 | `NR_ZONA` | 146 |
-| 17 | `CD_CARGO` | 6 |
-| 18 | `DS_CARGO` | Deputado Federal |
-| 19 | `TP_AGREMIACAO` | Partido isolado |
-| 20 | `NR_PARTIDO` | 10 |
-| 21 | `SG_PARTIDO` | REPUBLICANOS |
-| 22 | `NM_PARTIDO` | REPUBLICANOS |
-| 23 | `NR_FEDERACAO` | -1 |
-| 24 | `NM_FEDERACAO` | #NULO# |
-| 25 | `SG_FEDERACAO` | #NULO# |
-| 26 | `DS_COMPOSICAO_FEDERACAO` | #NULO# |
-| 27 | `SQ_COLIGACAO` | 210001681122 |
-| 28 | `NM_COLIGACAO` | PARTIDO ISOLADO |
-| 29 | `DS_COMPOSICAO_COLIGACAO` | REPUBLICANOS |
+| 11 | `SG_UF` | SP |
+| 12 | `SG_UE` | SP |
+| 13 | `NM_UE` | SÃO PAULO |
+| 14 | `CD_MUNICIPIO` | 68713 |
+| 15 | `NM_MUNICIPIO` | PIQUETE |
+| 16 | `NR_ZONA` | 68 |
+| 17 | `CD_CARGO` | 7 |
+| 18 | `DS_CARGO` | Deputado Estadual |
+| 19 | `TP_AGREMIACAO` | Federação |
+| 20 | `NR_PARTIDO` | 43 |
+| 21 | `SG_PARTIDO` | PV |
+| 22 | `NM_PARTIDO` | Partido Verde |
+| 23 | `NR_FEDERACAO` | 2 |
+| 24 | `NM_FEDERACAO` | Federação Brasil da Esperança - FE BRASIL |
+| 25 | `SG_FEDERACAO` | PT/PC do B/PV |
+| 26 | `DS_COMPOSICAO_FEDERACAO` | PC do B / PT / PV |
+| 27 | `SQ_COLIGACAO` | 250001681589 |
+| 28 | `NM_COLIGACAO` | FEDERAÇÃO |
+| 29 | `DS_COMPOSICAO_COLIGACAO` | Federação Brasil da Esperança - FE BRASIL (PT / PC do B / PV |
 | 30 | `ST_VOTO_EM_TRANSITO` | N |
-| 31 | `QT_VOTOS_LEGENDA_VALIDOS` | 12 |
+| 31 | `QT_VOTOS_LEGENDA_VALIDOS` | 0 |
 | 32 | `QT_VOTOS_NOM_CONVR_LEG_VALIDOS` | 0 |
-| 33 | `QT_TOTAL_VOTOS_LEG_VALIDOS` | 12 |
-| 34 | `QT_VOTOS_NOMINAIS_VALIDOS` | 237 |
+| 33 | `QT_TOTAL_VOTOS_LEG_VALIDOS` | 0 |
+| 34 | `QT_VOTOS_NOMINAIS_VALIDOS` | 7 |
 | 35 | `QT_VOTOS_LEGENDA_ANUL_SUBJUD` | 0 |
 | 36 | `QT_VOTOS_NOMINAIS_ANUL_SUBJUD` | 0 |
 | 37 | `QT_VOTOS_LEGENDA_ANULADOS` | 0 |
@@ -2467,36 +2131,107 @@ Fonte: `dados/raw/ibge/pib_municipios/base_de_dados_2002_2009_xlsx/PIB dos Munic
 | 30 | `Amazônia Legal` |  |
 | 31 | `Semiárido` |  |
 | 32 | `Cidade-Região de São Paulo` |  |
-| 33 | `Valor adicionado bruto da Agropecuária, 
-a preços correntes
+| 33 | `Valor adicionado bruto da Agropecuária, 
+a preços correntes
 (R$ 1.000)` |  |
-| 34 | `Valor adicionado bruto da Indústria,
-a preços correntes
+| 34 | `Valor adicionado bruto da Indústria,
+a preços correntes
 (R$ 1.000)` |  |
-| 35 | `Valor adicionado bruto dos Serviços,
-a preços correntes 
-- exceto Administração, defesa, educação e saúde públicas e seguridade social
+| 35 | `Valor adicionado bruto dos Serviços,
+a preços correntes 
+- exceto Administração, defesa, educação e saúde públicas e seguridade social
 (R$ 1.000)` |  |
-| 36 | `Valor adicionado bruto da Administração, defesa, educação e saúde públicas e seguridade social, 
-a preços correntes
+| 36 | `Valor adicionado bruto da Administração, defesa, educação e saúde públicas e seguridade social, 
+a preços correntes
 (R$ 1.000)` |  |
-| 37 | `Valor adicionado bruto total, 
-a preços correntes
+| 37 | `Valor adicionado bruto total, 
+a preços correntes
 (R$ 1.000)` |  |
-| 38 | `Impostos, líquidos de subsídios, sobre produtos, 
-a preços correntes
+| 38 | `Impostos, líquidos de subsídios, sobre produtos, 
+a preços correntes
 (R$ 1.000)` |  |
-| 39 | `Produto Interno Bruto, 
-a preços correntes
+| 39 | `Produto Interno Bruto, 
+a preços correntes
 (R$ 1.000)` |  |
 | 40 | `Produto Interno Bruto ` |  |
 | 41 | `per capita,` |  |
-| 42 | ` 
-a preços correntes
+| 42 | ` 
+a preços correntes
 (R$ 1,00)` |  |
 | 43 | `Para o cálculo do Produto Interno Bruto ` |  |
 | 44 | `per capita` |  |
 | 45 | ` foi considerada a população residente, estimada por município, com data de referência em 1º de julho de cada ano, enviada ao Tribunal de Contas da União - TCU.` |  |
+
+### `PIB dos Municípios - base de dados 2010-2021`
+
+Fonte: `dados/raw/ibge/pib_municipios/base_de_dados_2010_2021_xlsx/PIB dos Municípios - base de dados 2010-2021.xlsx`
+
+45 colunas
+
+| # | coluna | exemplo |
+|---|---|---|
+| 1 | `Ano` |  |
+| 2 | `Código da Grande Região` |  |
+| 3 | `Nome da Grande Região` |  |
+| 4 | `Código da Unidade da Federação` |  |
+| 5 | `Sigla da Unidade da Federação` |  |
+| 6 | `Nome da Unidade da Federação` |  |
+| 7 | `Código do Município` |  |
+| 8 | `Nome do Município` |  |
+| 9 | `Região Metropolitana` |  |
+| 10 | `Código da Mesorregião` |  |
+| 11 | `Nome da Mesorregião` |  |
+| 12 | `Código da Microrregião` |  |
+| 13 | `Nome da Microrregião` |  |
+| 14 | `Código da Região Geográfica Imediata` |  |
+| 15 | `Nome da Região Geográfica Imediata` |  |
+| 16 | `Município da Região Geográfica Imediata` |  |
+| 17 | `Código da Região Geográfica Intermediária` |  |
+| 18 | `Nome da Região Geográfica Intermediária` |  |
+| 19 | `Município da Região Geográfica Intermediária` |  |
+| 20 | `Código Concentração Urbana` |  |
+| 21 | `Nome Concentração Urbana` |  |
+| 22 | `Tipo Concentração Urbana` |  |
+| 23 | `Código Arranjo Populacional` |  |
+| 24 | `Nome Arranjo Populacional` |  |
+| 25 | `Hierarquia Urbana` |  |
+| 26 | `Hierarquia Urbana (principais categorias)` |  |
+| 27 | `Código da Região Rural` |  |
+| 28 | `Nome da Região Rural` |  |
+| 29 | `Região rural (segundo classificação do núcleo)` |  |
+| 30 | `Amazônia Legal` |  |
+| 31 | `Semiárido` |  |
+| 32 | `Cidade-Região de São Paulo` |  |
+| 33 | `Valor adicionado bruto da Agropecuária, 
+a preços correntes
+(R$ 1.000)` |  |
+| 34 | `Valor adicionado bruto da Indústria,
+a preços correntes
+(R$ 1.000)` |  |
+| 35 | `Valor adicionado bruto dos Serviços,
+a preços correntes 
+- exceto Administração, defesa, educação e saúde públicas e seguridade social
+(R$ 1.000)` |  |
+| 36 | `Valor adicionado bruto da Administração, defesa, educação e saúde públicas e seguridade social, 
+a preços correntes
+(R$ 1.000)` |  |
+| 37 | `Valor adicionado bruto total, 
+a preços correntes
+(R$ 1.000)` |  |
+| 38 | `Impostos, líquidos de subsídios, sobre produtos, 
+a preços correntes
+(R$ 1.000)` |  |
+| 39 | `Produto Interno Bruto, 
+a preços correntes
+(R$ 1.000)` |  |
+| 40 | `Produto Interno Bruto ` |  |
+| 41 | `per capita,` |  |
+| 42 | ` 
+a preços correntes
+(R$ 1,00)` |  |
+| 43 | `Atividade com maior valor adicionado bruto` |  |
+| 44 | `Atividade com segundo maior valor adicionado bruto` |  |
+| 45 | `Atividade com terceiro maior valor adicionado bruto` |  |
 
 ### `PIB dos Municípios - base de dados 2010-2023`
 
@@ -2538,32 +2273,32 @@ Fonte: `dados/raw/ibge/pib_municipios/base_de_dados_2010_2023_xlsx/PIB dos Munic
 | 30 | `Amazônia Legal` |  |
 | 31 | `Semiárido` |  |
 | 32 | `Cidade-Região de São Paulo` |  |
-| 33 | `Valor adicionado bruto da Agropecuária, 
-a preços correntes
+| 33 | `Valor adicionado bruto da Agropecuária, 
+a preços correntes
 (R$ 1.000)` |  |
-| 34 | `Valor adicionado bruto da Indústria,
-a preços correntes
+| 34 | `Valor adicionado bruto da Indústria,
+a preços correntes
 (R$ 1.000)` |  |
-| 35 | `Valor adicionado bruto dos Serviços,
-a preços correntes 
-- exceto Administração, defesa, educação e saúde públicas e seguridade social
+| 35 | `Valor adicionado bruto dos Serviços,
+a preços correntes 
+- exceto Administração, defesa, educação e saúde públicas e seguridade social
 (R$ 1.000)` |  |
-| 36 | `Valor adicionado bruto da Administração, defesa, educação e saúde públicas e seguridade social, 
-a preços correntes
+| 36 | `Valor adicionado bruto da Administração, defesa, educação e saúde públicas e seguridade social, 
+a preços correntes
 (R$ 1.000)` |  |
-| 37 | `Valor adicionado bruto total, 
-a preços correntes
+| 37 | `Valor adicionado bruto total, 
+a preços correntes
 (R$ 1.000)` |  |
-| 38 | `Impostos, líquidos de subsídios, sobre produtos, 
-a preços correntes
+| 38 | `Impostos, líquidos de subsídios, sobre produtos, 
+a preços correntes
 (R$ 1.000)` |  |
-| 39 | `Produto Interno Bruto, 
-a preços correntes
+| 39 | `Produto Interno Bruto, 
+a preços correntes
 (R$ 1.000)` |  |
 | 40 | `Produto Interno Bruto ` |  |
 | 41 | `per capita,` |  |
-| 42 | ` 
-a preços correntes
+| 42 | ` 
+a preços correntes
 (R$ 1,00)` |  |
 | 43 | `Atividade com maior valor adicionado bruto` |  |
 | 44 | `Atividade com segundo maior valor adicionado bruto` |  |

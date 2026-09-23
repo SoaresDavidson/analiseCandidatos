@@ -8,4 +8,4 @@
 
 Os endereços, tabelas, recortes e limitações constam de `docs/fontes-de-dados.md`. Os arquivos brutos são guardados em `dados/raw/`; o inventário de colunas efetivamente obtidas está em `docs/esquemas.md`.
 
-**PDFs de leia-me:** `docs/dossie/leiames/` contém 141 PDFs espelhados de `dados/raw/`, preservando a estrutura de tema, ano e pacote. O índice completo está em `docs/dossie/leiames/indice.md`. A página HTML oferece um seletor de pasta: ao escolher `leiames/`, ela lista todos os PDFs, inclusive os de subpastas, e permite visualizar cada um. Como navegadores não podem varrer pastas locais sem autorização, a seleção da pasta é uma ação explícita do leitor. PDFs adicionados depois não aparecem neste PDF estático sem nova geração.
+**PDFs de leia-me:** `docs/dossie/leiames/` espelha os PDFs de `dados/raw/`, preservando a estrutura de tema, ano e pacote. A página HTML lê `docs/dossie/leiames/indice.md` e lista todos os caminhos, inclusive os de subpastas; um clique abre a prévia em uma janela sobreposta, sem seleção manual de pasta. PDFs adicionados depois só aparecem na lista após regenerar `indice.md`.

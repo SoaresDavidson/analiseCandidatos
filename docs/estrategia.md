@@ -224,7 +224,72 @@ fechadas com medição real dos arquivos (números na seção 4 do
 [`fontes-de-dados.md`](fontes-de-dados.md)). O kickoff de segunda vira reunião de
 alinhamento, não de decisão.
 
-### ① Recorte geográfico → **nacional, menos finanças; finanças por UF, começando por PI**
+### ① Recorte geográfico → **nacional, finanças inclusive** — revisada em 22/09/2026
+
+> **Esta decisão foi revertida.** A versão fechada no kickoff mandava carregar
+> finanças só por UF (PI + SP + MG) e apagar os `_BRASIL` na extração. A medição de
+> volume que sustentava aquilo continua correta; o que mudou foi o que as perguntas
+> exigem. O texto original está preservado no fim da seção.
+
+**Por que reverter.** Duas perguntas pedem o país inteiro no numerador financeiro:
+
+- **Q1 — "quanto custa uma cadeira"** (`despesas ÷ vagas em disputa`). O denominador
+  já é nacional: `consulta_vagas` vem completo. Com despesa só do PI, a razão existe
+  para um estado e não se compara com nada — e "custa caro" é uma afirmação
+  relativa. Sem a linha de base nacional a pergunta não fecha.
+- **Q3, na formulação final** — *"quais os índices de cada município (PIB per capita,
+  IDHM, eleitores por população total, isentos = brancos + nulos + abstenções) com
+  relação aos eleitos / partidos mais vitoriosos"*. O grão é o município e o universo
+  são os 5.570. O lado IBGE e o lado votação já estão nacionais desde o kickoff;
+  manter só o dinheiro por UF deixaria a única tabela do cruzamento com universo
+  diferente dos outros.
+
+**O que a reversão custa em disco — nada; ela devolve espaço.** Medido em
+`dados/raw/prestacao_contas/` em 22/09/2026:
+
+| ano | extraído hoje | dos quais `_BRASIL` | dos quais por UF |
+|---|---|---|---|
+| 2014 | 16 MB (só PI + suplementar) | 1,09 GB ainda dentro do zip | 16 MB |
+| 2016 | 7,9 GB | 3,9 GB | 4,0 GB |
+| 2018 | 3,6 GB | 1,9 GB | 1,7 GB |
+| 2020 | 10,8 GB | 5,4 GB | 5,4 GB |
+| 2022 | 4,9 GB | 2,6 GB | 2,3 GB |
+| 2024 | 10,8 GB | 5,5 GB | 5,3 GB |
+| 2026 | 0,8 GB | 0,8 GB | 0 |
+| **hoje** | **38 GB** | **20 GB** | **18 GB** |
+
+Nacional puro fica em **~21 GB** (os 20 GB de `_BRASIL` já extraídos mais o `brasil`
+de 2014). Hoje são 38 GB porque as duas cópias convivem: os anos de 2016 a 2026
+foram baixados antes do filtro de UF existir e nunca foram limpos. **Ir para nacional
+e apagar as UFs libera ~17 GB.**
+
+A regra operacional passa a ser:
+
+1. Baixar o zip inteiro (não dá para baixar parcial — é um arquivo só).
+2. Extrair **só os `_BRASIL`** (`manter_uf=NACIONAL` em `coleta_tse.py`). A duplicata
+   agora é o arquivo por UF, não o nacional: o `_BRASIL` é a concatenação exata dos
+   27, conferida em `detalhe_votacao_munzona` 2020 (12.630 linhas e 5.568 municípios
+   distintos dos dois lados).
+3. Recortar o PI **no SQL** (`WHERE SG_UF = 'PI'`), não no sistema de arquivos. O
+   DuckDB lê CSV com projeção e filtro empurrados para a leitura, então o recorte
+   sai de graça e o mesmo arquivo serve para a comparação nacional.
+
+**Duas ressalvas que a reversão não resolve** — elas limitam a Q3, não o volume:
+
+- **Despesa de campanha não tem município em eleição geral.** `candidatura` se liga ao
+  território por `SG_UE`, que só é código de município em eleição municipal. Logo o
+  cruzamento dinheiro × município vale para **2016, 2020 e 2024**; em 2018/2022/2026 o
+  grão do gasto é a UF.
+- **IDHM municipal mais recente é 2010** (Atlas Brasil / Censo 2010 — ver seção 4 de
+  [`fontes-de-dados.md`](fontes-de-dados.md)). Na Q3 o eixo rico/pobre é **PIB per
+  capita**, com IDHM 2010 só como validação cruzada e a defasagem declarada.
+
+Tudo que não é finança (candidatos, votação, IBGE) já era **nacional**, porque é
+leve: `detalhe_votacao_munzona` 2024 tem 1,4 MB, `votacao_candidato_munzona` 46 MB,
+`consulta_cand` 61 MB. As Q3 e Q9 precisam de amplitude nacional e usam justamente
+essas tabelas.
+
+#### Texto original da decisão ① (superado)
 
 O que a medição mostrou: o zip de prestação de contas de 2024 tem **1,27 GB
 compactado, 112 arquivos, ~12 GB descompactado**. Mas ele já vem **partido por UF**,
@@ -238,18 +303,8 @@ e metade do volume são os arquivos `_BRASIL`, que só repetem o que as UFs já 
 | receitas doador originário 2024 | 1,6 MB | 106 MB |
 | **total** | **~92 MB** | **~6,7 GB** |
 
-**70× menos dado pela mesma pergunta respondida.** A regra operacional:
-
-1. Baixar o zip inteiro (não dá para baixar parcial — é um arquivo só).
-2. Extrair e **apagar os `_BRASIL` na hora**. São duplicata pura e sozinhos
-   estouram o disco de quem tiver SSD apertado.
-3. Carregar só as UFs escolhidas: **PI + SP + MG** (PI é o nosso recorte, SP e MG
-   dão contraste de porte e riqueza sem inviabilizar).
-
-Tudo que não é finança (candidatos, votação, IBGE) entra **nacional**, porque é
-leve: `detalhe_votacao_munzona` 2024 tem 1,4 MB, `votacao_candidato_munzona` 46 MB,
-`consulta_cand` 61 MB. As Q3 e Q9 precisam de amplitude nacional e usam justamente
-essas tabelas.
+**70× menos dado pela mesma pergunta respondida.** A regra operacional era: baixar o
+zip inteiro, extrair e apagar os `_BRASIL` na hora, e carregar só PI + SP + MG.
 
 ### ② Recorte de anos → **2018–2024 como base, 2014 obrigatório, resto opcional**
 
@@ -453,10 +508,11 @@ custa uma hora; descobrir no meio da carga custa uma semana.
 ### Volume
 
 Nada aqui é big data, mas as prestações de contas são grandes (~12 GB
-descompactados em 2024, dos quais metade é duplicata `_BRASIL`). Duas mitigações,
-nessa ordem: **apagar os `_BRASIL` logo após extrair** e **não carregar coluna que
-ninguém vai usar** — o DuckDB lê CSV com projeção, então selecione as colunas na
-view de staging, não depois.
+descompactados em 2024, dos quais metade é duplicata: o `_BRASIL` e os 27 arquivos
+por UF dizem a mesma coisa). Depois da revisão da decisão ①, a cópia que fica é a
+nacional. Duas mitigações, nessa ordem: **apagar os arquivos por UF logo após
+extrair** e **não carregar coluna que ninguém vai usar** — o DuckDB lê CSV com
+projeção, então selecione as colunas na view de staging, não depois.
 
 ### Bloqueio de rede do TSE
 

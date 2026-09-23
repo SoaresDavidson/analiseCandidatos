@@ -4,9 +4,14 @@ de cada arquivo: colunas, número de linhas e uma linha de exemplo.
 É o insumo do DER. A ideia é ninguém modelar pelo que a documentação do TSE diz,
 e sim pelas colunas que existem de verdade no arquivo daquele ano.
 
+Nos dados do TSE só lê os arquivos do país todo (`_BRASIL`/`_BR`, ou sem recorte
+nenhum). Os arquivos por UF são fatias do nacional, com o mesmo cabeçalho: ler os
+27 não acrescenta esquema e multiplica o tempo por 27. Use --todas-ufs para ler tudo.
+
 Uso:
     uv run scripts/inspecionar_esquemas.py
     uv run scripts/inspecionar_esquemas.py --saida docs/esquemas.md
+    uv run scripts/inspecionar_esquemas.py --todas-ufs
 """
 
 from __future__ import annotations
@@ -18,6 +23,7 @@ import zipfile
 from pathlib import Path
 
 import duckdb
+from coleta_comum import eh_nacional
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "dados" / "raw"
@@ -161,6 +167,8 @@ def main() -> None:
     ap.add_argument("--saida", default="docs/esquemas.md")
     ap.add_argument("--contar", action="store_true",
                     help="conta as linhas de cada arquivo (varre tudo; leva minutos em GBs)")
+    ap.add_argument("--todas-ufs", action="store_true",
+                    help="lê também os arquivos por UF, não só os do país todo")
     args = ap.parse_args()
 
     con = duckdb.connect()
@@ -176,13 +184,24 @@ def main() -> None:
     # SNAKE_CASE de 2018 em diante) aparecem como blocos separados, e cada bloco
     # diz em que anos aquele esquema vale.
     por_esquema: dict[tuple[str, tuple[str, ...]], list[Path]] = {}
+    vistas: set[str] = set()   # toda família que existe em dados/raw
+    lidas: set[str] = set()    # as que tinham arquivo nacional legível
     for arq in sorted(RAW.rglob("*.csv")) + sorted(RAW.rglob("*.txt")):
         if "ibge" in arq.parts or arq.stat().st_size == 0:
+            continue
+        vistas.add(familia(arq))
+        if not args.todas_ufs and not eh_nacional(arq.name):
             continue
         print(f"  cabeçalho de {arq.relative_to(RAW)}", flush=True)
         cols = ler_cabecalho(con, arq)
         if cols:
+            lidas.add(familia(arq))
             por_esquema.setdefault((familia(arq), cols), []).append(arq)
+
+    # quem só existe por UF (ou só como eleição suplementar) fica fora do
+    # esquemas.md — avisa em vez de sumir calado
+    if fora := sorted(vistas - lidas):
+        print(f"  sem arquivo nacional, fora do documento: {', '.join(fora)}", flush=True)
 
     for (fam, cols), arquivos in por_esquema.items():
         rep = max(arquivos, key=lambda p: p.stat().st_size)  # o maior representa

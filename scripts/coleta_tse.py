@@ -108,9 +108,14 @@ def coletar_eleitorado(force: bool) -> None:
 
 
 def coletar_prestacao_contas(force: bool) -> None:
+    # NACIONAL desde 22/09/2026 (decisão ① revisada em docs/estrategia.md): a Q1
+    # ("quanto custa uma cadeira") precisa comparar o PI com o país, e a Q3 cruza
+    # dinheiro com os 5.570 municípios. O recorte do PI passa a ser WHERE SG_UF no
+    # SQL, não na extração. Só o nacional em disco gasta ~21 GB contra os 38 GB de
+    # hoje, em que as duas cópias convivem.
     _coletar_tema(
         "prestacao_contas", PRESTACAO_CONTAS, force,
-        anos=ANOS_PRESTACAO, por_ano=PRESTACAO_CONTAS_POR_ANO, manter_uf=UF,
+        anos=ANOS_PRESTACAO, por_ano=PRESTACAO_CONTAS_POR_ANO, manter_uf=NACIONAL,
     )
 
 

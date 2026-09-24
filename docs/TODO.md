@@ -10,7 +10,7 @@
 - [ ] Conferir ` As perguntas são objetivos de consulta, não respostas já obtidas. Q3 deve considerar que gastos de eleição geral não têm granularidade municipal; Q7 requer a fonte de comparecimento por perfil para abstenção etária; Q8 depende de conciliar leiautes antigos e recentes de prestação de contas.` 
 
 - [ ] modificar ```der.mmd```, colocar o DER completo
-- [] completar dicionário de dados
-    - [ ] filtro por tabela e atributo
+- [x] completar dicionário de dados
+    - [x] filtro por tabela e atributo
 - [] estabelecer metodologia correta(scripts de dados, notebooks para visualizar, modelagem em relação ao problema, a IA alucionou o que está lá)
 - [ ] conferir a secção dos leiames( não achei nada de errado mas não custa nada alguém dar uma verificada)

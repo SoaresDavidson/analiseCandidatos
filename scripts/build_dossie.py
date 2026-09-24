@@ -7,6 +7,7 @@ porque são estrutura compartilhada, não conteúdo de uma seção.
 
 from __future__ import annotations
 
+import re
 from html import escape
 from pathlib import Path
 
@@ -71,6 +72,18 @@ def build() -> None:
               <button id="zoom-in" type="button" aria-label="Ampliar diagrama">+</button>
               <a href="diagramas/der-geral-separado.drawio" download>Baixar .drawio</a>
             </div><div id="diagram-viewport" role="region" aria-label="DER: arraste para percorrer; use a roda do mouse para ampliar" tabindex="0"><img id="diagram-image" alt="Diagrama entidade-relacionamento"></div><div id="print-diagrams">{print_pages}</div><p id="diagram-status" class="status" role="status">Carregando DER…</p>'''
+        elif sid == "dicionario":
+            # Envolve cada entidade (h4 + descrição + tabela) num bloco que o
+            # filtro consegue esconder sem depender da ordem dos irmãos no DOM.
+            content_html = re.sub(
+                r'(<h4>.*?)(?=<h4>|<h3>|$)',
+                lambda m: f'<div class="dict-entity">{m.group(1)}</div>',
+                MARKDOWN(content),
+                flags=re.S,
+            )
+            extra = '''<div class="dict-filter no-print"><label for="dict-search">Filtrar por tabela ou atributo</label><input id="dict-search" type="search" placeholder="ex.: MUNICIPIO, cod_ibge, CD_FAIXA_ETARIA"><span id="dict-status" class="status" role="status"></span></div>'''
+            body.append(f'<section id="{sid}" class="document-section"><h2>{escape(title)}</h2>{extra}{content_html}</section>')
+            continue
         elif sid == "fontes":
             extra = '''<div class="folder-box no-print"><strong>Consultar PDFs de leia-me</strong><p>Lista carregada de <code>docs/dossie/leiames/indice.md</code>. <a href="leiames/indice.md">Ver índice em Markdown</a>. Clique em um arquivo para abrir a prévia.</p><input id="leiame-search" type="search" placeholder="Filtrar por caminho"><p id="leiame-status" role="status">Carregando índice de leia-mes…</p><ul id="leiame-list"></ul></div>'''
         body.append(f'<section id="{sid}" class="document-section"><h2>{escape(title)}</h2>{MARKDOWN(content)}{extra}</section>')
@@ -96,6 +109,7 @@ main{{max-width:1160px;margin:0 auto;padding:0 42px 80px}}.topbar{{display:flex;
 table{{border-collapse:collapse;width:100%;font-size:.9rem}}th,td{{text-align:left;padding:10px 12px;vertical-align:top;border-bottom:1px solid var(--line)}}th{{background:var(--pale);color:var(--blue);font-weight:700}}tr:nth-child(even) td{{background:#fbfdff}}.document-section>table{{display:block;overflow-x:auto}}code{{font-size:.88em;background:#f0f4f8;padding:1px 3px;border-radius:3px;overflow-wrap:anywhere}}.model-blank .blank-area{{height:290px}}.status{{font-size:.85rem;color:var(--muted)}}
 .diagram-toolbar{{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:20px 0}}.diagram-toolbar select{{border:1px solid var(--line);border-radius:7px;background:white;color:var(--blue);padding:7px 12px;max-width:100%}}#diagram-viewport{{position:relative;overflow:hidden;border:1px solid var(--line);background:white;height:clamp(340px,65vh,750px);touch-action:none;cursor:grab}}#diagram-viewport.dragging{{cursor:grabbing}}#diagram-viewport:focus-visible{{outline:3px solid var(--gold);outline-offset:2px}}#diagram-image{{display:block;position:absolute;top:0;left:0;max-width:none;transform-origin:top left;user-select:none;-webkit-user-drag:none;pointer-events:none}}#print-diagrams{{display:none}}.folder-box{{border:1px dashed var(--blue2);background:var(--pale);padding:22px;border-radius:9px;margin-top:25px}}.folder-box input[type=search]{{border:1px solid var(--line);border-radius:6px;padding:7px 10px;min-width:260px;margin:10px 0}}
 #leiame-list{{list-style:none;padding:0;margin:10px 0 0;max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:white}}#leiame-list li{{border-bottom:1px solid var(--line)}}#leiame-list li:last-child{{border-bottom:0}}#leiame-list button{{display:block;width:100%;text-align:left;border:0;border-radius:0;background:white;padding:9px 14px;font-size:.85rem;font-weight:400;color:var(--ink)}}#leiame-list button:hover{{background:var(--pale)}}
+.dict-filter{{position:sticky;top:56px;z-index:3;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:var(--pale);border:1px solid var(--line);border-radius:9px;padding:12px 16px;margin:0 0 20px}}.dict-filter label{{font-weight:600;color:var(--blue)}}.dict-filter input{{flex:1;min-width:220px;border:1px solid var(--line);border-radius:6px;padding:7px 10px}}.dict-entity h4{{font-size:1.08rem;margin:30px 0 4px;color:var(--blue)}}.dict-entity table{{display:block;overflow-x:auto}}.dict-entity td:nth-child(-n+3){{white-space:nowrap}}#dicionario [hidden]{{display:none!important}}
 .modal{{position:fixed;inset:0;background:#0b1a2eb3;display:flex;align-items:center;justify-content:center;z-index:20;padding:24px}}.modal[hidden]{{display:none}}.modal-box{{background:white;border-radius:10px;width:min(920px,100%);height:min(760px,90vh);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px #0006}}.modal-bar{{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line)}}.modal-bar span{{font-weight:600;color:var(--blue);overflow-wrap:anywhere;font-size:.85rem}}.modal-bar button{{border:0;background:transparent;font-size:1.3rem;line-height:1;color:var(--muted);cursor:pointer;padding:4px 8px}}.modal-bar button:hover{{color:var(--blue)}}#leiame-modal-frame{{flex:1;border:0}}
 @media(max-width:900px){{.topnav{{padding:8px 12px;gap:8px}}.topnav .sub{{display:none}}main{{padding:0 16px 50px}}.cover{{min-height:660px;padding:40px 18px}}.document-section{{padding:24px 19px}}.toc{{columns:1}}}}
 @page{{size:A4;margin:17mm 15mm}}@media print{{body{{background:white;font-size:10pt;print-color-adjust:exact;-webkit-print-color-adjust:exact}}.topnav,.topbar,.no-print{{display:none!important}}main{{margin:0;padding:0;max-width:none}}main > section[hidden]{{display:block!important}}main > .cover[hidden]{{display:flex!important}}.cover{{border:0;box-shadow:none;height:260mm;min-height:0;break-after:page;padding:30mm 10mm}}.cover img{{width:38mm;height:38mm}}h1{{font-size:31pt;margin-top:25mm}}.document-section{{border:0;border-radius:0;margin:0;padding:0 0 10mm;overflow:visible;break-before:page}}.document-section>h2{{font-size:18pt;margin:0 0 9mm}}h3{{font-size:13pt}}.toc{{columns:1}}table{{font-size:7.7pt;display:table!important}}th,td{{padding:4px 5px;break-inside:avoid}}#diagram-viewport{{display:none}}#print-diagrams{{display:block}}.print-module{{break-inside:avoid;break-after:page}}.print-module:last-child{{break-after:auto}}.print-module h3{{font-size:12pt;margin:7mm 0}}.print-module img{{display:block;width:100%;height:auto;max-height:205mm;object-fit:contain}}.model-blank .blank-area{{height:175mm}}#diagram-status{{display:none}}}}
@@ -131,6 +145,37 @@ document.addEventListener('keydown',e=>{{if(e.key==='Escape'&&!leiameModal.hidde
 let leiamePaths=[];
 function drawLeiames(){{const q=leiameSearch.value.toLocaleLowerCase('pt-BR');const rows=leiamePaths.filter(p=>p.toLocaleLowerCase('pt-BR').includes(q));leiameList.replaceChildren();for(const p of rows){{const li=document.createElement('li'),b=document.createElement('button');b.type='button';b.textContent=p;b.onclick=()=>openLeiame(p);li.append(b);leiameList.append(li)}}leiameStatus.textContent=rows.length+' de '+leiamePaths.length+' PDF(s)';}}
 leiameSearch.addEventListener('input',drawLeiames);
+const dictSection=document.getElementById('dicionario'),dictSearch=document.getElementById('dict-search'),dictStatus=document.getElementById('dict-status');
+const fold=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+function filterDict(){{
+  const q=fold(dictSearch.value.trim());
+  const entities=[...dictSection.querySelectorAll('.dict-entity')];
+  let shownEntities=0,shownRows=0,totalRows=0;
+  for(const entity of entities){{
+    const name=fold(entity.querySelector('h4').textContent);
+    const rows=[...entity.querySelectorAll('tbody tr')];
+    totalRows+=rows.length;
+    const whole=!q||name.includes(q);
+    let hits=0;
+    for(const row of rows){{const show=whole||fold(row.textContent).includes(q);row.hidden=!show;if(show)hits++}}
+    entity.hidden=hits===0&&!whole;
+    if(!entity.hidden){{shownEntities++;shownRows+=hits}}
+  }}
+  // Cabeçalhos de grupo e texto solto (convenções, pendências) só aparecem sem filtro,
+  // salvo o h3 de um grupo que ainda tem entidade visível.
+  let heading=null,groupVisible=false;
+  const flush=()=>{{if(heading)heading.hidden=!!q&&!groupVisible}};
+  for(const el of dictSection.children){{
+    if(el.tagName==='H2'||el.classList.contains('dict-filter'))continue;
+    if(el.tagName==='H3'){{flush();heading=el;groupVisible=false;continue}}
+    if(el.classList.contains('dict-entity')){{if(!el.hidden)groupVisible=true;continue}}
+    el.hidden=!!q;
+  }}
+  flush();
+  dictStatus.textContent=q?`${{shownEntities}} de ${{entities.length}} tabelas · ${{shownRows}} de ${{totalRows}} atributos`:`${{entities.length}} tabelas · ${{totalRows}} atributos`;
+}}
+dictSearch.addEventListener('input',filterDict);
+filterDict();
 fetch('leiames/indice.md').then(r=>{{if(!r.ok)throw Error('HTTP '+r.status);return r.text()}}).then(t=>{{leiamePaths=[...t.matchAll(/^- \[[^\]]+\]\(([^)]+)\)/gm)].map(m=>m[1]);drawLeiames()}}).catch(()=>{{leiameStatus.textContent='Sirva a pasta localmente para carregar o índice de leia-mes.'}});
 </script><script src="diagram-viewer.js"></script></body></html>'''
     (DOSSIER / "index.html").write_text(html, encoding="utf-8")

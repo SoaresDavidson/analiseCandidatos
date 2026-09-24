@@ -53,9 +53,6 @@ def build() -> None:
     )
     body = []
     for sid, title, content in items:
-        if sid == "modelo-relacional":
-            body.append(f'<section id="modelo-relacional" class="document-section model-blank"><h2>{escape(title)}</h2><div class="blank-area" aria-label="Espaço em branco para o modelo relacional"></div></section>')
-            continue
         extra = ""
         if sid == "der":
             page_options = "".join(

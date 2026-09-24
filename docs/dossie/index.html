@@ -157,7 +157,91 @@ table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{text-align:left;
               <button id="zoom-reset" type="button">Ajustar</button>
               <button id="zoom-in" type="button" aria-label="Ampliar diagrama">+</button>
               <a href="diagramas/der-geral-separado.drawio" download>Baixar .drawio</a>
-            </div><div id="diagram-viewport" role="region" aria-label="DER: arraste para percorrer; use a roda do mouse para ampliar" tabindex="0"><img id="diagram-image" alt="Diagrama entidade-relacionamento"></div><div id="print-diagrams"><section class="print-module"><h3>Entidades e relacionamentos</h3><img src="diagramas/der-geral-relacoes.drawio.svg" alt="DER: Entidades e relacionamentos"></section><section class="print-module"><h3>Entidades e atributos</h3><img src="diagramas/der-geral-atributos.drawio.svg" alt="DER: Entidades e atributos"></section></div><p id="diagram-status" class="status" role="status">Carregando DER…</p></section><section id="modelo-relacional" class="document-section model-blank"><h2>4. Modelo relacional</h2><div class="blank-area" aria-label="Espaço em branco para o modelo relacional"></div></section><section id="dicionario" class="document-section"><h2>5. Dicionário de dados</h2><p>As 32 entidades abaixo seguem o DER geral. As tabelas de atributos estão reservadas para preenchimento posterior; tipos, chaves e origens dos campos ainda serão documentados. O rascunho detalhado de <code>CANDIDATURA</code> está em <code>docs/dicionario-dados.md</code> e precisa ser conferido com o DER atual.</p>
+            </div><div id="diagram-viewport" role="region" aria-label="DER: arraste para percorrer; use a roda do mouse para ampliar" tabindex="0"><img id="diagram-image" alt="Diagrama entidade-relacionamento"></div><div id="print-diagrams"><section class="print-module"><h3>Entidades e relacionamentos</h3><img src="diagramas/der-geral-relacoes.drawio.svg" alt="DER: Entidades e relacionamentos"></section><section class="print-module"><h3>Entidades e atributos</h3><img src="diagramas/der-geral-atributos.drawio.svg" alt="DER: Entidades e atributos"></section></div><p id="diagram-status" class="status" role="status">Carregando DER…</p></section><section id="modelo-relacional" class="document-section"><h2>4. Modelo relacional</h2><p><strong>Fonte:</strong> mapeamento do DER geral (<code>docs/dossie/diagramas/der-geral.drawio</code>) para tabelas: 32 entidades e 43 relacionamentos.</p>
+<p><strong>Regras aplicadas:</strong> relacionamentos 1:N levam a chave estrangeira para o lado N; relacionamentos 1:1 levam-na para o lado dependente. Entidades cuja chave sublinhada é parcial (por exemplo, <code>ano</code> em <code>MUNICIPIO_ANO</code>) foram tratadas como fracas, e sua chave primária é a chave do dono somada à chave parcial. Atributos tracejados no DER são derivados e aparecem marcados como tal.</p>
+<p><strong>Notação:</strong> <strong>negrito</strong> = chave primária; <code>FK → TABELA</code> = chave estrangeira; <code>UK</code> = chave única.</p>
+<h3>4.1 Território e socioeconômico</h3>
+<ul>
+<li><strong>UF</strong>(<strong>sg_uf</strong>, cd_uf_ibge <code>UK</code>, nm_uf, nm_regiao)</li>
+<li><strong>MUNICIPIO</strong>(<strong>cod_ibge</strong>, cod_tse <code>UK</code>, nm_municipio, cd_regiao_imediata, nm_regiao_imediata, cd_regiao_intermediaria, sg_uf <code>FK → UF</code>)</li>
+<li><strong>MUNICIPIO_ANO</strong>(<strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>ano</strong>, qt_populacao, ds_fonte_populacao, vr_pib_mil, vr_pib_per_capita)</li>
+<li><strong>MUNICIPIO_CENSO</strong>(<strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>ano_censo</strong>, vr_renda_media_pc, vr_renda_mediana_pc, nr_anos_estudo)</li>
+<li><strong>IDHM_MUNICIPIO</strong>(<strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>ano_censo</strong>, vl_idhm, vl_idhm_renda, vl_idhm_longevidade, vl_idhm_educacao)</li>
+<li><strong>NIVEL_INSTRUCAO</strong>(<strong>cd_nivel</strong>, ds_nivel, cd_categoria_sidra, nr_ordem)</li>
+<li><strong>GRAU_INSTRUCAO</strong>(<strong>cd_grau_instrucao</strong>, ds_grau_instrucao, cd_nivel <code>FK → NIVEL_INSTRUCAO</code>)</li>
+<li><strong>CENSO_INSTRUCAO</strong>(<strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>cd_nivel</strong> <code>FK → NIVEL_INSTRUCAO</code>, <strong>ano_censo</strong>, qt_pessoas)</li>
+<li><strong>FAIXA_ETARIA</strong>(<strong>id_faixa</strong>, ds_origem, cd_origem, ds_faixa, nr_idade_min, nr_idade_max, fl_jovem)</li>
+<li><strong>CENSO_FAIXA_ETARIA</strong>(<strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>id_faixa</strong> <code>FK → FAIXA_ETARIA</code>, <strong>ano_censo</strong>, qt_pessoas)</li>
+<li><strong>COMPARECIMENTO_PERFIL</strong>(<strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>id_faixa</strong> <code>FK → FAIXA_ETARIA</code>, <strong>ano</strong>, <strong>nr_turno</strong>, <strong>ds_genero</strong>, qt_aptos, qt_comparecimento, qt_abstencao)</li>
+</ul>
+<h3>4.2 Eleição e candidatura</h3>
+<ul>
+<li><strong>ELEICAO</strong>(<strong>cd_eleicao</strong>, ano, nr_turno, dt_eleicao, tp_eleicao, tp_abrangencia)</li>
+<li><strong>CARGO</strong>(<strong>cd_cargo</strong>, ds_cargo)</li>
+<li><strong>POLITICO</strong>(<strong>nr_titulo_eleitoral</strong>, nm_candidato, dt_nascimento, sg_uf_nascimento)</li>
+<li><strong>CANDIDATURA</strong>(<strong>id_candidatura</strong>, ano, sg_ue, sq_candidato, ds_genero, ds_cor_raca, ds_ocupacao, ds_sit_tot_turno, fl_eleito <em>(derivado)</em>, nr_idade_eleicao <em>(derivado)</em>, cd_eleicao <code>FK → ELEICAO</code>, cd_cargo <code>FK → CARGO</code>, nr_partido, nr_titulo_eleitoral <code>FK → POLITICO</code>, cd_grau_instrucao <code>FK → GRAU_INSTRUCAO</code>, cod_ibge <code>FK → MUNICIPIO</code>)<ul>
+<li><code>UK</code> (ano, sg_ue, sq_candidato)</li>
+<li>(ano, nr_partido) <code>FK → PARTIDO</code></li>
+<li>cod_ibge é nulo fora de pleitos municipais</li>
+</ul>
+</li>
+<li><strong>BEM_CANDIDATO</strong>(<strong>id_candidatura</strong> <code>FK → CANDIDATURA</code>, <strong>nr_ordem_bem</strong>, ds_tipo_bem, vr_bem)</li>
+<li><strong>VAGA</strong>(<strong>cd_eleicao</strong> <code>FK → ELEICAO</code>, <strong>cd_cargo</strong> <code>FK → CARGO</code>, <strong>sg_ue</strong>, qt_vaga, cod_ibge <code>FK → MUNICIPIO</code>)<ul>
+<li>cod_ibge é nulo fora de pleitos municipais</li>
+</ul>
+</li>
+<li><strong>PROPOSTA_GOVERNO</strong>(<strong>nr_sequencial</strong>, nm_arquivo, qt_caracteres, fl_texto_extraido, tx_conteudo, id_candidatura <code>FK → CANDIDATURA</code>)</li>
+<li><strong>TERMO_PROPOSTA</strong>(<strong>nr_sequencial</strong> <code>FK → PROPOSTA_GOVERNO</code>, <strong>termo</strong>, qt_frequencia)</li>
+</ul>
+<h3>4.3 Votação</h3>
+<ul>
+<li><strong>VOTACAO_CANDIDATO_MUNICIPIO</strong>(<strong>id_candidatura</strong> <code>FK → CANDIDATURA</code>, <strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>nr_turno</strong>, qt_votos_nominais, qt_votos_nominais_validos)</li>
+<li><strong>VOTACAO_LEGENDA_MUNICIPIO</strong>(<strong>cd_eleicao</strong> <code>FK → ELEICAO</code>, <strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>cd_cargo</strong> <code>FK → CARGO</code>, <strong>ano</strong>, <strong>nr_partido</strong>, <strong>sq_coligacao</strong>, qt_votos_legenda_validos, qt_total_votos_leg_validos)<ul>
+<li>(ano, nr_partido) <code>FK → PARTIDO</code></li>
+</ul>
+</li>
+<li><strong>COMPARECIMENTO_MUNICIPIO</strong>(<strong>cd_eleicao</strong> <code>FK → ELEICAO</code>, <strong>cd_cargo</strong> <code>FK → CARGO</code>, <strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, qt_aptos, qt_comparecimento, qt_abstencoes, qt_votos_brancos, qt_total_votos_nulos)</li>
+</ul>
+<h3>4.4 Partidos</h3>
+<ul>
+<li><strong>PARTIDO</strong>(<strong>ano</strong>, <strong>nr_partido</strong>, sg_partido, nm_partido)</li>
+<li><strong>ESPECTRO_PARTIDO</strong>(<strong>ano</strong>, <strong>nr_partido</strong>, nr_rodada, vl_ideologia, cd_espectro, ds_fonte)<ul>
+<li>(ano, nr_partido) <code>FK → PARTIDO</code> (1:1)</li>
+</ul>
+</li>
+<li><strong>FEDERACAO</strong>(<strong>ano</strong>, <strong>nr_federacao</strong>, sg_federacao, ds_composicao)</li>
+<li><strong>PARTIDO_FEDERACAO</strong>(<strong>ano</strong>, <strong>nr_partido</strong>, nr_federacao)<ul>
+<li>(ano, nr_partido) <code>FK → PARTIDO</code> (1:1)</li>
+<li>(ano, nr_federacao) <code>FK → FEDERACAO</code></li>
+</ul>
+</li>
+<li><strong>ORGAO_PARTIDARIO</strong>(<strong>id_orgao</strong>, tp_orgao, ds_esfera, sg_uf, nr_cnpj, ano, nr_partido)<ul>
+<li>(ano, nr_partido) <code>FK → PARTIDO</code></li>
+</ul>
+</li>
+</ul>
+<h3>4.5 Finanças de campanha</h3>
+<ul>
+<li><strong>AGENTE_FINANCEIRO</strong>(<strong>id_agente</strong>, nr_cpf_cnpj <code>UK</code>, nm_agente, cd_cnae, tp_agente)</li>
+<li><strong>FONTE_RECURSO</strong>(<strong>id_fonte_recurso</strong>, ds_fonte_receita, ds_origem_receita, tp_origem)</li>
+<li><strong>TIPO_DESPESA</strong>(<strong>id_tipo_despesa</strong>, ds_tipo_despesa, ds_canal_propaganda, fl_propaganda)</li>
+<li><strong>RECEITA_CAMPANHA</strong>(<strong>id_receita</strong>, dt_receita, vr_receita, id_candidatura <code>FK → CANDIDATURA</code>, id_orgao <code>FK → ORGAO_PARTIDARIO</code>, id_agente_doador <code>FK → AGENTE_FINANCEIRO</code>, id_agente_originario <code>FK → AGENTE_FINANCEIRO</code>, id_fonte_recurso <code>FK → FONTE_RECURSO</code>)<ul>
+<li>exatamente um entre id_candidatura e id_orgao é preenchido (relacionamentos &quot;arrecada&quot;)</li>
+<li>id_agente_doador vem de &quot;doa direto&quot;; id_agente_originario vem de &quot;origina 2014-2016&quot; e é nulo fora desse período</li>
+</ul>
+</li>
+<li><strong>DESPESA_CAMPANHA</strong>(<strong>id_despesa</strong>, dt_despesa, vr_despesa, ds_despesa, id_candidatura <code>FK → CANDIDATURA</code>, id_agente_fornecedor <code>FK → AGENTE_FINANCEIRO</code>, id_tipo_despesa <code>FK → TIPO_DESPESA</code>)</li>
+</ul>
+<h3>4.6 Pendências a conferir com o DER</h3>
+<ol>
+<li><code>ESPECTRO_PARTIDO</code> não tem chave sublinhada no DER. O atributo <code>nr_rodada</code> sugere mais de uma leitura por partido; nesse caso a chave passa a ser (ano, nr_partido, nr_rodada) e o relacionamento com <code>PARTIDO</code> deixa de ser 1:1.</li>
+<li>Três atributos parecem chaves estrangeiras sem relacionamento desenhado: <code>VOTACAO_LEGENDA_MUNICIPIO.cd_cargo</code> (para <code>CARGO</code>, já tratado como FK acima), <code>ORGAO_PARTIDARIO.sg_uf</code> e <code>POLITICO.sg_uf_nascimento</code> (para <code>UF</code>).</li>
+<li><code>COMPARECIMENTO_MUNICIPIO</code> não tem atributo sublinhado; a chave primária foi formada só pelas chaves estrangeiras. Se os dados forem por turno, falta <code>nr_turno</code>.</li>
+<li><code>COMPARECIMENTO_PERFIL</code> guarda <code>ano</code> e <code>nr_turno</code> sem ligação com <code>ELEICAO</code>; uma FK <code>cd_eleicao</code> seria mais coerente.</li>
+<li><code>ano</code> convive com <code>cd_eleicao</code> em <code>CANDIDATURA</code> e <code>VOTACAO_LEGENDA_MUNICIPIO</code> porque a chave de <code>PARTIDO</code> inclui o ano. É uma redundância que precisa de restrição de consistência.</li>
+<li>O DER não indica participação obrigatória ou opcional; as colunas anuláveis acima foram deduzidas do significado dos relacionamentos.</li>
+</ol>
+</section><section id="dicionario" class="document-section"><h2>5. Dicionário de dados</h2><p>As 32 entidades abaixo seguem o DER geral. As tabelas de atributos estão reservadas para preenchimento posterior; tipos, chaves e origens dos campos ainda serão documentados. O rascunho detalhado de <code>CANDIDATURA</code> está em <code>docs/dicionario-dados.md</code> e precisa ser conferido com o DER atual.</p>
 <h3>Território e contexto</h3>
 <h4><code>UF</code></h4>
 <p>Unidade da federação usada para situar os municípios.</p>

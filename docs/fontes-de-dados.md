@@ -87,11 +87,14 @@ exatamente o que precisamos:
 "13/09/2026";"09:00:12";24;12;"AC";"Acre";"01007";"Bujari";1200138;"Bujari"
 ```
 
-**`CD_MUNICIPIO_TSE` vem com zero à esquerda (`"01007"`)** — e os arquivos de
-votação do TSE também, então o join casa direto. Testado contra
-`detalhe_votacao_munzona_2024`: **5.569 municípios, 5.569 pares, zero órfãos.**
-Ainda assim, modele como `VARCHAR(5)` nos dois lados: o risco não é o zero em si,
-é alguém converter só um dos lados para número e perder registros sem erro.
+**`CD_MUNICIPIO_TSE` vem com zero à esquerda (`"01007"`).** ⚠️ *Correção
+(revisão de 23/09):* eu havia escrito que os arquivos de votação também traziam o
+zero e que o join casava direto. Isso só vale para o `detalhe_votacao_munzona`. Em
+`votacao_candidato_munzona` e `votacao_partido_munzona` o `CD_MUNICIPIO` vem **sem**
+o zero (`1554`), e um join de texto perde **519 municípios** sem erro. Regra:
+`cod_tse = LPAD(CD_MUNICIPIO, 5, '0')` em todos os arquivos de votação. Com o LPAD,
+zero órfãos em 2016–2024. Linhas do exterior (`SG_UF = 'ZZ'`) não têm município
+IBGE e ficam fora.
 
 ### 1.4 Propostas de governo (Q6) — ✅ existe em lote, risco derrubado
 
@@ -118,7 +121,11 @@ proposta; em 2022 (geral) só os majoritários do estado.
 onde `180001881915` é o `SQ_CANDIDATO`. Ou seja, `PROPOSTA_GOVERNO.sq_candidato`
 sai de um parse de nome de arquivo, sem precisar casar por nome de candidato.
 
-Não existe agregado `_BR`: é por UF ou nada. E cada zip traz um `leiame.pdf`.
+⚠️ *Correção (revisão de 23/09):* eu havia escrito que não existe agregado `_BR`.
+Em 2024 (eleição municipal) de fato não existe, mas **nos anos de eleição geral
+existe**, com as propostas de presidente: `proposta_governo_2018_BR.zip` (13 PDFs),
+`_2022_BR.zip` (13) e `_2026_BR.zip` (14). O coletor ainda não os baixa. Cada zip
+traz um `leiame.pdf`.
 
 Sobra só o trabalho de extrair texto de PDF (o conteúdo é PDF de verdade, não
 imagem, na maioria) — mas isso é biblioteca de Python, não é problema de fonte.

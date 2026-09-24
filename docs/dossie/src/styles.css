@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ufpi: #143e76;
+  --color-ufpi-2: #315d99;
+  --color-pale: #eff5fb;
+  --color-gold: #d7ac31;
+  --color-ink: #1e2d3e;
+  --color-muted: #52677d;
+  --color-line: #d8e2ec;
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { @apply bg-[#f7f9fc] font-sans text-base/[1.6] text-ink; }
+  h1, h2, h3, h4 { @apply font-serif leading-[1.22] text-ufpi; }
+  button, select { cursor: pointer; }
+}
+
+@utility btn {
+  @apply rounded-[7px] border border-line bg-white px-3 py-[7px] font-semibold text-ufpi hover:bg-pale;
+}
+
+@page { size: A4; margin: 17mm 15mm; }
+
+@media print {
+  body { @apply bg-white text-[10pt]; print-color-adjust: exact; }
+}

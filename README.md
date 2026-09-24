@@ -135,6 +135,51 @@ uv run scripts/convert_csv_parquet_candidatos.py
 
 Precisa dos dados de `coleta_tse.py candidatos` já baixados.
 
+## Staging da prestação de contas
+
+As duas views canônicas que as Q1, Q2, Q8, Q10 e Q11 consomem. Elas escondem as
+duas gerações de leiaute (`.txt` em português até 2016, `.csv` `SNAKE_CASE` de
+2018 em diante) atrás de um nome de coluna só:
+
+```bash
+uv run scripts/carregar_staging.py       # aplica sql/*.sql em dados/processed/tse.duckdb
+uv run scripts/carregar_staging.py 01    # só um script
+```
+
+| Objeto | Grão | Para quê |
+|---|---|---|
+| `stg_receita` | uma receita | `sq_candidato, ano, dt, vr_receita, cpf_cnpj_doador, tp_pessoa, cd_cnae_doador, ds_fonte, ds_origem, ds_natureza` |
+| `stg_despesa` | uma despesa contratada | `sq_candidato, ano, dt, vr_despesa, cpf_cnpj_fornecedor, cd_cnae_fornecedor, ds_despesa, ds_tipo_despesa` |
+| `stg_receita_classificada` | uma receita | + `tp_origem` — público × privado da Q10 |
+| `stg_despesa_classificada` | uma despesa | + `ds_canal_propaganda` — canal da Q11 |
+| `fonte_recurso`, `tipo_despesa` | um de-para | as entidades de classificação do DER |
+| `candidatura`, `politico` | uma candidatura / uma pessoa | `consulta_cand` de 2002 a 2026, chaveado por título |
+| `mart_q10`, `mart_q11`, `mart_q11_texto`, `mart_q12` | — | uma view por pergunta; a camada visual lê só daqui |
+
+**Não escreva staging próprio da prestação de contas** — consuma estas views. Se
+faltar uma coluna, peça: o ponto é os quatro chegarem ao mesmo número para
+"quanto o candidato gastou".
+
+Precisa de `coleta_tse.py prestacao_contas candidatos historico` já baixado.
+Validado contra os arquivos crus: contagem e soma batem linha a linha em 2014 e
+2016, os `sq_candidato` casam com `consulta_cand` sem nenhum órfão, e a Q12
+reproduz os 599.547 reincidentes (32,3%) do `estrategia.md`.
+
+Critérios e armadilhas: [`docs/der-enrico.md`](docs/der-enrico.md) (o modelo),
+[`docs/q10-publico-privado.md`](docs/q10-publico-privado.md),
+[`docs/q11-propaganda.md`](docs/q11-propaganda.md),
+[`docs/q12-linha-do-tempo.md`](docs/q12-linha-do-tempo.md).
+
+> 🚨 **`sq_candidato` não é chave antes de 2010.** Em 2004 são 402.157
+> candidaturas em 1.506 valores distintos. Deduplicar por ele funde 400 mil
+> pessoas sem erro nenhum. Detalhe na nota 2 do
+> [`docs/der-enrico.md`](docs/der-enrico.md) — não afeta quem usa 2014+.
+>
+> 🚨 **`consulta_cand` de 2008 e 2016 quebra com `encoding='latin-1'`.** Use
+> `INSTALL encodings; LOAD encodings;` com `encoding='cp1252'` e
+> `ignore_errors=true`, como fazem `04_politico.sql` e
+> `convert_csv_parquet_candidatos.py`.
+
 ## Notebooks
 
 ```bash

@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dossiê · Análise de Candidatos | UFPI</title>
+<meta name="description" content="Dossiê acadêmico de Banco de Dados Relacionais da UFPI: perguntas, DER, dicionário e fontes.">
+<style>
+:root{--blue:#143e76;--blue2:#315d99;--pale:#eff5fb;--gold:#d7ac31;--ink:#1e2d3e;--muted:#52677d;--line:#d8e2ec}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f7f9fc;color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select{font:inherit}button,.file-label{cursor:pointer}a{color:var(--blue)}a:hover{text-decoration-color:var(--gold)}
+.topnav{position:sticky;top:0;z-index:5;background:var(--blue);color:white;display:flex;align-items:center;gap:14px;padding:9px 24px}.topnav img{width:38px;height:38px;object-fit:contain;flex:none}.topnav .brand{font:700 .95rem Georgia,serif;white-space:nowrap;flex:none}.topnav nav{display:flex;gap:4px;overflow-x:auto;flex:1;scrollbar-width:thin}.topnav a{color:#e8f1fc;text-decoration:none;padding:8px 12px;border-radius:6px;font-size:.85rem;white-space:nowrap;flex:none}.topnav a:hover,.topnav a:focus{background:#ffffff24}.topnav a[aria-current="location"]{background:white;color:var(--blue);font-weight:700}
+.topnav .sub{color:#bfd3ea;font-size:.74rem;white-space:nowrap;flex:none}
+main{max-width:1160px;margin:0 auto;padding:0 42px 80px}.topbar{display:flex;justify-content:flex-end;align-items:center;padding:18px 0;gap:9px}button,.file-label{border:1px solid var(--line);border-radius:7px;background:white;color:var(--blue);padding:7px 12px;font-weight:600}button:hover,.file-label:hover{background:var(--pale)}
+.cover{min-height:790px;background:linear-gradient(145deg,#fff 60%,#eaf2fb);border:1px solid var(--line);border-top:9px solid var(--blue);display:flex;flex-direction:column;align-items:center;text-align:center;padding:68px 60px 44px;box-shadow:0 8px 32px #153c7010}.cover img{width:154px;height:154px;object-fit:contain}.cover .university{color:var(--blue);font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin:23px 0 4px}.cover .course{color:var(--muted);letter-spacing:.04em}h1,h2,h3{font-family:Georgia,"Times New Roman",serif;color:var(--blue);line-height:1.22}h1{font-size:clamp(2.4rem,5vw,4.5rem);margin:64px 0 12px;max-width:780px}.cover .rule{width:130px;height:4px;background:var(--gold);margin:18px auto 35px}.cover .people{margin-top:auto;display:grid;gap:3px}.cover .place{margin-top:40px;color:var(--muted)}
+.document-section{background:white;border:1px solid var(--line);border-radius:10px;margin-top:27px;padding:34px 38px;overflow:hidden}main > section[hidden]{display:none!important}.document-section>h2{font-size:2rem;margin:0 0 25px;border-bottom:2px solid var(--gold);padding-bottom:13px}h3{font-size:1.34rem;margin:27px 0 8px}p{margin:10px 0 16px}.toc{columns:2;list-style:none;padding:0}.toc li{padding:10px 0;border-bottom:1px solid var(--line);break-inside:avoid}.toc a{text-decoration:none;font-weight:600}
+table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{text-align:left;padding:10px 12px;vertical-align:top;border-bottom:1px solid var(--line)}th{background:var(--pale);color:var(--blue);font-weight:700}tr:nth-child(even) td{background:#fbfdff}.document-section>table{display:block;overflow-x:auto}code{font-size:.88em;background:#f0f4f8;padding:1px 3px;border-radius:3px;overflow-wrap:anywhere}.model-blank .blank-area{height:290px}.status{font-size:.85rem;color:var(--muted)}
+.diagram-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:20px 0}.diagram-toolbar select{border:1px solid var(--line);border-radius:7px;background:white;color:var(--blue);padding:7px 12px;max-width:100%}#diagram-viewport{position:relative;overflow:hidden;border:1px solid var(--line);background:white;height:clamp(340px,65vh,750px);touch-action:none;cursor:grab}#diagram-viewport.dragging{cursor:grabbing}#diagram-viewport:focus-visible{outline:3px solid var(--gold);outline-offset:2px}#diagram-image{display:block;position:absolute;top:0;left:0;max-width:none;transform-origin:top left;user-select:none;-webkit-user-drag:none;pointer-events:none}#print-diagrams{display:none}.folder-box{border:1px dashed var(--blue2);background:var(--pale);padding:22px;border-radius:9px;margin-top:25px}.folder-box input[type=search]{border:1px solid var(--line);border-radius:6px;padding:7px 10px;min-width:260px;margin:10px 0}
+#leiame-list{list-style:none;padding:0;margin:10px 0 0;max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:white}#leiame-list li{border-bottom:1px solid var(--line)}#leiame-list li:last-child{border-bottom:0}#leiame-list button{display:block;width:100%;text-align:left;border:0;border-radius:0;background:white;padding:9px 14px;font-size:.85rem;font-weight:400;color:var(--ink)}#leiame-list button:hover{background:var(--pale)}
+.modal{position:fixed;inset:0;background:#0b1a2eb3;display:flex;align-items:center;justify-content:center;z-index:20;padding:24px}.modal[hidden]{display:none}.modal-box{background:white;border-radius:10px;width:min(920px,100%);height:min(760px,90vh);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px #0006}.modal-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line)}.modal-bar span{font-weight:600;color:var(--blue);overflow-wrap:anywhere;font-size:.85rem}.modal-bar button{border:0;background:transparent;font-size:1.3rem;line-height:1;color:var(--muted);cursor:pointer;padding:4px 8px}.modal-bar button:hover{color:var(--blue)}#leiame-modal-frame{flex:1;border:0}
+@media(max-width:900px){.topnav{padding:8px 12px;gap:8px}.topnav .sub{display:none}main{padding:0 16px 50px}.cover{min-height:660px;padding:40px 18px}.document-section{padding:24px 19px}.toc{columns:1}}
+@page{size:A4;margin:17mm 15mm}@media print{body{background:white;font-size:10pt;print-color-adjust:exact;-webkit-print-color-adjust:exact}.topnav,.topbar,.no-print{display:none!important}main{margin:0;padding:0;max-width:none}main > section[hidden]{display:block!important}main > .cover[hidden]{display:flex!important}.cover{border:0;box-shadow:none;height:260mm;min-height:0;break-after:page;padding:30mm 10mm}.cover img{width:38mm;height:38mm}h1{font-size:31pt;margin-top:25mm}.document-section{border:0;border-radius:0;margin:0;padding:0 0 10mm;overflow:visible;break-before:page}.document-section>h2{font-size:18pt;margin:0 0 9mm}h3{font-size:13pt}.toc{columns:1}table{font-size:7.7pt;display:table!important}th,td{padding:4px 5px;break-inside:avoid}#diagram-viewport{display:none}#print-diagrams{display:block}.print-module{break-inside:avoid;break-after:page}.print-module:last-child{break-after:auto}.print-module h3{font-size:12pt;margin:7mm 0}.print-module img{display:block;width:100%;height:auto;max-height:205mm;object-fit:contain}.model-blank .blank-area{height:175mm}#diagram-status{display:none}}
+</style></head><body>
+<header class="topnav"><img src="logo-ufpi.webp" alt="Brasão da UFPI"><div class="brand">UFPI · Dossiê de pesquisa</div><nav aria-label="Seções do dossiê"><a href="#capa">Capa</a><a href="#sumario">Sumário</a><a href="#introducao">1. Introdução</a><a href="#perguntas">2. Perguntas — o que cada consulta deverá responder</a><a href="#der">3. Diagrama entidade-relacionamento (DER)</a><a href="#modelo-relacional">4. Modelo relacional</a><a href="#dicionario">5. Dicionário de dados</a><a href="#sobre">6. Sobre — ferramentas e metodologia</a><a href="#fontes">7. Fontes dos dados e leia-me</a></nav><span class="sub">Banco de Dados Relacionais · Teresina · 2026</span></header>
+<main><div class="topbar no-print"><button type="button" onclick="window.print()">Imprimir / salvar PDF</button></div>
+<section id="capa" class="cover"><img src="logo-ufpi.webp" alt="Brasão da Universidade Federal do Piauí"><div class="university">Universidade Federal do Piauí</div><div class="course">Disciplina de Banco de Dados Relacionais</div><h1>Análise de Candidatos</h1><div class="rule"></div><p>Dossiê do projeto</p><div class="people"><strong>Professor</strong><span>Luiz Claudio Demes da Mata Sousa</span><br><strong>Discentes</strong><span>Eduardo Melo de Carvalho</span><span>Enrico da Rocha Santos Teixeira</span><span>Maria Eduarda Farias Gomes</span><span>Davi Sousa Soares</span></div><div class="place">Teresina · PI · 2026</div></section>
+<section id="sumario" class="document-section"><h2>Sumário</h2><ol class="toc"><li><a href="#introducao">1. Introdução</a></li><li><a href="#perguntas">2. Perguntas — o que cada consulta deverá responder</a></li><li><a href="#der">3. Diagrama entidade-relacionamento (DER)</a></li><li><a href="#modelo-relacional">4. Modelo relacional</a></li><li><a href="#dicionario">5. Dicionário de dados</a></li><li><a href="#sobre">6. Sobre — ferramentas e metodologia</a></li><li><a href="#fontes">7. Fontes dos dados e leia-me</a></li></ol></section>
+<section id="introducao" class="document-section"><h2>1. Introdução</h2><h3>Do que se trata</h3>
+<p>O projeto investiga candidaturas e resultados eleitorais brasileiros, com atenção ao Piauí, cruzando dados do Tribunal Superior Eleitoral (TSE) com indicadores municipais do Instituto Brasileiro de Geografia e Estatística (IBGE). O banco analítico planejado organiza candidaturas, votos, financiamento, perfil do eleitorado e contexto socioeconômico para responder a 12 perguntas. O projeto usa DuckDB e notebooks para preparação e análise. Os resultados das perguntas ainda dependem da carga e das consultas; este dossiê documenta o desenho do banco, não resultados calculados.</p>
+<h3>Objetivo</h3>
+<p>Estruturar uma base relacional rastreável que permita comparar eleições, municípios, partidos e candidatos, preservando a granularidade e a procedência de cada informação. Cada pergunta indica o resultado que uma consulta futura deverá entregar.</p>
+<h3>APIs e fontes</h3>
+<table>
+<thead>
+<tr>
+  <th>Fonte</th>
+  <th>Acesso planejado</th>
+  <th>Uso no projeto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>TSE — Portal de Dados Abertos</td>
+  <td>Arquivos públicos ZIP/CSV; o catálogo CKAN aponta para os recursos, não há API de consulta tabular para estas bases.</td>
+  <td>Candidaturas, votação, vagas, comparecimento, contas e propostas.</td>
+</tr>
+<tr>
+  <td>IBGE — API SIDRA</td>
+  <td>Respostas JSON por tabela, variável, período e nível geográfico.</td>
+  <td>População (6579), escolaridade (10061) e idade (9514/9606).</td>
+</tr>
+<tr>
+  <td>IBGE — PIB dos Municípios</td>
+  <td>Planilha XLSX do FTP do IBGE.</td>
+  <td>PIB per capita e hierarquia geográfica municipal.</td>
+</tr>
+<tr>
+  <td>IBGE — API de malhas</td>
+  <td>GeoJSON municipal.</td>
+  <td>Visualização espacial do Piauí e do país.</td>
+</tr>
+<tr>
+  <td>PNUD / Atlas Brasil</td>
+  <td>Fonte complementar de IDHM municipal histórico.</td>
+  <td>Contexto comparativo; o IDHM municipal não é anual nem substitui o PIB per capita.</td>
+</tr>
+</tbody>
+</table>
+<p>A ponte oficial <code>municipio_tse_ibge</code> relaciona os códigos municipais. <code>cod_tse</code> deve ser texto de cinco caracteres para preservar zeros à esquerda. As fontes e os procedimentos de coleta estão em <code>docs/fontes-de-dados.md</code>, <code>docs/esquemas.md</code> e <code>scripts/coleta_*.py</code>.</p>
+</section><section id="perguntas" class="document-section"><h2>2. Perguntas — o que cada consulta deverá responder</h2><table>
+<thead>
+<tr>
+  <th>#</th>
+  <th>Pergunta</th>
+  <th>Resposta esperada</th>
+  <th>Dados centrais</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Q1</td>
+  <td>Quanto custa disputar uma cadeira?</td>
+  <td>Despesa total de campanha por vaga em disputa, comparando território, cargo e eleição.</td>
+  <td>Despesas, candidaturas, vagas.</td>
+</tr>
+<tr>
+  <td>Q2</td>
+  <td>Gastar mais aumenta a taxa de sucesso?</td>
+  <td>Relação entre gasto por candidatura e proporção de eleitos, com recortes comparáveis.</td>
+  <td>Despesas, candidaturas, situação de totalização.</td>
+</tr>
+<tr>
+  <td>Q3</td>
+  <td>Como o perfil municipal se relaciona com partidos, eleitos e abstenção?</td>
+  <td>Indicadores municipais, votação e participação lado a lado por município e eleição.</td>
+  <td>Município-ano, votos, partidos, comparecimento.</td>
+</tr>
+<tr>
+  <td>Q4</td>
+  <td>A instrução do candidato acompanha a escolaridade da população?</td>
+  <td>Distribuição de escolaridade de candidatos em comparação com o Censo 2022 no território.</td>
+  <td>Candidaturas, Censo de instrução.</td>
+</tr>
+<tr>
+  <td>Q5</td>
+  <td>Como se distribuem os votos de legenda?</td>
+  <td>Votos de legenda por partido e, quando aplicável, por federação, município e eleição.</td>
+  <td>Votação de legenda, partido, federação.</td>
+</tr>
+<tr>
+  <td>Q6</td>
+  <td>Quais temas aparecem nas propostas de governo?</td>
+  <td>Termos recorrentes e sua frequência em textos de propostas, com recorte por candidatura.</td>
+  <td>PDFs de propostas, termos extraídos.</td>
+</tr>
+<tr>
+  <td>Q7</td>
+  <td>Jovens e não jovens diferem no comportamento eleitoral?</td>
+  <td>Perfis etários de candidaturas e eleitorado associados a votos e comparecimento.</td>
+  <td>Político, candidatura, eleitorado, comparecimento por perfil.</td>
+</tr>
+<tr>
+  <td>Q8</td>
+  <td>Como doações de pessoas jurídicas se distribuíam politicamente?</td>
+  <td>Valores e doadores empresariais por candidatura/partido no período em que eram permitidos, com 2016 como marco posterior.</td>
+  <td>Receitas antigas, agente financeiro, partido.</td>
+</tr>
+<tr>
+  <td>Q9</td>
+  <td>Como evolui o viés político de um município?</td>
+  <td>Série de votação por classificação de espectro partidário e território, sem presumir sucessão entre siglas.</td>
+  <td>Votos, partido, eleição, município.</td>
+</tr>
+<tr>
+  <td>Q10</td>
+  <td>Eleitos e não eleitos têm composições de recursos diferentes?</td>
+  <td>Proporção de financiamento público, privado e próprio por situação eleitoral.</td>
+  <td>Receitas, classificação de fonte, candidatura.</td>
+</tr>
+<tr>
+  <td>Q11</td>
+  <td>Onde candidatos concentram gastos de propaganda?</td>
+  <td>Valores, tipos e descrições das despesas de propaganda por candidatura e fornecedor.</td>
+  <td>Despesas, tipo de despesa, agente financeiro.</td>
+</tr>
+<tr>
+  <td>Q12</td>
+  <td>Como se desenha a trajetória eleitoral de um político?</td>
+  <td>Linha do tempo de candidaturas, partidos, cargos e resultados da mesma pessoa.</td>
+  <td>Político, candidatura, eleição, partido.</td>
+</tr>
+</tbody>
+</table>
+<p>As perguntas são objetivos de consulta, não respostas já obtidas. Q3 deve considerar que gastos de eleição geral não têm granularidade municipal; Q7 requer a fonte de comparecimento por perfil para abstenção etária; Q8 depende de conciliar leiautes antigos e recentes de prestação de contas.</p>
+</section><section id="der" class="document-section"><h2>3. Diagrama entidade-relacionamento (DER)</h2><p><strong>Fonte do diagrama:</strong> <code>docs/dossie/diagramas/der-geral-separado.drawio</code> (duas páginas, exibidas como SVG).</p>
+<p>Eixos do modelo: <code>CANDIDATURA</code> conecta pessoa, eleição, partido, votos e finanças; <code>MUNICIPIO</code> conecta os códigos TSE e IBGE aos resultados e indicadores. A federação é opcional a partir de 2022. Para <code>CANDIDATURA</code>, o município é resolvido a partir de <code>SG_UE</code> somente em pleitos municipais.</p>
+<div class="diagram-toolbar no-print">
+              <label for="diagram-page">Página</label><select id="diagram-page" aria-label="Página do DER"><option value="diagramas/der-geral-relacoes.drawio.svg">Entidades e relacionamentos</option><option value="diagramas/der-geral-atributos.drawio.svg">Entidades e atributos</option></select>
+              <button id="zoom-out" type="button" aria-label="Diminuir diagrama">−</button>
+              <button id="zoom-reset" type="button">Ajustar</button>
+              <button id="zoom-in" type="button" aria-label="Ampliar diagrama">+</button>
+              <a href="diagramas/der-geral-separado.drawio" download>Baixar .drawio</a>
+            </div><div id="diagram-viewport" role="region" aria-label="DER: arraste para percorrer; use a roda do mouse para ampliar" tabindex="0"><img id="diagram-image" alt="Diagrama entidade-relacionamento"></div><div id="print-diagrams"><section class="print-module"><h3>Entidades e relacionamentos</h3><img src="diagramas/der-geral-relacoes.drawio.svg" alt="DER: Entidades e relacionamentos"></section><section class="print-module"><h3>Entidades e atributos</h3><img src="diagramas/der-geral-atributos.drawio.svg" alt="DER: Entidades e atributos"></section></div><p id="diagram-status" class="status" role="status">Carregando DER…</p></section><section id="modelo-relacional" class="document-section"><h2>4. Modelo relacional</h2><p><strong>Fonte:</strong> mapeamento do DER geral (<code>docs/dossie/diagramas/der-geral.drawio</code>) para tabelas: 32 entidades e 43 relacionamentos.</p>
+<p><strong>Regras aplicadas:</strong> relacionamentos 1:N levam a chave estrangeira para o lado N; relacionamentos 1:1 levam-na para o lado dependente. Entidades cuja chave sublinhada é parcial (por exemplo, <code>ano</code> em <code>MUNICIPIO_ANO</code>) foram tratadas como fracas, e sua chave primária é a chave do dono somada à chave parcial. Atributos tracejados no DER são derivados e aparecem marcados como tal.</p>
+<p><strong>Notação:</strong> <strong>negrito</strong> = chave primária; <code>FK → TABELA</code> = chave estrangeira; <code>UK</code> = chave única.</p>
+<h3>4.1 Território e socioeconômico</h3>
+<ul>
+<li><strong>UF</strong>(<strong>sg_uf</strong>, cd_uf_ibge <code>UK</code>, nm_uf, nm_regiao)</li>
+<li><strong>MUNICIPIO</strong>(<strong>cod_ibge</strong>, cod_tse <code>UK</code>, nm_municipio, cd_regiao_imediata, nm_regiao_imediata, cd_regiao_intermediaria, sg_uf <code>FK → UF</code>)</li>
+<li><strong>MUNICIPIO_ANO</strong>(<strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>ano</strong>, qt_populacao, ds_fonte_populacao, vr_pib_mil, vr_pib_per_capita)</li>
+<li><strong>MUNICIPIO_CENSO</strong>(<strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>ano_censo</strong>, vr_renda_media_pc, vr_renda_mediana_pc, nr_anos_estudo)</li>
+<li><strong>IDHM_MUNICIPIO</strong>(<strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>ano_censo</strong>, vl_idhm, vl_idhm_renda, vl_idhm_longevidade, vl_idhm_educacao)</li>
+<li><strong>NIVEL_INSTRUCAO</strong>(<strong>cd_nivel</strong>, ds_nivel, cd_categoria_sidra, nr_ordem)</li>
+<li><strong>GRAU_INSTRUCAO</strong>(<strong>cd_grau_instrucao</strong>, ds_grau_instrucao, cd_nivel <code>FK → NIVEL_INSTRUCAO</code>)</li>
+<li><strong>CENSO_INSTRUCAO</strong>(<strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>cd_nivel</strong> <code>FK → NIVEL_INSTRUCAO</code>, <strong>ano_censo</strong>, qt_pessoas)</li>
+<li><strong>FAIXA_ETARIA</strong>(<strong>id_faixa</strong>, ds_origem, cd_origem, ds_faixa, nr_idade_min, nr_idade_max, fl_jovem)</li>
+<li><strong>CENSO_FAIXA_ETARIA</strong>(<strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>id_faixa</strong> <code>FK → FAIXA_ETARIA</code>, <strong>ano_censo</strong>, qt_pessoas)</li>
+<li><strong>COMPARECIMENTO_PERFIL</strong>(<strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>id_faixa</strong> <code>FK → FAIXA_ETARIA</code>, <strong>ano</strong>, <strong>nr_turno</strong>, <strong>ds_genero</strong>, qt_aptos, qt_comparecimento, qt_abstencao)</li>
+</ul>
+<h3>4.2 Eleição e candidatura</h3>
+<ul>
+<li><strong>ELEICAO</strong>(<strong>cd_eleicao</strong>, ano, nr_turno, dt_eleicao, tp_eleicao, tp_abrangencia)</li>
+<li><strong>CARGO</strong>(<strong>cd_cargo</strong>, ds_cargo)</li>
+<li><strong>POLITICO</strong>(<strong>nr_titulo_eleitoral</strong>, nm_candidato, dt_nascimento, sg_uf_nascimento)</li>
+<li><strong>CANDIDATURA</strong>(<strong>id_candidatura</strong>, ano, sg_ue, sq_candidato, ds_genero, ds_cor_raca, ds_ocupacao, ds_sit_tot_turno, fl_eleito <em>(derivado)</em>, nr_idade_eleicao <em>(derivado)</em>, cd_eleicao <code>FK → ELEICAO</code>, cd_cargo <code>FK → CARGO</code>, nr_partido, nr_titulo_eleitoral <code>FK → POLITICO</code>, cd_grau_instrucao <code>FK → GRAU_INSTRUCAO</code>, cod_ibge <code>FK → MUNICIPIO</code>)<ul>
+<li><code>UK</code> (ano, sg_ue, sq_candidato)</li>
+<li>(ano, nr_partido) <code>FK → PARTIDO</code></li>
+<li>cod_ibge é nulo fora de pleitos municipais</li>
+</ul>
+</li>
+<li><strong>BEM_CANDIDATO</strong>(<strong>id_candidatura</strong> <code>FK → CANDIDATURA</code>, <strong>nr_ordem_bem</strong>, ds_tipo_bem, vr_bem)</li>
+<li><strong>VAGA</strong>(<strong>cd_eleicao</strong> <code>FK → ELEICAO</code>, <strong>cd_cargo</strong> <code>FK → CARGO</code>, <strong>sg_ue</strong>, qt_vaga, cod_ibge <code>FK → MUNICIPIO</code>)<ul>
+<li>cod_ibge é nulo fora de pleitos municipais</li>
+</ul>
+</li>
+<li><strong>PROPOSTA_GOVERNO</strong>(<strong>nr_sequencial</strong>, nm_arquivo, qt_caracteres, fl_texto_extraido, tx_conteudo, id_candidatura <code>FK → CANDIDATURA</code>)</li>
+<li><strong>TERMO_PROPOSTA</strong>(<strong>nr_sequencial</strong> <code>FK → PROPOSTA_GOVERNO</code>, <strong>termo</strong>, qt_frequencia)</li>
+</ul>
+<h3>4.3 Votação</h3>
+<ul>
+<li><strong>VOTACAO_CANDIDATO_MUNICIPIO</strong>(<strong>id_candidatura</strong> <code>FK → CANDIDATURA</code>, <strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>nr_turno</strong>, qt_votos_nominais, qt_votos_nominais_validos)</li>
+<li><strong>VOTACAO_LEGENDA_MUNICIPIO</strong>(<strong>cd_eleicao</strong> <code>FK → ELEICAO</code>, <strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, <strong>cd_cargo</strong> <code>FK → CARGO</code>, <strong>ano</strong>, <strong>nr_partido</strong>, <strong>sq_coligacao</strong>, qt_votos_legenda_validos, qt_total_votos_leg_validos)<ul>
+<li>(ano, nr_partido) <code>FK → PARTIDO</code></li>
+</ul>
+</li>
+<li><strong>COMPARECIMENTO_MUNICIPIO</strong>(<strong>cd_eleicao</strong> <code>FK → ELEICAO</code>, <strong>cd_cargo</strong> <code>FK → CARGO</code>, <strong>cod_ibge</strong> <code>FK → MUNICIPIO</code>, qt_aptos, qt_comparecimento, qt_abstencoes, qt_votos_brancos, qt_total_votos_nulos)</li>
+</ul>
+<h3>4.4 Partidos</h3>
+<ul>
+<li><strong>PARTIDO</strong>(<strong>ano</strong>, <strong>nr_partido</strong>, sg_partido, nm_partido)</li>
+<li><strong>ESPECTRO_PARTIDO</strong>(<strong>ano</strong>, <strong>nr_partido</strong>, nr_rodada, vl_ideologia, cd_espectro, ds_fonte)<ul>
+<li>(ano, nr_partido) <code>FK → PARTIDO</code> (1:1)</li>
+</ul>
+</li>
+<li><strong>FEDERACAO</strong>(<strong>ano</strong>, <strong>nr_federacao</strong>, sg_federacao, ds_composicao)</li>
+<li><strong>PARTIDO_FEDERACAO</strong>(<strong>ano</strong>, <strong>nr_partido</strong>, nr_federacao)<ul>
+<li>(ano, nr_partido) <code>FK → PARTIDO</code> (1:1)</li>
+<li>(ano, nr_federacao) <code>FK → FEDERACAO</code></li>
+</ul>
+</li>
+<li><strong>ORGAO_PARTIDARIO</strong>(<strong>id_orgao</strong>, tp_orgao, ds_esfera, sg_uf, nr_cnpj, ano, nr_partido)<ul>
+<li>(ano, nr_partido) <code>FK → PARTIDO</code></li>
+</ul>
+</li>
+</ul>
+<h3>4.5 Finanças de campanha</h3>
+<ul>
+<li><strong>AGENTE_FINANCEIRO</strong>(<strong>id_agente</strong>, nr_cpf_cnpj <code>UK</code>, nm_agente, cd_cnae, tp_agente)</li>
+<li><strong>FONTE_RECURSO</strong>(<strong>id_fonte_recurso</strong>, ds_fonte_receita, ds_origem_receita, tp_origem)</li>
+<li><strong>TIPO_DESPESA</strong>(<strong>id_tipo_despesa</strong>, ds_tipo_despesa, ds_canal_propaganda, fl_propaganda)</li>
+<li><strong>RECEITA_CAMPANHA</strong>(<strong>id_receita</strong>, dt_receita, vr_receita, id_candidatura <code>FK → CANDIDATURA</code>, id_orgao <code>FK → ORGAO_PARTIDARIO</code>, id_agente_doador <code>FK → AGENTE_FINANCEIRO</code>, id_agente_originario <code>FK → AGENTE_FINANCEIRO</code>, id_fonte_recurso <code>FK → FONTE_RECURSO</code>)<ul>
+<li>exatamente um entre id_candidatura e id_orgao é preenchido (relacionamentos &quot;arrecada&quot;)</li>
+<li>id_agente_doador vem de &quot;doa direto&quot;; id_agente_originario vem de &quot;origina 2014-2016&quot; e é nulo fora desse período</li>
+</ul>
+</li>
+<li><strong>DESPESA_CAMPANHA</strong>(<strong>id_despesa</strong>, dt_despesa, vr_despesa, ds_despesa, id_candidatura <code>FK → CANDIDATURA</code>, id_agente_fornecedor <code>FK → AGENTE_FINANCEIRO</code>, id_tipo_despesa <code>FK → TIPO_DESPESA</code>)</li>
+</ul>
+<h3>4.6 Pendências a conferir com o DER</h3>
+<ol>
+<li><code>ESPECTRO_PARTIDO</code> não tem chave sublinhada no DER. O atributo <code>nr_rodada</code> sugere mais de uma leitura por partido; nesse caso a chave passa a ser (ano, nr_partido, nr_rodada) e o relacionamento com <code>PARTIDO</code> deixa de ser 1:1.</li>
+<li>Três atributos parecem chaves estrangeiras sem relacionamento desenhado: <code>VOTACAO_LEGENDA_MUNICIPIO.cd_cargo</code> (para <code>CARGO</code>, já tratado como FK acima), <code>ORGAO_PARTIDARIO.sg_uf</code> e <code>POLITICO.sg_uf_nascimento</code> (para <code>UF</code>).</li>
+<li><code>COMPARECIMENTO_MUNICIPIO</code> não tem atributo sublinhado; a chave primária foi formada só pelas chaves estrangeiras. Se os dados forem por turno, falta <code>nr_turno</code>.</li>
+<li><code>COMPARECIMENTO_PERFIL</code> guarda <code>ano</code> e <code>nr_turno</code> sem ligação com <code>ELEICAO</code>; uma FK <code>cd_eleicao</code> seria mais coerente.</li>
+<li><code>ano</code> convive com <code>cd_eleicao</code> em <code>CANDIDATURA</code> e <code>VOTACAO_LEGENDA_MUNICIPIO</code> porque a chave de <code>PARTIDO</code> inclui o ano. É uma redundância que precisa de restrição de consistência.</li>
+<li>O DER não indica participação obrigatória ou opcional; as colunas anuláveis acima foram deduzidas do significado dos relacionamentos.</li>
+</ol>
+</section><section id="dicionario" class="document-section"><h2>5. Dicionário de dados</h2><p>As 32 entidades abaixo seguem o DER geral. As tabelas de atributos estão reservadas para preenchimento posterior; tipos, chaves e origens dos campos ainda serão documentados. O rascunho detalhado de <code>CANDIDATURA</code> está em <code>docs/dicionario-dados.md</code> e precisa ser conferido com o DER atual.</p>
+<h3>Território e contexto</h3>
+<h4><code>UF</code></h4>
+<p>Unidade da federação usada para situar os municípios.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>MUNICIPIO</code></h4>
+<p>Município identificado por códigos do IBGE e do TSE, permitindo relacionar dados territoriais e eleitorais.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>MUNICIPIO_ANO</code></h4>
+<p>Indicadores de população e economia de um município em determinado ano.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>MUNICIPIO_CENSO</code></h4>
+<p>Indicadores de renda e anos de estudo de um município em um ano censitário.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>IDHM_MUNICIPIO</code></h4>
+<p>Índice de Desenvolvimento Humano Municipal e seus componentes para um município e ano censitário.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>NIVEL_INSTRUCAO</code></h4>
+<p>Categorias de escolaridade usadas para classificar a população nos dados censitários.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>GRAU_INSTRUCAO</code></h4>
+<p>Graus de escolaridade declarados por candidatos ao TSE, associados quando possível aos níveis censitários.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>CENSO_INSTRUCAO</code></h4>
+<p>Quantidade de pessoas por município, ano censitário e nível de instrução.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>FAIXA_ETARIA</code></h4>
+<p>Faixas de idade usadas para classificar dados populacionais e de comparecimento, com indicação da fonte TSE ou IBGE.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>CENSO_FAIXA_ETARIA</code></h4>
+<p>Quantidade de pessoas por município, ano censitário e faixa etária.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>COMPARECIMENTO_PERFIL</code></h4>
+<p>Eleitores aptos, comparecimentos e abstenções por município, ano, turno, faixa etária e gênero.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h3>Eleição, partido e candidatura</h3>
+<h4><code>ELEICAO</code></h4>
+<p>Pleito identificado pelo código do TSE, com ano, turno, data e abrangência.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>CARGO</code></h4>
+<p>Cargo político disputado em uma candidatura e ao qual correspondem vagas e resultados eleitorais.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>PARTIDO</code></h4>
+<p>Agremiação partidária identificada pelo ano e número, preservando mudanças ao longo do tempo.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>ESPECTRO_PARTIDO</code></h4>
+<p>Classificação ideológica de um partido em determinado ano, com rodada e fonte da classificação.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>FEDERACAO</code></h4>
+<p>Federação partidária identificada por ano e número, formada por partidos que atuam em conjunto.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>PARTIDO_FEDERACAO</code></h4>
+<p>Associação entre um partido e a federação da qual participa em determinado ano.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>POLITICO</code></h4>
+<p>Pessoa que pode participar de diferentes eleições por meio de candidaturas distintas.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>CANDIDATURA</code></h4>
+<p>Participação de um político em uma eleição para determinado cargo e partido, com dados declarados e situação eleitoral.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>BEM_CANDIDATO</code></h4>
+<p>Bem patrimonial declarado em uma candidatura, identificado pela ordem na declaração.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h3>Resultados eleitorais</h3>
+<h4><code>VAGA</code></h4>
+<p>Quantidade de cadeiras oferecidas para um cargo em uma eleição e unidade eleitoral.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>VOTACAO_CANDIDATO_MUNICIPIO</code></h4>
+<p>Votos nominais recebidos por uma candidatura em um município e turno, com zonas eleitorais agregadas.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>VOTACAO_LEGENDA_MUNICIPIO</code></h4>
+<p>Votos de legenda de um partido em um município, eleição, cargo e coligação.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>COMPARECIMENTO_MUNICIPIO</code></h4>
+<p>Totais de eleitores aptos, comparecimento, abstenções e votos brancos e nulos por eleição, cargo e município.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h3>Finanças de campanha</h3>
+<h4><code>AGENTE_FINANCEIRO</code></h4>
+<p>Pessoa ou organização que participa das finanças de campanha como doadora, fonte originária ou fornecedora.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>ORGAO_PARTIDARIO</code></h4>
+<p>Diretório ou comitê de um partido que pode arrecadar recursos de campanha.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>FONTE_RECURSO</code></h4>
+<p>Classificação da fonte e origem dos recursos recebidos em campanha.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>RECEITA_CAMPANHA</code></h4>
+<p>Entrada de recursos registrada para uma candidatura ou órgão partidário, com doador, fonte e valor.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>TIPO_DESPESA</code></h4>
+<p>Categoria de despesa de campanha, incluindo a identificação de gastos com propaganda.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>DESPESA_CAMPANHA</code></h4>
+<p>Gasto registrado por uma candidatura, com fornecedor, tipo, descrição e valor.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h3>Propostas de governo</h3>
+<h4><code>PROPOSTA_GOVERNO</code></h4>
+<p>Documento de propostas apresentado por uma candidatura, com conteúdo extraído para análise textual.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h4><code>TERMO_PROPOSTA</code></h4>
+<p>Termo encontrado no texto de uma proposta de governo e sua frequência no documento.</p>
+<table>
+<thead>
+<tr>
+  <th>Atributo</th>
+  <th>Tipo</th>
+  <th>Chave</th>
+  <th>Descrição</th>
+  <th>Origem</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+</section><section id="sobre" class="document-section"><h2>6. Sobre — ferramentas e metodologia</h2><p>O projeto usa Python para coleta e inspeção; DuckDB para ler CSV, JSON e Parquet, criar views e executar consultas; e Jupyter para exploração e visualização. As dependências são gerenciadas com <code>uv</code>. Os dados eleitorais vêm do TSE; população, escolaridade, idade, PIB e malhas vêm do IBGE; o IDHM histórico do PNUD/Atlas Brasil é complementar.</p>
+<p>A metodologia planejada segue cinco etapas: (1) obter os arquivos originais em <code>dados/raw/</code>; (2) inspecionar e registrar esquemas reais em <code>docs/esquemas.md</code>; (3) normalizar códigos, tipos, anos e os dois leiautes de contas em views de preparação; (4) carregar o núcleo relacional proposto pelo DER; (5) executar uma consulta por pergunta e apresentar resultados e limitações. No estado atual, já existem coleta, inspeção, notebooks de exploração, Parquet e views brutas; as tabelas normalizadas e as 12 consultas finais ainda estão planejadas.</p>
+<p>Cuidados metodológicos: preservar o código TSE do município como texto; usar a ponte oficial TSE–IBGE; agregar as zonas eleitorais explicitamente ao nível municipal quando a pergunta pedir município; distinguir ausência de dado de valor zero; registrar o ano de cada indicador e a defasagem do IDHM; classificar origem de recursos e espectro partidário com critérios publicados.</p>
+</section><section id="fontes" class="document-section"><h2>7. Fontes dos dados e leia-me</h2><table>
+<thead>
+<tr>
+  <th>Instituição</th>
+  <th>Dados obtidos</th>
+  <th>Acesso e documentação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Tribunal Superior Eleitoral (TSE)</td>
+  <td>Candidaturas, coligações, vagas, votação, eleitorado, comparecimento, prestação de contas, propostas de governo e correspondência TSE–IBGE.</td>
+  <td>Portal de Dados Abertos e arquivos ZIP/CSV/PDF. Os pacotes de prestação de contas incluem PDFs <code>leiame_*.pdf</code>; os pacotes de propostas incluem <code>leiame.pdf</code>.</td>
+</tr>
+<tr>
+  <td>Instituto Brasileiro de Geografia e Estatística (IBGE)</td>
+  <td>População, escolaridade e idade, PIB municipal, hierarquia territorial e malhas.</td>
+  <td>API SIDRA, planilha do PIB dos Municípios no FTP e API de malhas; metadados dos agregados no serviço do IBGE.</td>
+</tr>
+<tr>
+  <td>Programa das Nações Unidas para o Desenvolvimento (PNUD) / Atlas Brasil</td>
+  <td>IDHM municipal histórico.</td>
+  <td>Fonte complementar; verificar ano de referência e evitar interpretar como indicador anual atual.</td>
+</tr>
+</tbody>
+</table>
+<p>Os endereços, tabelas, recortes e limitações constam de <code>docs/fontes-de-dados.md</code>. Os arquivos brutos são guardados em <code>dados/raw/</code>; o inventário de colunas efetivamente obtidas está em <code>docs/esquemas.md</code>.</p>
+<p><strong>PDFs de leia-me:</strong> <code>docs/dossie/leiames/</code> espelha os PDFs de <code>dados/raw/</code>, preservando a estrutura de tema, ano e pacote. A página HTML lê <code>docs/dossie/leiames/indice.md</code> e lista todos os caminhos, inclusive os de subpastas; um clique abre a prévia em uma janela sobreposta, sem seleção manual de pasta. PDFs adicionados depois só aparecem na lista após regenerar <code>indice.md</code>.</p>
+<div class="folder-box no-print"><strong>Consultar PDFs de leia-me</strong><p>Lista carregada de <code>docs/dossie/leiames/indice.md</code>. <a href="leiames/indice.md">Ver índice em Markdown</a>. Clique em um arquivo para abrir a prévia.</p><input id="leiame-search" type="search" placeholder="Filtrar por caminho"><p id="leiame-status" role="status">Carregando índice de leia-mes…</p><ul id="leiame-list"></ul></div></section>
+</main>
+<div id="leiame-modal" class="modal no-print" hidden role="dialog" aria-modal="true" aria-label="Prévia do PDF de leia-me"><div class="modal-box"><div class="modal-bar"><span id="leiame-modal-title"></span><button type="button" id="leiame-modal-close" aria-label="Fechar prévia">×</button></div><iframe id="leiame-modal-frame" title="Prévia do PDF de leia-me"></iframe></div></div>
+<script>
+const sections=[...document.querySelectorAll('main > section[id]')];
+const navLinks=[...document.querySelectorAll('.topnav nav a')];
+function showSection(){
+  const id=decodeURIComponent(location.hash.slice(1));
+  const selected=sections.find(section=>section.id===id)||sections[0];
+  for(const section of sections)section.hidden=section!==selected;
+  for(const link of navLinks){
+    if(link.hash==='#'+selected.id)link.setAttribute('aria-current','location');
+    else link.removeAttribute('aria-current');
+  }
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',showSection);
+showSection();
+const leiameModal=document.getElementById('leiame-modal'),leiameFrame=document.getElementById('leiame-modal-frame'),leiameTitle=document.getElementById('leiame-modal-title'),leiameStatus=document.getElementById('leiame-status'),leiameList=document.getElementById('leiame-list'),leiameSearch=document.getElementById('leiame-search');
+function openLeiame(path){leiameFrame.src='leiames/'+path;leiameTitle.textContent=path;leiameModal.hidden=false}
+function closeLeiame(){leiameModal.hidden=true;leiameFrame.src=''}
+document.getElementById('leiame-modal-close').onclick=closeLeiame;
+leiameModal.addEventListener('click',e=>{if(e.target===leiameModal)closeLeiame()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!leiameModal.hidden)closeLeiame()});
+let leiamePaths=[];
+function drawLeiames(){const q=leiameSearch.value.toLocaleLowerCase('pt-BR');const rows=leiamePaths.filter(p=>p.toLocaleLowerCase('pt-BR').includes(q));leiameList.replaceChildren();for(const p of rows){const li=document.createElement('li'),b=document.createElement('button');b.type='button';b.textContent=p;b.onclick=()=>openLeiame(p);li.append(b);leiameList.append(li)}leiameStatus.textContent=rows.length+' de '+leiamePaths.length+' PDF(s)';}
+leiameSearch.addEventListener('input',drawLeiames);
+fetch('leiames/indice.md').then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.text()}).then(t=>{leiamePaths=[...t.matchAll(/^- \[[^\]]+\]\(([^)]+)\)/gm)].map(m=>m[1]);drawLeiames()}).catch(()=>{leiameStatus.textContent='Sirva a pasta localmente para carregar o índice de leia-mes.'});
+</script><script src="diagram-viewer.js"></script></body></html>

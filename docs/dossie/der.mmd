@@ -1,0 +1,178 @@
+erDiagram
+    UF ||--o{ MUNICIPIO : contem
+    MUNICIPIO ||--o{ MUNICIPIO_ANO : possui
+    MUNICIPIO ||--o{ CENSO_INSTRUCAO : possui
+    MUNICIPIO ||--o{ ELEITORADO_MUNICIPIO : possui
+    MUNICIPIO ||--o{ COMPARECIMENTO_PERFIL : registra
+    MUNICIPIO ||--o{ COMPARECIMENTO_MUNICIPIO : apura
+    MUNICIPIO ||--o{ VOTACAO_CANDIDATO_MUNICIPIO : apura
+    MUNICIPIO ||--o{ VOTACAO_LEGENDA_MUNICIPIO : apura
+    MUNICIPIO ||--o{ VAGA : oferece
+    POLITICO ||--o{ CANDIDATURA : concorre
+    ELEICAO ||--o{ CANDIDATURA : registra
+    CARGO ||--o{ CANDIDATURA : disputa
+    PARTIDO ||--o{ CANDIDATURA : lanca
+    FEDERACAO o|--o{ CANDIDATURA : agrega
+    MUNICIPIO o|--o{ CANDIDATURA : sedia
+    CANDIDATURA ||--o{ VOTACAO_CANDIDATO_MUNICIPIO : recebe
+    CANDIDATURA ||--o{ RECEITA_CAMPANHA : arrecada
+    CANDIDATURA ||--o{ DESPESA_CAMPANHA : gasta
+    CANDIDATURA ||--o| PROPOSTA_GOVERNO : apresenta
+    PARTIDO ||--o{ VOTACAO_LEGENDA_MUNICIPIO : recebe
+    FEDERACAO o|--o{ VOTACAO_LEGENDA_MUNICIPIO : recebe
+    ELEICAO ||--o{ VAGA : define
+    CARGO ||--o{ VAGA : define
+    ELEICAO ||--o{ COMPARECIMENTO_MUNICIPIO : define
+    CARGO ||--o{ COMPARECIMENTO_MUNICIPIO : define
+    AGENTE_FINANCEIRO ||--o{ RECEITA_CAMPANHA : doa
+    AGENTE_FINANCEIRO ||--o{ DESPESA_CAMPANHA : fornece
+    FONTE_RECURSO ||--o{ RECEITA_CAMPANHA : classifica
+    TIPO_DESPESA ||--o{ DESPESA_CAMPANHA : classifica
+    PROPOSTA_GOVERNO ||--o{ TERMO_PROPOSTA : contem
+
+    UF {
+        string sigla_uf PK
+        string nome
+    }
+    MUNICIPIO {
+        int cod_ibge PK
+        string cod_tse UK "VARCHAR 5 preserva zero"
+        string sigla_uf FK
+        string nome
+    }
+    MUNICIPIO_ANO {
+        int cod_ibge PK, FK
+        int ano PK
+        int qt_populacao
+        decimal vr_pib_per_capita
+    }
+    CENSO_INSTRUCAO {
+        int cod_ibge PK, FK
+        int ano_censo PK
+        int cd_nivel_instrucao PK
+        int qt_pessoas
+    }
+    ELEITORADO_MUNICIPIO {
+        int cod_ibge PK, FK
+        int ano PK
+        int cd_faixa_etaria PK
+        int qt_eleitores
+    }
+    COMPARECIMENTO_PERFIL {
+        int cod_ibge PK, FK
+        int ano PK
+        int cd_faixa_etaria PK
+        int qt_comparecimento
+        int qt_abstencao
+    }
+    POLITICO {
+        int id_politico PK
+        string nr_titulo_eleitoral UK
+        string nm_completo
+        date dt_nascimento
+        string sg_uf_nascimento
+    }
+    ELEICAO {
+        int id_eleicao PK
+        int ano
+        date dt_eleicao
+    }
+    CARGO {
+        int cod_cargo PK
+        string ds_cargo
+    }
+    PARTIDO {
+        int nr_partido PK
+        string sg_partido
+        string cd_espectro
+    }
+    FEDERACAO {
+        int nr_federacao PK
+        string sg_federacao
+        string nm_federacao
+    }
+    CANDIDATURA {
+        int sq_candidato PK
+        int id_politico FK
+        int id_eleicao FK
+        int cod_cargo FK
+        int nr_partido FK
+        int nr_federacao FK
+        int cod_ibge FK "apenas eleicao municipal"
+        int cd_grau_instrucao
+        int cd_sit_tot_turno
+    }
+    VOTACAO_CANDIDATO_MUNICIPIO {
+        int sq_candidato PK, FK
+        int cod_ibge PK, FK
+        int nr_turno PK
+        int qt_votos_nominais
+    }
+    VOTACAO_LEGENDA_MUNICIPIO {
+        int id_legenda PK
+        int id_eleicao FK
+        int cod_cargo FK
+        int cod_ibge FK
+        int nr_turno
+        int nr_partido FK
+        int nr_federacao FK
+        int qt_votos_legenda
+    }
+    COMPARECIMENTO_MUNICIPIO {
+        int id_eleicao PK, FK
+        int cod_cargo PK, FK
+        int cod_ibge PK, FK
+        int nr_turno PK
+        int qt_aptos
+        int qt_abstencao
+        int qt_votos_brancos
+        int qt_votos_nulos
+    }
+    VAGA {
+        int id_eleicao PK, FK
+        int cod_cargo PK, FK
+        int cod_ibge PK, FK
+        int qt_vagas
+    }
+    AGENTE_FINANCEIRO {
+        int id_agente PK
+        string nr_cpf_cnpj
+        string tp_pessoa
+        string cd_cnae
+    }
+    FONTE_RECURSO {
+        int id_fonte_recurso PK
+        string ds_fonte_receita
+        string ds_origem_receita
+        string tp_origem "classificacao do grupo"
+    }
+    RECEITA_CAMPANHA {
+        int id_receita PK
+        int sq_candidato FK
+        int id_agente FK
+        int id_fonte_recurso FK
+        decimal vr_receita
+    }
+    TIPO_DESPESA {
+        int cd_tipo_despesa PK
+        string ds_tipo_despesa
+        boolean fl_propaganda
+    }
+    DESPESA_CAMPANHA {
+        int id_despesa PK
+        int sq_candidato FK
+        int id_agente FK
+        int cd_tipo_despesa FK
+        decimal vr_despesa
+        string ds_despesa
+    }
+    PROPOSTA_GOVERNO {
+        int sq_candidato PK, FK
+        string url_pdf
+        string tx_conteudo
+    }
+    TERMO_PROPOSTA {
+        int sq_candidato PK, FK
+        string termo PK
+        int qt_frequencia
+    }

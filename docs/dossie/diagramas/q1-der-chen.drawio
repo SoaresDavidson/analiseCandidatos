@@ -1,0 +1,136 @@
+<mxfile host="Electron" agent="Codex">
+  <diagram id="q1-der-chen" name="Q1 - Custo por cadeira">
+    <mxGraphModel dx="859" dy="622" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="eleicao" parent="1" style="shape=rectangle;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" value="ELEIÇÃO" vertex="1">
+          <mxGeometry height="60" width="150" x="620" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="municipio" parent="1" style="shape=rectangle;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" value="MUNICÍPIO" vertex="1">
+          <mxGeometry height="60" width="160" x="80" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="cargo" parent="1" style="shape=rectangle;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" value="CARGO" vertex="1">
+          <mxGeometry height="60" width="150" x="620" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="candidatura" parent="1" style="shape=rectangle;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" value="CANDIDATURA" vertex="1">
+          <mxGeometry height="60" width="180" x="330" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="despesa" parent="1" style="shape=rectangle;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" value="DESPESA_CAMPANHA" vertex="1">
+          <mxGeometry height="60" width="200" x="850" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="vaga" parent="1" style="shape=rectangle;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" value="VAGA" vertex="1">
+          <mxGeometry height="60" width="150" x="1100" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="r1" parent="1" style="shape=rhombus;perimeter=rhombusPerimeter;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" value="contém" vertex="1">
+          <mxGeometry height="60" width="120" x="470" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="r2" parent="1" style="shape=rhombus;perimeter=rhombusPerimeter;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" value="sedia" vertex="1">
+          <mxGeometry height="60" width="120" x="150" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="r3" parent="1" style="shape=rhombus;perimeter=rhombusPerimeter;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" value="disputa" vertex="1">
+          <mxGeometry height="60" width="120" x="560" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="r4" parent="1" style="shape=rhombus;perimeter=rhombusPerimeter;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" value="contrata" vertex="1">
+          <mxGeometry height="60" width="120" x="650" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="r5" parent="1" style="shape=rhombus;perimeter=rhombusPerimeter;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" value="oferta" vertex="1">
+          <mxGeometry height="60" width="120" x="950" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="r6" parent="1" style="shape=rhombus;perimeter=rhombusPerimeter;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" value="quantifica" vertex="1">
+          <mxGeometry height="60" width="140" x="900" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="a_eid" parent="1" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666" value="cd_eleicao (PK)" vertex="1">
+          <mxGeometry height="40" width="140" x="790" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="a_ano" parent="1" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666" value="ano_eleicao" vertex="1">
+          <mxGeometry height="40" width="110" x="500" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="a_mid" parent="1" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666" value="cd_municipio (PK)" vertex="1">
+          <mxGeometry height="40" width="150" x="20" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="a_mnome" parent="1" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666" value="nm_municipio" vertex="1">
+          <mxGeometry height="40" width="130" x="20" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="a_cargo" parent="1" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666" value="cd_cargo (PK)" vertex="1">
+          <mxGeometry height="40" width="120" x="720" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="a_sq" parent="1" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666" value="sq_candidato (PK)" vertex="1">
+          <mxGeometry height="40" width="160" x="260" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="a_valor" parent="1" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666" value="vr_despesa_contratada" vertex="1">
+          <mxGeometry height="40" width="180" x="1070" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="a_qt" parent="1" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666" value="qt_vagas" vertex="1">
+          <mxGeometry height="40" width="110" x="1260" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="eleicao" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none" target="r1" value="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="r1" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none" target="candidatura" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="municipio" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none" target="r2" value="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="r2" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none" target="candidatura" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="cargo" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none" target="r3" value="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="r3" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none" target="candidatura" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="candidatura" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none" target="r4" value="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="r4" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none" target="despesa" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="eleicao" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none" target="r5" value="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="r5" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none" target="vaga" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="municipio" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none" target="r5" value="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="r5" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none" target="vaga" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="cargo" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none" target="r6" value="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="r6" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none" target="vaga" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" edge="1" parent="1" source="eleicao" style="edgeStyle=none;endArrow=none" target="a_eid">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" edge="1" parent="1" source="eleicao" style="edgeStyle=none;endArrow=none" target="a_ano">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" edge="1" parent="1" source="municipio" style="edgeStyle=none;endArrow=none" target="a_mid">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" edge="1" parent="1" source="municipio" style="edgeStyle=none;endArrow=none" target="a_mnome">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a5" edge="1" parent="1" source="cargo" style="edgeStyle=none;endArrow=none" target="a_cargo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a6" edge="1" parent="1" source="candidatura" style="edgeStyle=none;endArrow=none" target="a_sq">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a7" edge="1" parent="1" source="despesa" style="edgeStyle=none;endArrow=none" target="a_valor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a8" edge="1" parent="1" source="vaga" style="edgeStyle=none;endArrow=none" target="a_qt">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -165,15 +165,15 @@ Validado contra os arquivos crus: contagem e soma batem linha a linha em 2014 e
 2016, os `sq_candidato` casam com `consulta_cand` sem nenhum órfão, e a Q12
 reproduz os 599.547 reincidentes (32,3%) do `estrategia.md`.
 
-Critérios e armadilhas: [`docs/der-enrico.md`](docs/der-enrico.md) (o modelo),
-[`docs/q10-publico-privado.md`](docs/q10-publico-privado.md),
-[`docs/q11-propaganda.md`](docs/q11-propaganda.md),
-[`docs/q12-linha-do-tempo.md`](docs/q12-linha-do-tempo.md).
+Critérios e armadilhas: [`docs/der/der-enrico.md`](docs/der/der-enrico.md) (o modelo),
+[`docs/der/q10-publico-privado.md`](docs/der/q10-publico-privado.md),
+[`docs/der/q11-propaganda.md`](docs/der/q11-propaganda.md),
+[`docs/der/q12-linha-do-tempo.md`](docs/der/q12-linha-do-tempo.md).
 
 > 🚨 **`sq_candidato` não é chave antes de 2010.** Em 2004 são 402.157
 > candidaturas em 1.506 valores distintos. Deduplicar por ele funde 400 mil
 > pessoas sem erro nenhum. Detalhe na nota 2 do
-> [`docs/der-enrico.md`](docs/der-enrico.md) — não afeta quem usa 2014+.
+> [`docs/der/der-enrico.md`](docs/der/der-enrico.md) — não afeta quem usa 2014+.
 >
 > 🚨 **`consulta_cand` de 2008 e 2016 quebra com `encoding='latin-1'`.** Use
 > `INSTALL encodings; LOAD encodings;` com `encoding='cp1252'` e

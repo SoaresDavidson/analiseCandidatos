@@ -149,7 +149,7 @@ table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{text-align:left;
 </tbody>
 </table>
 <p>As perguntas são objetivos de consulta, não respostas já obtidas. Q3 deve considerar que gastos de eleição geral não têm granularidade municipal; Q7 requer a fonte de comparecimento por perfil para abstenção etária; Q8 depende de conciliar leiautes antigos e recentes de prestação de contas.</p>
-</section><section id="der" class="document-section"><h2>3. Diagrama entidade-relacionamento (DER)</h2><p><strong>Fonte do diagrama:</strong> <code>docs/dossie/der.mmd</code> (sintaxe Mermaid <code>erDiagram</code>). A página HTML carrega esse arquivo em tempo de execução, e o PDF apresenta o diagrama renderizado a partir do mesmo arquivo. Ele consolida o rascunho <code>docs/der.md</code> com as correções registradas em <code>docs/estrategia.md</code>, seção 4.1. É um modelo proposto para o trabalho; a validação completa de chaves e cardinalidades depende da carga.</p>
+</section><section id="der" class="document-section"><h2>3. Diagrama entidade-relacionamento (DER)</h2><p><strong>Fonte do diagrama:</strong> <code>docs/dossie/der.mmd</code> (sintaxe Mermaid <code>erDiagram</code>).</p>
 <p>Eixos do modelo: <code>CANDIDATURA</code> conecta pessoa, eleição, partido, votos e finanças; <code>MUNICIPIO</code> conecta os códigos TSE e IBGE aos resultados e indicadores. A federação é opcional a partir de 2022. Para <code>CANDIDATURA</code>, o município é resolvido a partir de <code>SG_UE</code> somente em pleitos municipais.</p>
 <div class="diagram-toolbar no-print">
               <button id="zoom-out" type="button" aria-label="Diminuir diagrama">−</button>

@@ -6,7 +6,7 @@ responda às 12 perguntas.
 
 Documentos irmãos:
 [`fontes-de-dados.md`](fontes-de-dados.md) (o que existe, validado) e
-[`der.md`](der.md) (o modelo e o mapa pergunta → entidade).
+[`der.md`](der/der.md) (o modelo e o mapa pergunta → entidade).
 
 ---
 
@@ -364,14 +364,14 @@ plano de migração para Postgres.
 
 ### ⑤ Notação do DER → **diagrama, feito à mão depois**
 
-O grupo vai desenhar. O [`der.md`](der.md) serve de rascunho e de fonte da lista de
+O grupo vai desenhar. O [`der.md`](der/der.md) serve de rascunho e de fonte da lista de
 entidades, atributos e cardinalidades — não é a entrega.
 
 ---
 
 ## 4.1 Correções ao rascunho do DER que saíram dessas verificações
 
-Não mexi no [`der.md`](der.md) — são notas para quem for desenhar.
+Não mexi no [`der.md`](der/der.md) — são notas para quem for desenhar.
 
 1. **`MUNICIPIO.cod_tse` deve ser `VARCHAR(5)`.** Vem como `"01007"` na ponte e
    também nos arquivos de votação, com o zero à esquerda dos dois lados — então o
@@ -531,7 +531,7 @@ O DER está pronto quando:
 - [ ] Toda FK aponta para uma PK que **existe** em outro módulo, com o mesmo nome e
       tipo do contrato do A.
 - [ ] Cada uma das 12 perguntas tem um caminho de joins traçável no diagrama
-      (usar o mapa no fim do [`der.md`](der.md) como prova).
+      (usar o mapa no fim do [`der.md`](der/der.md) como prova).
 - [ ] Todo atributo **derivado** está marcado como tal (`vr_pib_per_capita`,
       `tx_abstencao`, `fl_eleito`, `fl_porte`). O professor vai perguntar.
 - [ ] Os quatro módulos renderizam em um único diagrama sem entidade órfã.

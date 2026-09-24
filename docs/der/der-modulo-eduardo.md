@@ -3,11 +3,11 @@
 Entrega de **quinta, 24/09/2026**. Este arquivo é a minha parte dos quatro módulos
 que se somam no DER da entrega: o diagrama, as chaves, os atributos derivados e um
 parágrafo de justificativa por decisão, como pede o checklist da seção 6 do
-[`estrategia.md`](estrategia.md).
+[`estrategia.md`](../estrategia.md).
 
 Documentos irmãos: [`der.md`](der.md) (rascunho do grupo, **anterior às correções
-da seção 4.1**), [`esquemas.md`](esquemas.md) (colunas reais dos arquivos baixados)
-e [`fontes-de-dados.md`](fontes-de-dados.md).
+da seção 4.1**), [`esquemas.md`](../esquemas.md) (colunas reais dos arquivos baixados)
+e [`fontes-de-dados.md`](../fontes-de-dados.md).
 
 | | |
 |---|---|
@@ -39,7 +39,7 @@ rascunho do grupo** — são as três entidades novas deste módulo.
 
 ### Conformidade com o contrato de chaves
 
-Nome e tipo conforme a seção 3 do [`estrategia.md`](estrategia.md), sem exceção:
+Nome e tipo conforme a seção 3 do [`estrategia.md`](../estrategia.md), sem exceção:
 
 | Chave | Tipo | Uso aqui |
 |---|---|---|
@@ -53,103 +53,7 @@ Nome e tipo conforme a seção 3 do [`estrategia.md`](estrategia.md), sem exceç
 
 ## 2. Diagrama
 
-```mermaid
-erDiagram
-    ELEICAO   ||--o{ FEDERACAO                  : "constitui"
-    ELEICAO   ||--o{ PARTIDO_FEDERACAO          : "vigora em"
-    FEDERACAO ||--o{ PARTIDO_FEDERACAO          : "agrega"
-    PARTIDO   ||--o{ PARTIDO_FEDERACAO          : "integra"
-
-    ELEICAO   ||--o{ VOTACAO_LEGENDA_MUNICIPIO  : "contem"
-    CARGO     ||--o{ VOTACAO_LEGENDA_MUNICIPIO  : "define"
-    MUNICIPIO ||--o{ VOTACAO_LEGENDA_MUNICIPIO  : "apura"
-    PARTIDO   ||--o{ VOTACAO_LEGENDA_MUNICIPIO  : "recebe"
-    FEDERACAO ||--o{ VOTACAO_LEGENDA_MUNICIPIO  : "recebe por"
-
-    NIVEL_INSTRUCAO_COMPARAVEL ||--o{ GRAU_INSTRUCAO  : "agrupa"
-    NIVEL_INSTRUCAO_COMPARAVEL ||--o{ CENSO_INSTRUCAO : "classifica"
-    GRAU_INSTRUCAO ||--o{ CANDIDATURA     : "classifica"
-    MUNICIPIO      ||--o{ CENSO_INSTRUCAO : "tem perfil"
-
-    CANDIDATURA      ||--o{ PROPOSTA_GOVERNO : "registra"
-    PROPOSTA_GOVERNO ||--o{ TERMO_PROPOSTA   : "gera"
-
-    MUNICIPIO {
-        int cod_ibge PK "stub - modulo 1"
-    }
-    PARTIDO {
-        int nr_partido PK "stub - modulo 1"
-    }
-    ELEICAO {
-        int id_eleicao PK "stub - modulo 1"
-    }
-    CARGO {
-        int cod_cargo PK "stub - modulo 1"
-    }
-    CANDIDATURA {
-        bigint sq_candidato PK "stub - modulo 1"
-    }
-
-    FEDERACAO {
-        int id_eleicao PK, FK
-        int nr_federacao PK "-1 no arquivo = SEM federacao, nao e linha"
-        char sg_federacao
-        varchar nm_federacao
-        varchar ds_composicao
-    }
-    PARTIDO_FEDERACAO {
-        int id_eleicao PK, FK
-        int nr_partido PK, FK
-        int nr_federacao FK
-    }
-    VOTACAO_LEGENDA_MUNICIPIO {
-        int id_eleicao PK, FK
-        int nr_turno PK
-        int cod_cargo PK, FK
-        int cod_ibge PK, FK
-        int nr_partido PK, FK
-        int nr_federacao FK "nulo antes de 2022"
-        bigint qt_votos_legenda
-        bigint qt_total_votos_legenda
-        bigint qt_votos_nominais_partido
-        decimal pc_legenda "DERIVADA"
-    }
-    NIVEL_INSTRUCAO_COMPARAVEL {
-        int cd_nivel_comparavel PK "1..4 - escala do Censo 2022"
-        varchar ds_nivel_comparavel
-        int ordem
-    }
-    GRAU_INSTRUCAO {
-        int cd_grau_instrucao PK "1..8 - escala do TSE"
-        varchar ds_grau_instrucao
-        int cd_nivel_comparavel FK "DE-PARA nosso, 8 para 4"
-        int ordem
-    }
-    CENSO_INSTRUCAO {
-        int cod_ibge PK, FK
-        int ano_censo PK
-        int cd_nivel_comparavel PK, FK
-        int cd_nivel_sidra "codigo c1568 - rastreabilidade"
-        bigint qt_pessoas
-    }
-    PROPOSTA_GOVERNO {
-        bigint sq_candidato PK, FK
-        int nr_sequencial PK "o _01 do nome do arquivo"
-        varchar nm_arquivo
-        int ano_eleicao
-        int qt_paginas
-        text tx_conteudo
-        boolean fl_texto_extraido "DERIVADA - false = PDF escaneado"
-        int qt_caracteres "DERIVADA - mede a perda do corpus"
-        date dt_extracao
-    }
-    TERMO_PROPOSTA {
-        bigint sq_candidato PK, FK
-        int nr_sequencial PK, FK
-        varchar termo PK
-        int qt_frequencia
-    }
-```
+[Diagrama](diagramas/der-eduardo-q4-q6.md)
 
 ---
 
@@ -163,14 +67,14 @@ Fonte: `consulta_cand` (2022+) e `votacao_partido_munzona` (2022+), colunas
 **PK composta `(id_eleicao, nr_federacao)`.** A composição de uma federação muda de
 eleição para eleição, então o número sozinho não identifica a coisa — identifica
 só dentro do ano. É a mesma lógica da decisão ③ da seção 4 do
-[`estrategia.md`](estrategia.md), que resolveu não modelar sucessão partidária:
+[`estrategia.md`](../estrategia.md), que resolveu não modelar sucessão partidária:
 identidade dentro do ano, sem continuidade histórica.
 
 🚨 **`NR_FEDERACAO = -1` é sentinela de "sem federação", não é uma federação.** Se
 essa linha entrar na tabela, todo partido isolado do país passa a ser membro de uma
 federação fantasma, e o `GROUP BY` da Q5 devolve número sem erro nenhum. É a mesma
 família de bug do `NR_CPF_CANDIDATO = '-4'` que derrubou a primeira versão da Q12
-(seção 5 do [`estrategia.md`](estrategia.md)): o campo não fica vazio, fica com um
+(seção 5 do [`estrategia.md`](../estrategia.md)): o campo não fica vazio, fica com um
 valor, então checagem de nulo passa. A carga precisa de `WHERE nr_federacao <> -1`
 explícito, com comentário dizendo por quê.
 
@@ -215,7 +119,7 @@ renomeação de 2018:
 
 O campo que muda de nome **não precisa ser lido**: ele é
 `qt_total_votos_legenda - qt_votos_legenda`. A linha de exemplo de 2022 no
-[`esquemas.md`](esquemas.md) confirma a identidade (`12 = 12 + 0`). Os dois
+[`esquemas.md`](../esquemas.md) confirma a identidade (`12 = 12 + 0`). Os dois
 `_ANULADOS` ficam fora porque só existem de 2020 em diante e nenhuma das 12
 perguntas os usa — carregá-los obrigaria a declarar duas gerações de staging para
 dado que ninguém consulta.
@@ -262,7 +166,7 @@ e é o tipo de detalhe que muda o resultado sem aparecer no gráfico.
 ### `PROPOSTA_GOVERNO`
 
 Fonte: `proposta_governo_{ano}_PI.zip`. Só 2024 tem **504 PDFs / 328 MB**
-(seção 1.4 do [`fontes-de-dados.md`](fontes-de-dados.md)).
+(seção 1.4 do [`fontes-de-dados.md`](../fontes-de-dados.md)).
 
 **PK composta `(sq_candidato, nr_sequencial)`.** O nome do arquivo é
 `{ano}{UF}{SQ_CANDIDATO}_{seq}.pdf` — por exemplo `2024PI180001881915_01.pdf`. Esse
@@ -289,7 +193,7 @@ materializado, e está marcada como tal por exigência do checklist.
 As duas escalas **não são compatíveis**: o TSE tem 8 graus, o Censo 2022 tem 4
 níveis. A Q4 não existe sem um agrupamento escrito por nós. É o mesmo tipo de
 tabela de-para que a classificação público/privado da Q10 exige, e que a seção 3 do
-[`estrategia.md`](estrategia.md) já reconhece como contribuição do trabalho.
+[`estrategia.md`](../estrategia.md) já reconhece como contribuição do trabalho.
 
 | `cd_grau_instrucao` (TSE) | `ds_grau_instrucao` | → | `cd_nivel_comparavel` |
 |---|---|---|---|
@@ -310,7 +214,7 @@ relatório; quem discordar pode trocar uma linha da tabela e recontar, o que é
 precisamente a razão de isso ser uma entidade e não um `CASE` escondido no SQL.
 
 ⚠️ **A conferir com os dados na mão:** `SELECT DISTINCT CD_GRAU_INSTRUCAO,
-DS_GRAU_INSTRUCAO FROM consulta_cand ORDER BY 1`. O [`esquemas.md`](esquemas.md) só
+DS_GRAU_INSTRUCAO FROM consulta_cand ORDER BY 1`. O [`esquemas.md`](../esquemas.md) só
 mostra uma linha de exemplo, que confirma `6 = ENSINO MÉDIO COMPLETO` — consistente
 com a numeração acima, mas é um ponto de oito. Se algum código divergir, muda a
 tabela, não o modelo.
@@ -320,7 +224,7 @@ tabela, não o modelo.
 ## 5. Decisões, com justificativa
 
 Um parágrafo por decisão, como o checklist da seção 6 do
-[`estrategia.md`](estrategia.md) exige.
+[`estrategia.md`](../estrategia.md) exige.
 
 **① O de-para de instrução é entidade, não coluna nem `CASE`.**
 `NIVEL_INSTRUCAO_COMPARAVEL` existe como dimensão compartilhada, e tanto
@@ -339,7 +243,7 @@ no banco, recontar é uma query; sem ele, é reprocessar o corpus inteiro.
 
 **③ `PROPOSTA_GOVERNO` existe como entidade separada de `TERMO_PROPOSTA`.** Só
 assim há onde morar o `fl_texto_extraido`. Sem esse atributo não é possível dizer
-quantos PDFs eram imagem escaneada, e a seção 5 do [`estrategia.md`](estrategia.md)
+quantos PDFs eram imagem escaneada, e a seção 5 do [`estrategia.md`](../estrategia.md)
 manda medir e declarar exatamente isso. Num modelo com apenas `TERMO_PROPOSTA`, o
 candidato cuja proposta não pôde ser lida simplesmente não aparece — a perda do
 corpus fica invisível em vez de declarada.
@@ -397,7 +301,7 @@ Prova de que as três perguntas fecham no diagrama, como o checklist pede.
 ### A Q4 no grão de município só vale em eleição municipal
 
 `CANDIDATURA` **não tem coluna de município** — correção 3 da seção 4.1 do
-[`estrategia.md`](estrategia.md). O vínculo é `SG_UE`, que é o código TSE do
+[`estrategia.md`](../estrategia.md). O vínculo é `SG_UE`, que é o código TSE do
 município **apenas** em eleição municipal; em eleição geral `SG_UE` é a sigla da UF.
 
 Consequência: comparar a instrução do candidato com a da população **do município**
@@ -419,7 +323,7 @@ número de partidos da federação, há — e a carga precisa deduplicar.
 
 ### Falta medir: taxa de PDFs escaneados na Q6
 
-A seção 5 do [`estrategia.md`](estrategia.md) manda rodar a extração em ~20 PDFs do
+A seção 5 do [`estrategia.md`](../estrategia.md) manda rodar a extração em ~20 PDFs do
 PI e ver a taxa de retorno vazio, antes de prometer qualquer coisa sobre a Q6. Se
 for alta, a saída é restringir o corpus aos que têm texto e declarar a perda — não
 partir para OCR. `fl_texto_extraido` e `qt_caracteres` existem para tornar essa

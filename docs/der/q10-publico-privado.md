@@ -4,8 +4,8 @@ Documento de decisão. O TSE **não** publica uma coluna "este dinheiro é públ
 A classificação abaixo é contribuição nossa e precisa aparecer no relatório com a
 justificativa — é justamente o tipo de escolha que o professor vai questionar.
 
-Implementação em [`sql/02_fonte_recurso.sql`](../sql/02_fonte_recurso.sql), sobre
-as views de [`sql/01_staging.sql`](../sql/01_staging.sql).
+Implementação em [`sql/02_fonte_recurso.sql`](../../sql/02_fonte_recurso.sql), sobre
+as views de [`sql/01_staging.sql`](../../sql/01_staging.sql).
 Medido sobre o Piauí, 2014–2026: **165.395 receitas**, 25 pares distintos.
 
 ## De onde sai a classificação

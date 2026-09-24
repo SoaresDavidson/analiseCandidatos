@@ -1,7 +1,7 @@
 # DER — questões de Davi
 
 Este arquivo detalha, em ordem, as três perguntas atribuídas ao Davi no
-[`estrategia.md`](estrategia.md): Q1, Q2 e Q3.
+[`estrategia.md`](../estrategia.md): Q1, Q2 e Q3.
 
 ---
 
@@ -21,56 +21,7 @@ O resultado pode ser comparado entre municípios, cargos e anos. A análise naci
 por disputa; somar despesas e vagas de granularidades diferentes produziria uma
 razão sem significado.
 
-```mermaid
-erDiagram
-    ELEICAO   ||--o{ CANDIDATURA     : "contem"
-    MUNICIPIO ||--o{ CANDIDATURA     : "sedia"
-    CARGO     ||--o{ CANDIDATURA     : "e disputado em"
-
-    CANDIDATURA ||--o{ DESPESA_CAMPANHA : "contrata"
-
-    ELEICAO   ||--o{ VAGA : "oferta"
-    MUNICIPIO ||--o{ VAGA : "oferta"
-    CARGO     ||--o{ VAGA : "quantifica"
-
-    ELEICAO {
-        INTEGER CD_ELEICAO   PK "um codigo por turno"
-        INTEGER ANO_ELEICAO
-        INTEGER NR_TURNO        "1 ou 2"
-    }
-
-    MUNICIPIO {
-        VARCHAR(5) CD_MUNICIPIO PK "codigo TSE; preservar zero a esquerda"
-        INTEGER    COD_IBGE     UK "ponte para indicadores municipais"
-        CHAR(2)    SG_UF
-        VARCHAR    NM_MUNICIPIO
-    }
-
-    CARGO {
-        INTEGER CD_CARGO PK "11 Prefeito; 13 Vereador"
-        VARCHAR DS_CARGO
-    }
-
-    CANDIDATURA {
-        BIGINT     SQ_CANDIDATO PK
-        INTEGER    CD_ELEICAO   FK
-        VARCHAR(5) CD_MUNICIPIO FK
-        INTEGER    CD_CARGO     FK
-    }
-
-    DESPESA_CAMPANHA {
-        BIGINT  SQ_DESPESA            PK
-        BIGINT  SQ_CANDIDATO          FK
-        DECIMAL VR_DESPESA_CONTRATADA    "15,2"
-    }
-
-    VAGA {
-        INTEGER    CD_ELEICAO   PK, FK
-        VARCHAR(5) CD_MUNICIPIO PK, FK
-        INTEGER    CD_CARGO     PK, FK
-        INTEGER    QT_VAGAS
-    }
-```
+[Diagrama](diagramas/der-davi-q1.md)
 
 ### Cardinalidades
 
@@ -110,103 +61,7 @@ Q2 são `NOT NULL`, então todo lado "1" é obrigatório. `BEM_CANDIDATO` e
 `PAGAMENTO_DESPESA` são entidades propostas (não estão no `der.md` do repositório).
 `CARGO` aparece só pela chave porque o dicionário ainda não a descreve.
 
-```mermaid
-erDiagram
-    %% ---- dimensoes ----
-    UF                   ||--o{ MUNICIPIO   : "contem"
-    POLITICO             ||--o{ CANDIDATURA : "concorre em"
-    ELEICAO              ||--o{ CANDIDATURA : "contem"
-    MUNICIPIO            ||--o{ CANDIDATURA : "sedia"
-    CARGO                ||--o{ CANDIDATURA : "e disputado em"
-    SITUACAO_TOTALIZACAO ||--o{ CANDIDATURA : "resulta em"
-
-    %% ---- sucesso ----
-    CANDIDATURA ||--o{ VOTACAO_CANDIDATO_MUNICIPIO : "recebe"
-    MUNICIPIO   ||--o{ VOTACAO_CANDIDATO_MUNICIPIO : "totaliza"
-
-    %% ---- dinheiro ----
-    CANDIDATURA      ||--o{ BEM_CANDIDATO     : "declara"
-    CANDIDATURA      ||--o{ RECEITA_CAMPANHA  : "arrecada"
-    CANDIDATURA      ||--o{ DESPESA_CAMPANHA  : "contrata"
-    DESPESA_CAMPANHA ||--o{ PAGAMENTO_DESPESA : "e paga por"
-
-    ELEICAO {
-        INTEGER CD_ELEICAO      PK "4 - um codigo por turno"
-        INTEGER ANO_ELEICAO        "4 - AA_ELEICAO na prestacao de contas"
-        INTEGER CD_TIPO_ELEICAO    "1 - filtrar = 2 (ordinaria)"
-        INTEGER NR_TURNO           "1 - valores 1, 2"
-    }
-
-    UF {
-        CHAR(2) SG_UF PK
-    }
-
-    MUNICIPIO {
-        VARCHAR(5) CD_MUNICIPIO PK "cod_tse - LPAD 5 zeros; SG_UE na prestacao"
-        CHAR(2)    SG_UF        FK
-    }
-
-    CARGO {
-        INTEGER CD_CARGO PK "2 - 11 Prefeito, 12 Vice, 13 Vereador"
-    }
-
-    SITUACAO_TOTALIZACAO {
-        INTEGER     CD_SIT_TOT_TURNO PK "1 - sucesso = 1, 2, 3"
-        VARCHAR(16) DS_SIT_TOT_TURNO
-    }
-
-    POLITICO {
-        INTEGER     ID_POLITICO                   PK "surrogate gerado na carga"
-        VARCHAR(12) NR_TITULO_ELEITORAL_CANDIDATO UK "chave natural - LPAD 12"
-        VARCHAR(11) NR_CPF_CANDIDATO                 "NULL - nunca chave; -4 em 2024"
-        VARCHAR(69) NM_CANDIDATO                     "da eleicao mais recente"
-        DATE        DT_NASCIMENTO                    "NULL - dd/mm/aaaa"
-        INTEGER     CD_GENERO                        "NULL - 2 Masc, 4 Fem"
-        CHAR(2)     SG_UF_NASCIMENTO                 "NULL - ZZ exterior"
-    }
-
-    CANDIDATURA {
-        BIGINT     SQ_CANDIDATO     PK "12 - chave de cruzamento"
-        INTEGER    ID_POLITICO      FK
-        INTEGER    CD_ELEICAO       FK
-        VARCHAR(5) CD_MUNICIPIO     FK "SG_UE na prestacao de contas"
-        INTEGER    CD_CARGO         FK "comparar sempre dentro do mesmo cargo"
-        INTEGER    CD_SIT_TOT_TURNO FK "base da taxa de sucesso"
-    }
-
-    VOTACAO_CANDIDATO_MUNICIPIO {
-        BIGINT     SQ_CANDIDATO              PK, FK
-        INTEGER    NR_TURNO                  PK
-        VARCHAR(5) CD_MUNICIPIO              PK, FK
-        INTEGER    NR_ZONA                   PK "3"
-        INTEGER    QT_VOTOS_NOMINAIS_VALIDOS    "6 - SUM por SQ_CANDIDATO, NR_TURNO"
-    }
-
-    BEM_CANDIDATO {
-        BIGINT  SQ_CANDIDATO           PK, FK
-        INTEGER NR_ORDEM_BEM_CANDIDATO PK "3"
-        INTEGER CD_TIPO_BEM_CANDIDATO     "2 - 50 codigos em 2024"
-        DECIMAL VR_BEM_CANDIDATO          "15,2 - patrimonio = SUM por SQ_CANDIDATO"
-    }
-
-    RECEITA_CAMPANHA {
-        BIGINT  SQ_RECEITA   PK "NULL/-1 em 3,3%; filtrar TP_PRESTACAO_CONTAS = Final"
-        BIGINT  SQ_CANDIDATO FK
-        DECIMAL VR_RECEITA      "15,2"
-    }
-
-    DESPESA_CAMPANHA {
-        BIGINT  SQ_DESPESA            PK "NULL/-1 em 3,5%; filtrar TP_PRESTACAO_CONTAS = Final"
-        BIGINT  SQ_CANDIDATO          FK
-        DECIMAL VR_DESPESA_CONTRATADA    "15,2"
-    }
-
-    PAGAMENTO_DESPESA {
-        BIGINT  SQ_DESPESA              PK, FK
-        INTEGER SQ_PARCELAMENTO_DESPESA PK
-        DECIMAL VR_PAGTO_DESPESA           "15,2 - contratado diferente de pago"
-    }
-```
+[Diagrama](diagramas/der-davi-q2.md)
 
 ## Cardinalidades
 
@@ -250,110 +105,7 @@ O grão de análise é **município × eleição × cargo × turno**. `MUNICIPIO
 ponte entre o código TSE, usado nos resultados eleitorais, e o código IBGE, usado
 nos indicadores socioeconômicos.
 
-```mermaid
-erDiagram
-    UF        ||--o{ MUNICIPIO : "contem"
-    MUNICIPIO ||--o{ MUNICIPIO_ANO : "tem indicadores"
-    MUNICIPIO ||--o{ IDHM : "tem indice historico"
-    MUNICIPIO ||--o{ ELEITORADO_MUNICIPIO : "tem eleitorado"
-
-    ELEICAO              ||--o{ CANDIDATURA : "contem"
-    PARTIDO              ||--o{ CANDIDATURA : "lanca"
-    CARGO                ||--o{ CANDIDATURA : "e disputado em"
-    SITUACAO_TOTALIZACAO ||--o{ CANDIDATURA : "resulta em"
-    MUNICIPIO            o|--o{ CANDIDATURA : "sedia se municipal"
-
-    CANDIDATURA ||--o{ VOTACAO_CANDIDATO_MUNICIPIO : "recebe"
-    MUNICIPIO   ||--o{ VOTACAO_CANDIDATO_MUNICIPIO : "totaliza"
-    ELEICAO     ||--o{ VOTACAO_CANDIDATO_MUNICIPIO : "contextualiza"
-
-    MUNICIPIO ||--o{ COMPARECIMENTO_MUNICIPIO : "apura"
-    ELEICAO   ||--o{ COMPARECIMENTO_MUNICIPIO : "contextualiza"
-    CARGO     ||--o{ COMPARECIMENTO_MUNICIPIO : "segmenta"
-
-    UF {
-        CHAR(2) SG_UF PK
-    }
-
-    MUNICIPIO {
-        VARCHAR(5) CD_MUNICIPIO PK "codigo TSE; LPAD 5"
-        INTEGER    COD_IBGE     UK "codigo IBGE; 7 digitos"
-        CHAR(2)    SG_UF        FK
-        VARCHAR    NM_MUNICIPIO
-    }
-
-    MUNICIPIO_ANO {
-        INTEGER COD_IBGE             PK, FK
-        INTEGER ANO_REFERENCIA       PK
-        BIGINT  QT_POPULACAO_ESTIMADA   "SIDRA 6579"
-        DECIMAL VR_PIB_PER_CAPITA       "IBGE PIB dos Municipios"
-    }
-
-    IDHM {
-        INTEGER COD_IBGE       PK, FK
-        INTEGER ANO_REFERENCIA PK "1991, 2000 ou 2010"
-        DECIMAL VL_IDHM
-    }
-
-    ELEITORADO_MUNICIPIO {
-        VARCHAR(5) CD_MUNICIPIO PK, FK
-        INTEGER    ANO_ELEICAO  PK
-        BIGINT     QT_ELEITORES    "SUM QT_ELEITORES_PERFIL"
-    }
-
-    ELEICAO {
-        INTEGER CD_ELEICAO PK
-        INTEGER ANO_ELEICAO
-        INTEGER NR_TURNO
-    }
-
-    CARGO {
-        INTEGER CD_CARGO PK
-        VARCHAR DS_CARGO
-    }
-
-    PARTIDO {
-        INTEGER NR_PARTIDO PK
-        VARCHAR SG_PARTIDO
-        VARCHAR NM_PARTIDO
-    }
-
-    SITUACAO_TOTALIZACAO {
-        INTEGER CD_SIT_TOT_TURNO PK
-        VARCHAR DS_SIT_TOT_TURNO
-        BOOLEAN FL_ELEITO           "1, 2, 3 = true"
-    }
-
-    CANDIDATURA {
-        BIGINT     SQ_CANDIDATO     PK
-        INTEGER    CD_ELEICAO       FK
-        VARCHAR(5) CD_MUNICIPIO     FK "NULL em eleicao geral"
-        INTEGER    CD_CARGO         FK
-        INTEGER    NR_PARTIDO       FK
-        INTEGER    CD_SIT_TOT_TURNO FK
-    }
-
-    VOTACAO_CANDIDATO_MUNICIPIO {
-        BIGINT     SQ_CANDIDATO PK, FK
-        INTEGER    CD_ELEICAO   PK, FK
-        INTEGER    NR_TURNO     PK
-        VARCHAR(5) CD_MUNICIPIO PK, FK
-        INTEGER    NR_ZONA      PK
-        BIGINT     QT_VOTOS_NOMINAIS_VALIDOS
-    }
-
-    COMPARECIMENTO_MUNICIPIO {
-        INTEGER    CD_ELEICAO       PK, FK
-        INTEGER    NR_TURNO         PK
-        INTEGER    CD_CARGO         PK, FK
-        VARCHAR(5) CD_MUNICIPIO     PK, FK
-        INTEGER    NR_ZONA          PK
-        BIGINT     QT_APTOS
-        BIGINT     QT_ABSTENCOES
-        BIGINT     QT_VOTOS_BRANCOS
-        BIGINT     QT_VOTOS_NULOS
-    }
-```
+[Diagrama](diagramas/der-davi-q3.md)
 
 ### Cardinalidades
 

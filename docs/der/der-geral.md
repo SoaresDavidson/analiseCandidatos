@@ -2,19 +2,19 @@
 
 Une os DERs do Davi (PR #4), do Enrico (PR #2), do Dudu (PR #3) e da Duda
 (`der-duda.md`), com as chaves corrigidas pela revisão de 23/09/2026
-(`revisao-prs.md`). **32 entidades, 43 relacionamentos.**
+([`revisao-prs.md`](../revisao-prs.md)). **32 entidades, 43 relacionamentos.**
 
 | Arquivo | Para quê |
 |---|---|
-| `der-geral-mermaid.md` | **Colar no mermaid.ai.** Só o bloco de código, em ASCII |
+| [`der-geral-mermaid.md`](diagramas/der-geral-mermaid.md) | **Colar no mermaid.ai.** Só o bloco de código, em ASCII |
 | `der-geral.mmd` | O mesmo código sem as cercas, para editores que pedem `.mmd` |
-| `der-geral.png` / `der-geral.svg` | Renderizado pelo Mermaid 11 (validado), para consulta |
+| [`der-geral.png`](../dossie/diagramas/der-geral.png) / [`der-geral.svg`](../dossie/diagramas/der-geral.svg) | Renderizado pelo Mermaid 11 (validado), para consulta |
 | este arquivo | Regras, origem de cada entidade, caminho de cada pergunta, dados faltantes |
 
 Toda coluna de origem citada aqui foi conferida nos cabeçalhos reais dos arquivos
 baixados, em todos os grupos de anos que o modelo cobre.
 
-**Este documento substitui o "Contrato de chaves" da seção 3 do `estrategia.md`**,
+**Este documento substitui o "Contrato de chaves" da seção 3 do [`estrategia.md`](../estrategia.md)**,
 que ainda traz `partido.nr_partido` como chave e afirma que o código de município
 casa sem LPAD — as duas coisas a revisão desmentiu (regras R2 e R6 abaixo).
 

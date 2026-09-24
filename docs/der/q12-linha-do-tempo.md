@@ -1,9 +1,9 @@
 # Q12 — linha do tempo do político, 2002–2026
 
-Implementação em [`sql/04_politico.sql`](../sql/04_politico.sql) (entidades) e
+Implementação em [`sql/04_politico.sql`](../../sql/04_politico.sql) (entidades) e
 `mart_q12` (a trajetória montada). Cobertura nacional, 13 eleições.
 
-Sigo a convenção do [`estrategia.md`](estrategia.md) de descrever carreiras sem
+Sigo a convenção do [`estrategia.md`](../estrategia.md) de descrever carreiras sem
 nomear pessoas. Os nomes estão nas views, para quem for montar o visual.
 
 ## A chave é o título de eleitor

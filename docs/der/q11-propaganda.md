@@ -1,7 +1,7 @@
 # Q11 — critério de canal de propaganda
 
 Documento de decisão. Implementação em
-[`sql/03_tipo_despesa.sql`](../sql/03_tipo_despesa.sql) e no mart `mart_q11`.
+[`sql/03_tipo_despesa.sql`](../../sql/03_tipo_despesa.sql) e no mart `mart_q11`.
 Medido sobre o Piauí, 2014–2026: **367.004 despesas**, 81 tipos distintos, dos
 quais 13 são propaganda — **47,8% de todo o gasto de campanha**.
 

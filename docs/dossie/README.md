@@ -4,10 +4,10 @@ Projeto React + Vite + TypeScript, estilizado com Tailwind CSS v4. Requer Node.j
 
 ```bash
 cd docs/dossie
-rtk npm install
-rtk npm run dev        # http://localhost:5173
-rtk npm run typecheck  # tsc
-rtk npm run build      # tsc + gera dist/ (estático, base relativa)
+npm install
+npm run dev        # http://localhost:5173
+npm run typecheck  # tsc
+npm run build      # tsc + gera dist/ (estático, base relativa)
 ```
 
 ## Estrutura
@@ -24,7 +24,7 @@ rtk npm run build      # tsc + gera dist/ (estático, base relativa)
 Após editar qualquer `.drawio`, reexporte os SVGs com fundo branco (na raiz do repositório):
 
 ```bash
-rtk uv run python scripts/export_dossie_der.py
+uv run python scripts/export_dossie_der.py
 ```
 
 O PDF entregue é uma captura estática do conteúdo no momento da impressão (botão "Imprimir / salvar PDF").

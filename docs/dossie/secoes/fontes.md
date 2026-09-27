@@ -8,4 +8,4 @@
 
 Os endereços, tabelas, recortes e limitações constam de `docs/fontes-de-dados.md`. Os arquivos brutos são guardados em `dados/raw/`; o inventário de colunas efetivamente obtidas está em `docs/esquemas.md`.
 
-**PDFs de leia-me:** `docs/dossie/leiames/` espelha os PDFs de `dados/raw/`, preservando a estrutura de tema, ano e pacote. A página HTML lê `docs/dossie/leiames/indice.md` e lista todos os caminhos, inclusive os de subpastas; um clique abre a prévia em uma janela sobreposta, sem seleção manual de pasta. PDFs adicionados depois só aparecem na lista após regenerar `indice.md`.
+**PDFs de leia-me:** `docs/dossie/public/leiames/` espelha os PDFs de `dados/raw/`, preservando a estrutura de tema, ano e pacote. A página HTML lê `docs/dossie/public/leiames/indice.md` e lista todos os caminhos, inclusive os de subpastas; um clique abre a prévia em uma janela sobreposta, sem seleção manual de pasta. PDFs adicionados depois só aparecem na lista após regenerar `indice.md`.

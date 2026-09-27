@@ -1,6 +1,6 @@
 ## 4. Modelo relacional
 
-**Fonte:** mapeamento do DER geral (`docs/dossie/diagramas/der-geral.drawio`) para tabelas: 32 entidades e 43 relacionamentos.
+**Fonte:** mapeamento do DER geral (`docs/dossie/public/diagramas/der-geral.drawio`) para tabelas: 32 entidades e 43 relacionamentos.
 
 **Regras aplicadas:** relacionamentos 1:N levam a chave estrangeira para o lado N; relacionamentos 1:1 levam-na para o lado dependente. Entidades cuja chave sublinhada é parcial (por exemplo, `ano` em `MUNICIPIO_ANO`) foram tratadas como fracas, e sua chave primária é a chave do dono somada à chave parcial. Atributos tracejados no DER são derivados e aparecem marcados como tal.
 

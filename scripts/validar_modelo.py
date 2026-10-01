@@ -80,14 +80,22 @@ def main() -> int:
                 FROM read_csv('dados/raw/resultados/2022/votacao_candidato_munzona_2022/votacao_candidato_munzona_2022_BRASIL.csv', {O})
                 WHERE CD_CARGO = '1' AND SG_UF <> 'ZZ' AND CD_TIPO_ELEICAO = '2'"""))
 
-    print("\n== receitas de candidatos em 2014: linhas do arquivo (depois de sanear_raw.py) ==")
+    print("\n== receitas de candidatos em 2014: arquivo (depois de sanear_raw.py) × modelo ==")
     arq = "dados/raw/prestacao_contas/2014/prestacao_contas_final_2014/receitas_candidatos_2014_brasil.txt"
+    cand14 = "dados/raw/candidatos/2014/candidatos_2014/consulta_cand_2014_BRASIL.csv"
     if Path(arq).exists():
         fisicas = sum(1 for _ in open(arq, "rb")) - 1
+        # a mesma regra da carga: só receitas de candidatura ordinária que existe no
+        # consulta_cand. As 72 restantes (R$ 0,46 mi) são de registros indeferidos,
+        # que prestaram contas mas não constam do arquivo final de candidatos.
+        cru = q(f"""SELECT count(*) FROM read_csv('{arq}', {O}, escape='"', strict_mode=false, ignore_errors=true)
+                    WHERE "Sequencial Candidato" IN (SELECT SQ_CANDIDATO FROM read_csv('{cand14}', {O}) WHERE CD_TIPO_ELEICAO = '2')
+                      AND TRY_CAST(replace(replace("Valor receita", '.', ''), ',', '.') AS DECIMAL(15, 2)) IS NOT NULL""")
         m = con.sql("""SELECT count(*), round(sum(vr_receita) / 1e6, 1) FROM modelo.receita_campanha r
                        JOIN modelo.candidatura c USING (id_candidatura) WHERE c.ano = 2014""").fetchone()
-        linha("receitas de candidatos 2014", m[0], fisicas)
-        print(f"    soma no modelo: R$ {m[1]} mi (referência: 4.391,6 mi)")
+        print(f"    linhas físicas: {fmt(fisicas)} (427.489 depois do saneamento; 11.734 a menos sem ele)")
+        linha("receitas de candidatos ordinários 2014", m[0], cru)
+        print(f"    soma no modelo: R$ {m[1]} mi (referência: 4.391,1 mi)")
     else:
         print("    arquivo nacional de 2014 ausente — coleta extraiu só o PI?")
 

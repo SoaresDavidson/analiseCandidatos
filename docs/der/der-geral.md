@@ -129,12 +129,12 @@ arquivos.
 | # | Falta | Afeta | Como resolver |
 |---|---|---|---|
 | F1 | **Espectro partidário não existe como dado** — nem CSV, nem coletor | Q7, Q8, Q9 | Montar `espectro_partido.csv` a partir das duas rodadas de Bolognesi et al., com a fonte por linha. PRD (2023) não está em nenhuma: decidir e documentar |
-| F2 | **População só de 2026**: `coleta_ibge.py` baixa a 6579 com `p/last` | Q3, Q7 | `p/2016,2018,2020,2024`. A 6579 não tem 2022 nem 2023: para 2022, somar a 9606 (Censo) |
+| F2 | ~~População só de 2026~~ **Resolvido em 30/09**: `coleta_ibge.py` baixa a 6579 para 2016, 2018, 2020, 2024 e 2026; a carga usa a 9606 para 2022 | Q3, Q7 | `MUNICIPIO_ANO` carregada com 5.570 municípios em cada um desses anos |
 | F3 | **IDHM municipal sem coletor**, e só existe até 2010 | Q3 | Atlas Brasil (download manual). Tratar como validação, com PIB per capita e renda 2022 como eixo |
 | F4 | **Propostas de presidente não são coletadas**: só `_PI.zip` | Q6 | Baixar também `proposta_governo_{2018,2022,2026}_BR.zip` (~43 MB, 13–14 PDFs cada). Em 2024 (municipal) não existe `_BR` |
-| F5 | Prestação de contas está extraída **só do PI** no disco, embora o `main` diga nacional | Q1, Q3, Q8 | Re-extrair o `_BRASIL` dos zips que já estão no disco (sem rebaixar 4,5 GB) |
-| F6 | `receitas_candidatos_2014_brasil.txt` e `receitas_comites_2014_brasil.txt` têm aspas sem escape | Q8 | Dobrar as aspas internas antes de ler; com `ignore_errors` somem 11.734 linhas e R$ 206 mi |
-| F7 | Staging do Enrico não acha arquivo com a extração nacional e não traz o doador originário | Q1, Q2, Q8, Q10, Q11 | Globs para `_brasil`/`_BRASIL`, ano pelo conteúdo e não pelo nome, colunas do originário no `stg_receita` |
+| F5 | ~~Prestação de contas só do PI no disco~~ **Resolvido em 30/09**: `coleta_tse.py` extrai o nacional; quem já tinha o PI re-extrai dos zips | Q1, Q3, Q8 | 16 GB de arquivos nacionais; a carga lê só os que o `06` usa |
+| F6 | ~~Aspas sem escape nas receitas de 2014~~ **Resolvido em 30/09** por `scripts/sanear_raw.py`, que também remove o byte `0x81` do `consulta_cand_2016` | Q8, Q12 | Sem ele a carga perde 72 receitas de 2014 e 1 candidatura de 2016; com `ignore_errors` puro, 11.734 receitas (R$ 206 mi) |
+| F7 | Staging do Enrico (`01_staging.sql`) não acha arquivo com a extração nacional e não traz o doador originário | Q1, Q2, Q8, Q10, Q11 | Superado pelo `06_carga_modelo.sql`, que lê o nacional e carrega o originário em `RECEITA_CAMPANHA`; o `01` continua útil só com a extração do PI |
 | F8 | Comparecimento por idade só do PI | Q7 | Aceitar o recorte de 224 municípios ou coletar nacional |
 | F9 | Q8 só tem 2014 e 2016 | Q8 | 2008–2012 existem no CDN; 2002–2006 têm < 1 MB (suspeito) |
 | F10 | Votos por candidato só de 2016 em diante | Q12 | 2002–2014 mostram eleito/não eleito, sem votos. Coletar `votacao_candidato_munzona` antiga, se a linha do tempo precisar de votos |

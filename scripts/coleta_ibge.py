@@ -34,8 +34,15 @@ def coletar_sidra(force: bool) -> None:
     for tabela in (6579, 9606, 10061, 10062, 10295):
         baixar_json(f"{AGREGADOS}/{tabela}/metadados", pasta / f"{tabela}_metadados.json", force)
 
-    # estimativa de população por município, último ano
-    baixar_json(f"{SIDRA}/t/6579/n6/all/v/all/p/last", pasta / "6579_populacao_municipios.json", force)
+    # Estimativa de população por município nos anos de eleição (F2 do der-geral.md).
+    # `p/last` trazia só 2026, e MUNICIPIO_ANO ficava sem população para 2016-2024.
+    # A 6579 não tem 2022 (ano de Censo: a carga usa a soma da 9606) nem 2023.
+    # Limite do SIDRA: 50 mil valores por chamada; 5 anos x 5.571 municípios = 27.855.
+    baixar_json(
+        f"{SIDRA}/t/6579/n6/all/v/9324/p/2016,2018,2020,2024,2026",
+        pasta / "6579_populacao_municipios.json",
+        force,
+    )
 
     # pessoas 18+ por nível de instrução (total de idade/sexo/cor), por município
     baixar_json(

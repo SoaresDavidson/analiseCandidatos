@@ -170,6 +170,45 @@ Critérios e armadilhas: [`docs/der/der-enrico.md`](docs/der/der-enrico.md) (o m
 [`docs/der/q11-propaganda.md`](docs/der/q11-propaganda.md),
 [`docs/der/q12-linha-do-tempo.md`](docs/der/q12-linha-do-tempo.md).
 
+## Carga do modelo
+
+O schema `modelo` do DuckDB é o banco relacional do trabalho: as 32 tabelas do DER
+geral, com chaves primárias, únicas e estrangeiras de verdade (`sql/00_modelo.sql`),
+carregadas a partir de `dados/raw/` por `sql/06_carga_modelo.sql`. Ordem:
+
+```bash
+uv run scripts/sanear_raw.py                              # 1. corrige 3 arquivos (ver abaixo)
+uv run scripts/carregar_staging.py 00_modelo 06_carga     # 2. cria e carrega o modelo (~35 min)
+uv run scripts/carregar_propostas.py                      # 3. PROPOSTA_GOVERNO e TERMO_PROPOSTA (~15 min)
+uv run scripts/validar_modelo.py                          # 4. confere o banco contra os arquivos crus
+```
+
+Precisa da coleta completa com os arquivos **nacionais** da prestação de contas
+(`coleta_tse.py` já extrai assim) e da população em todos os anos de eleição
+(`coleta_ibge.py sidra`; a versão anterior baixava só 2026).
+
+`carregar_staging.py` executa cada `.sql` comando a comando, imprime o tempo de
+cada um e grava `dados/processed/carga.log`; se um comando falhar, para e diz qual
+foi. `--banco outro.duckdb` troca o arquivo; `--continuar` não para no erro.
+
+**Por que o saneamento.** Três arquivos do TSE têm defeito de sintaxe que faz o
+DuckDB descartar linhas sem avisar: `consulta_cand_2016` tem um byte `0x81` (fora
+do cp1252) no nome de uma candidata, e as receitas de candidatos e de comitês de
+2014 têm aspas sem escape dentro do nome do doador. `sanear_raw.py` corrige só a
+sintaxe (nenhum valor muda), no lugar, e é idempotente. Sem ele, a carga perde uma
+candidatura de 2016 e 72 receitas de 2014; com `ignore_errors` puro perderia
+11.734 receitas (R$ 206 milhões).
+
+**O que a validação confere** (`validar_modelo.py`): contagem de cada tabela;
+zero órfãos nas chaves estrangeiras; candidaturas ordinárias por ano iguais ao
+`consulta_cand`; votos de presidente em 2022 iguais ao arquivo de votação; receitas
+de 2014 iguais às linhas físicas do arquivo; e a queda da doação direta de empresas
+entre 2014 e 2016 (ADI 4650).
+
+**O que fica vazio por falta de dado**, não de carga: `IDHM_MUNICIPIO` (sem coletor;
+só existe até 2010) e `ESPECTRO_PARTIDO` (classificação ainda não transcrita das
+rodadas de Bolognesi et al.). Ver a seção 4 de `docs/der/der-geral.md`.
+
 > 🚨 **`sq_candidato` não é chave antes de 2010.** Em 2004 são 402.157
 > candidaturas em 1.506 valores distintos. Deduplicar por ele funde 400 mil
 > pessoas sem erro nenhum. Detalhe na nota 2 do

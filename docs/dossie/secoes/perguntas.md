@@ -4,7 +4,7 @@
 |---|---|---|---|---|
 | Q1 | Quanto custa disputar uma cadeira? | 2016–2024 | Despesa total de campanha por vaga em disputa, comparando território, cargo e eleição. | Despesas, candidaturas, vagas. |
 | Q2 | Gastar mais aumenta a taxa de sucesso? | 2016–2024 | Relação entre gasto por candidatura e proporção de eleitos, com recortes comparáveis. | Despesas, candidaturas, situação de totalização. |
-| Q3 | Como o perfil municipal se relaciona com partidos, eleitos e abstenção? | 2016–2024 | Indicadores municipais, votação e participação lado a lado por município e eleição. | Município-ano, votos, partidos, comparecimento. |
+| Q3 | Como o perfil municipal se relaciona com partidos, eleitos e abstenção? | 2016–2024 | Indicadores municipais, votação e participação lado a lado por município e eleição. A não participação é medida pela alienação eleitoral (brancos + nulos + abstenções sobre os aptos), que o enunciado chamava de "isentos". | Município-ano, votos, partidos, comparecimento. |
 | Q4 | A instrução do candidato acompanha a escolaridade da população? | 2016–2024 | Distribuição de escolaridade de candidatos em comparação com o Censo 2022 no território. | Candidaturas, Censo de instrução. |
 | Q5 | Como se distribuem os votos de legenda? | 2016–2024 | Votos de legenda por partido e, quando aplicável, por federação, município e eleição. | Votação de legenda, partido, federação. |
 | Q6 | Quais temas aparecem nas propostas de governo? | 2016–2024 | Termos recorrentes e sua frequência em textos de propostas, com recorte por candidatura. | PDFs de propostas, termos extraídos. |

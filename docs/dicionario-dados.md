@@ -339,7 +339,7 @@ Totais de aptos, comparecimento, abstenção, brancos e nulos por eleição, car
 | `qt_comparecimento` | `BIGINT` | N | — | Eleitores que votaram. | `SUM(QT_COMPARECIMENTO)` | |
 | `qt_abstencoes` | `BIGINT` | N | — | Eleitores que não votaram. | `SUM(QT_ABSTENCOES)` | |
 | `qt_votos_brancos` | `BIGINT` | N | — | Votos em branco. | `SUM(QT_VOTOS_BRANCOS)` | |
-| `qt_total_votos_nulos` | `BIGINT` | N | — | Votos nulos, inclusive os técnicos. | `SUM(QT_TOTAL_VOTOS_NULOS)` | Os "isentos" da Q3 = (brancos + nulos + abstenções) ÷ aptos, dentro do mesmo cargo e turno. |
+| `qt_total_votos_nulos` | `BIGINT` | N | — | Votos nulos, inclusive os técnicos. | `SUM(QT_TOTAL_VOTOS_NULOS)` | A alienação eleitoral da Q3, que o enunciado chamava de "isentos", soma as quantidades e divide pelos aptos: `(qt_abstencoes + qt_votos_brancos + qt_total_votos_nulos) / qt_aptos`. Não somar os percentuais do TSE, que divulga a abstenção sobre os aptos e brancos e nulos sobre o comparecimento. Calcular dentro do mesmo cargo e turno: em eleição geral o eleitor pode anular para um cargo e votar em outro. |
 
 ### Finanças de campanha
 

@@ -249,7 +249,7 @@ A pessoa que se candidata, independentemente da eleição. **PK:** `nr_titulo_el
 | `nr_titulo_eleitoral` | `VARCHAR(12)` | N | PK | Título de eleitor. | `consulta_cand → NR_TITULO_ELEITORAL_CANDIDATO` | Com zero à esquerda até 12 dígitos. Nunca o CPF: em 2024 ele vem `-4` nas 463.859 linhas (R3). As 579 candidaturas com título `-4` (2016–2026) não geram político. |
 | `nm_candidato` | `VARCHAR(100)` | N | — | Nome civil. | `consulta_cand → NM_CANDIDATO` | Máximo medido: 70 caracteres (2018). Vem da candidatura mais recente. |
 | `dt_nascimento` | `DATE` | S | — | Data de nascimento. | `consulta_cand → DT_NASCIMENTO` | Da candidatura mais recente. Nulo quando não divulgada. |
-| `sg_uf_nascimento` | `CHAR(2)` | S | — | UF de nascimento. | `consulta_cand → SG_UF_NASCIMENTO` | `Não divulgável` (579 linhas) vira `NULL`; `ZZ` (874, nascido no exterior) é mantido. Por causa do `ZZ` não há FK para `UF`. |
+| `sg_uf_nascimento` | `CHAR(2)` | S | — | UF de nascimento. | `consulta_cand → SG_UF_NASCIMENTO` | `Não divulgável` (579 linhas) vira `NULL`; `ZZ` (874, nascido no exterior) é mantido. Por causa do `ZZ` não há FK para `UF` (pendência 4.6.2 do modelo relacional). |
 
 #### `CANDIDATURA`
 
@@ -366,7 +366,7 @@ Diretório ou comitê de partido que arrecada recursos de campanha. **PK:** `id_
 | `nr_partido` | `INTEGER` | N | FK → `PARTIDO` | Partido do órgão. | 2018+: `NR_PARTIDO`; 2014: "Sigla  Partido" (com dois espaços) → número por `PARTIDO` (`ano`, `sg_partido`) | O leiaute de 2014 só traz a sigla. |
 | `tp_orgao` | `VARCHAR(10)` | N | — | Tipo de órgão. | 2014: arquivo de origem (`receitas_partidos` ou `receitas_comites`); 2018+: sempre diretório | `DIRETORIO` ou `COMITE`. |
 | `ds_esfera` | `VARCHAR(20)` | S | — | Esfera partidária. | 2018+: `DS_ESFERA_PARTIDARIA`; 2014: "Tipo diretorio" / "Tipo Comite" | `Nacional`, `Estadual` ou `Municipal`; normalizar `Direção Estadual/Distrital` para `Estadual`. |
-| `sg_uf` | `CHAR(2)` | S | — | UF do órgão. | 2018+: `SG_UF`; 2014: "UF" | Nulo em órgão nacional. Sem relacionamento desenhado com `UF` (pendência do modelo relacional). |
+| `sg_uf` | `CHAR(2)` | S | FK → `UF` | UF do órgão. | 2018+: `SG_UF`; 2014: "UF" | Nulo em órgão nacional: o arquivo traz `BR`, que vira `NULL`. Todos os outros valores de 2014 a 2024 são uma das 27 UFs. |
 | `nr_cnpj` | `VARCHAR(14)` | S | — | CNPJ do prestador de contas. | 2018+: `NR_CNPJ_PRESTADOR_CONTA`; 2014: "CNPJ Prestador Conta" | Só dígitos. |
 
 #### `FONTE_RECURSO`

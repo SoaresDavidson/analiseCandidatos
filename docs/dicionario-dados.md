@@ -1,6 +1,6 @@
 # Dicionário de dados
 
-Descreve os 178 atributos das 32 entidades do DER geral (`docs/der/der-geral.mmd`): o significado, o tipo, se aceita nulo, a chave, a coluna de onde vêm e as armadilhas medidas nos arquivos. As colunas de origem foram conferidas no inventário gerado a partir dos arquivos baixados (`docs/esquemas.md`). As regras de carga vêm dos DERs de cada módulo, do SQL em `sql/` e da revisão de 23/09/2026. Este arquivo tem o mesmo texto da seção 5 do dossiê (`docs/dossie/secoes/dicionario.md`); ao editar um, copie para o outro.
+Descreve as 178 colunas das 32 entidades do DER geral (`docs/dossie/public/diagramas/der-geral-separado.drawio`), que são os 130 atributos desenhados no DER mais as 48 chaves estrangeiras que saem dos relacionamentos: o significado, o tipo, se aceita nulo, a chave, a coluna de onde vêm e as armadilhas medidas nos arquivos. As colunas de origem foram conferidas no inventário gerado a partir dos arquivos baixados (`docs/esquemas.md`). As regras de carga vêm dos DERs de cada módulo, do SQL em `sql/` e da revisão de 23/09/2026. Este arquivo tem o mesmo texto da seção 5 do dossiê (`docs/dossie/secoes/dicionario.md`); ao editar um, copie para o outro.
 
 ### Convenções
 
@@ -389,7 +389,7 @@ Entrada de recursos numa candidatura ou num órgão partidário. **PK:** `id_rec
 | `id_receita` | `BIGINT` | N | PK | Identificador da receita. | gerado na carga | Chave substituta (R8): `SQ_RECEITA` repete e, no arquivo de doador originário, é sentinela em ~97% das linhas. |
 | `id_candidatura` | `BIGINT` | S | FK → `CANDIDATURA` | Candidatura que recebeu. | 2018+: `receitas_candidatos → SQ_CANDIDATO`, `AA_ELEICAO`; 2014–2016: "Sequencial Candidato" | Exatamente um entre `id_candidatura` e `id_orgao` é preenchido (restrição de verificação). |
 | `id_orgao` | `BIGINT` | S | FK → `ORGAO_PARTIDARIO` | Órgão partidário que recebeu. | 2018+: `receitas_orgaos_partidarios → SQ_PRESTADOR_CONTAS`; 2014: "Sequencial Diretorio" / "Sequencial Comite" | Em 2014, R$ 1,34 bi de empresas entraram em partidos e R$ 406 mi em comitês. |
-| `id_agente_doador` | `BIGINT` | N | FK → `AGENTE_FINANCEIRO` | Doador direto. | 2018+: `NR_CPF_CNPJ_DOADOR`; 2014–2016: "CPF/CNPJ do doador" | |
+| `id_agente_doador` | `BIGINT` | S | FK → `AGENTE_FINANCEIRO` | Doador direto. | 2018+: `NR_CPF_CNPJ_DOADOR`; 2014–2016: "CPF/CNPJ do doador" | Nulo quando o arquivo não traz CPF/CNPJ válido (~315 mil receitas, quase todas de 2018+). |
 | `id_agente_originario` | `BIGINT` | S | FK → `AGENTE_FINANCEIRO` | Quem deu o dinheiro ao doador direto (ex.: empresa → partido → candidato). | 2014–2016: "CPF/CNPJ do doador originário" | Só 2014–2016. De 2018 em diante vem noutro arquivo, sem vínculo confiável com a receita. Em 2014, R$ 1,77 bi chegaram por partido com empresa como originária. |
 | `id_fonte_recurso` | `INTEGER` | N | FK → `FONTE_RECURSO` | Classificação da receita. | par (`DS_FONTE_RECEITA`, `DS_ORIGEM_RECEITA`) / ("Fonte recurso", "Tipo receita") | |
 | `dt_receita` | `DATE` | S | — | Data da receita. | 2018+: `DT_RECEITA`; 2014–2016: "Data da receita" | Formatos `12/11/2020`, `02/10/201400:00:00` e, em `receitas_partidos` 2014, `25-SEP-14`. |
@@ -414,7 +414,7 @@ Gasto contratado por uma candidatura. **PK:** `id_despesa`. **Grão:** uma despe
 |---|---|---|---|---|---|---|
 | `id_despesa` | `BIGINT` | N | PK | Identificador da despesa. | gerado na carga | Chave substituta (R8): `SQ_DESPESA` repete em 31% das linhas mesmo na prestação final. |
 | `id_candidatura` | `BIGINT` | N | FK → `CANDIDATURA` | Candidatura que contratou. | 2018+: `despesas_contratadas_candidatos → SQ_CANDIDATO`, `AA_ELEICAO`; 2014–2016: "Sequencial Candidato" | |
-| `id_agente_fornecedor` | `BIGINT` | N | FK → `AGENTE_FINANCEIRO` | Fornecedor. | 2018+: `NR_CPF_CNPJ_FORNECEDOR`; 2014–2016: "CPF/CNPJ do fornecedor" | |
+| `id_agente_fornecedor` | `BIGINT` | S | FK → `AGENTE_FINANCEIRO` | Fornecedor. | 2018+: `NR_CPF_CNPJ_FORNECEDOR`; 2014–2016: "CPF/CNPJ do fornecedor" | Nulo quando o arquivo não traz CPF/CNPJ válido (~1,56 mi despesas). |
 | `id_tipo_despesa` | `INTEGER` | N | FK → `TIPO_DESPESA` | Categoria. | 2018+: `DS_ORIGEM_DESPESA`; 2014–2016: "Tipo despesa" | |
 | `dt_despesa` | `DATE` | S | — | Data da contratação. | 2018+: `DT_DESPESA`; 2014–2016: "Data da despesa" | |
 | `vr_despesa` | `DECIMAL(15,2)` | N | — | Valor contratado, em R$. | 2018+: `VR_DESPESA_CONTRATADA`; 2014–2016: "Valor despesa" | Valor contratado, não pago: `despesas_pagas` vem em parcelas e sem candidato nem fornecedor. |
@@ -457,7 +457,7 @@ Metadados de geração (`DT_GERACAO`, `HH_GERACAO`); descrições que repetem um
 3. **Sentinelas.** A macro `limpa` de `sql/01_staging.sql` trata `#NULO`, `#NULO#`, `-1`, `-3` e `-4`, mas não `#NE`, `#NE#`, `NÃO DIVULGÁVEL` nem `Não divulgável`.
 4. **Datas de 2014.** A macro `data_br` só lê `dd/mm/aaaa`; o `25-SEP-14` de `receitas_partidos` 2014 viraria `NULL`. Hoje o staging só lê receitas de candidatos, mas a Q8 precisa das de órgãos.
 5. **Prestação final.** O staging não filtra `TP_PRESTACAO_CONTAS`. Em 2026 só existem entregas `PARCIAL` e `RELATÓRIO FINANCEIRO`.
-6. **Doador e fornecedor obrigatórios.** O DER exige `id_agente_doador` e `id_agente_fornecedor`, mas há 1.265 receitas de valor zero sem fonte, origem nem doador identificável. É preciso decidir entre um agente "não identificado" e a FK anulável.
+6. **Doador e fornecedor anuláveis.** Decidido na carga (`sql/06_carga_modelo.sql`): `id_agente_doador` e `id_agente_fornecedor` aceitam nulo. Na carga nacional, ~315 mil receitas e ~1,56 mi despesas vêm sem CPF/CNPJ válido; um agente "não identificado" inventaria um documento.
 7. **`VOTACAO_LEGENDA_MUNICIPIO`.** O módulo Q4–Q6 previa `nr_federacao` e `qt_votos_nominais_validos`, que não entraram no DER geral. Falta medir se, desde 2022, o voto de legenda da federação se repete em cada partido membro.
 8. **3FN em `MUNICIPIO`.** `nm_regiao_imediata` depende de `cd_regiao_imediata`. Aceito por serem só 5.570 linhas; a alternativa é uma entidade `REGIAO_IMEDIATA`.
 9. **Dados que ainda não existem:** espectro partidário (F1), população de anos anteriores a 2026 (F2), IDHM municipal (F3) e propostas de presidente (F4). Ver `docs/der/der-geral.md`, seção 4.

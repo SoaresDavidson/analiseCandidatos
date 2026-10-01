@@ -1,6 +1,6 @@
 ## 4. Modelo relacional
 
-**Fonte:** mapeamento do DER geral (`docs/dossie/public/diagramas/der-geral.drawio`) para tabelas: 32 entidades e 43 relacionamentos.
+**Fonte:** mapeamento do DER geral (`docs/dossie/public/diagramas/der-geral-separado.drawio`) para tabelas: 32 entidades e 43 relacionamentos.
 
 **Regras aplicadas:** relacionamentos 1:N levam a chave estrangeira para o lado N; relacionamentos 1:1 levam-na para o lado dependente. Entidades cuja chave sublinhada é parcial (por exemplo, `ano` em `MUNICIPIO_ANO`) foram tratadas como fracas, e sua chave primária é a chave do dono somada à chave parcial. Atributos tracejados no DER são derivados e aparecem marcados como tal.
 
@@ -26,14 +26,15 @@
 - **CARGO**(**cd_cargo**, ds_cargo)
 - **POLITICO**(**nr_titulo_eleitoral**, nm_candidato, dt_nascimento, sg_uf_nascimento)
 - **CANDIDATURA**(**id_candidatura**, ano, sg_ue, sq_candidato, ds_genero, ds_cor_raca, ds_ocupacao, ds_sit_tot_turno, fl_eleito *(derivado)*, nr_idade_eleicao *(derivado)*, cd_eleicao `FK → ELEICAO`, cd_cargo `FK → CARGO`, nr_partido, nr_titulo_eleitoral `FK → POLITICO`, cd_grau_instrucao `FK → GRAU_INSTRUCAO`, cod_ibge `FK → MUNICIPIO`)
-    - `UK` (ano, sg_ue, sq_candidato)
+    - `UK` (ano, sg_ue, cd_cargo, sq_candidato)
     - (ano, nr_partido) `FK → PARTIDO`
     - cod_ibge é nulo fora de pleitos municipais
 - **BEM_CANDIDATO**(**id_candidatura** `FK → CANDIDATURA`, **nr_ordem_bem**, ds_tipo_bem, vr_bem)
 - **VAGA**(**cd_eleicao** `FK → ELEICAO`, **cd_cargo** `FK → CARGO`, **sg_ue**, qt_vaga, cod_ibge `FK → MUNICIPIO`)
     - cod_ibge é nulo fora de pleitos municipais
-- **PROPOSTA_GOVERNO**(**nr_sequencial**, nm_arquivo, qt_caracteres, fl_texto_extraido, tx_conteudo, id_candidatura `FK → CANDIDATURA`)
-- **TERMO_PROPOSTA**(**nr_sequencial** `FK → PROPOSTA_GOVERNO`, **termo**, qt_frequencia)
+- **PROPOSTA_GOVERNO**(**id_candidatura** `FK → CANDIDATURA`, **nr_sequencial**, nm_arquivo `UK`, qt_caracteres, fl_texto_extraido, tx_conteudo)
+- **TERMO_PROPOSTA**(**id_candidatura**, **nr_sequencial**, **termo**, qt_frequencia)
+    - (id_candidatura, nr_sequencial) `FK → PROPOSTA_GOVERNO`
 
 ### 4.3 Votação
 

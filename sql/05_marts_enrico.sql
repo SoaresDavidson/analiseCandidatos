@@ -119,17 +119,7 @@ CREATE OR REPLACE VIEW mart_q12 AS
 -- eleições do que teve — medido: 26 eleições numa série de 13, e a reincidência
 -- saltando de 32,3% para 61,2%. O nome do município mora em MUNICIPIO, que é do
 -- módulo do Davi; aqui fica só o código.
-WITH por_eleicao AS (
-    -- uma linha por pessoa por eleição: quem aparece em dois turnos, ou em dois
-    -- cargos no mesmo ano, não vira duas eleições
-    SELECT DISTINCT
-        nr_titulo_eleitoral,
-        ano
-    FROM candidatura
-    WHERE nr_titulo_eleitoral IS NOT NULL
-),
-
-detalhe AS (
+WITH detalhe AS (
     -- o detalhe de cada eleição, já reduzido a uma linha por (pessoa, ano):
     -- fica a candidatura de maior cargo, que é a principal daquele ano
     SELECT * EXCLUDE (rn) FROM (

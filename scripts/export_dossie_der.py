@@ -1,4 +1,4 @@
-"""Exporta as três páginas do DER como SVG editável com fundo branco."""
+"""Exporta as duas páginas do DER separado como SVG editável com fundo branco."""
 
 from pathlib import Path
 from subprocess import run
@@ -8,7 +8,6 @@ from xml.etree import ElementTree
 
 DIAGRAMS = Path(__file__).resolve().parents[1] / "docs" / "dossie" / "public" / "diagramas"
 EXPORTS = (
-    ("der-geral.drawio", 1, "der-geral.drawio.svg"),
     ("der-geral-separado.drawio", 1, "der-geral-relacoes.drawio.svg"),
     ("der-geral-separado.drawio", 2, "der-geral-atributos.drawio.svg"),
 )
@@ -42,7 +41,7 @@ def main() -> None:
             temporary = Path(temp_dir) / output
             run(
                 [
-                    "rtk", "drawio", "--export", "--format", "svg", "--embed-diagram",
+                    "drawio", "--export", "--format", "svg", "--embed-diagram",
                     "--page-index", str(page), "--output", str(temporary), str(DIAGRAMS / source),
                 ],
                 check=True,

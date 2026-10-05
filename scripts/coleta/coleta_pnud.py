@@ -19,12 +19,12 @@ from __future__ import annotations
 import re
 import sys
 
-from scripts.coleta.coleta_comum import RAW, baixar, executar, log, session
+from scripts.coleta.coleta_comum import RAW, Ufs, baixar, executar, log, session
 
 PAGINA = "https://www.undp.org/pt/node/379901"
 
 
-def coletar_idhm(force: bool) -> None:
+def coletar_idhm(force: bool, _ufs: Ufs) -> None:
     log("[pnud/idhm]")
     html = session.get(PAGINA, timeout=120).text
     links = sorted(set(re.findall(r'href="([^"]+\.xlsx)"', html)))
@@ -37,12 +37,12 @@ def coletar_idhm(force: bool) -> None:
 COLETORES = {"idhm": coletar_idhm}
 
 
-def coletar(force: bool = False) -> None:
+def coletar(force: bool = False, ufs: Ufs = None) -> None:
     """Um coletor que falhe nao impede os outros; o erro e relatado no fim."""
     falhas = []
     for nome, c in COLETORES.items():
         try:
-            c(force)
+            c(force, ufs)
         except Exception as e:
             falhas.append(f"{nome} ({e})")
             log(f"  ERRO em {nome}: {e}")

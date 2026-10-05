@@ -5,7 +5,6 @@ from subprocess import run
 from tempfile import TemporaryDirectory
 from xml.etree import ElementTree
 
-
 DIAGRAMS = Path(__file__).resolve().parents[1] / "docs" / "dossie" / "public" / "diagramas"
 EXPORTS = (
     ("der-geral-separado.drawio", 1, "der-geral-relacoes.drawio.svg"),

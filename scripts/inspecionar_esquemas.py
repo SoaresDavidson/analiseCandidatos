@@ -23,6 +23,7 @@ import zipfile
 from pathlib import Path
 
 import duckdb
+
 from scripts.coleta.coleta_comum import eh_nacional
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -117,7 +118,7 @@ def inspecionar_xlsx(arq: Path) -> dict:
     """Cabeçalho de um .xlsx sem abrir com openpyxl: lê o sharedStrings do zip."""
     with zipfile.ZipFile(arq) as z:
         ss = z.read("xl/sharedStrings.xml").decode("utf-8", errors="replace")
-    vals = re.findall(r"<t[^>]*>(.*?)</t>", ss, re.S)
+    vals = re.findall(r"<t[^>]*>(.*?)</t>", ss, re.DOTALL)
     if "Ano" not in vals:
         return {"colunas": vals[:40], "linhas": None, "exemplo": {}}
     i = vals.index("Ano")

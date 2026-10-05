@@ -4,6 +4,7 @@ Uso:
     uv run python -m scripts.coleta.coleta_tse                     # tudo
     uv run python -m scripts.coleta.coleta_tse candidatos resultados
     uv run python -m scripts.coleta.coleta_tse --force
+    uv run python -m scripts.coleta.coleta_tse --uf PI,CE           # só essas UFs
 
 Layout: dados/raw/<tema>/<ano>/<nome>_<ano>.zip + <nome>_<ano>/
 (mesma convenção já usada em candidatos/).
@@ -13,18 +14,15 @@ from __future__ import annotations
 
 import sys
 
-from scripts.coleta.coleta_comum import RAW, baixar_zip, executar, log
+from scripts.coleta.coleta_comum import RAW, UFS, Ufs, baixar_zip, executar, log
 
 ANOS = [2016, 2018, 2020, 2022, 2024, 2026]
-UF = "PI"
 CDN = "https://cdn.tse.jus.br/estatistica/sead/odsele"
 
 # Nos zips quebrados por UF o arquivo _BRASIL é a concatenação EXATA de todas as
 # UFs — conferido em detalhe_votacao_munzona 2020: 12.630 linhas e 5.568
 # municípios distintos dos dois lados. Extrair os dois dobra o disco à toa, então
-# cada tema escolhe um recorte: NACIONAL onde a pergunta compara o PI com o país,
-# UF onde o arquivo nacional é grande demais para valer a pena.
-NACIONAL = "BRASIL"
+# todo tema extrai só o recorte pedido em --uf (padrão: o _BRASIL).
 
 # Q8 (doação de PJ) precisa de 2014: o STF derrubou a doação empresarial em
 # setembro de 2015 (ADI 4650), então a eleição de 2016 já foi sem PJ.
@@ -85,9 +83,9 @@ def _coletar_tema(
     tema: str,
     fontes: dict[str, str],
     force: bool,
+    ufs: Ufs,
     anos: list[int] | None = None,
     por_ano: dict[int, dict[str, str]] | None = None,
-    manter_uf: str | None = None,
 ) -> None:
     for ano in anos or ANOS:
         log(f"[tse/{tema}/{ano}]")
@@ -97,59 +95,60 @@ def _coletar_tema(
                 url,
                 RAW / tema / str(ano) / f"{nome}_{ano}.zip",
                 force,
-                manter_uf=manter_uf,
+                ufs,
             )
 
 
-def coletar_candidatos(force: bool) -> None:
-    _coletar_tema("candidatos", CANDIDATOS, force, manter_uf=NACIONAL)
+def coletar_candidatos(force: bool, ufs: Ufs) -> None:
+    _coletar_tema("candidatos", CANDIDATOS, force, ufs)
 
 
-def coletar_historico(force: bool) -> None:
+def coletar_historico(force: bool, ufs: Ufs) -> None:
     """Só consulta_cand de 2002 a 2014, para a linha do tempo da Q12."""
-    _coletar_tema(
-        "candidatos", HISTORICO, force, anos=ANOS_HISTORICO, manter_uf=NACIONAL
-    )
+    _coletar_tema("candidatos", HISTORICO, force, ufs, anos=ANOS_HISTORICO)
 
 
-def coletar_eleitorado(force: bool) -> None:
-    _coletar_tema("eleitorado", ELEITORADO, force, manter_uf=UF)
+def coletar_eleitorado(force: bool, ufs: Ufs) -> None:
+    _coletar_tema("eleitorado", ELEITORADO, force, ufs)
 
 
-def coletar_prestacao_contas(force: bool) -> None:
-    # Só o PI desde 01/10/2026: o escopo municipal do trabalho voltou a ser só o
-    # Piauí. O nacional custava ~21 GB em disco contra ~poucas centenas de MB do PI.
+def coletar_prestacao_contas(force: bool, ufs: Ufs) -> None:
+    # O nacional ocupa ~21 GB em disco; só o PI, poucas centenas de MB.
     _coletar_tema(
         "prestacao_contas",
         PRESTACAO_CONTAS,
         force,
+        ufs,
         anos=ANOS_PRESTACAO,
         por_ano=PRESTACAO_CONTAS_POR_ANO,
-        manter_uf=UF,
     )
 
 
-def coletar_resultados(force: bool) -> None:
-    # NACIONAL e não UF: Q3 e Q9 precisam comparar o Piauí com o resto do país.
-    _coletar_tema("resultados", RESULTADOS, force, manter_uf=NACIONAL)
+def coletar_resultados(force: bool, ufs: Ufs) -> None:
+    _coletar_tema("resultados", RESULTADOS, force, ufs)
 
 
-def coletar_abstencao(force: bool) -> None:
-    _coletar_tema("abstencao", ABSTENCAO, force, manter_uf=UF)
+def coletar_abstencao(force: bool, ufs: Ufs) -> None:
+    _coletar_tema("abstencao", ABSTENCAO, force, ufs)
 
 
-def coletar_proposta_governo(force: bool) -> None:
-    log(f"[tse/proposta_governo/{UF}]")
-    for ano in ANOS:
-        url = f"{CDN}/proposta_governo/proposta_governo_{ano}_{UF}.zip"
-        baixar_zip(
-            url,
-            RAW / "proposta_governo" / str(ano) / f"proposta_governo_{ano}_{UF}.zip",
-            force,
-        )
+def coletar_proposta_governo(force: bool, ufs: Ufs) -> None:
+    """Um zip por UF; não há nacional. BR (presidente) só existe em ano de eleição geral.
+
+    No país todo são ~27 zips por ano — só o de SP em 2024 tem 1,4 GB.
+    """
+    for uf in ufs or [*UFS, "BR"]:
+        log(f"[tse/proposta_governo/{uf}]")
+        for ano in ANOS:
+            nome = f"proposta_governo_{ano}_{uf}.zip"
+            baixar_zip(
+                f"{CDN}/proposta_governo/{nome}",
+                RAW / "proposta_governo" / str(ano) / nome,
+                force,
+            )
 
 
-def coletar_municipio_tse_ibge(force: bool) -> None:
+def coletar_municipio_tse_ibge(force: bool, _ufs: Ufs) -> None:
     """Tabela de-para entre código de município do TSE e do IBGE."""
     log("[tse/municipio_tse_ibge]")
     baixar_zip(
@@ -171,12 +170,12 @@ COLETORES = {
 }
 
 
-def coletar(force: bool = False) -> None:
+def coletar(force: bool = False, ufs: Ufs = None) -> None:
     """Um coletor que falhe não impede os outros; o erro é relatado no fim."""
     falhas = []
     for nome, c in COLETORES.items():
         try:
-            c(force)
+            c(force, ufs)
         except Exception as e:
             falhas.append(f"{nome} ({e})")
             log(f"  ERRO em {nome}: {e}")

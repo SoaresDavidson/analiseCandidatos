@@ -16,15 +16,13 @@ from scripts.coleta.coleta_comum import (
     JSON,
     RAW,
     ROOT,
+    Ufs,
     baixar_json,
     baixar_zip,
     executar,
     log,
     session,
 )
-
-UF = "PI"
-COD_UF = 22  # Piauí
 
 SIDRA = "https://apisidra.ibge.gov.br/values"
 AGREGADOS = "https://servicodados.ibge.gov.br/api/v3/agregados"
@@ -56,7 +54,7 @@ IDADES_9606 = [
 ]
 
 
-def coletar_sidra(force: bool) -> None:
+def coletar_sidra(force: bool, _ufs: Ufs) -> None:
     pasta = RAW / "ibge" / "sidra"
     log("[ibge/sidra]")
     for tabela in (6579, 9606, 10061, 10062, 10295):
@@ -118,7 +116,7 @@ def coletar_sidra(force: bool) -> None:
     log(f"  baixado {destino.relative_to(ROOT)} ({len(linhas) - 1} linhas)")
 
 
-def coletar_pib(force: bool) -> None:
+def coletar_pib(force: bool, _ufs: Ufs) -> None:
     """PIB dos municípios: pega a última edição publicada no FTP.
 
     Traz PIB e PIB per capita já calculado (o SIDRA não publica o per capita em
@@ -143,14 +141,18 @@ def coletar_pib(force: bool) -> None:
         )
 
 
-def coletar_malha(force: bool) -> None:
-    """Malha dos municípios da UF em GeoJSON, para mapas."""
+def coletar_malha(force: bool, ufs: Ufs) -> None:
+    """Malha dos municípios em GeoJSON, para mapas: uma por UF ou a do país todo."""
     log("[ibge/malha]")
-    url = (
-        f"https://servicodados.ibge.gov.br/api/v3/malhas/estados/{COD_UF}"
-        "?formato=application/vnd.geo+json&qualidade=minima&intrarregiao=municipio"
-    )
-    baixar_json(url, RAW / "territorio" / f"malha_municipios_{UF}.geojson", force)
+    filtro = "?formato=application/vnd.geo+json&qualidade=minima&intrarregiao=municipio"
+    malhas = "https://servicodados.ibge.gov.br/api/v3/malhas"
+    alvos = [(f"estados/{uf}", uf) for uf in ufs] if ufs else [("paises/BR", "BRASIL")]
+    for caminho, nome in alvos:
+        baixar_json(
+            f"{malhas}/{caminho}{filtro}",
+            RAW / "territorio" / f"malha_municipios_{nome}.geojson",
+            force,
+        )
 
 
 COLETORES = {
@@ -160,12 +162,12 @@ COLETORES = {
 }
 
 
-def coletar(force: bool = False) -> None:
+def coletar(force: bool = False, ufs: Ufs = None) -> None:
     """Um coletor que falhe nao impede os outros; o erro e relatado no fim."""
     falhas = []
     for nome, c in COLETORES.items():
         try:
-            c(force)
+            c(force, ufs)
         except Exception as e:
             falhas.append(f"{nome} ({e})")
             log(f"  ERRO em {nome}: {e}")

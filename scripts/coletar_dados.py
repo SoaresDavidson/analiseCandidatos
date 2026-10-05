@@ -4,6 +4,7 @@ Uso:
     uv run python -m scripts.coletar_dados            # todas as fontes
     uv run python -m scripts.coletar_dados tse ibge   # só alguns domínios
     uv run python -m scripts.coletar_dados --force    # rebaixa mesmo se já existir
+    uv run python -m scripts.coletar_dados --uf PI    # só o PI onde há recorte por UF
 
 Cada domínio tem seu próprio script, que também roda sozinho e aceita
 filtros mais finos: coleta_tse.py, coleta_ibge.py, coleta_pnud.py.

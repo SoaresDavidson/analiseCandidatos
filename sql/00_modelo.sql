@@ -24,8 +24,9 @@
 --   * VOTACAO_LEGENDA_MUNICIPIO: `ano` fica fora da PK (é determinado por cd_eleicao).
 --   * RECEITA_CAMPANHA.id_agente_doador e DESPESA_CAMPANHA.id_agente_fornecedor
 --     aceitam nulo: ~175 mil receitas de 2018+ vêm sem CPF/CNPJ do doador.
--- Pendências 4.6 ainda abertas e não impostas aqui: FKs de sg_uf para UF em
--- POLITICO e ORGAO_PARTIDARIO; consistência entre `ano` e `cd_eleicao`.
+-- Pendência 4.6 ainda aberta e não imposta aqui: consistência entre `ano` e
+-- `cd_eleicao`. POLITICO.sg_uf_nascimento fica sem FK para UF de propósito: o TSE
+-- grava `ZZ` para quem nasceu no exterior, e `ZZ` não é UF (pendência 4.6.2).
 
 CREATE SCHEMA IF NOT EXISTS modelo;
 
@@ -178,7 +179,7 @@ CREATE TABLE IF NOT EXISTS modelo.orgao_partidario (
     id_orgao BIGINT NOT NULL PRIMARY KEY,
     tp_orgao VARCHAR(10) NOT NULL,
     ds_esfera VARCHAR(20),
-    sg_uf CHAR(2),
+    sg_uf CHAR(2) REFERENCES modelo.uf (sg_uf),  -- nulo em órgão nacional
     nr_cnpj VARCHAR(14),
     ano INTEGER NOT NULL,
     nr_partido INTEGER NOT NULL,

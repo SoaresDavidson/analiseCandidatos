@@ -129,7 +129,7 @@ nos indicadores socioeconômicos.
 | PIB per capita | `vr_pib_per_capita` | usar o ano disponível mais próximo, sem ultrapassar o ano da eleição |
 | IDHM | `vl_idhm` | para município, o último valor disponível é o do Censo 2010 |
 | eleitores / população | `qt_eleitores / qt_populacao_estimada` | numerador e denominador precisam representar o mesmo ano |
-| “isentos” | `(SUM(qt_votos_brancos) + SUM(qt_votos_nulos) + SUM(qt_abstencoes)) / SUM(qt_aptos)` | calcular dentro do mesmo cargo e turno |
+| alienação eleitoral | `(SUM(qt_votos_brancos) + SUM(qt_votos_nulos) + SUM(qt_abstencoes)) / SUM(qt_aptos)` | calcular dentro do mesmo cargo e turno |
 | votos do partido | `SUM(qt_votos_nominais_validos)` agrupado por `nr_partido` | o partido do voto vem da candidatura |
 | vitórias do partido | `COUNT(DISTINCT sq_candidato)` onde `fl_eleito = true` | ranquear dentro da mesma eleição e cargo |
 
@@ -142,9 +142,11 @@ nos indicadores socioeconômicos.
   município × zona. Para a análise municipal, somar as zonas primeiro. Nunca juntar
   as duas tabelas ainda no grão bruto: isso cria produto cartesiano entre candidatos
   e linhas de comparecimento e infla votos e eleitores.
-- A soma de brancos, nulos e abstenções é chamada de **“isentos” apenas para manter
-  o vocabulário da pergunta**. Tecnicamente, ela representa votos não válidos mais
-  não comparecimento; não são eleitores legalmente isentos de votar.
+- A soma de brancos, nulos e abstenções sobre os aptos é a **alienação eleitoral**,
+  termo de Wanderley Guilherme dos Santos (*Crise e Castigo*, 1987) usado na ciência
+  política brasileira. O enunciado chamava de “isentos”, mas não são eleitores
+  legalmente isentos de votar. Somar as quantidades, não os percentuais do TSE: a
+  abstenção sai sobre os aptos, e brancos e nulos sobre o comparecimento.
 - `QT_APTOS`, brancos, nulos e abstenções se repetem por cargo. O índice deve ser
   calculado separadamente por cargo (por exemplo, Prefeito) ou usando um único cargo
   representativo; somar Prefeito e Vereador duplica o eleitorado.

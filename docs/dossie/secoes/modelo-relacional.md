@@ -52,8 +52,9 @@
 - **PARTIDO_FEDERACAO**(**ano**, **nr_partido**, nr_federacao)
     - (ano, nr_partido) `FK → PARTIDO` (1:1)
     - (ano, nr_federacao) `FK → FEDERACAO`
-- **ORGAO_PARTIDARIO**(**id_orgao**, tp_orgao, ds_esfera, sg_uf, nr_cnpj, ano, nr_partido)
+- **ORGAO_PARTIDARIO**(**id_orgao**, tp_orgao, ds_esfera, sg_uf `FK → UF`, nr_cnpj, ano, nr_partido)
     - (ano, nr_partido) `FK → PARTIDO`
+    - sg_uf é nulo em órgão nacional
 
 ### 4.5 Finanças de campanha
 
@@ -68,8 +69,10 @@
 ### 4.6 Pendências a conferir com o DER
 
 1. `ESPECTRO_PARTIDO` não tem chave sublinhada no DER. O atributo `nr_rodada` sugere mais de uma leitura por partido; nesse caso a chave passa a ser (ano, nr_partido, nr_rodada) e o relacionamento com `PARTIDO` deixa de ser 1:1.
-2. Três atributos parecem chaves estrangeiras sem relacionamento desenhado: `VOTACAO_LEGENDA_MUNICIPIO.cd_cargo` (para `CARGO`, já tratado como FK acima), `ORGAO_PARTIDARIO.sg_uf` e `POLITICO.sg_uf_nascimento` (para `UF`).
+2. Três atributos parecem chaves estrangeiras sem relacionamento desenhado. Decisão:
+    - `VOTACAO_LEGENDA_MUNICIPIO.cd_cargo` é `FK → CARGO` e `ORGAO_PARTIDARIO.sg_uf` é `FK → UF` (opcional: órgão nacional não tem UF; o arquivo traz `BR`, que vira nulo). Pela notação de Chen, uma entidade não guarda o código de outra como atributo, então falta desenhar no DER os relacionamentos com `CARGO` e com `UF`.
+    - `POLITICO.sg_uf_nascimento` continua atributo, sem FK. O TSE grava `ZZ` para quem nasceu no exterior (de 36 a 254 candidatos por ano nos arquivos de 2016 a 2026), e `ZZ` não é UF. Com a FK, a carga teria de apagar essa informação.
 3. `COMPARECIMENTO_MUNICIPIO` não tem atributo sublinhado; a chave primária foi formada só pelas chaves estrangeiras. Se os dados forem por turno, falta `nr_turno`.
-4. `COMPARECIMENTO_PERFIL` guarda `ano` e `nr_turno` sem ligação com `ELEICAO`; uma FK `cd_eleicao` seria mais coerente.
+4. `COMPARECIMENTO_PERFIL` guarda `ano` e `nr_turno` sem ligação com `ELEICAO`, de propósito. O arquivo `perfil_comparecimento_abstencao` não tem `CD_ELEICAO`, e o par (ano, nr_turno) não determina uma eleição. Em eleição geral o eleitor vota para os cargos federais e estaduais no mesmo dia, e o arquivo conta esse comparecimento uma vez só, mas o TSE registra duas eleições (1º turno de 2018: 295 e 297; de 2022: 544 e 546). Em 2020 há ainda a eleição adiada do Amapá (426 e 445). Uma FK `cd_eleicao` não teria um valor certo para apontar.
 5. `ano` convive com `cd_eleicao` em `CANDIDATURA` e `VOTACAO_LEGENDA_MUNICIPIO` porque a chave de `PARTIDO` inclui o ano. É uma redundância que precisa de restrição de consistência.
 6. O DER não indica participação obrigatória ou opcional; as colunas anuláveis acima foram deduzidas do significado dos relacionamentos.

@@ -41,12 +41,13 @@ uv run python -m scripts.coleta.coleta_tse candidatos resultados  # só esses te
 uv run python -m scripts.coleta.coleta_ibge sidra malha
 uv run python -m scripts.coleta.coleta_pnud
 uv run python -m scripts.coleta.coleta_tse --force                # rebaixa mesmo se já existir
+uv run python -m scripts.coleta.coleta_tse --uf PI,CE             # só essas UFs (padrão: país todo)
 ```
 
 | Script | O que baixa | Destino em `dados/raw/` |
 |---|---|---|
-| `coleta_tse.py` | candidatos, eleitorado, prestação de contas, resultados (`votacao_*_munzona` e `detalhe_votacao_munzona`), comparecimento/abstenção, propostas de governo (PI), de-para município TSE↔IBGE | `<tema>/<ano>/`, `extras/` |
-| `coleta_ibge.py` | SIDRA: população (6579), população por idade (9606), instrução (10061); PIB dos municípios (FTP); malha dos municípios do PI (GeoJSON) | `ibge/sidra/`, `ibge/pib_municipios/`, `territorio/` |
+| `coleta_tse.py` | candidatos, eleitorado, prestação de contas, resultados (`votacao_*_munzona` e `detalhe_votacao_munzona`), comparecimento/abstenção, propostas de governo, de-para município TSE↔IBGE | `<tema>/<ano>/`, `extras/` |
+| `coleta_ibge.py` | SIDRA: população (6579), população por idade (9606), instrução (10061); PIB dos municípios (FTP); malha dos municípios (GeoJSON) | `ibge/sidra/`, `ibge/pib_municipios/`, `territorio/` |
 | `coleta_pnud.py` | Painel IDHM — ⚠️ só Brasil e UF, **não tem município** (ver docstring) | `pnud/idhm/` |
 
 ### Anos coletados
@@ -60,16 +61,18 @@ uv run python -m scripts.coleta.coleta_tse --force                # rebaixa mesm
 ### Recorte por UF
 
 Os zips do TSE trazem um arquivo por UF **e** um `_BRASIL` que é a concatenação de
-todos. Extrair tudo dobra o volume à toa. Os temas pesados são extraídos só com os
-arquivos do PI (`manter_uf` em `coleta_tse.py`):
+todos. Extrair tudo dobra o volume à toa, então cada zip extrai só o recorte pedido:
 
-| Tema | Recorte | Motivo |
-|---|---|---|
-| `prestacao_contas`, `eleitorado`, `abstencao` | só PI | prestação de contas de 2024: ~12 GB completos contra ~92 MB só do PI |
-| `candidatos`, `resultados` | completo | leves (`detalhe_votacao_munzona` de 2024 tem 1,4 MB) e as Q3/Q9 comparam o PI com o resto do país |
+- sem `--uf`: o país todo (`_BRASIL`; `_BR` só quando o zip não tem `_BRASIL`);
+- `--uf PI,CE`: só os arquivos dessas UFs.
 
-Para mudar o recorte, edite `UF` no topo do `coleta_tse.py`. Zip que não é quebrado
-por UF é extraído inteiro automaticamente.
+O zip é sempre baixado inteiro; o recorte vale na extração. Pedir outra UF depois
+só extrai o que falta, sem rebaixar. Zip que não é quebrado por UF é extraído inteiro.
+
+Também seguem `--uf`: `proposta_governo` (um zip por UF; no país todo são 27 por
+ano, e só SP 2024 tem 1,4 GB) e a malha do IBGE. SIDRA, PIB e PNUD sempre vêm completos.
+
+Prestação de contas de 2024: ~12 GB completos, ~6,7 GB só o nacional, ~92 MB só o PI.
 
 Fontes que não existem para um ano (ex.: prestação de contas de 2026, ainda em
 curso) aparecem no log como `404` e são ignoradas — não é erro. Um coletor que

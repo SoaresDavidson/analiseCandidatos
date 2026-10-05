@@ -104,7 +104,11 @@ def filtrar_uf(nomes: list[str], ufs: Ufs) -> list[str]:
     inteira se o filtro não achar nenhum dado — zip que não é quebrado por UF não
     deve ser extraído vazio.
     """
-    alvo = NACIONAIS if ufs is None else set(ufs)  # ZZ (exterior) fica fora do nacional
+    # ZZ (exterior) fica fora do nacional. Com os dois no zip, só o _BRASIL: o _BR
+    # traz só os cargos nacionais (presidente), que já estão nele.
+    alvo = set(ufs or NACIONAIS)
+    if ufs is None and any(n.upper().endswith(("_BRASIL.CSV", "_BRASIL.TXT")) for n in nomes):
+        alvo = {"BRASIL"}
     manter = [n for n in nomes if (m := _SUFIXO_UF.search(n)) is None or m.group(1).upper() in alvo]
     tem_dado = any(_SUFIXO_UF.search(n) for n in manter)
     return manter if tem_dado else nomes

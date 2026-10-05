@@ -58,9 +58,7 @@ def coletar_sidra(force: bool, _ufs: Ufs) -> None:
     pasta = RAW / "ibge" / "sidra"
     log("[ibge/sidra]")
     for tabela in (6579, 9606, 10061, 10062, 10295):
-        baixar_json(
-            f"{AGREGADOS}/{tabela}/metadados", pasta / f"{tabela}_metadados.json", force
-        )
+        baixar_json(f"{AGREGADOS}/{tabela}/metadados", pasta / f"{tabela}_metadados.json", force)
 
     # estimativa de população por município, último ano
     baixar_json(
@@ -129,16 +127,12 @@ def coletar_pib(force: bool, _ufs: Ufs) -> None:
     """
     base = "https://ftp.ibge.gov.br/Pib_Municipios/"
     log("[ibge/pib_municipios]")
-    edicoes = re.findall(
-        r'href="(\d{4}(?:_\d{4})?)/"', session.get(base, timeout=120).text
-    )
+    edicoes = re.findall(r'href="(\d{4}(?:_\d{4})?)/"', session.get(base, timeout=120).text)
     edicao = max(edicoes, key=lambda e: e[-4:])  # ordena pelo ano final da edição
     log(f"  edição mais recente: {edicao}")
     listagem = session.get(f"{base}{edicao}/base/", timeout=120).text
     for arq in re.findall(r'href="(base_de_dados_\d{4}_\d{4}_xlsx\.zip)"', listagem):
-        baixar_zip(
-            f"{base}{edicao}/base/{arq}", RAW / "ibge" / "pib_municipios" / arq, force
-        )
+        baixar_zip(f"{base}{edicao}/base/{arq}", RAW / "ibge" / "pib_municipios" / arq, force)
 
 
 def coletar_malha(force: bool, ufs: Ufs) -> None:

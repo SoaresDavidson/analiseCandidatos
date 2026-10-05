@@ -32,8 +32,7 @@ RAW = ROOT / "dados" / "raw"
 # CSV do TSE: ; como separador, aspas duplas, cp1252, tudo texto para não inferir
 # tipo errado em CPF e número de candidato com zero à esquerda.
 CSV_OPTS = (
-    "delim=';', quote='\"', header=true, encoding='cp1252', "
-    "all_varchar=true, union_by_name=true, ignore_errors=true"
+    "delim=';', quote='\"', header=true, encoding='cp1252', all_varchar=true, union_by_name=true, ignore_errors=true"
 )
 
 # tira ano e UF do nome para agrupar arquivos da mesma família
@@ -71,7 +70,7 @@ def inspecionar_tabular(con: duckdb.DuckDBPyConnection, arq: Path, contar: bool 
     return {
         "colunas": cols,
         "linhas": n,
-        "exemplo": dict(zip(cols, amostra[0])) if amostra else {},
+        "exemplo": dict(zip(cols, amostra[0], strict=True)) if amostra else {},
     }
 
 
@@ -166,17 +165,19 @@ def escrever(saida: Path, secoes: dict[str, list[tuple[Path, dict]]]) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--saida", default="docs/esquemas.md")
-    ap.add_argument("--contar", action="store_true",
-                    help="conta as linhas de cada arquivo (varre tudo; leva minutos em GBs)")
-    ap.add_argument("--todas-ufs", action="store_true",
-                    help="lê também os arquivos por UF, não só os do país todo")
+    ap.add_argument(
+        "--contar", action="store_true", help="conta as linhas de cada arquivo (varre tudo; leva minutos em GBs)"
+    )
+    ap.add_argument("--todas-ufs", action="store_true", help="lê também os arquivos por UF, não só os do país todo")
     args = ap.parse_args()
 
     con = duckdb.connect()
     con.execute("INSTALL encodings; LOAD encodings;")
 
     secoes: dict[str, list[tuple[Path, dict]]] = {
-        "TSE": [], "IBGE — SIDRA": [], "IBGE — PIB dos municípios": [],
+        "TSE": [],
+        "IBGE — SIDRA": [],
+        "IBGE — PIB dos municípios": [],
         "IBGE — malha territorial": [],
     }
 
@@ -185,8 +186,8 @@ def main() -> None:
     # SNAKE_CASE de 2018 em diante) aparecem como blocos separados, e cada bloco
     # diz em que anos aquele esquema vale.
     por_esquema: dict[tuple[str, tuple[str, ...]], list[Path]] = {}
-    vistas: set[str] = set()   # toda família que existe em dados/raw
-    lidas: set[str] = set()    # as que tinham arquivo nacional legível
+    vistas: set[str] = set()  # toda família que existe em dados/raw
+    lidas: set[str] = set()  # as que tinham arquivo nacional legível
     for arq in sorted(RAW.rglob("*.csv")) + sorted(RAW.rglob("*.txt")):
         if "ibge" in arq.parts or arq.stat().st_size == 0:
             continue
@@ -204,7 +205,7 @@ def main() -> None:
     if fora := sorted(vistas - lidas):
         print(f"  sem arquivo nacional, fora do documento: {', '.join(fora)}", flush=True)
 
-    for (fam, cols), arquivos in por_esquema.items():
+    for (_fam, cols), arquivos in por_esquema.items():
         rep = max(arquivos, key=lambda p: p.stat().st_size)  # o maior representa
         print(f"  lendo {rep.relative_to(RAW)} ({len(cols)} colunas)", flush=True)
         info = inspecionar_tabular(con, rep, contar=args.contar)

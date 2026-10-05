@@ -14,3 +14,17 @@ dependencies = [
     "pandas>=3.0.5",
     "requests>=2.34.2",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.10",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+# o formatador cuida do comprimento; o que sobra são strings longas (SQL), sem quebra boa
+ignore = ["E501"]

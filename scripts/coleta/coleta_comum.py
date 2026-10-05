@@ -78,10 +78,12 @@ _SUFIXO_UF = re.compile(r"_(BRASIL|BR|ZZ|[A-Z]{2})\.(csv|txt)$", re.IGNORECASE)
 _RECORTE = re.compile(r"_\d{4}_([A-Za-z]{2,6})(?=\.|$)")
 NACIONAIS = {"BRASIL", "BR"}
 
+# fmt: off
 UFS = (
     "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA", "MG", "MS", "MT", "PA",
     "PB", "PE", "PI", "PR", "RJ", "RN", "RO", "RR", "RS", "SC", "SE", "SP", "TO",
 )
+# fmt: on
 
 # Recorte pedido na linha de comando (--uf): None é o país todo, senão as siglas.
 Ufs = list[str] | None

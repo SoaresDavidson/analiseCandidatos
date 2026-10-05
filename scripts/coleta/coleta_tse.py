@@ -61,9 +61,7 @@ PRESTACAO_CONTAS = {
 # `prestacao_final`, sem o `_contas_`. Não existe template que sirva para os dois.
 PRESTACAO_CONTAS_POR_ANO = {
     2014: {"prestacao_contas_final": "prestacao_contas/prestacao_final_2014.zip"},
-    2016: {
-        "prestacao_contas_final": "prestacao_contas/prestacao_contas_final_2016.zip"
-    },
+    2016: {"prestacao_contas_final": "prestacao_contas/prestacao_contas_final_2016.zip"},
 }
 
 RESULTADOS = {

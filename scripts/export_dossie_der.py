@@ -40,8 +40,16 @@ def main() -> None:
             temporary = Path(temp_dir) / output
             run(
                 [
-                    "drawio", "--export", "--format", "svg", "--embed-diagram",
-                    "--page-index", str(page), "--output", str(temporary), str(DIAGRAMS / source),
+                    "drawio",
+                    "--export",
+                    "--format",
+                    "svg",
+                    "--embed-diagram",
+                    "--page-index",
+                    str(page),
+                    "--output",
+                    str(temporary),
+                    str(DIAGRAMS / source),
                 ],
                 check=True,
             )

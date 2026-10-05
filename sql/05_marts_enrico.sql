@@ -148,7 +148,7 @@ detalhe AS (
             ) AS rn
         FROM candidatura
         WHERE nr_titulo_eleitoral IS NOT NULL
-    )
+    ) AS ranqueada
     WHERE rn = 1
 )
 

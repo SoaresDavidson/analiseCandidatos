@@ -95,7 +95,7 @@ FROM (
         ) AS rn
     FROM stg_candidatura AS c
     WHERE c.sq_candidato IS NOT NULL
-)
+) AS ranqueada
 WHERE rn = 1;
 
 -- Uma linha por pessoa. Atributos que não mudam (nascimento, UF de nascimento)
@@ -112,5 +112,5 @@ SELECT * EXCLUDE (rn) FROM (
         row_number() OVER (PARTITION BY nr_titulo_eleitoral ORDER BY ano DESC) AS rn
     FROM candidatura
     WHERE nr_titulo_eleitoral IS NOT NULL
-)
+) AS ranqueada
 WHERE rn = 1;

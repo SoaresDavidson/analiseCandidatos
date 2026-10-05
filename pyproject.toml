@@ -18,6 +18,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ruff>=0.16.10",
+    "sqlfluff>=4.4.0",
 ]
 
 [tool.ruff]
@@ -28,3 +29,16 @@ target-version = "py313"
 select = ["E", "F", "I", "UP", "B", "SIM"]
 # o formatador cuida do comprimento; o que sobra são strings longas (SQL), sem quebra boa
 ignore = ["E501"]
+
+[tool.sqlfluff.core]
+dialect = "duckdb"
+max_line_length = 120
+
+[tool.sqlfluff.rules.capitalisation.keywords]
+capitalisation_policy = "upper"
+
+[tool.sqlfluff.rules.capitalisation.literals]
+capitalisation_policy = "upper" # NULL, TRUE, FALSE
+
+[tool.sqlfluff.rules.capitalisation.functions]
+extended_capitalisation_policy = "lower"

@@ -1,9 +1,9 @@
 """Coleta dados do IBGE (SIDRA, FTP do PIB, malhas) para dados/raw/ibge/ e dados/raw/territorio/.
 
 Uso:
-    uv run scripts/coleta_ibge.py               # tudo
-    uv run scripts/coleta_ibge.py sidra pib malha
-    uv run scripts/coleta_ibge.py --force
+    uv run python -m scripts.coleta.coleta_ibge               # tudo
+    uv run python -m scripts.coleta.coleta_ibge sidra pib malha
+    uv run python -m scripts.coleta.coleta_ibge --force
 """
 
 from __future__ import annotations
@@ -12,7 +12,16 @@ import json
 import re
 import sys
 
-from coleta_comum import JSON, RAW, ROOT, baixar_json, baixar_zip, executar, log, session
+from scripts.coleta.coleta_comum import (
+    JSON,
+    RAW,
+    ROOT,
+    baixar_json,
+    baixar_zip,
+    executar,
+    log,
+    session,
+)
 
 UF = "PI"
 COD_UF = 22  # Piauí
@@ -23,8 +32,27 @@ SIDRA_LIMITE = 50_000  # valores por requisição
 
 # tabela 9606 (Censo 2022): faixas etárias quinquenais, classificação 287
 IDADES_9606 = [
-    93070, 93084, 93085, 93086, 93087, 93088, 93089, 93090, 93091, 93092, 93093,
-    93094, 93095, 93096, 93097, 93098, 49108, 49109, 60040, 60041, 6653,
+    93070,
+    93084,
+    93085,
+    93086,
+    93087,
+    93088,
+    93089,
+    93090,
+    93091,
+    93092,
+    93093,
+    93094,
+    93095,
+    93096,
+    93097,
+    93098,
+    49108,
+    49109,
+    60040,
+    60041,
+    6653,
 ]
 
 
@@ -32,10 +60,16 @@ def coletar_sidra(force: bool) -> None:
     pasta = RAW / "ibge" / "sidra"
     log("[ibge/sidra]")
     for tabela in (6579, 9606, 10061, 10062, 10295):
-        baixar_json(f"{AGREGADOS}/{tabela}/metadados", pasta / f"{tabela}_metadados.json", force)
+        baixar_json(
+            f"{AGREGADOS}/{tabela}/metadados", pasta / f"{tabela}_metadados.json", force
+        )
 
     # estimativa de população por município, último ano
-    baixar_json(f"{SIDRA}/t/6579/n6/all/v/all/p/last", pasta / "6579_populacao_municipios.json", force)
+    baixar_json(
+        f"{SIDRA}/t/6579/n6/all/v/all/p/last",
+        pasta / "6579_populacao_municipios.json",
+        force,
+    )
 
     # pessoas 18+ por nível de instrução (total de idade/sexo/cor), por município
     baixar_json(
@@ -69,10 +103,14 @@ def coletar_sidra(force: bool) -> None:
         log(f"  ok      {destino.relative_to(ROOT)}")
         return
     lote = SIDRA_LIMITE // 5600
-    linhas: list[dict] = []
+    linhas: list[dict[str, str]] = []
     for i in range(0, len(IDADES_9606), lote):
         ids = ",".join(map(str, IDADES_9606[i : i + lote]))
-        r = session.get(f"{SIDRA}/t/9606/n6/all/v/93/p/last/c86/95251/c2/6794/c287/{ids}", headers=JSON, timeout=600)
+        r = session.get(
+            f"{SIDRA}/t/9606/n6/all/v/93/p/last/c86/95251/c2/6794/c287/{ids}",
+            headers=JSON,
+            timeout=600,
+        )
         r.raise_for_status()
         parte = r.json()
         linhas.extend(parte if not linhas else parte[1:])  # cabeçalho só uma vez
@@ -93,12 +131,16 @@ def coletar_pib(force: bool) -> None:
     """
     base = "https://ftp.ibge.gov.br/Pib_Municipios/"
     log("[ibge/pib_municipios]")
-    edicoes = re.findall(r'href="(\d{4}(?:_\d{4})?)/"', session.get(base, timeout=120).text)
+    edicoes = re.findall(
+        r'href="(\d{4}(?:_\d{4})?)/"', session.get(base, timeout=120).text
+    )
     edicao = max(edicoes, key=lambda e: e[-4:])  # ordena pelo ano final da edição
     log(f"  edição mais recente: {edicao}")
     listagem = session.get(f"{base}{edicao}/base/", timeout=120).text
     for arq in re.findall(r'href="(base_de_dados_\d{4}_\d{4}_xlsx\.zip)"', listagem):
-        baixar_zip(f"{base}{edicao}/base/{arq}", RAW / "ibge" / "pib_municipios" / arq, force)
+        baixar_zip(
+            f"{base}{edicao}/base/{arq}", RAW / "ibge" / "pib_municipios" / arq, force
+        )
 
 
 def coletar_malha(force: bool) -> None:

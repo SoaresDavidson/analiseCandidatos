@@ -24,23 +24,23 @@ scripts/        # coleta e conversão de dados
 
 ## Coleta de dados
 
-As fontes estão em `scripts/coleta_*.py`, um script por domínio. Todos são idempotentes:
+As fontes estão em `scripts/coleta/coleta_*.py`, um script por domínio. Todos são idempotentes:
 arquivo que já existe em `dados/raw/` é pulado; `--force` rebaixa. Zips são extraídos
 numa pasta de mesmo nome ao lado. Download interrompido retoma de onde parou.
 
 ```bash
 # tudo de uma vez (TSE + IBGE + PNUD)
-uv run scripts/coletar_dados.py
+uv run python -m scripts.coletar_dados
 
 # só alguns domínios
-uv run scripts/coletar_dados.py ibge pnud
+uv run python -m scripts.coletar_dados ibge pnud
 
 # cada domínio roda sozinho e aceita filtro mais fino
-uv run scripts/coleta_tse.py                        # tudo do TSE
-uv run scripts/coleta_tse.py candidatos resultados  # só esses temas
-uv run scripts/coleta_ibge.py sidra malha
-uv run scripts/coleta_pnud.py
-uv run scripts/coleta_tse.py --force                # rebaixa mesmo se já existir
+uv run python -m scripts.coleta.coleta_tse                        # tudo do TSE
+uv run python -m scripts.coleta.coleta_tse candidatos resultados  # só esses temas
+uv run python -m scripts.coleta.coleta_ibge sidra malha
+uv run python -m scripts.coleta.coleta_pnud
+uv run python -m scripts.coleta.coleta_tse --force                # rebaixa mesmo se já existir
 ```
 
 | Script | O que baixa | Destino em `dados/raw/` |
@@ -112,7 +112,7 @@ find dados/raw -name "*.zip" -delete
 Antes de modelar qualquer coisa, gere o inventário do que existe de verdade:
 
 ```bash
-uv run scripts/inspecionar_esquemas.py
+uv run python -m scripts.inspecionar_esquemas
 ```
 
 Ele lê `dados/raw/` e escreve `docs/esquemas.md` com as colunas, a contagem de

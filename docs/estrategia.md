@@ -32,10 +32,11 @@ sql/
   03_marts.sql        uma view por pergunta: mart_q01, mart_q02, ...
 
 scripts/
-  coleta_comum.py     infra: download com retomada, extração com filtro de UF
-  coleta_tse.py       candidatos, resultados, contas, eleitorado, abstenção, propostas
-  coleta_ibge.py      SIDRA, FTP do PIB, malha municipal
-  coleta_pnud.py      IDHM (só Brasil/UF — ver seção 4)
+  coleta/
+    coleta_comum.py   infra: download com retomada, extração com filtro de UF
+    coleta_tse.py     candidatos, resultados, contas, eleitorado, abstenção, propostas
+    coleta_ibge.py    SIDRA, FTP do PIB, malha municipal
+    coleta_pnud.py    IDHM (só Brasil/UF — ver seção 4)
   coletar_dados.py    roda os três de uma vez
 ```
 

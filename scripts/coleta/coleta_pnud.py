@@ -11,7 +11,7 @@ o eixo de "município rico/pobre" da Q3 é o PIB per capita (que temos ano a ano
 2023, via coleta_ibge.py), com o IDHM entrando só como validação cruzada.
 
 Uso:
-    uv run scripts/coleta_pnud.py [--force]
+    uv run python -m scripts.coleta.coleta_pnud [--force]
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from __future__ import annotations
 import re
 import sys
 
-from coleta_comum import RAW, baixar, executar, log, session
+from scripts.coleta.coleta_comum import RAW, baixar, executar, log, session
 
 PAGINA = "https://www.undp.org/pt/node/379901"
 

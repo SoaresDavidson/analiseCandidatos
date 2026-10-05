@@ -15,7 +15,7 @@ from pathlib import Path
 
 from curl_cffi import requests
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 RAW = ROOT / "dados" / "raw"
 
 session = requests.Session(impersonate="chrome")

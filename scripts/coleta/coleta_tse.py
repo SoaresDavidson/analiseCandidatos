@@ -1,9 +1,9 @@
 """Coleta dados abertos do TSE (cdn.tse.jus.br) para dados/raw/.
 
 Uso:
-    uv run scripts/coleta_tse.py                     # tudo
-    uv run scripts/coleta_tse.py candidatos resultados
-    uv run scripts/coleta_tse.py --force
+    uv run python -m scripts.coleta.coleta_tse                     # tudo
+    uv run python -m scripts.coleta.coleta_tse candidatos resultados
+    uv run python -m scripts.coleta.coleta_tse --force
 
 Layout: dados/raw/<tema>/<ano>/<nome>_<ano>.zip + <nome>_<ano>/
 (mesma convenção já usada em candidatos/).
@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import sys
 
-from coleta_comum import RAW, baixar_zip, executar, log
+from scripts.coleta.coleta_comum import RAW, baixar_zip, executar, log
 
 ANOS = [2016, 2018, 2020, 2022, 2024, 2026]
 UF = "PI"
@@ -63,7 +63,9 @@ PRESTACAO_CONTAS = {
 # `prestacao_final`, sem o `_contas_`. Não existe template que sirva para os dois.
 PRESTACAO_CONTAS_POR_ANO = {
     2014: {"prestacao_contas_final": "prestacao_contas/prestacao_final_2014.zip"},
-    2016: {"prestacao_contas_final": "prestacao_contas/prestacao_contas_final_2016.zip"},
+    2016: {
+        "prestacao_contas_final": "prestacao_contas/prestacao_contas_final_2016.zip"
+    },
 }
 
 RESULTADOS = {
@@ -91,7 +93,12 @@ def _coletar_tema(
         log(f"[tse/{tema}/{ano}]")
         for nome, caminho in (por_ano or {}).get(ano, fontes).items():
             url = f"{CDN}/{caminho.format(ano=ano, br='_BR' if ano >= 2022 else '')}"
-            baixar_zip(url, RAW / tema / str(ano) / f"{nome}_{ano}.zip", force, manter_uf=manter_uf)
+            baixar_zip(
+                url,
+                RAW / tema / str(ano) / f"{nome}_{ano}.zip",
+                force,
+                manter_uf=manter_uf,
+            )
 
 
 def coletar_candidatos(force: bool) -> None:
@@ -100,7 +107,9 @@ def coletar_candidatos(force: bool) -> None:
 
 def coletar_historico(force: bool) -> None:
     """Só consulta_cand de 2002 a 2014, para a linha do tempo da Q12."""
-    _coletar_tema("candidatos", HISTORICO, force, anos=ANOS_HISTORICO, manter_uf=NACIONAL)
+    _coletar_tema(
+        "candidatos", HISTORICO, force, anos=ANOS_HISTORICO, manter_uf=NACIONAL
+    )
 
 
 def coletar_eleitorado(force: bool) -> None:
@@ -108,14 +117,15 @@ def coletar_eleitorado(force: bool) -> None:
 
 
 def coletar_prestacao_contas(force: bool) -> None:
-    # NACIONAL desde 22/09/2026 (decisão ① revisada em docs/estrategia.md): a Q1
-    # ("quanto custa uma cadeira") precisa comparar o PI com o país, e a Q3 cruza
-    # dinheiro com os 5.570 municípios. O recorte do PI passa a ser WHERE SG_UF no
-    # SQL, não na extração. Só o nacional em disco gasta ~21 GB contra os 38 GB de
-    # hoje, em que as duas cópias convivem.
+    # Só o PI desde 01/10/2026: o escopo municipal do trabalho voltou a ser só o
+    # Piauí. O nacional custava ~21 GB em disco contra ~poucas centenas de MB do PI.
     _coletar_tema(
-        "prestacao_contas", PRESTACAO_CONTAS, force,
-        anos=ANOS_PRESTACAO, por_ano=PRESTACAO_CONTAS_POR_ANO, manter_uf=NACIONAL,
+        "prestacao_contas",
+        PRESTACAO_CONTAS,
+        force,
+        anos=ANOS_PRESTACAO,
+        por_ano=PRESTACAO_CONTAS_POR_ANO,
+        manter_uf=UF,
     )
 
 
@@ -132,13 +142,21 @@ def coletar_proposta_governo(force: bool) -> None:
     log(f"[tse/proposta_governo/{UF}]")
     for ano in ANOS:
         url = f"{CDN}/proposta_governo/proposta_governo_{ano}_{UF}.zip"
-        baixar_zip(url, RAW / "proposta_governo" / str(ano) / f"proposta_governo_{ano}_{UF}.zip", force)
+        baixar_zip(
+            url,
+            RAW / "proposta_governo" / str(ano) / f"proposta_governo_{ano}_{UF}.zip",
+            force,
+        )
 
 
 def coletar_municipio_tse_ibge(force: bool) -> None:
     """Tabela de-para entre código de município do TSE e do IBGE."""
     log("[tse/municipio_tse_ibge]")
-    baixar_zip(f"{CDN}/municipio_tse_ibge/municipio_tse_ibge.zip", RAW / "extras" / "municipio_tse_ibge.zip", force)
+    baixar_zip(
+        f"{CDN}/municipio_tse_ibge/municipio_tse_ibge.zip",
+        RAW / "extras" / "municipio_tse_ibge.zip",
+        force,
+    )
 
 
 COLETORES = {

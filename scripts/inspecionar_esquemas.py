@@ -9,9 +9,9 @@ nenhum). Os arquivos por UF são fatias do nacional, com o mesmo cabeçalho: ler
 27 não acrescenta esquema e multiplica o tempo por 27. Use --todas-ufs para ler tudo.
 
 Uso:
-    uv run scripts/inspecionar_esquemas.py
-    uv run scripts/inspecionar_esquemas.py --saida docs/esquemas.md
-    uv run scripts/inspecionar_esquemas.py --todas-ufs
+    uv run python -m scripts.inspecionar_esquemas
+    uv run python -m scripts.inspecionar_esquemas --saida docs/esquemas.md
+    uv run python -m scripts.inspecionar_esquemas --todas-ufs
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ import zipfile
 from pathlib import Path
 
 import duckdb
-from coleta_comum import eh_nacional
+from scripts.coleta.coleta_comum import eh_nacional
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "dados" / "raw"

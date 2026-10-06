@@ -149,7 +149,10 @@ WITH moda AS (
     SELECT
         cod_ibge,
         -- moda; empate vai para o nível MENOR e fica sinalizado
-        arg_max(cd_nivel, qt_populacao * 10 - cd_nivel) AS cd_nivel_moda_populacao,
+        -- município sem Censo (criado depois de 2022) fica sem moda, não com nível 1
+        CASE
+            WHEN max(qt_populacao) > 0 THEN arg_max(cd_nivel, qt_populacao * 10 - cd_nivel)
+        END AS cd_nivel_moda_populacao,
         CASE WHEN max(qt_eleitos) > 0 THEN arg_max(cd_nivel, qt_eleitos * 10 - cd_nivel) END AS cd_nivel_moda_eleitos,
         count(*) FILTER (WHERE qt_eleitos = max_eleitos AND max_eleitos > 0) > 1 AS fl_empate_eleitos
     FROM (
@@ -158,6 +161,15 @@ WITH moda AS (
             max(qt_eleitos) OVER (PARTITION BY cod_ibge) AS max_eleitos
         FROM q4_municipio_nivel
     ) AS t
+    GROUP BY cod_ibge
+),
+
+vereadores AS (   -- 0 = o arquivo do TSE não traz o resultado de vereador ali (V7)
+    SELECT
+        cod_ibge,
+        count(*) AS qt_vereadores_eleitos
+    FROM q4_candidatura
+    WHERE ano = 2024 AND cd_cargo = 13 AND fl_eleito
     GROUP BY cod_ibge
 )
 
@@ -168,6 +180,7 @@ SELECT
     np.ds_nivel AS ds_moda_populacao,
     ne.ds_nivel AS ds_moda_eleitos,
     mo.fl_empate_eleitos,
+    coalesce(ve.qt_vereadores_eleitos, 0) AS qt_vereadores_eleitos,
     sum(v.qt_eleitos) AS qt_eleitos,
     max(v.pc_populacao) FILTER (WHERE v.cd_nivel = 4) AS pc_populacao_superior,
     max(v.pc_eleitos) FILTER (WHERE v.cd_nivel = 4) AS pc_eleitos_superior,
@@ -175,6 +188,7 @@ SELECT
     max(v.pc_eleitos) FILTER (WHERE v.cd_nivel = 1) AS pc_eleitos_nivel1
 FROM q4_municipio_nivel AS v
 INNER JOIN moda AS mo ON v.cod_ibge = mo.cod_ibge
-INNER JOIN modelo.nivel_instrucao AS np ON mo.cd_nivel_moda_populacao = np.cd_nivel
+LEFT JOIN modelo.nivel_instrucao AS np ON mo.cd_nivel_moda_populacao = np.cd_nivel
 LEFT JOIN modelo.nivel_instrucao AS ne ON mo.cd_nivel_moda_eleitos = ne.cd_nivel
+LEFT JOIN vereadores AS ve ON v.cod_ibge = ve.cod_ibge
 GROUP BY ALL;

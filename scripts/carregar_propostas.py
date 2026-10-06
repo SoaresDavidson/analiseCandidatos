@@ -42,24 +42,236 @@ MIN_CARACTERES_PAGINA = 100
 TAM_MAX_TERMO = 60  # TERMO_PROPOSTA.termo é VARCHAR(60)
 
 # Lista do NLTK para o português, mais as formas sem acento que aparecem em PDF mal gerado.
-STOPWORDS = frozenset("""
-a à ao aos aquela aquelas aquele aqueles aquilo as às até com como da das de dela delas
-dele deles depois do dos e é ela elas ele eles em entre era eram éramos essa essas esse
-esses esta está estamos estão estar estas estava estavam estávamos este esteja estejam
-estejamos estes esteve estive estivemos estiver estivera estiveram estivéramos estiverem
-estivermos estivesse estivessem estivéssemos estou eu foi fomos for fora foram fôramos
-forem formos fosse fossem fôssemos fui há haja hajam hajamos hão havemos haver hei houve
-houvemos houver houvera houverá houveram houvéramos houverão houverei houverem houveremos
-houveria houveriam houveríamos houvermos houvesse houvessem houvéssemos isso isto já lhe
-lhes mais mas me mesmo meu meus minha minhas muito na não nas nem no nos nós nossa nossas
-nosso nossos num numa o os ou para pela pelas pelo pelos por qual quando que quem são se
-seja sejam sejamos sem ser será serão serei seremos seria seriam seríamos seu seus só
-somos sou sua suas também te tem tém temos tenha tenham tenhamos tenho terá terão terei
-teremos teria teriam teríamos teu teus teve tinha tinham tínhamos tive tivemos tiver tivera
-tiveram tivéramos tiverem tivermos tivesse tivessem tivéssemos tu tua tuas um uma umas uns
-voce vocês você vos
-ate entao esta estao ja nao sao tambem alem atraves cada sobre sob ainda onde assim
-""".split())
+STOPWORDS = frozenset(
+    [
+        "a",
+        "à",
+        "ao",
+        "aos",
+        "aquela",
+        "aquelas",
+        "aquele",
+        "aqueles",
+        "aquilo",
+        "as",
+        "às",
+        "até",
+        "com",
+        "como",
+        "da",
+        "das",
+        "de",
+        "dela",
+        "delas",
+        "dele",
+        "deles",
+        "depois",
+        "do",
+        "dos",
+        "e",
+        "é",
+        "ela",
+        "elas",
+        "ele",
+        "eles",
+        "em",
+        "entre",
+        "era",
+        "eram",
+        "éramos",
+        "essa",
+        "essas",
+        "esse",
+        "esses",
+        "esta",
+        "está",
+        "estamos",
+        "estão",
+        "estar",
+        "estas",
+        "estava",
+        "estavam",
+        "estávamos",
+        "este",
+        "esteja",
+        "estejam",
+        "estejamos",
+        "estes",
+        "esteve",
+        "estive",
+        "estivemos",
+        "estiver",
+        "estivera",
+        "estiveram",
+        "estivéramos",
+        "estiverem",
+        "estivermos",
+        "estivesse",
+        "estivessem",
+        "estivéssemos",
+        "estou",
+        "eu",
+        "foi",
+        "fomos",
+        "for",
+        "fora",
+        "foram",
+        "fôramos",
+        "forem",
+        "formos",
+        "fosse",
+        "fossem",
+        "fôssemos",
+        "fui",
+        "há",
+        "haja",
+        "hajam",
+        "hajamos",
+        "hão",
+        "havemos",
+        "haver",
+        "hei",
+        "houve",
+        "houvemos",
+        "houver",
+        "houvera",
+        "houverá",
+        "houveram",
+        "houvéramos",
+        "houverão",
+        "houverei",
+        "houverem",
+        "houveremos",
+        "houveria",
+        "houveriam",
+        "houveríamos",
+        "houvermos",
+        "houvesse",
+        "houvessem",
+        "houvéssemos",
+        "isso",
+        "isto",
+        "já",
+        "lhe",
+        "lhes",
+        "mais",
+        "mas",
+        "me",
+        "mesmo",
+        "meu",
+        "meus",
+        "minha",
+        "minhas",
+        "muito",
+        "na",
+        "não",
+        "nas",
+        "nem",
+        "no",
+        "nos",
+        "nós",
+        "nossa",
+        "nossas",
+        "nosso",
+        "nossos",
+        "num",
+        "numa",
+        "o",
+        "os",
+        "ou",
+        "para",
+        "pela",
+        "pelas",
+        "pelo",
+        "pelos",
+        "por",
+        "qual",
+        "quando",
+        "que",
+        "quem",
+        "são",
+        "se",
+        "seja",
+        "sejam",
+        "sejamos",
+        "sem",
+        "ser",
+        "será",
+        "serão",
+        "serei",
+        "seremos",
+        "seria",
+        "seriam",
+        "seríamos",
+        "seu",
+        "seus",
+        "só",
+        "somos",
+        "sou",
+        "sua",
+        "suas",
+        "também",
+        "te",
+        "tem",
+        "tém",
+        "temos",
+        "tenha",
+        "tenham",
+        "tenhamos",
+        "tenho",
+        "terá",
+        "terão",
+        "terei",
+        "teremos",
+        "teria",
+        "teriam",
+        "teríamos",
+        "teu",
+        "teus",
+        "teve",
+        "tinha",
+        "tinham",
+        "tínhamos",
+        "tive",
+        "tivemos",
+        "tiver",
+        "tivera",
+        "tiveram",
+        "tivéramos",
+        "tiverem",
+        "tivermos",
+        "tivesse",
+        "tivessem",
+        "tivéssemos",
+        "tu",
+        "tua",
+        "tuas",
+        "um",
+        "uma",
+        "umas",
+        "uns",
+        "voce",
+        "vocês",
+        "você",
+        "vos",
+        "ate",
+        "entao",
+        "esta",
+        "estao",
+        "ja",
+        "nao",
+        "sao",
+        "tambem",
+        "alem",
+        "atraves",
+        "cada",
+        "sobre",
+        "sob",
+        "ainda",
+        "onde",
+        "assim",
+    ]
+)
 
 
 def extrair(caminho: Path) -> dict:
@@ -90,10 +302,7 @@ def extrair(caminho: Path) -> dict:
 def termos(texto: str) -> Counter:
     # junta a hifenização de fim de linha ("educa-\nção") antes de quebrar em palavras
     texto = re.sub(r"-\s*\n\s*", "", texto.lower())
-    return Counter(
-        t for t in re.findall(r"[^\W\d_]+", texto)
-        if 3 <= len(t) <= TAM_MAX_TERMO and t not in STOPWORDS
-    )
+    return Counter(t for t in re.findall(r"[^\W\d_]+", texto) if 3 <= len(t) <= TAM_MAX_TERMO and t not in STOPWORDS)
 
 
 def listar_pdfs() -> list[tuple[Path, re.Match]]:
@@ -119,8 +328,9 @@ def extrair_todos(pdfs: list[tuple[Path, re.Match]]) -> pd.DataFrame:
 
 
 def relatorio(df: pd.DataFrame) -> None:
-    por_ano = df.groupby("ano").agg(pdfs=("nm_arquivo", "size"),
-                                    sem_texto=("fl_texto_extraido", lambda s: int((~s).sum())))
+    por_ano = df.groupby("ano").agg(
+        pdfs=("nm_arquivo", "size"), sem_texto=("fl_texto_extraido", lambda s: int((~s).sum()))
+    )
     por_ano["%"] = (100 * por_ano["sem_texto"] / por_ano["pdfs"]).round(1)
     print(por_ano.to_string())
     total = len(df)
@@ -132,8 +342,7 @@ def relatorio(df: pd.DataFrame) -> None:
 
 def carregar(df: pd.DataFrame) -> int:
     if not BANCO.exists():
-        print(f"banco não encontrado: {BANCO.relative_to(RAIZ)} — rode 00_modelo e 06_carga antes",
-              file=sys.stderr)
+        print(f"banco não encontrado: {BANCO.relative_to(RAIZ)} — rode 00_modelo e 06_carga antes", file=sys.stderr)
         return 1
     con = duckdb.connect(str(BANCO))
     if not con.execute("SELECT count(*) FROM modelo.candidatura").fetchone()[0]:
@@ -151,13 +360,15 @@ def carregar(df: pd.DataFrame) -> int:
         LEFT JOIN modelo.candidatura c USING (ano, sq_candidato)
     """)
     orfaos = con.execute("SELECT nm_arquivo FROM pdf_cand WHERE qt_match = 0 ORDER BY 1").fetchall()
-    ambiguos = con.execute(
-        "SELECT DISTINCT nm_arquivo FROM pdf_cand WHERE qt_match > 1 ORDER BY 1").fetchall()
+    ambiguos = con.execute("SELECT DISTINCT nm_arquivo FROM pdf_cand WHERE qt_match > 1 ORDER BY 1").fetchall()
 
     com_texto = df[df["fl_texto_extraido"]]
     tdf = pd.DataFrame(
-        [(arq, t, n) for arq, tx in zip(com_texto["nm_arquivo"], com_texto["tx_conteudo"])
-         for t, n in termos(tx).items()],
+        [
+            (arq, t, n)
+            for arq, tx in zip(com_texto["nm_arquivo"], com_texto["tx_conteudo"], strict=True)
+            for t, n in termos(tx).items()
+        ],
         columns=["nm_arquivo", "termo", "qt_frequencia"],
     )
     con.register("termo", tdf)
@@ -200,14 +411,14 @@ def carregar(df: pd.DataFrame) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--amostra", type=int, metavar="N",
-                    help="extrai N PDFs sorteados e só mede a taxa sem texto; não abre o banco")
+    ap.add_argument(
+        "--amostra", type=int, metavar="N", help="extrai N PDFs sorteados e só mede a taxa sem texto; não abre o banco"
+    )
     args = ap.parse_args()
 
     pdfs = listar_pdfs()
     if not pdfs:
-        print(f"nenhum PDF em {PDFS.relative_to(RAIZ)} — rode coleta_tse.py proposta_governo",
-              file=sys.stderr)
+        print(f"nenhum PDF em {PDFS.relative_to(RAIZ)} — rode coleta_tse.py proposta_governo", file=sys.stderr)
         return 1
     if args.amostra:
         pdfs = sorted(random.Random(0).sample(pdfs, min(args.amostra, len(pdfs))))

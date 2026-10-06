@@ -9,7 +9,7 @@ foi possível validar está marcado como ⚠️.
 
 Não existe API de consulta. O portal é um CKAN que só aponta para `.zip` no
 `cdn.tse.jus.br`, com padrão de URL fixo por recurso e por ano — é o que o
-`scripts/coleta_tse.py` já explora.
+`scripts/coleta/coleta_tse.py` já explora.
 
 > **Atenção operacional:** todo o domínio `*.tse.jus.br` está atrás de Akamai e
 > devolve `403 Access Denied` para cliente que não pareça navegador. O script já

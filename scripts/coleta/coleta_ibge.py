@@ -1,9 +1,9 @@
 """Coleta dados do IBGE (SIDRA, FTP do PIB, malhas) para dados/raw/ibge/ e dados/raw/territorio/.
 
 Uso:
-    uv run scripts/coleta_ibge.py               # tudo
-    uv run scripts/coleta_ibge.py sidra pib malha
-    uv run scripts/coleta_ibge.py --force
+    uv run python -m scripts.coleta.coleta_ibge               # tudo
+    uv run python -m scripts.coleta.coleta_ibge sidra pib malha
+    uv run python -m scripts.coleta.coleta_ibge --force
 """
 
 from __future__ import annotations
@@ -12,10 +12,17 @@ import json
 import re
 import sys
 
-from coleta_comum import JSON, RAW, ROOT, baixar_json, baixar_zip, executar, log, session
-
-UF = "PI"
-COD_UF = 22  # Piauí
+from scripts.coleta.coleta_comum import (
+    JSON,
+    RAW,
+    ROOT,
+    Ufs,
+    baixar_json,
+    baixar_zip,
+    executar,
+    log,
+    session,
+)
 
 SIDRA = "https://apisidra.ibge.gov.br/values"
 AGREGADOS = "https://servicodados.ibge.gov.br/api/v3/agregados"
@@ -23,19 +30,42 @@ SIDRA_LIMITE = 50_000  # valores por requisição
 
 # tabela 9606 (Censo 2022): faixas etárias quinquenais, classificação 287
 IDADES_9606 = [
-    93070, 93084, 93085, 93086, 93087, 93088, 93089, 93090, 93091, 93092, 93093,
-    93094, 93095, 93096, 93097, 93098, 49108, 49109, 60040, 60041, 6653,
+    93070,
+    93084,
+    93085,
+    93086,
+    93087,
+    93088,
+    93089,
+    93090,
+    93091,
+    93092,
+    93093,
+    93094,
+    93095,
+    93096,
+    93097,
+    93098,
+    49108,
+    49109,
+    60040,
+    60041,
+    6653,
 ]
 
 
-def coletar_sidra(force: bool) -> None:
+def coletar_sidra(force: bool, _ufs: Ufs) -> None:
     pasta = RAW / "ibge" / "sidra"
     log("[ibge/sidra]")
     for tabela in (6579, 9606, 10061, 10062, 10295):
         baixar_json(f"{AGREGADOS}/{tabela}/metadados", pasta / f"{tabela}_metadados.json", force)
 
     # estimativa de população por município, último ano
-    baixar_json(f"{SIDRA}/t/6579/n6/all/v/all/p/last", pasta / "6579_populacao_municipios.json", force)
+    baixar_json(
+        f"{SIDRA}/t/6579/n6/all/v/all/p/last",
+        pasta / "6579_populacao_municipios.json",
+        force,
+    )
 
     # pessoas 18+ por nível de instrução (total de idade/sexo/cor), por município
     baixar_json(
@@ -69,10 +99,14 @@ def coletar_sidra(force: bool) -> None:
         log(f"  ok      {destino.relative_to(ROOT)}")
         return
     lote = SIDRA_LIMITE // 5600
-    linhas: list[dict] = []
+    linhas: list[dict[str, str]] = []
     for i in range(0, len(IDADES_9606), lote):
         ids = ",".join(map(str, IDADES_9606[i : i + lote]))
-        r = session.get(f"{SIDRA}/t/9606/n6/all/v/93/p/last/c86/95251/c2/6794/c287/{ids}", headers=JSON, timeout=600)
+        r = session.get(
+            f"{SIDRA}/t/9606/n6/all/v/93/p/last/c86/95251/c2/6794/c287/{ids}",
+            headers=JSON,
+            timeout=600,
+        )
         r.raise_for_status()
         parte = r.json()
         linhas.extend(parte if not linhas else parte[1:])  # cabeçalho só uma vez
@@ -80,7 +114,7 @@ def coletar_sidra(force: bool) -> None:
     log(f"  baixado {destino.relative_to(ROOT)} ({len(linhas) - 1} linhas)")
 
 
-def coletar_pib(force: bool) -> None:
+def coletar_pib(force: bool, _ufs: Ufs) -> None:
     """PIB dos municípios: pega a última edição publicada no FTP.
 
     Traz PIB e PIB per capita já calculado (o SIDRA não publica o per capita em
@@ -101,14 +135,18 @@ def coletar_pib(force: bool) -> None:
         baixar_zip(f"{base}{edicao}/base/{arq}", RAW / "ibge" / "pib_municipios" / arq, force)
 
 
-def coletar_malha(force: bool) -> None:
-    """Malha dos municípios da UF em GeoJSON, para mapas."""
+def coletar_malha(force: bool, ufs: Ufs) -> None:
+    """Malha dos municípios em GeoJSON, para mapas: uma por UF ou a do país todo."""
     log("[ibge/malha]")
-    url = (
-        f"https://servicodados.ibge.gov.br/api/v3/malhas/estados/{COD_UF}"
-        "?formato=application/vnd.geo+json&qualidade=minima&intrarregiao=municipio"
-    )
-    baixar_json(url, RAW / "territorio" / f"malha_municipios_{UF}.geojson", force)
+    filtro = "?formato=application/vnd.geo+json&qualidade=minima&intrarregiao=municipio"
+    malhas = "https://servicodados.ibge.gov.br/api/v3/malhas"
+    alvos = [(f"estados/{uf}", uf) for uf in ufs] if ufs else [("paises/BR", "BRASIL")]
+    for caminho, nome in alvos:
+        baixar_json(
+            f"{malhas}/{caminho}{filtro}",
+            RAW / "territorio" / f"malha_municipios_{nome}.geojson",
+            force,
+        )
 
 
 COLETORES = {
@@ -118,12 +156,12 @@ COLETORES = {
 }
 
 
-def coletar(force: bool = False) -> None:
+def coletar(force: bool = False, ufs: Ufs = None) -> None:
     """Um coletor que falhe nao impede os outros; o erro e relatado no fim."""
     falhas = []
     for nome, c in COLETORES.items():
         try:
-            c(force)
+            c(force, ufs)
         except Exception as e:
             falhas.append(f"{nome} ({e})")
             log(f"  ERRO em {nome}: {e}")

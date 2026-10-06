@@ -1,0 +1,27 @@
+name: lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # instala o ruff na versão travada no uv.lock e já roda o lint
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: check --output-format=github
+      # roda mesmo se o lint falhar, para mostrar todos os problemas de uma vez
+      - if: ${{ !cancelled() }}
+        run: ruff format --check --diff
+
+  sqlfluff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      # só o grupo dev: o sqlfluff não precisa de pandas, jupyter etc.
+      - run: uv run --only-group dev sqlfluff lint sql/ --format github-annotation-native

@@ -4,9 +4,9 @@
 -- Carrega só as tabelas de que a pergunta de escolaridade precisa, mais as que as
 -- FKs de CANDIDATURA obrigam. Finanças, votação e propostas ficam para outros módulos.
 --
--- Rodar da RAIZ do repositório, depois do 00:
+-- Rodar da RAIZ do repositório, depois dos 00:
 --
---     uv run python scripts/carregar_staging.py 00_modelo 06_carga_nucleo
+--     uv run python scripts/carregar_staging.py 00_limpeza 00_modelo 06_carga_nucleo
 --
 -- Dados (coleta por UF; o mesmo vale para qualquer lista de UFs e anos):
 --
@@ -27,20 +27,10 @@ INSTALL encodings;
 LOAD encodings;
 
 -- ---------------------------------------------------------------------------
--- Limpeza
+-- Regras
 -- ---------------------------------------------------------------------------
 
--- sentinelas do TSE (#NULO, #NE, -1, -3, -4) viram NULL
-CREATE OR REPLACE TEMP MACRO nulo(x) AS
-CASE
-    WHEN
-        x IS NULL
-        OR upper(trim(x)) IN ('', '#NULO', '#NULO#', '#NE', '#NE#', '-1', '-3', '-4', 'NÃO DIVULGÁVEL')
-        THEN NULL
-    ELSE trim(x)
-END;
-
-CREATE OR REPLACE TEMP MACRO data_br(x) AS try_strptime(substr(nulo(x), 1, 10), '%d/%m/%Y')::date;
+-- limpa() e data_br() vêm de 00_limpeza.sql.
 
 -- R1: só eleição ordinária (código 2; 0 em 2006)
 CREATE OR REPLACE TEMP MACRO ordinaria(cd, ano) AS cd = '2' OR (cd = '0' AND ano = '2006');
@@ -85,9 +75,9 @@ SELECT DISTINCT
     cd_eleicao::integer AS cd_eleicao,
     data_br(dt_eleicao) AS dt_eleicao,
     upper(tp_abrangencia) AS tp_abrangencia,
-    nulo(sg_ue) AS sg_ue,
+    limpa(sg_ue) AS sg_ue,
     cd_cargo::integer AS cd_cargo,
-    upper(nulo(ds_cargo)) AS ds_cargo,
+    upper(limpa(ds_cargo)) AS ds_cargo,
     try_cast(sq_candidato AS bigint) AS sq_candidato,
     CASE
         WHEN
@@ -95,18 +85,18 @@ SELECT DISTINCT
             AND try_cast(nr_titulo_eleitoral_candidato AS bigint) > 0
             THEN lpad(nr_titulo_eleitoral_candidato, 12, '0')
     END AS nr_titulo_eleitoral,
-    nulo(nm_candidato) AS nm_candidato,
+    limpa(nm_candidato) AS nm_candidato,
     data_br(dt_nascimento) AS dt_nascimento,
-    nulo(sg_uf_nascimento) AS sg_uf_nascimento,
-    nulo(ds_genero) AS ds_genero,
-    nulo(ds_cor_raca) AS ds_cor_raca,
-    nulo(ds_ocupacao) AS ds_ocupacao,
+    limpa(sg_uf_nascimento) AS sg_uf_nascimento,
+    limpa(ds_genero) AS ds_genero,
+    limpa(ds_cor_raca) AS ds_cor_raca,
+    limpa(ds_ocupacao) AS ds_ocupacao,
     try_cast(cd_grau_instrucao AS integer) AS cd_grau_instrucao,
     ds_grau_instrucao,
-    nulo(ds_sit_tot_turno) AS ds_sit_tot_turno,
+    limpa(ds_sit_tot_turno) AS ds_sit_tot_turno,
     try_cast(nr_partido AS integer) AS nr_partido,
-    nulo(sg_partido) AS sg_partido,
-    nulo(nm_partido) AS nm_partido
+    limpa(sg_partido) AS sg_partido,
+    limpa(nm_partido) AS nm_partido
 FROM
     read_csv(
         'dados/raw/candidatos/*/candidatos_[0-9]*/consulta_cand_[0-9]*_??.csv',

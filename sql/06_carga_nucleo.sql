@@ -110,10 +110,11 @@ WHERE
 
 CREATE OR REPLACE TEMP TABLE stg_vagas AS
 SELECT DISTINCT
+    ano_eleicao::integer AS ano,
     cd_eleicao::integer AS cd_eleicao,
     sg_ue,
     cd_cargo::integer AS cd_cargo,
-    upper(ds_cargo) AS ds_cargo,
+    upper(limpa(ds_cargo)) AS ds_cargo,
     try_cast(qt_vaga AS integer) AS qt_vaga
 FROM
     read_csv(
@@ -235,20 +236,26 @@ SELECT
 FROM stg_cand
 GROUP BY cd_eleicao;
 
+-- O TSE renomeou cargos ao longo dos anos (cd_cargo 9: '1º SUPLENTE SENADOR' até
+-- 2010, '1º SUPLENTE' de 2014 em diante). Fica o nome do candidato antes do da
+-- vaga, o mais recente antes do antigo; ds_cargo só desempata para a chave nunca
+-- empatar, senão arg_min devolve um nome diferente a cada carga.
 INSERT INTO modelo.cargo
 SELECT
     cd_cargo,
-    arg_min(ds_cargo, prioridade) AS ds_cargo
+    arg_min(ds_cargo, (prioridade, -ano, ds_cargo)) AS ds_cargo
 FROM (
     SELECT
         cd_cargo,
         ds_cargo,
+        ano,
         1 AS prioridade
     FROM stg_cand
     UNION ALL
     SELECT
         cd_cargo,
         ds_cargo,
+        ano,
         2 AS prioridade
     FROM stg_vagas
 ) AS cargos

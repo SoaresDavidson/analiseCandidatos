@@ -140,9 +140,10 @@ Precisa dos dados de `coleta_tse.py candidatos` já baixados.
 
 ## Staging da prestação de contas
 
-As duas views canônicas que as Q1, Q2, Q8, Q10 e Q11 consomem. Elas escondem as
-duas gerações de leiaute (`.txt` em português até 2016, `.csv` `SNAKE_CASE` de
-2018 em diante) atrás de um nome de coluna só:
+As duas views canônicas da prestação de contas de candidatos, que a Q1, a Q8 e a
+Q9 consomem (numeração da lista de 10 perguntas). Só o leiaute de 2018 em diante
+(`.csv` `SNAKE_CASE`) e só eleições ordinárias. O recorte de UF vem da extração
+(`--uf`):
 
 ```bash
 uv run scripts/carregar_staging.py       # aplica sql/*.sql em dados/processed/tse.duckdb
@@ -151,27 +152,31 @@ uv run scripts/carregar_staging.py 01    # só um script
 
 | Objeto | Grão | Para quê |
 |---|---|---|
-| `stg_receita` | uma receita | `sq_candidato, ano, dt, vr_receita, cpf_cnpj_doador, tp_pessoa, cd_cnae_doador, ds_fonte, ds_origem, ds_natureza` |
-| `stg_despesa` | uma despesa contratada | `sq_candidato, ano, dt, vr_despesa, cpf_cnpj_fornecedor, cd_cnae_fornecedor, ds_despesa, ds_tipo_despesa` |
-| `stg_receita_classificada` | uma receita | + `tp_origem` — público × privado da Q10 |
-| `stg_despesa_classificada` | uma despesa | + `ds_canal_propaganda` — canal da Q11 |
+| `stg_receita` | uma receita | `sq_candidato, ano, sg_uf, dt, vr_receita, cpf_cnpj_doador, tp_pessoa, cd_cnae_doador, ds_fonte, ds_origem, ds_natureza` |
+| `stg_despesa` | uma despesa contratada | `sq_candidato, ano, sg_uf, dt, vr_despesa, cpf_cnpj_fornecedor, cd_cnae_fornecedor, ds_despesa, ds_tipo_despesa` |
+| `stg_receita_classificada` | uma receita | + `tp_origem` — público × privado da Q8 |
+| `stg_despesa_classificada` | uma despesa | + `ds_canal_propaganda` — canal da Q9 |
 | `fonte_recurso`, `tipo_despesa` | um de-para | as entidades de classificação do DER |
 | `candidatura`, `politico` | uma candidatura / uma pessoa | `consulta_cand` de 2002 a 2026, chaveado por título |
-| `mart_q10`, `mart_q11`, `mart_q11_texto`, `mart_q12` | — | uma view por pergunta; a camada visual lê só daqui |
+| `mart_q8`, `mart_q8_resumo`, `mart_q9`, `mart_q9_texto` | — | uma view por pergunta; a camada visual lê só daqui |
+
+Os marts têm `fl_divulgado`: 2026 fica no banco, mas fora da visualização até o
+TSE publicar o resultado e a prestação final. O ano de corte está num lugar só, a
+macro `ano_divulgado` no começo do `05_marts_enrico.sql`.
 
 **Não escreva staging próprio da prestação de contas** — consuma estas views. Se
-faltar uma coluna, peça: o ponto é os quatro chegarem ao mesmo número para
+faltar uma coluna, peça: o ponto é todos chegarem ao mesmo número para
 "quanto o candidato gastou".
 
 Precisa de `coleta_tse.py prestacao_contas candidatos historico` já baixado.
-Validado contra os arquivos crus: contagem e soma batem linha a linha em 2014 e
-2016, os `sq_candidato` casam com `consulta_cand` sem nenhum órfão, e a Q12
-reproduz os 599.547 reincidentes (32,3%) do `estrategia.md`.
+Validado com AM, GO, MA, MT, RS e SE de 2018 a 2026: contagem e soma de
+`stg_receita` (1.049.806 linhas) e `stg_despesa` (2.809.773) batem ao centavo com
+os CSV crus em cada ano × UF, e todo `sq_candidato` casa com `candidatura`.
 
 Critérios e armadilhas: [`docs/der/der-enrico.md`](docs/der/der-enrico.md) (o modelo),
 [`docs/der/q10-publico-privado.md`](docs/der/q10-publico-privado.md),
-[`docs/der/q11-propaganda.md`](docs/der/q11-propaganda.md),
-[`docs/der/q12-linha-do-tempo.md`](docs/der/q12-linha-do-tempo.md).
+[`docs/der/q11-propaganda.md`](docs/der/q11-propaganda.md) — escritos na numeração
+antiga (Q10 e Q11 viraram Q8 e Q9) e medidos no PI.
 
 > 🚨 **`sq_candidato` não é chave antes de 2010.** Em 2004 são 402.157
 > candidaturas em 1.506 valores distintos. Deduplicar por ele funde 400 mil

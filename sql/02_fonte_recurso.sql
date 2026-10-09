@@ -1,4 +1,4 @@
--- 02_fonte_recurso.sql — classificação público × privado da receita (Q10).
+-- 02_fonte_recurso.sql — classificação público × privado da receita (Q8).
 --
 -- Dono: Enrico. Depende de 01_staging.sql (stg_receita).
 -- O critério está escrito em docs/q10-publico-privado.md — o de-para é decisão
@@ -8,9 +8,15 @@
 --   ds_fonte  = de que bolso veio    (FUNDO ESPECIAL / FUNDO PARTIDARIO / OUTROS)
 --   ds_origem = quem entregou        (pessoa física, partido, outro candidato...)
 --
--- 🚨 Em 2014 ds_fonte é 'NAO ESPECIFICADO' em 91% das linhas — naquele ano o
--- discriminante é ds_origem. Por isso a regra testa fonte primeiro (que resolve
--- os fundos públicos em todos os anos) e cai em origem no resto.
+-- A regra testa a fonte primeiro (que resolve os fundos públicos em todos os
+-- anos) e cai na origem no resto.
+--
+-- ⚠️ Fundo público repassado por OUTRO CANDIDATO sai PUBLICO pela regra ①, na
+-- receita de quem recebeu. Para a Q8 isso é o certo: a pergunta é quanto cada
+-- candidato depende de dinheiro público, e esse real é público para quem o
+-- recebeu. Mas somar `PUBLICO` no total de um estado conta esse real duas vezes
+-- (na receita do candidato que recebeu do partido e na do colega que recebeu
+-- dele). Para totais, exclua `ds_origem LIKE 'RECURSOS DE OUTROS CANDIDATOS%'`.
 
 CREATE OR REPLACE VIEW stg_receita_classificada AS
 SELECT
@@ -20,7 +26,7 @@ SELECT
         --    (FEFC, 2018+) e o Fundo Partidário são orçamento da União; chegam ao
         --    candidato via partido, mas a origem é pública.
         WHEN r.ds_fonte IN ('FUNDO ESPECIAL', 'FUNDO PARTIDARIO') THEN 'PUBLICO'
-        -- ② Recurso do próprio candidato — categoria separada de propósito: a Q10
+        -- ② Recurso do próprio candidato — categoria separada de propósito: a Q8
         --    pergunta por público × privado, e autofinanciamento não é nem um nem
         --    outro (não há doador).
         WHEN r.ds_origem = 'RECURSOS PROPRIOS' THEN 'PROPRIO'
@@ -33,7 +39,7 @@ SELECT
         ) THEN 'PRIVADO'
         -- ④ Repasse partidário fora dos fundos públicos: é o caixa do partido,
         --    formado por doação privada e sobra de fundo. O TSE não diz qual, e
-        --    chutar contamina os dois lados da Q10. Fica em categoria própria.
+        --    chutar contamina os dois lados da Q8. Fica em categoria própria.
         WHEN r.ds_origem = 'RECURSOS DE PARTIDO POLITICO' THEN 'PARTIDARIO'
         -- ⑤ Transferência entre campanhas: o doador é outro candidato, e o
         --    dinheiro dele já foi classificado na receita DELE. Somar como
@@ -45,7 +51,7 @@ SELECT
         -- ⑥ Rendimento de aplicação do próprio dinheiro de campanha.
         WHEN r.ds_origem = 'RENDIMENTOS DE APLICACOES FINANCEIRAS' THEN 'RENDIMENTO'
         -- ⑦ O TSE tem uma categoria explícita para doador não identificado, e há
-        --    1.265 linhas (todas de valor 0,00) sem fonte nem origem.
+        --    linhas (de valor 0,00) sem fonte nem origem.
         ELSE 'NAO IDENTIFICADO'
     END AS tp_origem
 FROM stg_receita AS r;

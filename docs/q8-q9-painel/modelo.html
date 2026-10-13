@@ -1,0 +1,622 @@
+<title>Dinheiro e Propaganda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Mesma identidade do painel da Q4 (docs/q4-painel): tokens, fontes e componentes iguais,
+   para as perguntas virarem abas de um painel só. Cada pergunta abre com a resposta em
+   uma frase, os números que a sustentam e o gráfico. Filtros fixos no topo. */
+:root {
+  --bg: #f2f4f7;
+  --surface: #fcfcfb;
+  --ink: #11161d;
+  --ink-2: #4a5361;
+  --ink-3: #7b8594;
+  --line: #dde2e9;
+  --accent: #2a78d6;
+  --accent-ink: #1c5cab;
+  --hi: #eb6834;
+  --nodata: #d8dce2;
+  --weak: #b7d3f6;
+  --good-bg: #e3f3e3; --good-ink: #1b6b1b;
+  --warn-bg: #fdf1d6; --warn-ink: #7a5300;
+  /* Q8: os dois grupos. Validados com a skill dataviz (CVD ΔE 24,7). */
+  --pub: #2a78d6;
+  --out: #eb6834;
+  /* Q9: eleitos × não eleitos */
+  --el: #2a78d6;
+  --nel: #8a93a0;
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --f-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1215; --surface: #1a1a19; --ink: #f1f3f6; --ink-2: #bcc3cd; --ink-3: #8a93a0; --line: #2d333b;
+    --accent: #3987e5; --accent-ink: #86b6ef; --hi: #d95926; --nodata: #3a3e44;
+    --weak: #26456b;
+    --good-bg: #173117; --good-ink: #8fd88f; --warn-bg: #3a2c0b; --warn-ink: #f2c46b;
+    --pub: #3987e5; --out: #d95926; --el: #3987e5; --nel: #6b7480;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1215; --surface: #1a1a19; --ink: #f1f3f6; --ink-2: #bcc3cd; --ink-3: #8a93a0; --line: #2d333b;
+  --accent: #3987e5; --accent-ink: #86b6ef; --hi: #d95926; --nodata: #3a3e44;
+  --weak: #26456b;
+  --good-bg: #173117; --good-ink: #8fd88f; --warn-bg: #3a2c0b; --warn-ink: #f2c46b;
+  --pub: #3987e5; --out: #d95926; --el: #3987e5; --nel: #6b7480;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--f-body); margin: 0; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(30px, 4.4vw, 46px); line-height: 1.05; font-weight: 700; }
+h2 { font-size: clamp(21px, 2.5vw, 27px); line-height: 1.15; font-weight: 700; }
+h3 { font-size: 16px; font-weight: 600; }
+p { margin: 0; }
+.mono, .num { font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+.eyebrow { font: 500 12px/1.3 var(--f-data); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+
+/* cabeçalho */
+.head { display: grid; gap: 14px; }
+.question { max-width: 72ch; font-size: 17px; color: var(--ink-2); border-left: 3px solid var(--accent); padding-left: 14px; font-style: italic; }
+.question b { font-style: normal; font: 600 13px/1 var(--f-data); color: var(--ink); margin-right: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: 500 12.5px/1 var(--f-data); padding: 7px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-2); }
+
+/* barra de filtros */
+.filters { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center;
+  background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(6px); padding-block: 10px; border-bottom: 1px solid var(--line); }
+/* no celular os três filtros ocupam um terço da tela: rolam junto com a página */
+@media (max-width: 640px) { .filters { position: static; } }
+.seg { display: inline-flex; gap: 2px; padding: 3px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; flex-wrap: wrap; }
+.seg button { font: 500 13px/1 var(--f-body); border: 0; background: transparent; color: var(--ink-2); padding: 8px 11px; border-radius: 7px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.seg button:hover:not([aria-pressed="true"]) { background: var(--bg); color: var(--ink); }
+.flabel { font: 500 12px/1 var(--f-data); color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase; }
+.fgroup { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* seções */
+.part { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px; display: grid; gap: 18px; min-width: 0; }
+@media (max-width: 640px) { .part { padding: 16px; } }
+.part-head { display: grid; gap: 8px; }
+.part-tag { display: inline-flex; align-items: center; gap: 10px; }
+.part-tag b { font: 700 13px/1 var(--f-data); background: var(--ink); color: var(--surface); width: 26px; height: 26px; display: grid; place-items: center; border-radius: 6px; }
+.answer { font-size: 17px; max-width: 75ch; }
+.answer strong { font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-3); max-width: 80ch; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px; min-width: 0; background: var(--surface); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; vertical-align: -1px; }
+svg text { font-family: var(--f-body); }
+.axis { fill: var(--ink-3); font-size: 11px; font-family: var(--f-data); }
+.lbl { fill: var(--ink-2); font-size: 12px; }
+.val { fill: var(--ink-2); font-size: 11.5px; font-family: var(--f-data); }
+.gridline { stroke: var(--line); stroke-width: 1; }
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.scroll-x { overflow-x: auto; }
+
+/* indicadores */
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 640px) { .stats { grid-template-columns: minmax(0, 1fr); } }
+.stat { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 2px; align-content: start; }
+.stat .big { font: 600 28px/1.1 var(--f-display); font-variant-numeric: tabular-nums; }
+.stat .sub { font-size: 12.5px; color: var(--ink-3); }
+.pill { display: inline-flex; align-items: center; gap: 6px; font: 500 12.5px/1.2 var(--f-data); padding: 6px 10px; border-radius: 999px; justify-self: start; }
+.pill.good { background: var(--good-bg); color: var(--good-ink); }
+.pill.warn { background: var(--warn-bg); color: var(--warn-ink); }
+.pill.neutral { background: var(--bg); color: var(--ink-2); border: 1px solid var(--line); }
+
+/* corte */
+.cut { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.cut input[type="range"] { flex: 1 1 220px; accent-color: var(--accent); min-width: 160px; }
+.cut output { font: 600 22px/1 var(--f-display); font-variant-numeric: tabular-nums; min-width: 4ch; }
+.cut .btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn { font: 500 13px/1 var(--f-body); border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); padding: 8px 11px; border-radius: 8px; cursor: pointer; }
+.btn:hover { color: var(--ink); border-color: var(--ink-3); }
+.btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent-ink); }
+
+/* nuvem */
+.cloud text { cursor: pointer; transition: opacity .12s; }
+.cloud text:hover { opacity: 0.7; }
+.cloud.has-sel text:not(.sel) { opacity: 0.35; }
+.chan-tag { display: inline-flex; align-items: center; gap: 6px; font: 500 12.5px/1 var(--f-data); padding: 6px 8px 6px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--hi); color: var(--ink); }
+.chan-tag button { border: 0; background: transparent; color: var(--ink-2); cursor: pointer; font-size: 14px; line-height: 1; padding: 0 2px; }
+.detail { display: grid; gap: 8px; }
+.detail h3 { font-size: 19px; }
+.detail .row { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; border-bottom: 1px dashed var(--line); padding-block: 5px; }
+.detail .row span:last-child { font-family: var(--f-data); font-variant-numeric: tabular-nums; color: var(--ink); text-align: right; }
+.detail .row span:first-child { color: var(--ink-2); }
+.empty { color: var(--ink-3); font-size: 14px; }
+.minibar { display: grid; grid-template-columns: 9.5em minmax(0, 1fr) 4.5em; gap: 8px; align-items: center; font-size: 12.5px; color: var(--ink-2); }
+.minibar i { display: block; height: 8px; border-radius: 0 3px 3px 0; background: var(--accent); }
+.minibar span:last-child { font-family: var(--f-data); text-align: right; color: var(--ink); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+/* tooltip */
+#tip { position: fixed; z-index: 20; pointer-events: none; background: var(--ink); color: var(--surface); font-size: 12.5px; line-height: 1.4; padding: 8px 10px; border-radius: 8px; max-width: 280px; box-shadow: 0 6px 20px rgb(0 0 0 / 0.18); }
+#tip b { font-weight: 600; }
+
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th { font: 500 11.5px/1.3 var(--f-data); color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; }
+td { font-family: var(--f-data); }
+td:first-child { font-family: var(--f-body); }
+details { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--surface); }
+details summary { cursor: pointer; font-weight: 600; }
+details[open] summary { margin-bottom: 10px; }
+.method { display: grid; gap: 12px; }
+.method ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 85ch; }
+.foot { font-size: 12.5px; color: var(--ink-3); max-width: 90ch; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <span class="eyebrow">Banco de Dados Relacionais · UFPI · perguntas 8 e 9</span>
+    <h1>Dinheiro público e propaganda</h1>
+    <p class="question"><b>Q8</b>Qual a diferença de sucesso entre candidatos que dependem mais de repasses públicos em relação àqueles que são financiados por outras fontes?</p>
+    <p class="question"><b>Q9</b>Onde o candidato investe em propaganda?</p>
+    <div class="chips">
+      <span class="chip">AM · GO · MA · MT · RS · SE</span>
+      <span class="chip">Eleições ordinárias de 2018 a 2024</span>
+      <span class="chip">Prestação de contas: TSE</span>
+      <span class="chip">Resultado: TSE <span class="mono">consulta_cand</span></span>
+    </div>
+  </header>
+
+  <nav class="filters" aria-label="Filtros">
+    <div class="fgroup"><span class="flabel">Eleição</span><div class="seg" id="f-ano"></div></div>
+    <div class="fgroup"><span class="flabel">UF</span><div class="seg" id="f-uf"></div></div>
+    <div class="fgroup"><span class="flabel">Cargo</span><div class="seg" id="f-cargo"></div></div>
+  </nav>
+
+  <!-- Q8 -->
+  <section class="part" id="q8">
+    <div class="part-head">
+      <span class="part-tag"><b>8</b><span class="eyebrow">Repasse público × outras fontes</span></span>
+      <h2>Quem depende mais de dinheiro público se elege mais ou menos?</h2>
+      <p class="answer" id="q8-answer"></p>
+    </div>
+
+    <div class="cut">
+      <label for="f-corte" class="flabel">Depende mais de dinheiro público se ≥</label>
+      <output id="o-corte" for="f-corte">50%</output>
+      <input type="range" id="f-corte" min="5" max="100" step="5" value="50" aria-describedby="corte-ajuda">
+      <div class="btns">
+        <button type="button" class="btn" id="b-50">50%</button>
+        <button type="button" class="btn" id="b-med">Mediana</button>
+      </div>
+      <p class="note" id="corte-ajuda" style="flex-basis:100%">Arraste para mudar o corte, ou clique numa barra do gráfico. Dinheiro público = Fundo Especial (FEFC) + Fundo Partidário, como % da receita total do candidato.</p>
+    </div>
+
+    <div class="stats" id="q8-stats"></div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Taxa de eleição em cada faixa de % público</h3>
+        <div class="legend"><span><i class="sw" style="background:var(--pub)"></i>acima do corte</span><span><i class="sw" style="background:var(--out)"></i>abaixo do corte</span><span><i class="sw" style="background:var(--ink-3)"></i>quantos candidatos</span></div>
+        <svg class="chart" id="q8-faixa" role="img" aria-label="Taxa de eleição por faixa de percentual de dinheiro público, e a distribuição dos candidatos"></svg>
+        <p class="note">Em cima, a taxa de eleição (eleitos ÷ candidatos) de cada faixa de 5 pontos; 0% e 100% exatos à parte. Embaixo, quantos candidatos há em cada faixa. Barra apagada: menos de 30 candidatos. Tracejado: taxa geral do cargo.</p>
+      </div>
+      <div class="card">
+        <h3>A conclusão muda com o corte?</h3>
+        <svg class="chart" id="q8-sens" role="img" aria-label="Diferença de taxa de eleição entre os grupos conforme o corte"></svg>
+        <p class="note">Diferença de taxa (acima do corte − abaixo), em pontos percentuais, para cada corte possível. Acima de zero: quem depende mais de dinheiro público se elege mais. Linha que cruza o zero quer dizer que dá para "provar" as duas conclusões escolhendo o corte.</p>
+        <details><summary>Ver tabela das faixas</summary><div class="scroll-x" id="q8-table"></div></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Q9 -->
+  <section class="part" id="q9">
+    <div class="part-head">
+      <span class="part-tag"><b>9</b><span class="eyebrow">Propaganda</span></span>
+      <h2>Onde o candidato investe em propaganda?</h2>
+      <p class="answer" id="q9-answer"></p>
+    </div>
+    <div class="stats" id="q9-stats"></div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Quanto vai para cada canal</h3>
+        <div class="legend"><span><i class="sw" style="background:var(--el)"></i>eleitos</span><span><i class="sw" style="background:var(--nel)"></i>não eleitos</span></div>
+        <svg class="chart" id="q9-canal" role="img" aria-label="Percentual do valor de propaganda em cada canal, eleitos e não eleitos"></svg>
+        <p class="note">% do valor contratado em propaganda, dentro de cada grupo. O canal vem do tipo de despesa que o TSE registra. Clique num canal para ver só as palavras dele na nuvem.</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+          <h3>O que o candidato escreve na despesa</h3>
+          <div class="seg" id="f-eleito"></div>
+        </div>
+        <div id="q9-chan"></div>
+        <svg class="chart cloud" id="q9-cloud" role="img" aria-label="Nuvem de palavras das descrições de despesa de propaganda"></svg>
+        <p class="note">Tamanho = quantas despesas citam a palavra (frequência, não valor). Clique numa palavra para ver o dinheiro por trás dela.</p>
+        <div class="detail" id="q9-detail"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="part" id="metodo">
+    <div class="part-head">
+      <span class="part-tag"><b>M</b><span class="eyebrow">Método e limites</span></span>
+      <h2>Como chegamos a esses números</h2>
+    </div>
+    <div class="method">
+      <details open><summary>Q8: o que é "depender de dinheiro público"</summary>
+        <ul>
+          <li><b>Dinheiro público</b> = receitas com fonte Fundo Especial de Financiamento de Campanha (FEFC) ou Fundo Partidário, qualquer que seja quem repassou (partido ou outro candidato).</li>
+          <li><b>Outras fontes</b> = pessoas físicas, recursos próprios, financiamento coletivo, caixa do partido fora dos fundos e transferências entre campanhas.</li>
+          <li><b>% público</b> = dinheiro público ÷ receita total do candidato. O corte padrão é 50%; o painel deixa mudar, e marca a mediana do cargo.</li>
+          <li><b>Taxa de eleição</b> = eleitos ÷ candidatos do grupo, sempre dentro do cargo. O teste é o qui-quadrado 2×2 (grupo × eleito).</li>
+        </ul>
+      </details>
+      <details><summary>Q9: canal e palavras</summary>
+        <ul>
+          <li><b>Canal</b>: o tipo de despesa do TSE agrupado em 8 canais (impresso, rua, rádio e TV, adesivo, digital, jingle, carro de som, jornal e revista). Base: despesas <i>contratadas</i>.</li>
+          <li><b>Palavras</b>: a descrição livre que o candidato escreveu. Sem acento para agrupar, expressões como "cabo eleitoral" e "carro de som" juntas, plural no singular, e sem palavras que não dizem onde se investiu ("serviço", "campanha", o nome do cargo).</li>
+          <li>O valor de uma palavra é a soma das despesas que a citam. Uma despesa com três palavras entra nas três, então esse valor não soma entre palavras.</li>
+          <li>Cada recorte guarda as <span class="num" id="m-top"></span> palavras mais citadas.</li>
+        </ul>
+      </details>
+      <details><summary>Quem entra na análise</summary>
+        <ul>
+          <li>Eleições ordinárias de 2018, 2020, 2022 e 2024 nas 6 UFs. 2026 fica de fora até o TSE publicar o resultado e a prestação final.</li>
+          <li>Vereador, prefeito, deputado estadual e federal, senador e governador. Vices e suplentes herdam a chapa e ficam fora.</li>
+          <li>Q8: só quem foi a voto e declarou alguma receita.</li>
+        </ul>
+      </details>
+      <details><summary>Exceções nos dados</summary>
+        <ul>
+          <li><b>Eleitos sem receita declarada</b> ficam fora da Q8 (sem receita não há %): 343 vereadores em 2020 (2,7% dos eleitos), 164 em 2024, 20 prefeitos em 2020 e casos isolados nos outros cargos.</li>
+          <li><b>12 vereadores do AM em 2020</b> têm R$ 207 milhões cada de "repasse de partido": erro de digitação na prestação. Ficam no grupo "outras fontes" (não mudam a taxa), mas não entram em nenhuma soma de valor.</li>
+          <li><b>Despesas sem descrição</b> (2 em 2022, 239 em 2024) entram no valor por canal, mas não na nuvem.</li>
+        </ul>
+      </details>
+      <details><summary>O que os dados não permitem concluir</summary>
+        <ul>
+          <li><b>Associação não é causa.</b> O partido decide para quem vai o fundo, e tende a concentrá-lo em quem já tem chance. Quem se banca sozinho também é diferente (renda, rede de doadores, mandato atual).</li>
+          <li><b>O resultado depende do corte</b> em alguns cargos (prefeito 2024): por isso o corte é um controle, e não um número fixo.</li>
+          <li><b>A nuvem mostra frequência, não valor.</b> "Cabo eleitoral" aparece em muitas despesas pequenas; rádio e TV, em poucas e caras.</li>
+          <li><b>Texto livre.</b> O mesmo serviço aparece como "militância", "mobilização" ou "ativista"; a limpeza junta só plural e acento.</li>
+        </ul>
+      </details>
+      <p class="foot">Dados: TSE, Portal de Dados Abertos (prestação de contas eleitorais de candidatos e <span class="mono">consulta_cand</span>, 2018 a 2024). Consultas em <span class="mono">sql/11_q8_publico.sql</span> e <span class="mono">sql/12_q9_propaganda.sql</span> do repositório analiseCandidatos. Grupo: Davi, Duda, Eduardo e Enrico.</p>
+    </div>
+  </section>
+</div>
+<div id="tip" hidden></div>
+
+<script id="dados" type="application/json">__DADOS__</script>
+<script>
+(function () {
+  "use strict";
+  const D = JSON.parse(document.getElementById("dados").textContent);
+  const UFS = D.ufs;
+  const UF_NOME = { AM: "Amazonas", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", RS: "Rio Grande do Sul", SE: "Sergipe" };
+  const CARGO_NOME = ["Vereador", "Prefeito", "Deputado estadual", "Deputado federal", "Senador", "Governador"];
+  const CARGO_PLURAL = ["vereadores", "prefeitos", "deputados estaduais", "deputados federais", "senadores", "governadores"];
+  const CANAL_NOME = ["Impresso", "Rua", "Rádio e TV", "Adesivo", "Digital", "Jingle", "Carro de som", "Jornal e revista"];
+  const ANOS = [[2018, "2018 · geral"], [2020, "2020 · municipal"], [2022, "2022 · geral"], [2024, "2024 · municipal"]];
+  const CARGOS_ANO = y => (y === 2020 || y === 2024) ? [0, 1] : [2, 3, 4, 5];
+  const NS = "http://www.w3.org/2000/svg";
+  const N_MIN = 30;
+
+  const st = { ano: 2024, uf: "TODAS", cargo: 0, corte: 50, eleito: 2, canal: 8, termo: null };
+  try { const s = JSON.parse(localStorage.getItem("q8q9-estado") || "{}"); for (const k of ["ano", "uf", "cargo", "corte", "eleito"]) if (k in s) st[k] = s[k]; } catch (e) { /* armazenamento indisponível */ }
+  if (!CARGOS_ANO(st.ano).includes(st.cargo)) st.cargo = CARGOS_ANO(st.ano)[0];
+  function salvar() { try { localStorage.setItem("q8q9-estado", JSON.stringify({ ano: st.ano, uf: st.uf, cargo: st.cargo, corte: st.corte, eleito: st.eleito })); } catch (e) { /* ignora */ } }
+
+  // ---------- utilidades ----------
+  const fmt = (x, d = 1) => (x == null || isNaN(x)) ? "–" : x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const int = x => Math.round(x).toLocaleString("pt-BR");
+  const pc = (a, b) => b > 0 ? 100 * a / b : null;
+  const reais = v => v >= 1e6 ? `R$ ${fmt(v / 1e6, 1)} mi` : v >= 1e3 ? `R$ ${fmt(v / 1e3, 0)} mil` : `R$ ${int(v)}`;
+  function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function txt(parent, x, y, s, cls, anchor) { const t = el("text", { x, y, class: cls || "lbl", "text-anchor": anchor || "start", "dominant-baseline": "middle" }, parent); t.textContent = s; return t; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  const tip = document.getElementById("tip");
+  function showTip(ev, html) { tip.innerHTML = html; tip.hidden = false; const w = tip.offsetWidth, h = tip.offsetHeight; let x = ev.clientX + 14, y = ev.clientY + 14; if (x + w > innerWidth - 8) x = ev.clientX - w - 14; if (y + h > innerHeight - 8) y = ev.clientY - h - 14; tip.style.left = x + "px"; tip.style.top = y + "px"; }
+  function hideTip() { tip.hidden = true; }
+  const ufIdx = () => st.uf === "TODAS" ? [0, 1, 2, 3, 4, 5] : [UFS.indexOf(st.uf)];
+  const onde = () => st.uf === "TODAS" ? "nas 6 UFs" : (["AM", "MA", "MT", "RS"].includes(st.uf) ? "no " : "em ") + UF_NOME[st.uf];
+  const cargoTxt = () => `${CARGO_NOME[st.cargo].toLowerCase()} em ${st.ano}`;
+
+  // qui-quadrado (mesma função do painel da Q4)
+  function lgamma(z) { const g = 7, c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7]; if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lgamma(1 - z); z -= 1; let x = c[0]; for (let i = 1; i < g + 2; i++) x += c[i] / (z + i); const t = z + g + 0.5; return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x); }
+  function pQui2(q, gl) {
+    const a = gl / 2, x = q / 2; if (x <= 0) return 1;
+    const f = Math.exp(-x + a * Math.log(x) - lgamma(a));
+    if (x < a + 1) { let t = 1 / a, s = t; for (let k = 1; k < 1000; k++) { t *= x / (a + k); s += t; if (Math.abs(t) < Math.abs(s) * 1e-15) break; } return 1 - f * s; }
+    const tiny = 1e-300; let b = x + 1 - a, c = 1 / tiny, d = 1 / b, h = d;
+    for (let i = 1; i < 500; i++) { const an = -i * (i - a); b += 2; d = an * d + b; if (Math.abs(d) < tiny) d = tiny; c = b + an / c; if (Math.abs(c) < tiny) c = tiny; d = 1 / d; const del = d * c; h *= del; if (Math.abs(del - 1) < 1e-15) break; }
+    return f * h;
+  }
+  const fmtP = p => { if (p === 0) return "< 10^-300"; if (p >= 0.001) return fmt(p, 3); const [m, e] = p.toExponential(1).split("e"); return m.replace(".", ",") + " × 10^" + e.replace("+", ""); };
+  function qui2x2(e1, n1, e2, n2) {
+    const N = n1 + n2, E = e1 + e2; if (!n1 || !n2 || !E || E === N) return { p: null, minEsp: 0 };
+    let q = 0, minEsp = Infinity;
+    for (const [e, n] of [[e1, n1], [e2, n2]]) for (const [obs, col] of [[e, E], [n - e, N - E]]) { const esp = n * col / N; minEsp = Math.min(minEsp, esp); q += (obs - esp) ** 2 / esp; }
+    return { p: pQui2(q, 1), q, minEsp };
+  }
+
+  // ---------- filtros ----------
+  function seg(id, items, get, set, rerender) {
+    const box = document.getElementById(id); box.innerHTML = "";
+    for (const [v, label] of items) { const b = document.createElement("button"); b.type = "button"; b.textContent = label; b.setAttribute("aria-pressed", String(get() === v)); b.addEventListener("click", () => { set(v); salvar(); (rerender || render)(); }); box.appendChild(b); }
+  }
+  function filtros() {
+    seg("f-ano", ANOS, () => st.ano, v => { st.ano = v; if (!CARGOS_ANO(v).includes(st.cargo)) st.cargo = CARGOS_ANO(v)[0]; st.termo = null; st.canal = 8; });
+    seg("f-uf", [["TODAS", "Todas"], ...UFS.map(u => [u, u])], () => st.uf, v => { st.uf = v; st.termo = null; });
+    seg("f-cargo", CARGOS_ANO(st.ano).map(c => [c, CARGO_NOME[c]]), () => st.cargo, v => { st.cargo = v; st.termo = null; st.canal = 8; });
+    seg("f-eleito", [[2, "Todos"], [1, "Eleitos"], [0, "Não eleitos"]], () => st.eleito, v => { st.eleito = v; st.termo = null; }, renderQ9);
+  }
+
+  // ---------- Q8 ----------
+  // faixas: 0 = 0% exato, 1..20 = [5(f-1), 5f), 21 = 100% exato
+  const inicio = f => f === 0 ? 0 : f === 21 ? 100 : 5 * (f - 1);
+  const rotFaixa = f => f === 0 ? "0% exato" : f === 21 ? "100% exato" : `${inicio(f)}% a ${inicio(f) + 5}%`;
+  function faixas() {
+    const r = Array.from({ length: 22 }, () => ({ n: 0, e: 0 })); const us = ufIdx();
+    for (const [a, u, c, f, n, e] of D.q8) if (a === st.ano && c === st.cargo && us.includes(u)) { r[f].n += n; r[f].e += e; }
+    return r;
+  }
+  function grupos(r, corte) {
+    const g = { pub: { n: 0, e: 0 }, out: { n: 0, e: 0 } };
+    r.forEach((b, f) => { const k = inicio(f) >= corte ? "pub" : "out"; g[k].n += b.n; g[k].e += b.e; });
+    return g;
+  }
+  function mediana(r) {
+    const N = r.reduce((s, b) => s + b.n, 0); let acc = 0;
+    for (let f = 0; f < 22; f++) { acc += r[f].n; if (acc >= N / 2) return Math.max(5, Math.min(100, f === 21 ? 100 : inicio(f))); }
+    return 50;
+  }
+
+  function renderQ8() {
+    const r = faixas(), g = grupos(r, st.corte), med = mediana(r);
+    const N = r.reduce((s, b) => s + b.n, 0), E = r.reduce((s, b) => s + b.e, 0), geral = pc(E, N);
+    const tp = pc(g.pub.e, g.pub.n), to = pc(g.out.e, g.out.n), dif = tp != null && to != null ? tp - to : null;
+    const t = qui2x2(g.pub.e, g.pub.n, g.out.e, g.out.n);
+    const poucos = g.pub.n < N_MIN || g.out.n < N_MIN || t.minEsp < 5;
+
+    document.getElementById("f-corte").value = st.corte;
+    document.getElementById("o-corte").textContent = st.corte + "%";
+    document.getElementById("b-50").setAttribute("aria-pressed", String(st.corte === 50));
+    const bm = document.getElementById("b-med"); bm.textContent = `Mediana ≈ ${med}%`; bm.setAttribute("aria-pressed", String(st.corte === med));
+
+    // frase
+    let ans = `Entre os ${CARGO_PLURAL[st.cargo]} de ${st.ano} ${onde()}, `;
+    if (!N) ans = `Sem candidatos com receita neste recorte.`;
+    else if (t.p == null) ans += `um dos grupos não tem candidatos ou eleitos suficientes para comparar com este corte.`;
+    else if (poucos) ans += `um dos grupos tem poucos candidatos com este corte (${int(Math.min(g.pub.n, g.out.n))}); a diferença não é confiável.`;
+    else if (t.p >= 0.05) ans += `quem tem ${st.corte}% ou mais de dinheiro público e quem tem menos se elegem <strong>na mesma proporção</strong> (${fmt(tp)}% × ${fmt(to)}%, p = ${fmtP(t.p)}).`;
+    else ans += `quem tem ${st.corte}% ou mais de dinheiro público se elege <strong>${dif > 0 ? "mais" : "menos"}</strong>: ${fmt(tp)}% contra ${fmt(to)}% de quem depende mais de outras fontes (${dif > 0 ? "+" : "−"}${fmt(Math.abs(dif))} p.p.).`;
+    document.getElementById("q8-answer").innerHTML = ans;
+
+    const pill = t.p == null ? `<span class="pill neutral">sem teste</span>` : poucos ? `<span class="pill warn">poucos candidatos num grupo</span>` : t.p < 0.05 ? `<span class="pill good">diferença real · p = ${fmtP(t.p)}</span>` : `<span class="pill neutral">sem evidência · p = ${fmtP(t.p)}</span>`;
+    document.getElementById("q8-stats").innerHTML =
+      `<div class="stat"><span class="eyebrow"><i class="sw" style="background:var(--pub)"></i> ≥ ${st.corte}% público</span><span class="big">${fmt(tp)}%</span><span class="sub">se elegeram · ${int(g.pub.e)} de ${int(g.pub.n)} candidatos</span></div>` +
+      `<div class="stat"><span class="eyebrow"><i class="sw" style="background:var(--out)"></i> &lt; ${st.corte}% público</span><span class="big">${fmt(to)}%</span><span class="sub">se elegeram · ${int(g.out.e)} de ${int(g.out.n)} candidatos</span></div>` +
+      `<div class="stat"><span class="eyebrow">Diferença</span><span class="big">${dif == null ? "–" : (dif > 0 ? "+" : dif < 0 ? "−" : "") + fmt(Math.abs(dif))} p.p.</span>${pill}<span class="sub">taxa geral do cargo: ${fmt(geral)}%</span></div>`;
+
+    renderFaixa(r, geral);
+    renderSens(r);
+    document.getElementById("q8-table").innerHTML = `<table><thead><tr><th>% público</th><th>Candidatos</th><th>Eleitos</th><th>Taxa</th></tr></thead><tbody>${r.map((b, f) => `<tr><td>${rotFaixa(f)}</td><td>${int(b.n)}</td><td>${int(b.e)}</td><td>${b.n ? fmt(pc(b.e, b.n)) + "%" : "–"}</td></tr>`).join("")}<tr><td><b>Total</b></td><td>${int(N)}</td><td>${int(E)}</td><td>${fmt(geral)}%</td></tr></tbody></table>`;
+  }
+
+  function renderFaixa(r, geral) {
+    const svg = document.getElementById("q8-faixa"); clear(svg);
+    const W = 640, L = 38, R = 8, T = 8, HT = 190, GAP = 26, HB = 64, H = T + HT + GAP + HB + 22;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const bw = (W - L - R) / 22, xb = f => L + f * bw;
+    const taxas = r.map(b => b.n ? pc(b.e, b.n) : null);
+    const tmax = Math.max(5, ...taxas.filter((t, f) => t != null && r[f].n >= N_MIN), geral || 0);
+    const nice = tmax <= 10 ? 10 : tmax <= 20 ? 20 : tmax <= 30 ? 30 : tmax <= 50 ? 50 : tmax <= 75 ? 75 : 100;
+    const passo = nice <= 10 ? 2 : nice <= 30 ? 5 : nice <= 50 ? 10 : 25;
+    const yt = v => T + HT - HT * Math.min(v, nice) / nice;
+    for (let v = 0; v <= nice; v += passo) { el("line", { x1: L, x2: W - R, y1: yt(v), y2: yt(v), class: "gridline" }, svg); txt(svg, L - 6, yt(v), v + "%", "axis", "end"); }
+    const ntot = r.reduce((s, b) => s + b.n, 0), nmax = Math.max(1, ...r.map(b => b.n)), yb0 = T + HT + GAP, yb = n => yb0 + HB - HB * n / nmax;
+    txt(svg, L - 6, yb0 + HB / 2, "n", "axis", "end");
+    if (geral != null) el("line", { x1: L, x2: W - R, y1: yt(geral), y2: yt(geral), stroke: "var(--ink-3)", "stroke-width": 1.5, "stroke-dasharray": "4 4" }, svg);
+    r.forEach((b, f) => {
+      const acima = inicio(f) >= st.corte, cor = acima ? "var(--pub)" : "var(--out)", fraco = b.n < N_MIN;
+      const x = xb(f) + 1.5, w = bw - 3;
+      if (b.n) {
+        const t = taxas[f];
+        el("rect", { x, y: yt(t), width: w, height: Math.max(1, T + HT - yt(t)), rx: 2, style: `fill:${cor};opacity:${fraco ? 0.3 : 1}` }, svg);
+      }
+      el("rect", { x, y: yb(b.n), width: w, height: Math.max(b.n ? 1 : 0, yb0 + HB - yb(b.n)), rx: 1.5, style: "fill:var(--ink-3);opacity:.55" }, svg);
+      const hit = el("rect", { x: xb(f), y: T, width: bw, height: HT + GAP + HB, fill: "transparent" }, svg);
+      hit.style.cursor = "pointer";
+      hit.addEventListener("mousemove", ev => showTip(ev, `<b>${rotFaixa(f)} de dinheiro público</b><br>${int(b.n)} candidatos (${fmt(pc(b.n, ntot))}% do cargo)<br>${int(b.e)} eleitos · taxa ${b.n ? fmt(taxas[f]) + "%" : "–"}${fraco && b.n ? "<br><i>menos de 30 candidatos</i>" : ""}<br><span style="opacity:.75">clique para pôr o corte aqui</span>`));
+      hit.addEventListener("mouseleave", hideTip);
+      hit.addEventListener("click", () => { st.corte = Math.max(5, Math.min(100, f <= 1 ? 5 : inicio(f))); salvar(); renderQ8(); });
+    });
+    // linha do corte: na borda esquerda da primeira faixa que fica acima dele
+    const fc = st.corte >= 100 ? 21 : st.corte / 5 + 1, xc = xb(fc);
+    el("line", { x1: xc, x2: xc, y1: T - 4, y2: yb0 + HB, stroke: "var(--ink)", "stroke-width": 1.5 }, svg);
+    txt(svg, xc + 4, T + 2, `corte ${st.corte}%`, "val", "start").style.fill = "var(--ink)";
+    // eixo x
+    [[0, "0%"], [1, "0"], [6, "25"], [11, "50"], [16, "75"], [21, "100%"]].forEach(([f, s]) => txt(svg, xb(f) + (f === 0 || f === 21 ? bw / 2 : 0), H - 8, s, "axis", "middle"));
+  }
+
+  function renderSens(r) {
+    const svg = document.getElementById("q8-sens"); clear(svg);
+    const W = 460, L = 40, R = 12, T = 12, HH = 210, H = T + HH + 26;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const pts = [];
+    for (let c = 5; c <= 100; c += 5) { const g = grupos(r, c); if (g.pub.n >= N_MIN && g.out.n >= N_MIN) pts.push([c, pc(g.pub.e, g.pub.n) - pc(g.out.e, g.out.n)]); }
+    if (!pts.length) { txt(svg, W / 2, H / 2, "poucos candidatos para comparar", "axis", "middle"); return; }
+    const m = Math.max(5, ...pts.map(p => Math.abs(p[1])));
+    const nice = m <= 5 ? 5 : m <= 10 ? 10 : m <= 20 ? 20 : m <= 30 ? 30 : 50, passo = nice / 5 >= 5 ? (nice <= 30 ? nice / 3 : 10) : nice / 5;
+    const x = c => L + (W - L - R) * (c - 5) / 95, y = v => T + HH / 2 - (HH / 2) * v / nice;
+    for (let v = -nice; v <= nice + 1e-9; v += passo) { el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "gridline" }, svg); txt(svg, L - 6, y(v), (v > 0 ? "+" : "") + fmt(v, 0), "axis", "end"); }
+    el("line", { x1: L, x2: W - R, y1: y(0), y2: y(0), stroke: "var(--ink-3)", "stroke-width": 1.2 }, svg);
+    [5, 25, 50, 75, 100].forEach(c => txt(svg, x(c), H - 8, c + "%", "axis", "middle"));
+    // segmentos contínuos (quebra onde um grupo fica com menos de 30)
+    let d = "", prev = null;
+    for (const [c, v] of pts) { d += (prev != null && c - prev === 5 ? "L" : "M") + x(c).toFixed(1) + "," + y(v).toFixed(1); prev = c; }
+    el("path", { d, fill: "none", stroke: "var(--accent)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+    const cur = pts.find(p => p[0] === st.corte);
+    el("line", { x1: x(st.corte), x2: x(st.corte), y1: T, y2: T + HH, stroke: "var(--ink)", "stroke-width": 1, "stroke-dasharray": "3 3" }, svg);
+    if (cur) el("circle", { cx: x(cur[0]), cy: y(cur[1]), r: 5, style: "fill:var(--accent);stroke:var(--surface);stroke-width:2" }, svg);
+    const hit = el("rect", { x: L, y: T, width: W - L - R, height: HH, fill: "transparent" }, svg);
+    hit.style.cursor = "pointer";
+    const perto = ev => { const b = svg.getBoundingClientRect(), cx = (ev.clientX - b.left) * W / b.width; const c = Math.max(5, Math.min(100, Math.round((5 + (cx - L) / (W - L - R) * 95) / 5) * 5)); return c; };
+    hit.addEventListener("mousemove", ev => { const c = perto(ev), p = pts.find(q => q[0] === c); showTip(ev, `<b>corte ${c}%</b><br>${p ? `diferença ${p[1] > 0 ? "+" : "−"}${fmt(Math.abs(p[1]))} p.p.` : "um grupo com menos de 30 candidatos"}`); });
+    hit.addEventListener("mouseleave", hideTip);
+    hit.addEventListener("click", ev => { st.corte = perto(ev); salvar(); renderQ8(); });
+  }
+
+  // ---------- Q9 ----------
+  const chaveT = (eleito, canal) => `${st.ano}|${st.cargo}|${st.uf === "TODAS" ? 6 : UFS.indexOf(st.uf)}|${eleito}|${canal}`;
+  function grupoT(eleito, canal) {
+    const g = D.q9t[chaveT(eleito, canal)]; if (!g) return [];
+    return g[0].map((t, i) => ({ t, termo: D.termos[t], n: g[1][i], vr: g[2][i] }));
+  }
+  const totalT = (eleito, canal) => D.q9tot[chaveT(eleito, canal)] || 0;
+
+  function canais() {
+    const r = Array.from({ length: 8 }, () => ({ v: [0, 0], nc: [0, 0], nd: [0, 0] })); const us = ufIdx();
+    for (const [a, u, c, e, k, nc, nd, vr] of D.q9c) if (a === st.ano && c === st.cargo && us.includes(u)) { r[k].v[e] += vr; r[k].nc[e] += nc; r[k].nd[e] += nd; }
+    return r;
+  }
+
+  function renderQ9() {
+    filtros();
+    const r = canais();
+    const tot = [0, 1].map(e => r.reduce((s, k) => s + k.v[e], 0)), total = tot[0] + tot[1];
+    const parte = r.map((k, i) => ({ i, v: k.v[0] + k.v[1] })).sort((a, b) => b.v - a.v);
+    const top = grupoT(2, 8);
+    const ans = !total ? "Sem despesas de propaganda neste recorte." :
+      `Os ${CARGO_PLURAL[st.cargo]} de ${st.ano} ${onde()} contrataram <strong>${reais(total)}</strong> em propaganda. <strong>${CANAL_NOME[parte[0].i]}</strong> leva ${fmt(pc(parte[0].v, total), 0)}% e <strong>${CANAL_NOME[parte[1].i].toLowerCase().replace(" tv", " TV")}</strong> ${fmt(pc(parte[1].v, total), 0)}%.` +
+      (top.length ? ` No texto, a palavra mais escrita é <strong>“${top[0].termo}”</strong>, em ${fmt(pc(top[0].n, totalT(2, 8)), 0)}% das despesas.` : "");
+    document.getElementById("q9-answer").innerHTML = ans;
+
+    // indicadores: a fatia de rua e de digital, eleitos × não eleitos
+    const rua = r[1], pRua = [0, 1].map(e => pc(rua.v[e], tot[e]));
+    const dig = r[4], pDig = [0, 1].map(e => pc(dig.v[e], tot[e]));
+    document.getElementById("q9-stats").innerHTML =
+      `<div class="stat"><span class="eyebrow">Total em propaganda</span><span class="big">${reais(total)}</span><span class="sub">${int(r.reduce((s, k) => s + k.nd[0] + k.nd[1], 0))} despesas contratadas</span></div>` +
+      `<div class="stat"><span class="eyebrow">Rua (cabos, militância)</span><span class="big">${fmt(pRua[1], 0)}% · ${fmt(pRua[0], 0)}%</span><span class="sub">do gasto dos eleitos · dos não eleitos</span></div>` +
+      `<div class="stat"><span class="eyebrow">Digital (impulsionamento)</span><span class="big">${fmt(pDig[1], 0)}% · ${fmt(pDig[0], 0)}%</span><span class="sub">do gasto dos eleitos · dos não eleitos</span></div>`;
+
+    renderCanal(r, tot);
+    renderCloud();
+  }
+
+  function renderCanal(r, tot) {
+    const svg = document.getElementById("q9-canal"); clear(svg);
+    const W = 640, L = 118, R = 120, rh = 40, H = 8 * rh + 24;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const pcs = r.map(k => [0, 1].map(e => pc(k.v[e], tot[e]) || 0));
+    const m = Math.max(10, ...pcs.flat()), nice = m <= 25 ? 25 : m <= 50 ? 50 : m <= 75 ? 75 : 100;
+    const x = v => L + (W - L - R) * v / nice;
+    for (let t = 0; t <= nice; t += nice / 5) { el("line", { x1: x(t), x2: x(t), y1: 0, y2: H - 22, class: "gridline" }, svg); txt(svg, x(t), H - 9, fmt(t, 0) + "%", "axis", "middle"); }
+    r.forEach((k, i) => {
+      const y = i * rh + 4, sel = st.canal === i;
+      if (sel) el("rect", { x: -4, y: y - 3, width: 3, height: rh - 4, rx: 1.5, style: "fill:var(--hi)" }, svg);
+      const l = txt(svg, 0, y + (rh - 8) / 2, CANAL_NOME[i], "lbl"); if (sel) { l.style.fill = "var(--ink)"; l.style.fontWeight = 600; }
+      [[1, "var(--el)", 0], [0, "var(--nel)", 1]].forEach(([e, cor, j]) => {
+        const v = pcs[i][e], yy = y + j * 15;
+        el("rect", { x: L, y: yy, width: Math.max(v > 0 ? 2 : 0, x(v) - L), height: 12, rx: 2, style: `fill:${cor}` }, svg);
+        txt(svg, x(v) + 6, yy + 6, `${fmt(v, 0)}%`, "val");
+      });
+      const vt = k.v[0] + k.v[1];
+      txt(svg, W, y + (rh - 8) / 2, reais(vt), "val", "end");
+      const hit = el("rect", { x: 0, y: y - 3, width: W, height: rh - 2, fill: "transparent" }, svg);
+      hit.style.cursor = "pointer";
+      hit.addEventListener("mousemove", ev => showTip(ev, `<b>${CANAL_NOME[i]}</b> · ${CARGO_NOME[st.cargo]} ${st.ano}<br>Eleitos: ${fmt(pcs[i][1])}% do gasto (${reais(k.v[1])}, ${int(k.nc[1])} candidatos)<br>Não eleitos: ${fmt(pcs[i][0])}% (${reais(k.v[0])}, ${int(k.nc[0])} candidatos)<br><span style="opacity:.75">${sel ? "clique para ver todos os canais" : "clique para filtrar a nuvem"}</span>`));
+      hit.addEventListener("mouseleave", hideTip);
+      hit.addEventListener("click", () => { st.canal = sel ? 8 : i; st.termo = null; renderCanal(r, tot); renderCloud(); });
+    });
+  }
+
+  // nuvem: espiral de Arquimedes a partir do centro, colisão por retângulo
+  const medidor = document.createElement("canvas").getContext("2d");
+  function renderCloud() {
+    const box = document.getElementById("q9-chan");
+    box.innerHTML = st.canal === 8 ? "" : `<span class="chan-tag">canal: ${CANAL_NOME[st.canal]} <button type="button" aria-label="Mostrar todos os canais" id="b-chan">×</button></span>`;
+    if (st.canal !== 8) document.getElementById("b-chan").addEventListener("click", () => { st.canal = 8; st.termo = null; renderQ9(); });
+    const svg = document.getElementById("q9-cloud"); clear(svg);
+    const W = 560, H = 360; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.classList.toggle("has-sel", st.termo != null);
+    const ws = grupoT(st.eleito, st.canal);
+    if (!ws.length) { txt(svg, W / 2, H / 2, "sem despesas com descrição neste recorte", "axis", "middle"); renderDetalhe(); return; }
+    const nmax = ws[0].n, nmin = ws[ws.length - 1].n;
+    const fam = getComputedStyle(document.body).fontFamily;
+    const ocupado = [];
+    const sobrepoe = (a) => ocupado.some(b => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y);
+    ws.forEach((w, i) => {
+      const tz = (Math.sqrt(w.n) - Math.sqrt(nmin)) / Math.max(1e-9, Math.sqrt(nmax) - Math.sqrt(nmin));
+      const fs = Math.round(13 + tz * 41), peso = i < 10 ? 600 : 400;
+      medidor.font = `${peso} ${fs}px ${fam}`;
+      const lw = medidor.measureText(w.termo).width + 6, lh = fs * 1.05;
+      for (let k = 0; k < 2500; k++) {
+        const ang = 0.33 * k, raio = 1.6 * ang;
+        const cx = W / 2 + raio * Math.cos(ang) * 1.6, cy = H / 2 + raio * Math.sin(ang);
+        const rect = { x: cx - lw / 2, y: cy - lh / 2, w: lw, h: lh };
+        if (rect.x < 2 || rect.y < 2 || rect.x + rect.w > W - 2 || rect.y + rect.h > H - 2) continue;
+        if (sobrepoe(rect)) continue;
+        ocupado.push(rect);
+        const t = el("text", { x: cx, y: cy + fs * 0.05, "text-anchor": "middle", "dominant-baseline": "middle", "font-size": fs, "font-weight": peso }, svg);
+        t.textContent = w.termo;
+        t.style.fill = st.termo === w.t ? "var(--hi)" : i < 10 ? "var(--accent)" : "var(--accent-ink)";
+        if (i >= 10) t.style.opacity = st.termo == null ? 0.8 : "";
+        if (st.termo === w.t) t.classList.add("sel");
+        t.setAttribute("tabindex", "0"); t.setAttribute("role", "button");
+        const tot = totalT(st.eleito, st.canal);
+        t.addEventListener("mousemove", ev => showTip(ev, `<b>${w.termo}</b><br>${int(w.n)} despesas (${fmt(pc(w.n, tot))}%)<br>${reais(w.vr)} · média ${reais(w.vr / w.n)}`));
+        t.addEventListener("mouseleave", hideTip);
+        const escolher = () => { st.termo = st.termo === w.t ? null : w.t; renderCloud(); };
+        t.addEventListener("click", escolher);
+        t.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); escolher(); } });
+        break;
+      }
+    });
+    renderDetalhe();
+  }
+
+  function renderDetalhe() {
+    const box = document.getElementById("q9-detail");
+    if (st.termo == null) { box.innerHTML = `<p class="empty">Clique numa palavra para ver quanto dinheiro há por trás dela, em que canais aparece e se eleitos a usam mais.</p>`; return; }
+    const termo = D.termos[st.termo];
+    const acha = (e, c) => grupoT(e, c).find(w => w.t === st.termo);
+    const w = acha(st.eleito, st.canal), tot = totalT(st.eleito, st.canal);
+    if (!w) { box.innerHTML = `<p class="empty">“${termo}” não está entre as ${D.top} palavras deste recorte.</p>`; return; }
+    const uso = e => { const x = acha(e, st.canal), t = totalT(e, st.canal); return x && t ? `${fmt(pc(x.n, t))}% das despesas` : `fora das ${D.top} mais citadas`; };
+    const porCanal = [];
+    if (st.canal === 8) for (let c = 0; c < 8; c++) { const x = acha(st.eleito, c); if (x) porCanal.push([c, x.n]); }
+    porCanal.sort((a, b) => b[1] - a[1]);
+    const mx = porCanal.length ? porCanal[0][1] : 1;
+    box.innerHTML = `<h3>“${termo}”</h3>
+      <div class="row"><span>despesas que citam</span><span>${int(w.n)} (${fmt(pc(w.n, tot))}%)</span></div>
+      <div class="row"><span>valor dessas despesas</span><span>${reais(w.vr)}</span></div>
+      <div class="row"><span>valor médio por despesa</span><span>${reais(w.vr / w.n)}</span></div>
+      <div class="row"><span>entre os eleitos</span><span>${uso(1)}</span></div>
+      <div class="row"><span>entre os não eleitos</span><span>${uso(0)}</span></div>
+      ${porCanal.length ? `<span class="flabel" style="margin-top:6px">Em que canal aparece (nº de despesas)</span>${porCanal.map(([c, n]) => `<div class="minibar"><span>${CANAL_NOME[c]}</span><i style="width:${(100 * n / mx).toFixed(1)}%"></i><span>${int(n)}</span></div>`).join("")}` : ""}
+      <p class="note">Uma despesa que cita várias palavras entra em todas: o valor não soma entre palavras. O total por canal está no gráfico ao lado.</p>`;
+  }
+
+  // ---------- eventos ----------
+  const corte = document.getElementById("f-corte");
+  corte.addEventListener("input", () => { st.corte = +corte.value; renderQ8(); });
+  corte.addEventListener("change", salvar);
+  document.getElementById("b-50").addEventListener("click", () => { st.corte = 50; salvar(); renderQ8(); });
+  document.getElementById("b-med").addEventListener("click", () => { st.corte = mediana(faixas()); salvar(); renderQ8(); });
+  document.getElementById("m-top").textContent = D.top;
+
+  function render() { filtros(); renderQ8(); renderQ9(); }
+  render();
+  // a nuvem mede o texto com a fonte carregada: refaz quando as fontes chegam
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => renderCloud());
+})();
+</script>

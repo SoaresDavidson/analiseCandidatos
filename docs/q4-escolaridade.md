@@ -273,3 +273,21 @@ uv run jupyter lab notebooks/q4_escolaridade.ipynb
    uv run jupyter lab notebooks/q4_escolaridade.ipynb
    ```
 4. No Jupyter, rode tudo (*Run → Run All Cells*). A primeira seção roda as checagens; se alguma tiver casos além dos da seção 5, pare e investigue antes de olhar os gráficos.
+
+---
+
+## 9. Painel interativo
+
+O painel `docs/q4-painel/index.html` mostra as partes A, B e C com filtros de ano, UF e cargo, mapa municipal (malha do IBGE), dispersão ligada ao mapa e exemplos nominais de eleitos. Abre direto no navegador, sem servidor.
+
+- `docs/q4-painel/modelo.html`: a página, com `__DADOS__` no lugar dos dados.
+- `scripts/gerar_painel_q4.py`: lê o banco e as malhas e gera o `index.html`.
+
+Para regerar depois de mudar a carga ou as views:
+
+```bash
+uv run python -m scripts.coleta.coleta_ibge malha --uf AM,GO,MA,MT,RS,SE
+uv run python scripts/gerar_painel_q4.py
+```
+
+O nome civil dos eleitos vem de `POLITICO`, no modelo. O nome de urna vem direto do `consulta_cand`, porque ficou fora do DER (o dicionário o lista entre as colunas não carregadas).

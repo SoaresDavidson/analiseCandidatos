@@ -1,20 +1,29 @@
--- 00_macros.sql — macros de limpeza usadas por todos os scripts de carga.
+-- 00_limpeza.sql — macros de limpeza usadas por todos os scripts de carga.
 --
 -- Ficavam no começo do 01_staging.sql. Saíram para cá porque o 04_politico.sql
--- também as usa, e o 01 só roda com a prestação de contas baixada: sem ela, o
--- DuckDB recusa criar as views ("No files found") e nada depois do 01 roda.
--- Com as macros à parte, a Q10 (carreira) carrega só com o consulta_cand:
+-- e o 06_carga_nucleo.sql também as usam, e o 01 só roda com a prestação de
+-- contas baixada: sem ela, o DuckDB recusa criar as views ("No files found") e
+-- nada depois do 01 roda. Com as macros à parte, a Q10 (carreira) carrega só com
+-- o consulta_cand:
 --
---     uv run scripts/carregar_staging.py 00_macros 04_politico 07_q10
+--     uv run scripts/carregar_staging.py 00_limpeza 04_politico 07_q10
+--
+-- Não lê arquivo nenhum. As macros ficam gravadas no banco, então quem roda só
+-- um script depois (01, 04, 06…) já as encontra. Fonte única: não redefinir
+-- estas macros em outro arquivo (nem como TEMP, que esconderia a daqui na
+-- sessão sem dar erro).
 
 -- ---------------------------------------------------------------------------
--- Limpeza. O TSE usa sentinelas em vez de NULL: '#NULO', '#NULO#', '-1', '-3', '-4'.
+-- Limpeza. O TSE usa sentinelas em vez de NULL: '#NULO', '#NE' (não se aplica),
+-- '-1', '-3', '-4' e 'NÃO DIVULGÁVEL'.
 -- ---------------------------------------------------------------------------
 
 -- texto: sentinela -> NULL, espaços aparados
 CREATE OR REPLACE MACRO limpa(x) AS
 CASE
-    WHEN x IS NULL OR trim(x) IN ('', '#NULO', '#NULO#', '-1', '-3', '-4')
+    WHEN
+        x IS NULL
+        OR upper(trim(x)) IN ('', '#NULO', '#NULO#', '#NE', '#NE#', '-1', '-3', '-4', 'NÃO DIVULGÁVEL')
         THEN NULL
     ELSE trim(x)
 END;

@@ -1,7 +1,8 @@
 -- 04_politico.sql — POLITICO e CANDIDATURA a partir do consulta_cand (Q12 do repo,
 -- Q10 da lista de 10 entregue ao professor).
 --
--- Dono: Enrico. Não depende do staging da prestação de contas.
+-- Dono: Enrico. Não depende do staging da prestação de contas; só dos macros
+-- de 00_limpeza.sql.
 --
 -- 🚨 A chave da pessoa é NR_TITULO_ELEITORAL_CANDIDATO, nunca o CPF. Em 2024 o
 --    TSE suprimiu o CPF: as 463.859 linhas trazem '-4' (dado protegido, LGPD). A
@@ -55,7 +56,7 @@ SELECT
     limpa(ds_sit_tot_turno) AS ds_sit_tot_turno,
     -- derivada: 'MEDIA' é o nome do leiaute antigo para 'ELEITO POR MEDIA'.
     -- '2º TURNO' NÃO é eleito — é quem foi para o segundo turno.
-    upper(strip_accents(coalesce(limpa(ds_sit_tot_turno), ''))) IN
+    coalesce(categoria(ds_sit_tot_turno), '') IN
     ('ELEITO', 'ELEITO POR QP', 'ELEITO POR MEDIA', 'MEDIA') AS fl_eleito
 FROM
     read_csv(

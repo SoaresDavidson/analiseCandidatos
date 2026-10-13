@@ -16,7 +16,7 @@
 -- Para incluir outra UF basta baixá-la: o glob pega `_??`.
 
 -- As macros de limpeza (limpa, categoria, valor_br, data_br, documento,
--- tipo_pessoa, cnae5) estão em 00_macros.sql, que roda antes deste.
+-- tipo_pessoa, cnae5) estão em 00_limpeza.sql, que roda antes deste.
 
 -- ---------------------------------------------------------------------------
 -- Receita

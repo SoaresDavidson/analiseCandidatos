@@ -4,10 +4,10 @@
 -- de participações, vitórias, derrotas e reeleições)? [Máximo possível]"
 --
 -- É a Q10 da lista de 10 entregue ao professor e a Q12 da lista de 12 do repo.
--- Donos: Eduardo e Enrico. Depende só de 00_macros e 04_politico, ou seja, só do
+-- Donos: Eduardo e Enrico. Depende só de 00_limpeza e 04_politico, ou seja, só do
 -- consulta_cand (2002–2026). Para carregar:
 --
---     uv run scripts/carregar_staging.py 00_macros 04_politico 07_q10
+--     uv run scripts/carregar_staging.py 00_limpeza 04_politico 07_q10
 --
 -- As consultas prontas (um político, ranking, sobrevivência) estão em
 -- sql/consultas/q10_carreira.sql.

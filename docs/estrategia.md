@@ -4,6 +4,11 @@ Grupo de 4. Entrega mais próxima: **DER, quinta-feira 24/09/2026** (6 dias a pa
 de hoje, 18/09). Entrega final: banco carregado + consultas + resultado visual que
 responda às 12 perguntas.
 
+> **Documento de planejamento de setembro de 2026, com a lista antiga de 12 perguntas.**
+> A lista em uso é a de 10, entregue ao professor; a correspondência está em
+> [`der/der-geral.md`](der/der-geral.md#correspondência-com-a-lista-antiga-de-12). O recorte geográfico também mudou: AM, GO, MA, MT, RS e SE, sorteados
+> pelo professor (#14).
+
 Documentos irmãos:
 [`fontes-de-dados.md`](fontes-de-dados.md) (o que existe, validado) e
 [`der.md`](der/der.md) (o modelo e o mapa pergunta → entidade).
@@ -65,6 +70,10 @@ começa a modelar aquele domínio.
 ---
 
 ## 3. Divisão por pergunta — quem faz o quê
+
+> **Superada pela lista de 10 perguntas.** A divisão abaixo usa a numeração antiga e
+> inclui duas perguntas que saíram (propostas de governo e doação de PJ). A
+> correspondência entre as listas está em [`der/der-geral.md`](der/der-geral.md#correspondência-com-a-lista-antiga-de-12).
 
 Cada um desenha o próprio diagrama, do jeito que preferir (à mão, ferramenta, IA).
 O que **não** é livre são as chaves compartilhadas: sem isso os quatro diagramas
@@ -226,6 +235,10 @@ fechadas com medição real dos arquivos (números na seção 4 do
 alinhamento, não de decisão.
 
 ### ① Recorte geográfico → **nacional, finanças inclusive** — revisada em 22/09/2026
+
+> **Superada pelo sorteio do professor.** O recorte passou a ser AM, GO, MA, MT, RS e
+> SE, e a coleta extrai só esses estados com `--uf AM,GO,MA,MT,RS,SE` (#14, #28).
+> O texto abaixo fica como registro da decisão anterior.
 
 > **Esta decisão foi revertida.** A versão fechada no kickoff mandava carregar
 > finanças só por UF (PI + SP + MG) e apagar os `_BRASIL` na extração. A medição de

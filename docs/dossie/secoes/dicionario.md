@@ -38,7 +38,7 @@ Arquivos citados na coluna *Origem*:
 
 #### `UF`
 
-Unidade da federação usada para situar os municípios. **PK:** `sg_uf`. **Grão:** uma linha por UF (27). **Perguntas:** Q3, Q9.
+Unidade da federação usada para situar os municípios. **PK:** `sg_uf`. **Grão:** uma linha por UF (27). **Perguntas:** Q3, Q7.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -49,7 +49,7 @@ Unidade da federação usada para situar os municípios. **PK:** `sg_uf`. **Grã
 
 #### `MUNICIPIO`
 
-Município identificado pelos códigos do IBGE e do TSE; é a ponte entre os dados territoriais e os eleitorais. **PK:** `cod_ibge`. **Grão:** uma linha por município (5.570). **Perguntas:** Q1, Q3, Q4, Q5, Q7, Q9.
+Município identificado pelos códigos do IBGE e do TSE; é a ponte entre os dados territoriais e os eleitorais. **PK:** `cod_ibge`. **Grão:** uma linha por município (5.570). **Perguntas:** Q1, Q3, Q4, Q5, Q6, Q7.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -57,13 +57,13 @@ Município identificado pelos códigos do IBGE e do TSE; é a ponte entre os dad
 | `cod_tse` | `VARCHAR(5)` | N | UK | Código TSE do município. | `municipio_tse_ibge → CD_MUNICIPIO_TSE` | Texto com zero à esquerda (`01007`). Em eleição municipal é igual ao `SG_UE`. Nos arquivos de votação, casar com `LPAD(CD_MUNICIPIO, 5, '0')` (R6). |
 | `nm_municipio` | `VARCHAR(60)` | N | — | Nome oficial. | `municipio_tse_ibge → NM_MUNICIPIO_IBGE` | Não usar o `NM_UE` do TSE: a grafia muda entre anos (5.597 unidades eleitorais geram 8.070 pares código–nome). |
 | `sg_uf` | `CHAR(2)` | N | FK → `UF` | UF do município. | `municipio_tse_ibge → SG_UF` | |
-| `cd_regiao_imediata` | `INTEGER` | S | — | Código da Região Geográfica Imediata (IBGE, 2017). | PIB FTP → "Código da Região Geográfica Imediata" | Recorte regional da Q9. Nulo só em município ausente da planilha do PIB. |
+| `cd_regiao_imediata` | `INTEGER` | S | — | Código da Região Geográfica Imediata (IBGE, 2017). | PIB FTP → "Código da Região Geográfica Imediata" | Recorte regional da Q7. Nulo só em município ausente da planilha do PIB. |
 | `nm_regiao_imediata` | `VARCHAR(60)` | S | — | Nome da Região Geográfica Imediata. | PIB FTP → "Nome da Região Geográfica Imediata" | Depende de `cd_regiao_imediata`, não da PK: desnormalização aceita (ver pendências). |
 | `cd_regiao_intermediaria` | `INTEGER` | S | — | Código da Região Geográfica Intermediária. | PIB FTP → "Código da Região Geográfica Intermediária" | Agrupa as imediatas. |
 
 #### `MUNICIPIO_ANO`
 
-Indicadores anuais de população e economia de um município. **PK:** (`cod_ibge`, `ano`). **Grão:** município × ano. **Perguntas:** Q3, Q7.
+Indicadores anuais de população e economia de um município. **PK:** (`cod_ibge`, `ano`). **Grão:** município × ano. **Perguntas:** Q3, Q6.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -133,7 +133,7 @@ Quantidade de pessoas de 18 anos ou mais por município e nível de instrução.
 
 #### `FAIXA_ETARIA`
 
-Faixas de idade das duas fontes (TSE e IBGE) numa só dimensão, com a marca de "jovem". **PK:** `id_faixa`. **Grão:** uma linha por faixa de cada fonte. **Perguntas:** Q7.
+Faixas de idade das duas fontes (TSE e IBGE) numa só dimensão, com a marca de "jovem". **PK:** `id_faixa`. **Grão:** uma linha por faixa de cada fonte. **Perguntas:** Q6.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -147,7 +147,7 @@ Faixas de idade das duas fontes (TSE e IBGE) numa só dimensão, com a marca de 
 
 #### `CENSO_FAIXA_ETARIA`
 
-População por município e faixa etária no censo. **PK:** (`cod_ibge`, `ano_censo`, `id_faixa`). **Grão:** município × censo × faixa do IBGE. **Perguntas:** Q7.
+População por município e faixa etária no censo. **PK:** (`cod_ibge`, `ano_censo`, `id_faixa`). **Grão:** município × censo × faixa do IBGE. **Perguntas:** Q6.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -158,7 +158,7 @@ População por município e faixa etária no censo. **PK:** (`cod_ibge`, `ano_c
 
 #### `COMPARECIMENTO_PERFIL`
 
-Eleitores aptos, comparecimento e abstenção por município, turno, faixa etária e gênero. **PK:** (`cod_ibge`, `ano`, `nr_turno`, `id_faixa`, `ds_genero`). **Grão:** município × ano × turno × faixa × gênero, com zonas e demais recortes somados. **Perguntas:** Q7.
+Eleitores aptos, comparecimento e abstenção por município, turno, faixa etária e gênero. **PK:** (`cod_ibge`, `ano`, `nr_turno`, `id_faixa`, `ds_genero`). **Grão:** município × ano × turno × faixa × gênero, com zonas e demais recortes somados. **Perguntas:** Q6.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -188,7 +188,7 @@ Pleito identificado pelo código do TSE, que já separa turno e abrangência. **
 
 #### `CARGO`
 
-Cargo em disputa. **PK:** `cd_cargo`. **Grão:** uma linha por cargo (13). **Perguntas:** Q1, Q3, Q5, Q6, Q12.
+Cargo em disputa. **PK:** `cd_cargo`. **Grão:** uma linha por cargo (13). **Perguntas:** Q1, Q3, Q5, Q10.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -197,7 +197,7 @@ Cargo em disputa. **PK:** `cd_cargo`. **Grão:** uma linha por cargo (13). **Per
 
 #### `PARTIDO`
 
-Partido num dado ano. O número sozinho não identifica o partido porque o TSE o reaproveita. **PK:** (`ano`, `nr_partido`). **Grão:** partido × ano de eleição ordinária. **Perguntas:** Q3, Q5, Q7, Q8, Q9, Q12.
+Partido num dado ano. O número sozinho não identifica o partido porque o TSE o reaproveita. **PK:** (`ano`, `nr_partido`). **Grão:** partido × ano de eleição ordinária. **Perguntas:** Q3, Q5, Q6, Q7, Q10.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -208,7 +208,7 @@ Partido num dado ano. O número sozinho não identifica o partido porque o TSE o
 
 #### `ESPECTRO_PARTIDO`
 
-Posição ideológica de um partido num ano, com a rodada e a fonte acadêmica usadas. **PK:** (`ano`, `nr_partido`). **Grão:** partido × ano. **Perguntas:** Q7, Q8, Q9.
+Posição ideológica de um partido num ano, com a rodada e a fonte acadêmica usadas. **PK:** (`ano`, `nr_partido`). **Grão:** partido × ano. **Perguntas:** Q6, Q7.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -242,7 +242,7 @@ Participação de um partido numa federação num dado ano. **PK:** (`ano`, `nr_
 
 #### `POLITICO`
 
-A pessoa que se candidata, independentemente da eleição. **PK:** `nr_titulo_eleitoral`. **Grão:** uma linha por título de eleitor válido. **Perguntas:** Q7, Q12.
+A pessoa que se candidata, independentemente da eleição. **PK:** `nr_titulo_eleitoral`. **Grão:** uma linha por título de eleitor válido. **Perguntas:** Q6, Q10.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -276,7 +276,7 @@ Participação de um político numa eleição, para um cargo, por um partido. Um
 
 #### `BEM_CANDIDATO`
 
-Bem declarado ao TSE no registro da candidatura. **PK:** (`id_candidatura`, `nr_ordem_bem`). **Grão:** um bem de uma candidatura. **Perguntas:** Q2 (leitura "dinheiro = patrimônio").
+Bem declarado ao TSE no registro da candidatura. **PK:** (`id_candidatura`, `nr_ordem_bem`). **Grão:** um bem de uma candidatura. **Perguntas:** Q2 (sucesso por patrimônio declarado).
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -301,7 +301,7 @@ Cadeiras em disputa para um cargo numa eleição e unidade eleitoral. **PK:** (`
 
 #### `VOTACAO_CANDIDATO_MUNICIPIO`
 
-Votos nominais de uma candidatura num município e turno, com as zonas somadas. **PK:** (`id_candidatura`, `cod_ibge`, `nr_turno`). **Grão:** candidatura × município × turno. **Perguntas:** Q3, Q7, Q9.
+Votos nominais de uma candidatura num município e turno, com as zonas somadas. **PK:** (`id_candidatura`, `cod_ibge`, `nr_turno`). **Grão:** candidatura × município × turno. **Perguntas:** Q3, Q6, Q7.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -345,7 +345,7 @@ Totais de aptos, comparecimento, abstenção, brancos e nulos por eleição, car
 
 #### `AGENTE_FINANCEIRO`
 
-Pessoa ou organização que aparece nas contas de campanha como doadora direta, doadora originária ou fornecedora. **PK:** `id_agente`. **UK:** `nr_cpf_cnpj`. **Grão:** um CPF ou CNPJ. **Perguntas:** Q8, Q11.
+Pessoa ou organização que aparece nas contas de campanha como doadora direta, doadora originária ou fornecedora. **PK:** `id_agente`. **UK:** `nr_cpf_cnpj`. **Grão:** um CPF ou CNPJ. **Perguntas:** Q9.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -357,7 +357,7 @@ Pessoa ou organização que aparece nas contas de campanha como doadora direta, 
 
 #### `ORGAO_PARTIDARIO`
 
-Diretório ou comitê de partido que arrecada recursos de campanha. **PK:** `id_orgao`. **Grão:** um órgão prestador de contas por eleição. **Perguntas:** Q8.
+Diretório ou comitê de partido que arrecada recursos de campanha. **PK:** `id_orgao`. **Grão:** um órgão prestador de contas por eleição. **Perguntas:** nenhuma da lista de 10 (atendia à Q8 antiga, doações de empresas).
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -371,18 +371,18 @@ Diretório ou comitê de partido que arrecada recursos de campanha. **PK:** `id_
 
 #### `FONTE_RECURSO`
 
-Classificação da receita pelo par fonte × origem, com a leitura público/privado da Q10. **PK:** `id_fonte_recurso`. **UK:** (`ds_fonte_receita`, `ds_origem_receita`). **Grão:** um par que existe nos arquivos. **Perguntas:** Q10.
+Classificação da receita pelo par fonte × origem, com a leitura público/privado da Q8. **PK:** `id_fonte_recurso`. **UK:** (`ds_fonte_receita`, `ds_origem_receita`). **Grão:** um par que existe nos arquivos. **Perguntas:** Q8.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
 | `id_fonte_recurso` | `INTEGER` | N | PK | Identificador do par. | gerado na carga (`sql/02_fonte_recurso.sql`) | `row_number()` sobre os pares reais, não sobre uma lista escrita à mão. |
 | `ds_fonte_receita` | `VARCHAR(40)` | S | UK | De que bolso veio o dinheiro. | 2018+: `DS_FONTE_RECEITA`; 2014–2016: "Fonte recurso" | Sem acento e em caixa alta (macro `categoria`): `FUNDO ESPECIAL`, `FUNDO PARTIDARIO`, `OUTROS RECURSOS`, `NAO ESPECIFICADO` (91% das linhas de 2014). |
 | `ds_origem_receita` | `VARCHAR(60)` | S | UK | Quem entregou o dinheiro. | 2018+: `DS_ORIGEM_RECEITA`; 2014–2016: "Tipo receita" | Ex.: `RECURSOS DE PESSOAS FISICAS`, `RECURSOS DE PARTIDO POLITICO`, `RECURSOS PROPRIOS`. |
-| `tp_origem` | `VARCHAR(20)` | N | — | Classe da Q10. | regra do grupo (`docs/der/q10-publico-privado.md`) | `PUBLICO` (fundos, qualquer que seja quem repassou), `PROPRIO`, `PRIVADO`, `PARTIDARIO`, `TRANSFERENCIA`, `RENDIMENTO`, `NAO IDENTIFICADO`. A fonte é testada antes da origem, porque em 2014 a fonte quase nunca vem preenchida. |
+| `tp_origem` | `VARCHAR(20)` | N | — | Classe da Q8. | regra do grupo (`docs/der/q10-publico-privado.md`) | `PUBLICO` (fundos, qualquer que seja quem repassou), `PROPRIO`, `PRIVADO`, `PARTIDARIO`, `TRANSFERENCIA`, `RENDIMENTO`, `NAO IDENTIFICADO`. A fonte é testada antes da origem, porque em 2014 a fonte quase nunca vem preenchida. |
 
 #### `RECEITA_CAMPANHA`
 
-Entrada de recursos numa candidatura ou num órgão partidário. **PK:** `id_receita`. **Grão:** uma receita declarada na prestação de contas final. **Perguntas:** Q8, Q10.
+Entrada de recursos numa candidatura ou num órgão partidário. **PK:** `id_receita`. **Grão:** uma receita declarada na prestação de contas final. **Perguntas:** Q8.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -397,7 +397,7 @@ Entrada de recursos numa candidatura ou num órgão partidário. **PK:** `id_rec
 
 #### `TIPO_DESPESA`
 
-Categoria de despesa de campanha, com o canal de propaganda da Q11. **PK:** `id_tipo_despesa`. **Grão:** uma categoria canônica. **Perguntas:** Q11.
+Categoria de despesa de campanha, com o canal de propaganda da Q9. **PK:** `id_tipo_despesa`. **Grão:** uma categoria canônica. **Perguntas:** Q9.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -408,7 +408,7 @@ Categoria de despesa de campanha, com o canal de propaganda da Q11. **PK:** `id_
 
 #### `DESPESA_CAMPANHA`
 
-Gasto contratado por uma candidatura. **PK:** `id_despesa`. **Grão:** uma despesa contratada. **Perguntas:** Q1, Q2, Q11.
+Gasto contratado por uma candidatura. **PK:** `id_despesa`. **Grão:** uma despesa contratada. **Perguntas:** Q1, Q9.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -418,13 +418,13 @@ Gasto contratado por uma candidatura. **PK:** `id_despesa`. **Grão:** uma despe
 | `id_tipo_despesa` | `INTEGER` | N | FK → `TIPO_DESPESA` | Categoria. | 2018+: `DS_ORIGEM_DESPESA`; 2014–2016: "Tipo despesa" | |
 | `dt_despesa` | `DATE` | S | — | Data da contratação. | 2018+: `DT_DESPESA`; 2014–2016: "Data da despesa" | |
 | `vr_despesa` | `DECIMAL(15,2)` | N | — | Valor contratado, em R$. | 2018+: `VR_DESPESA_CONTRATADA`; 2014–2016: "Valor despesa" | Valor contratado, não pago: `despesas_pagas` vem em parcelas e sem candidato nem fornecedor. |
-| `ds_despesa` | `TEXT` | S | — | Descrição livre do gasto. | 2018+: `DS_DESPESA`; 2014–2016: "Descriçao da despesa" (sic) | Acento preservado (macro `limpa`, não `categoria`). Texto da nuvem de palavras da Q11. |
+| `ds_despesa` | `TEXT` | S | — | Descrição livre do gasto. | 2018+: `DS_DESPESA`; 2014–2016: "Descriçao da despesa" (sic) | Acento preservado (macro `limpa`, não `categoria`). Texto da nuvem de palavras da Q9. |
 
 ### Propostas de governo
 
 #### `PROPOSTA_GOVERNO`
 
-PDF de proposta registrado por uma candidatura, com o texto extraído. **PK:** (`id_candidatura`, `nr_sequencial`). **Grão:** um arquivo PDF. **Perguntas:** Q6.
+PDF de proposta registrado por uma candidatura, com o texto extraído. **PK:** (`id_candidatura`, `nr_sequencial`). **Grão:** um arquivo PDF. **Perguntas:** nenhuma da lista de 10 (atendia à Q6 antiga, propostas de governo).
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -437,7 +437,7 @@ PDF de proposta registrado por uma candidatura, com o texto extraído. **PK:** (
 
 #### `TERMO_PROPOSTA`
 
-Termo de uma proposta e quantas vezes aparece. Entidade inteiramente derivada. **PK:** (`id_candidatura`, `nr_sequencial`, `termo`). **Grão:** termo × proposta. **Perguntas:** Q6.
+Termo de uma proposta e quantas vezes aparece. Entidade inteiramente derivada. **PK:** (`id_candidatura`, `nr_sequencial`, `termo`). **Grão:** termo × proposta. **Perguntas:** nenhuma da lista de 10 (atendia à Q6 antiga, propostas de governo).
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -455,10 +455,10 @@ Metadados de geração (`DT_GERACAO`, `HH_GERACAO`); descrições que repetem um
 1. **Nomes em `fonte_recurso` e `tipo_despesa`.** `sql/02_fonte_recurso.sql` gera `cd_fonte_recurso`, `ds_fonte_recurso` e `ds_origem_recurso`; o DER usa `id_fonte_recurso`, `ds_fonte_receita` e `ds_origem_receita`. `sql/03_tipo_despesa.sql` gera `cd_tipo_despesa` em vez de `id_tipo_despesa`. As duas tabelas também têm colunas de auditoria (`qt_linhas`, `vr_total`, `ano_min`, `ano_max`) que não estão no DER.
 2. **`candidatura` e `politico` em `sql/04_politico.sql`.** Não aplicam R1 (lêem ordinárias e suplementares), não trazem `cd_eleicao`, `cd_grau_instrucao` nem `cod_ibge`, e `politico` guarda `ds_genero` e `ds_cor_raca`, que o DER põe em `CANDIDATURA` porque mudam entre eleições.
 3. **Sentinelas.** A macro `limpa` de `sql/01_staging.sql` trata `#NULO`, `#NULO#`, `-1`, `-3` e `-4`, mas não `#NE`, `#NE#`, `NÃO DIVULGÁVEL` nem `Não divulgável`.
-4. **Datas de 2014.** A macro `data_br` só lê `dd/mm/aaaa`; o `25-SEP-14` de `receitas_partidos` 2014 viraria `NULL`. Hoje o staging só lê receitas de candidatos, mas a Q8 precisa das de órgãos.
+4. **Datas de 2014.** A macro `data_br` só lê `dd/mm/aaaa`; o `25-SEP-14` de `receitas_partidos` 2014 viraria `NULL`. Nenhuma pergunta da lista de 10 usa 2014, então isso só pesa se a série de receitas voltar a esse ano.
 5. **Prestação final.** O staging não filtra `TP_PRESTACAO_CONTAS`. Em 2026 só existem entregas `PARCIAL` e `RELATÓRIO FINANCEIRO`.
 6. **Doador e fornecedor anuláveis.** Decidido na carga (`sql/06_carga_modelo.sql`): `id_agente_doador` e `id_agente_fornecedor` aceitam nulo. Na carga nacional, ~315 mil receitas e ~1,56 mi despesas vêm sem CPF/CNPJ válido; um agente "não identificado" inventaria um documento.
-7. **`VOTACAO_LEGENDA_MUNICIPIO`.** O módulo Q4–Q6 previa `nr_federacao` e `qt_votos_nominais_validos`, que não entraram no DER geral. Falta medir se, desde 2022, o voto de legenda da federação se repete em cada partido membro.
+7. **`VOTACAO_LEGENDA_MUNICIPIO`.** O módulo do Dudu (Q4–Q6 da lista antiga) previa `nr_federacao` e `qt_votos_nominais_validos`, que não entraram no DER geral. Falta medir se, desde 2022, o voto de legenda da federação se repete em cada partido membro.
 8. **3FN em `MUNICIPIO`.** `nm_regiao_imediata` depende de `cd_regiao_imediata`. Aceito por serem só 5.570 linhas; a alternativa é uma entidade `REGIAO_IMEDIATA`.
 9. **Dados que ainda não existem:** espectro partidário (F1), população de anos anteriores a 2026 (F2), IDHM municipal (F3) e propostas de presidente (F4). Ver `docs/der/der-geral.md`, seção 4.
 10. **Conferir nos dados:** os códigos distintos de `CD_GRAU_INSTRUCAO` (o significado do `0`) e se a SIDRA 9606 traz uma linha de total por município.

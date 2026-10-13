@@ -1,5 +1,7 @@
 # Módulo do DER — Eduardo (Q4, Q5, Q6)
 
+> **Numeração antiga (lista de 12 perguntas).** A lista em uso é a de 10; a correspondência está na seção 3 do [`der-geral.md`](der-geral.md#correspondência-com-a-lista-antiga-de-12).
+
 Entrega de **quinta, 24/09/2026**. Este arquivo é a minha parte dos quatro módulos
 que se somam no DER da entrega: o diagrama, as chaves, os atributos derivados e um
 parágrafo de justificativa por decisão, como pede o checklist da seção 6 do

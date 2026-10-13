@@ -2,7 +2,7 @@
 
 ### Do que se trata
 
-O projeto investiga candidaturas e resultados eleitorais de seis estados brasileiros (Amazonas, Goiás, Maranhão, Mato Grosso, Rio Grande do Sul e Sergipe), cruzando dados do Tribunal Superior Eleitoral (TSE) com indicadores municipais do Instituto Brasileiro de Geografia e Estatística (IBGE). O banco analítico planejado organiza candidaturas, votos, financiamento, perfil do eleitorado e contexto socioeconômico para responder a 12 perguntas. O projeto usa DuckDB e notebooks para preparação e análise. Os resultados das perguntas ainda dependem da carga e das consultas; este dossiê documenta o desenho do banco, não resultados calculados.
+O projeto investiga candidaturas e resultados eleitorais de seis estados brasileiros (Amazonas, Goiás, Maranhão, Mato Grosso, Rio Grande do Sul e Sergipe), cruzando dados do Tribunal Superior Eleitoral (TSE) com indicadores municipais do Instituto Brasileiro de Geografia e Estatística (IBGE). O banco analítico planejado organiza candidaturas, votos, financiamento, perfil do eleitorado e contexto socioeconômico para responder a 10 perguntas. O projeto usa DuckDB e notebooks para preparação e análise. Os resultados das perguntas ainda dependem da carga e das consultas; este dossiê documenta o desenho do banco, não resultados calculados.
 
 ### Objetivo
 
@@ -16,15 +16,17 @@ Todas as perguntas usam o mesmo recorte. Os temas do TSE que o portal divide por
 
 ### Período de análise
 
-O período padrão são as eleições ordinárias de **2016 a 2024**: três municipais (2016, 2020 e 2024) e duas gerais (2018 e 2022). Todos os temas foram coletados nesse período (candidaturas, resultados, eleitorado, comparecimento, contas e propostas), e ele cobre a maioria das perguntas. A série termina em 2024 porque é a última eleição com resultado: a de 2026 ainda não foi totalizada.
+O período padrão (E.P.) são as eleições ordinárias de **2018, 2020, 2022 e 2024**: duas gerais (2018 e 2022) e duas municipais (2020 e 2024). Sete das dez perguntas usam esse período.
 
-Quatro perguntas usam outro período, porque o dado que pedem está fora dele:
+Três perguntas usam outro período, porque o dado que pedem está fora dele:
 
 | Pergunta | Período | Motivo |
 |---|---|---|
-| Q8 | 2014 e 2016 | 2014 é a última eleição com doação de pessoa jurídica, que o STF proibiu em setembro de 2015 (ADI 4650). 2016 é o marco zero, a primeira eleição depois da proibição. |
-| Q10, Q11 | 2014–2024 | A prestação de contas foi coletada desde 2014 por causa da Q8, e as análises de receitas (Q10) e de despesas de propaganda (Q11) já usam esse ano. Na Q10, 2014 é o contraponto: o financiamento ainda era quase todo privado. |
-| Q12 | 2002–2024 | A trajetória de um político pede a série mais longa possível. O cadastro de candidatos existe desde 2002 e a mesma pessoa é ligada entre eleições pelo título de eleitor. |
+| Q3 | 2008–2012 | O IDHM municipal só existe para os anos de Censo, e o mais recente é 2010. As municipais de 2008 e 2012 são as que cercam esse Censo. O período depende da quantidade de dado disponível: os resultados por município (votos e comparecimento) ainda só foram coletados de 2016 em diante. |
+| Q4 | 2022, 2024 | A escolaridade da população vem do Censo 2022. As eleições de 2022 e 2024 são as mais próximas dele. |
+| Q10 | 2002–2026 | A carreira de um político pede a série mais longa possível. O cadastro de candidatos existe desde 2002, e a mesma pessoa é ligada entre eleições pelo título de eleitor. |
+
+**2026.** A eleição de 2026 entra no escopo, mas fica fora da visualização até o TSE publicar os dados finais. Na data deste dossiê, o 2º turno ainda não tem resultado e a prestação de contas só tem entregas parciais. Os dados de 2026 são coletados e carregados como os dos outros anos, e basta coletar de novo quando o resultado e a prestação final saírem. Nas consultas, a coluna `fl_divulgado` marca os anos que podem aparecer, e o ano de corte fica num lugar só, a macro `ano_divulgado`.
 
 O período de cada pergunta está na tabela da seção 2.
 

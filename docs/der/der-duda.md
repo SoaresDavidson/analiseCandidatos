@@ -1,5 +1,7 @@
 # DER da Duda — Q7, Q8 e Q9 em um só diagrama
 
+> **Numeração antiga (lista de 12 perguntas).** A lista em uso é a de 10; a correspondência está na seção 3 do [`der-geral.md`](der-geral.md#correspondência-com-a-lista-antiga-de-12).
+
 > **Este DER foi incorporado ao [`der-geral.md`](der-geral.md)**, que une os quatro
 > módulos. Duas coisas mudaram lá depois da revisão de 23/09: a receita da Q8 passou
 > a incluir a de **órgãos partidários** (em 2014, R$ 1,34 bi de empresas entraram em

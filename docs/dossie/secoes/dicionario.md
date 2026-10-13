@@ -19,17 +19,17 @@ Arquivos citados na coluna *Origem*:
 | Nome curto | Arquivo em `dados/raw/` | Anos |
 |---|---|---|
 | `municipio_tse_ibge` | `extras/municipio_tse_ibge/municipio_tse_ibge.csv` | atual |
-| `consulta_cand` | `candidatos/<ano>/candidatos_<ano>/consulta_cand_<ano>_BRASIL.csv` | 2002–2026 |
-| `consulta_vagas` | `candidatos/<ano>/vagas_<ano>/consulta_vagas_<ano>_BRASIL.csv` | 2016–2026 |
-| `bem_candidato` | `candidatos/<ano>/bens_candidato_<ano>/bem_candidato_<ano>_BRASIL.csv` | 2016–2026 |
-| `votacao_candidato_munzona` | `resultados/<ano>/votacao_candidato_munzona_<ano>/…_BRASIL.csv` | 2016–2026 |
-| `votacao_partido_munzona` | `resultados/<ano>/votacao_partido_munzona_<ano>/…_BRASIL.csv` | 2016–2026 |
-| `detalhe_votacao_munzona` | `resultados/<ano>/detalhe_votacao_munzona_<ano>/…_BRASIL.csv` | 2016–2026 |
-| `perfil_comparecimento_abstencao` | `abstencao/<ano>/comparecimento_abstencao_<ano>/…_PI.csv` | 2016–2024 |
+| `consulta_cand` | `candidatos/<ano>/candidatos_<ano>/consulta_cand_<ano>_<UF>.csv` | 2002–2026 |
+| `consulta_vagas` | `candidatos/<ano>/vagas_<ano>/consulta_vagas_<ano>_<UF>.csv` | 2016–2026 |
+| `bem_candidato` | `candidatos/<ano>/bens_candidato_<ano>/bem_candidato_<ano>_<UF>.csv` | 2016–2026 |
+| `votacao_candidato_munzona` | `resultados/<ano>/votacao_candidato_munzona_<ano>/…_<UF>.csv` | 2016–2026 |
+| `votacao_partido_munzona` | `resultados/<ano>/votacao_partido_munzona_<ano>/…_<UF>.csv` | 2016–2026 |
+| `detalhe_votacao_munzona` | `resultados/<ano>/detalhe_votacao_munzona_<ano>/…_<UF>.csv` | 2016–2026 |
+| `perfil_comparecimento_abstencao` | `abstencao/<ano>/comparecimento_abstencao_<ano>/…_<UF>.csv` | 2016–2024 |
 | `receitas_candidatos` | `prestacao_contas/<ano>/…/receitas_candidatos_<ano>_<UF>.csv` (2018+) ou `.txt` (2014–2016) | 2014–2026 |
 | `receitas_orgaos_partidarios` | idem, `receitas_orgaos_partidarios_<ano>_<UF>.csv`; em 2014, `receitas_partidos` e `receitas_comites` | 2014–2026 |
 | `despesas_contratadas_candidatos` | idem, `despesas_contratadas_candidatos_<ano>_<UF>.csv`; em 2014–2016, `despesas_candidatos*.txt` | 2014–2026 |
-| `proposta_governo` | `proposta_governo/<ano>/proposta_governo_<ano>_PI/*.pdf` | 2016–2026 |
+| `proposta_governo` | `proposta_governo/<ano>/proposta_governo_<ano>_<UF>/*.pdf` | 2016–2026 |
 | SIDRA nnnn | `ibge/sidra/<nnnn>_*.json` (colunas `D1C` município, `D3N` ano, `V` valor) | Censo 2022; 6579 anual |
 | PIB FTP | `ibge/pib_municipios/base_de_dados_2010_2023_xlsx/PIB dos Municípios - base de dados 2010-2023.xlsx` | 2010–2023 |
 | Atlas Brasil | planilha do Atlas do Desenvolvimento Humano (PNUD); sem coletor | 1991, 2000, 2010 |
@@ -162,7 +162,7 @@ Eleitores aptos, comparecimento e abstenção por município, turno, faixa etár
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
-| `cod_ibge` | `INTEGER` | N | PK, FK → `MUNICIPIO` | Município. | `perfil_comparecimento_abstencao → CD_MUNICIPIO`, com `LPAD` para `cod_tse` | Coletado só no PI (F8). |
+| `cod_ibge` | `INTEGER` | N | PK, FK → `MUNICIPIO` | Município. | `perfil_comparecimento_abstencao → CD_MUNICIPIO`, com `LPAD` para `cod_tse` | Coletado nas seis UFs do recorte (AM, GO, MA, MT, RS, SE). |
 | `ano` | `INTEGER` | N | PK | Ano da eleição. | `perfil_comparecimento_abstencao → ANO_ELEICAO` | O arquivo não tem `CD_ELEICAO` nem cargo; no mesmo dia pode haver eleição federal e estadual com os mesmos eleitores. |
 | `nr_turno` | `INTEGER` | N | PK | Turno. | `perfil_comparecimento_abstencao → NR_TURNO` | Sem o turno, os aptos do PI em 2020 ficam 22,7% maiores (2º turno em Teresina). |
 | `id_faixa` | `INTEGER` | N | PK, FK → `FAIXA_ETARIA` | Faixa etária (origem `TSE`). | `perfil_comparecimento_abstencao → CD_FAIXA_ETARIA` | |

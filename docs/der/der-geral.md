@@ -132,13 +132,13 @@ arquivos.
 | F2 | **População só de 2026**: `coleta_ibge.py` baixa a 6579 com `p/last` | Q3, Q7 | `p/2016,2018,2020,2024`. A 6579 não tem 2022 nem 2023: para 2022, somar a 9606 (Censo) |
 | F3 | **IDHM municipal sem coletor**, e só existe até 2010 | Q3 | Atlas Brasil (download manual). Tratar como validação, com PIB per capita e renda 2022 como eixo |
 | F4 | **Propostas de presidente não são coletadas**: só `_PI.zip` | Q6 | Baixar também `proposta_governo_{2018,2022,2026}_BR.zip` (~43 MB, 13–14 PDFs cada). Em 2024 (municipal) não existe `_BR` |
-| F5 | Prestação de contas está extraída **só do PI** no disco, embora o `main` diga nacional | Q1, Q3, Q8 | Re-extrair o `_BRASIL` dos zips que já estão no disco (sem rebaixar 4,5 GB) |
+| F5 | ~~Prestação de contas extraída só do PI~~ **Resolvido**: o recorte passou a ser AM, GO, MA, MT, RS e SE, sorteados pelo professor (#14) | Q1, Q3, Q8, Q9 (lista de 10) | A coleta extrai os 6 estados com `--uf AM,GO,MA,MT,RS,SE` (#28), e o staging lê os arquivos por UF (#32) |
 | F6 | `receitas_candidatos_2014_brasil.txt` e `receitas_comites_2014_brasil.txt` têm aspas sem escape | Q8 | Dobrar as aspas internas antes de ler; com `ignore_errors` somem 11.734 linhas e R$ 206 mi |
 | F7 | Staging do Enrico não acha arquivo com a extração nacional e não traz o doador originário | Q1, Q2, Q8, Q10, Q11 | Globs para `_brasil`/`_BRASIL`, ano pelo conteúdo e não pelo nome, colunas do originário no `stg_receita` |
-| F8 | Comparecimento por idade só do PI | Q7 | Aceitar o recorte de 224 municípios ou coletar nacional |
+| F8 | ~~Comparecimento por idade só do PI~~ **Resolvido** com o recorte das 6 UFs (#14) | Q6 (lista de 10) | O coletor do TSE respeita o `--uf`: `perfil_comparecimento_abstencao_{ano}_{UF}.csv` dos 6 estados |
 | F9 | Q8 só tem 2014 e 2016 | Q8 | 2008–2012 existem no CDN; 2002–2006 têm < 1 MB (suspeito) |
 | F10 | Votos por candidato só de 2016 em diante | Q12 | 2002–2014 mostram eleito/não eleito, sem votos. Coletar `votacao_candidato_munzona` antiga, se a linha do tempo precisar de votos |
-| F11 | Malha só do PI | Q9 | `/api/v3/malhas/paises/BR?...&intrarregiao=municipio` (3,6 MB), se o mapa passar do PI |
+| F11 | ~~Malha só do PI~~ **Resolvido** com o recorte das 6 UFs (#14) | Q7 (lista de 10) | `coleta_ibge malha --uf AM,GO,MA,MT,RS,SE` grava `malha_municipios_{UF}.geojson` por estado; sem `--uf`, baixa a do país |
 
 ---
 

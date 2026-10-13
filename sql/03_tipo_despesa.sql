@@ -1,4 +1,4 @@
--- 03_tipo_despesa.sql — classificação da despesa por canal de propaganda (Q11).
+-- 03_tipo_despesa.sql — classificação da despesa por canal de propaganda (Q9).
 --
 -- Dono: Enrico. Depende de 01_staging.sql (stg_despesa).
 -- Critério escrito em docs/q11-propaganda.md.
@@ -9,13 +9,12 @@
 --    emprestado, o carro cedido) entrava como despesa própria com esse prefixo,
 --    criando um par para quase toda categoria: `PUBLICIDADE POR MATERIAIS
 --    IMPRESSOS` e `BAIXA DE ESTIMAVEIS - PUBLICIDADE POR MATERIAIS IMPRESSOS`.
---    De 2018 em diante o mesmo gasto vem sem prefixo. Comparar 2016 com 2024 sem
---    tirar o prefixo parte a série no meio. Não é duplicata: é a mesma despesa
---    com outro nome, então normaliza e soma.
+--    De 2018 em diante o mesmo gasto vem sem prefixo. Não é duplicata: é a
+--    mesma despesa com outro nome, então normaliza e soma. Com o escopo em
+--    2018–2026 o prefixo não aparece mais; a normalização fica porque é inócua.
 --
--- ② `PUBLICIDADE POR PLACAS, ESTANDARTES E FAIXAS` só existe em 2014 — a
---    categoria foi extinta, não o gasto. Ele passou a cair em adesivos e
---    impressos. Fica como canal próprio, com a ressalva no doc.
+-- ② `PUBLICIDADE POR PLACAS, ESTANDARTES E FAIXAS` só existia em 2014, fora do
+--    escopo atual. Fica no de-para para o caso de o período voltar a incluí-lo.
 
 CREATE OR REPLACE VIEW stg_despesa_classificada AS
 WITH normalizada AS (

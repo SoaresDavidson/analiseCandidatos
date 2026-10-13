@@ -33,7 +33,9 @@
 -- suplente de senador: esses cargos aparecem "sem resultado" nesses anos, e a
 -- reeleição de vice só é detectável de 2012 em diante.
 -- ⚠️ 2026: o arquivo já traz o 1º turno. Quem está no 2º turno aparece como
--- "AGUARDANDO 2º TURNO" até o TSE publicar o resultado final.
+-- "AGUARDANDO 2º TURNO" até o TSE publicar o resultado final. Por isso toda view
+-- expõe `fl_divulgado` (macro `ano_divulgado`, em 00_limpeza.sql): 2026 é
+-- carregado, mas a camada visual só mostra as linhas com fl_divulgado (#15).
 
 -- ---------------------------------------------------------------------------
 -- Grão: uma candidatura (pessoa × ano × cargo × unidade eleitoral).
@@ -60,7 +62,8 @@ WITH cand AS (
             ELSE 'SEM RESULTADO'
         END AS resultado,
         -- duração do mandato, que define qual é o "ciclo anterior" do cargo
-        CASE WHEN c.cd_cargo IN (5, 9, 10) THEN 8 ELSE 4 END AS anos_mandato
+        CASE WHEN c.cd_cargo IN (5, 9, 10) THEN 8 ELSE 4 END AS anos_mandato,
+        ano_divulgado(c.ano) AS fl_divulgado
     FROM candidatura AS c
     WHERE c.nr_titulo_eleitoral IS NOT NULL AND NOT c.fl_suplementar
 ),
@@ -120,6 +123,7 @@ SELECT
     t.fl_eleito,
     t.fl_tentou_reeleicao,
     t.fl_reeleito,
+    t.fl_divulgado,
     row_number() OVER pessoa AS nr_participacao,
     t.ano - min(t.ano) OVER pessoa AS anos_desde_estreia,
     coalesce(t.sg_partido <> lag(t.sg_partido) OVER pessoa, FALSE) AS fl_trocou_partido,
@@ -133,6 +137,9 @@ WINDOW pessoa AS (PARTITION BY t.nr_titulo_eleitoral ORDER BY t.ano);
 -- ---------------------------------------------------------------------------
 -- Grão: uma pessoa. O resumo da carreira.
 -- ---------------------------------------------------------------------------
+-- Uma pessoa junta vários anos numa linha, então aqui não dá para marcar a
+-- linha com fl_divulgado como nas outras views: o resumo só conta os anos
+-- divulgados. Quando a macro ano_divulgado liberar 2026, ele entra sozinho.
 CREATE OR REPLACE VIEW q10_carreira AS
 WITH sequencia AS (
     -- ilhas de vitórias seguidas: participações eleitas consecutivas têm a mesma
@@ -151,7 +158,7 @@ WITH sequencia AS (
                 nr_participacao
                 - row_number() OVER (PARTITION BY nr_titulo_eleitoral ORDER BY ano) AS ilha
             FROM q10_linha_do_tempo
-            WHERE fl_eleito
+            WHERE fl_eleito AND fl_divulgado
         ) AS eleitas
         GROUP BY nr_titulo_eleitoral, ilha
     ) AS ilhas
@@ -188,6 +195,7 @@ SELECT
     ) AS trajetoria
 FROM q10_linha_do_tempo AS t
 LEFT JOIN sequencia AS s ON t.nr_titulo_eleitoral = s.nr_titulo_eleitoral
+WHERE t.fl_divulgado
 GROUP BY t.nr_titulo_eleitoral;
 
 -- ---------------------------------------------------------------------------
@@ -196,7 +204,8 @@ GROUP BY t.nr_titulo_eleitoral;
 -- reelegeram e quantos seguiram disputando qualquer coisa depois.
 --
 -- Só cargos titulares (vice e suplente não têm resultado antes de 2012), e só
--- anos cujo ciclo seguinte já está na base.
+-- anos cujo ciclo seguinte já está na base. `fl_divulgado` olha o ano do ciclo
+-- seguinte: a reeleição dos eleitos de 2022 depende do resultado de 2026.
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE VIEW q10_sobrevivencia AS
 WITH eleito AS (
@@ -244,7 +253,8 @@ SELECT
     round(
         100.0 * count(*) FILTER (WHERE s.fl_reeleito)
         / nullif(count(*) FILTER (WHERE s.fl_tentou), 0), 1
-    ) AS pct_sucesso_de_quem_tentou
+    ) AS pct_sucesso_de_quem_tentou,
+    ano_divulgado(e.ano + any_value(e.anos_mandato)) AS fl_divulgado
 FROM eleito AS e
 INNER JOIN seguinte AS s
     ON

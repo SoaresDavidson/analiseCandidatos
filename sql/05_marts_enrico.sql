@@ -15,9 +15,8 @@
 -- filtram pelo que a prestação traz, sem lista de UF escrita aqui.
 
 -- 2026 fica no escopo, mas indisponível para visualização até o TSE publicar o
--- resultado completo e a prestação de contas final (decisão do grupo). Quando
--- publicar, troque 2024 por 2026 aqui e recarregue: é o único lugar.
-CREATE OR REPLACE MACRO ano_divulgado(a) AS a <= 2024;
+-- resultado completo e a prestação de contas final: a coluna `fl_divulgado` vem
+-- da macro `ano_divulgado`, definida em 00_limpeza.sql (o ano de corte fica lá).
 
 -- ---------------------------------------------------------------------------
 -- Q8 — sucesso × dependência de repasse público

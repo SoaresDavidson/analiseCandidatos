@@ -53,3 +53,12 @@ CASE length(documento(x)) WHEN 11 THEN 'PF' WHEN 14 THEN 'PJ' END;
 -- (5 dígitos, 94928). Normaliza para 5 dígitos.
 CREATE OR REPLACE MACRO cnae5(x) AS
 left(nullif(regexp_replace(coalesce(limpa(x), ''), '[^0-9]', '', 'g'), ''), 5);
+
+-- ---------------------------------------------------------------------------
+-- Ano divulgado. 2026 fica no escopo, mas indisponível para visualização até o
+-- TSE publicar o resultado completo e a prestação de contas final (decisão do
+-- grupo, #15). Toda pergunta expõe `ano_divulgado(ano) AS fl_divulgado` e a
+-- camada visual filtra por ela. Quando publicar, troque 2024 por 2026 aqui e
+-- recarregue: é o único lugar.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE MACRO ano_divulgado(a) AS a <= 2024;

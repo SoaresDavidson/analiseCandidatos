@@ -98,6 +98,48 @@ SELECT unnest([
     'SILVA', 'SANTOS', 'SOUZA', 'SOUSA', 'OLIVEIRA', 'PEREIRA', 'LIMA', 'COSTA', 'FERREIRA'
 ]) AS termo;
 
+-- Para exibir: o termo foi agrupado sem acento ("militancia"), e a nuvem mostra
+-- a forma escrita ("militância"). Regras de terminação cobrem a maioria (-ção,
+-- -ão, -ância, -ência); o resto é uma lista dos termos frequentes.
+CREATE OR REPLACE MACRO q9_com_acento(t) AS
+CASE lower(t)
+    WHEN 'couche' THEN 'couchê'
+    WHEN 'conteudo' THEN 'conteúdo'
+    WHEN 'majoritaria' THEN 'majoritária'
+    WHEN 'grafica' THEN 'gráfica'
+    WHEN 'grafico' THEN 'gráfico'
+    WHEN 'video' THEN 'vídeo'
+    WHEN 'radio' THEN 'rádio'
+    WHEN 'audio' THEN 'áudio'
+    WHEN 'midia' THEN 'mídia'
+    WHEN 'lider' THEN 'líder'
+    WHEN 'pagina' THEN 'página'
+    WHEN 'musica' THEN 'música'
+    WHEN 'plastica' THEN 'plástica'
+    WHEN 'veiculo' THEN 'veículo'
+    WHEN 'logistica' THEN 'logística'
+    WHEN 'tecnico' THEN 'técnico'
+    WHEN 'estrategia' THEN 'estratégia'
+    WHEN 'eletronico' THEN 'eletrônico'
+    WHEN 'combustivel' THEN 'combustível'
+    WHEN 'onibus' THEN 'ônibus'
+    WHEN 'publico' THEN 'público'
+    WHEN 'area' THEN 'área'
+    WHEN 'diaria' THEN 'diária'
+    WHEN 'anuncio' THEN 'anúncio'
+    WHEN 'militancia de rua' THEN 'militância de rua'
+    ELSE regexp_replace(
+        regexp_replace(
+            regexp_replace(
+                regexp_replace(lower(t), 'cao$', 'ção'),
+                'ao$', 'ão'
+            ),
+            'ancia$', 'ância'
+        ),
+        'encia$', 'ência'
+    )
+END;
+
 -- Tabela, não view: a tokenização leva ~10 s sobre 1,3 milhão de despesas, e o
 -- notebook e o painel consultam várias vezes.
 CREATE OR REPLACE TABLE q9_termo AS
@@ -178,6 +220,7 @@ SELECT
     fl_eleito,
     ds_canal,
     replace(termo, '_', ' ') AS termo,
+    q9_com_acento(replace(termo, '_', ' ')) AS ds_termo,
     count(*) AS qt_despesas,
     -- soma das despesas que citam o termo: uma despesa com três termos entra
     -- nos três, então NÃO soma entre termos (para o total, use q9_canal)

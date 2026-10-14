@@ -7,3 +7,6 @@
 .venv/
 __pycache__/
 /docs/.obsidian
+
+# checkpoints automáticos do Jupyter
+.ipynb_checkpoints/

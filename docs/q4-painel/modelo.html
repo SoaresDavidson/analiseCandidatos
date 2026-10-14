@@ -1,0 +1,731 @@
+<title>Escolaridade e Voto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: painel de leitura em coluna única; cada parte (A, B, C) abre com a pergunta, a resposta em uma frase e o gráfico que a sustenta. Filtros fixos no topo. */
+:root {
+  --bg: #f2f4f7;
+  --surface: #fcfcfb;
+  --ink: #11161d;
+  --ink-2: #4a5361;
+  --ink-3: #7b8594;
+  --line: #dde2e9;
+  --accent: #2a78d6;
+  --accent-ink: #1c5cab;
+  --hi: #eb6834;
+  --nodata: #d8dce2;
+  --n1: #86b6ef; --n2: #3987e5; --n3: #1c5cab; --n4: #0d366b;
+  --on-n1: #0b0b0b; --on-n2: #ffffff; --on-n3: #ffffff; --on-n4: #ffffff;
+  --weak: #b7d3f6;
+  --good-bg: #e3f3e3; --good-ink: #1b6b1b;
+  --warn-bg: #fdf1d6; --warn-ink: #7a5300;
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --f-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1215; --surface: #1a1a19; --ink: #f1f3f6; --ink-2: #bcc3cd; --ink-3: #8a93a0; --line: #2d333b;
+    --accent: #3987e5; --accent-ink: #86b6ef; --hi: #d95926; --nodata: #3a3e44;
+    --n1: #184f95; --n2: #2a78d6; --n3: #6da7ec; --n4: #b7d3f6;
+    --on-n1: #ffffff; --on-n2: #ffffff; --on-n3: #0b0b0b; --on-n4: #0b0b0b;
+    --weak: #26456b;
+    --good-bg: #173117; --good-ink: #8fd88f; --warn-bg: #3a2c0b; --warn-ink: #f2c46b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1215; --surface: #1a1a19; --ink: #f1f3f6; --ink-2: #bcc3cd; --ink-3: #8a93a0; --line: #2d333b;
+  --accent: #3987e5; --accent-ink: #86b6ef; --hi: #d95926; --nodata: #3a3e44;
+  --n1: #184f95; --n2: #2a78d6; --n3: #6da7ec; --n4: #b7d3f6;
+  --on-n1: #ffffff; --on-n2: #ffffff; --on-n3: #0b0b0b; --on-n4: #0b0b0b;
+  --weak: #26456b;
+  --good-bg: #173117; --good-ink: #8fd88f; --warn-bg: #3a2c0b; --warn-ink: #f2c46b;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--f-body); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(30px, 4.4vw, 46px); line-height: 1.05; font-weight: 700; }
+h2 { font-size: clamp(21px, 2.5vw, 27px); line-height: 1.15; font-weight: 700; }
+h3 { font-size: 16px; font-weight: 600; }
+p { margin: 0; }
+.mono, .num { font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+.eyebrow { font: 500 12px/1.3 var(--f-data); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.lede { max-width: 68ch; color: var(--ink-2); font-size: 16px; }
+
+/* cabeçalho */
+.head { display: grid; gap: 14px; }
+.question { max-width: 72ch; font-size: 17px; color: var(--ink-2); border-left: 3px solid var(--accent); padding-left: 14px; font-style: italic; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: 500 12.5px/1 var(--f-data); padding: 7px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-2); }
+
+/* barra de filtros */
+.filters { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center;
+  background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(6px); padding-block: 10px; border-bottom: 1px solid var(--line); }
+.seg { display: inline-flex; gap: 2px; padding: 3px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; flex-wrap: wrap; }
+.seg button { font: 500 13px/1 var(--f-body); border: 0; background: transparent; color: var(--ink-2); padding: 8px 11px; border-radius: 7px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.seg button:hover:not([aria-pressed="true"]) { background: var(--bg); color: var(--ink); }
+.flabel { font: 500 12px/1 var(--f-data); color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase; }
+.fgroup { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* seções */
+.part { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px; display: grid; gap: 18px; min-width: 0; }
+.part-head { display: grid; gap: 8px; }
+.part-tag { display: inline-flex; align-items: center; gap: 10px; }
+.part-tag b { font: 700 13px/1 var(--f-data); background: var(--ink); color: var(--surface); width: 26px; height: 26px; display: grid; place-items: center; border-radius: 6px; }
+.answer { font-size: 17px; max-width: 75ch; }
+.answer strong { font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-3); max-width: 80ch; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px; min-width: 0; background: var(--surface); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+svg text { font-family: var(--f-body); }
+.axis { fill: var(--ink-3); font-size: 11px; font-family: var(--f-data); }
+.lbl { fill: var(--ink-2); font-size: 12px; }
+.val { fill: var(--ink-2); font-size: 11.5px; font-family: var(--f-data); }
+.gridline { stroke: var(--line); stroke-width: 1; }
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.scroll-x { overflow-x: auto; }
+
+/* indicadores */
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 640px) { .stats { grid-template-columns: minmax(0, 1fr); } }
+.stat { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 2px; }
+.stat .big { font: 600 28px/1.1 var(--f-display); font-variant-numeric: tabular-nums; }
+.stat .sub { font-size: 12.5px; color: var(--ink-3); }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; font: 500 12.5px/1.2 var(--f-data); padding: 6px 10px; border-radius: 999px; }
+.pill.good { background: var(--good-bg); color: var(--good-ink); }
+.pill.warn { background: var(--warn-bg); color: var(--warn-ink); }
+.pill.neutral { background: var(--bg); color: var(--ink-2); border: 1px solid var(--line); }
+
+/* mapa */
+.map-wrap { position: relative; }
+.map path { stroke: var(--surface); stroke-width: 0.5; cursor: pointer; transition: opacity .12s; vector-effect: non-scaling-stroke; }
+.map path.sel { stroke: var(--hi); stroke-width: 2.5; }
+.map.dim path:not(.hl):not(.sel) { opacity: 0.35; }
+.map path.hl { stroke: var(--ink); stroke-width: 1.5; }
+.ramp { display: grid; gap: 4px; max-width: 360px; }
+.ramp-bar { height: 10px; border-radius: 3px; }
+.ramp-ticks { display: flex; justify-content: space-between; font: 11px var(--f-data); color: var(--ink-3); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+select, input[type="search"] { font: 14px var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; max-width: 100%; }
+.toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ink-2); cursor: pointer; }
+.detail h3 { font-size: 19px; }
+.detail .row { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; border-bottom: 1px dashed var(--line); padding-block: 5px; }
+.detail .row span:last-child { font-family: var(--f-data); font-variant-numeric: tabular-nums; color: var(--ink); text-align: right; }
+.detail .row span:first-child { color: var(--ink-2); }
+.empty { color: var(--ink-3); font-size: 14px; }
+.who { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.who-item { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 2px; min-width: 0; }
+.who-item .nm { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }
+.who-item .civ { font-size: 11.5px; color: var(--ink-3); overflow-wrap: anywhere; }
+.who-item .meta { font-size: 12px; color: var(--ink-2); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.tag { font: 500 11px/1 var(--f-data); padding: 3px 6px; border-radius: 4px; background: var(--bg); border: 1px solid var(--line); color: var(--ink-2); }
+.grau-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink-2); }
+.seg button:disabled { opacity: .35; cursor: default; }
+.elist { display: grid; gap: 0; max-height: 360px; overflow-y: auto; border-top: 1px solid var(--line); }
+.elist .r { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 6px 2px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.elist .r .nm { font-weight: 600; overflow-wrap: anywhere; }
+.elist .r .sub { grid-column: 1 / -1; font-size: 11.5px; color: var(--ink-3); }
+
+/* tooltip */
+#tip { position: fixed; z-index: 20; pointer-events: none; background: var(--ink); color: var(--surface); font-size: 12.5px; line-height: 1.4; padding: 8px 10px; border-radius: 8px; max-width: 260px; box-shadow: 0 6px 20px rgb(0 0 0 / 0.18); }
+#tip b { font-weight: 600; }
+
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th { font: 500 11.5px/1.3 var(--f-data); color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; }
+td { font-family: var(--f-data); }
+td:first-child { font-family: var(--f-body); }
+details { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--surface); }
+details summary { cursor: pointer; font-weight: 600; }
+details[open] summary { margin-bottom: 10px; }
+.method { display: grid; gap: 12px; }
+.method ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 85ch; }
+.foot { font-size: 12.5px; color: var(--ink-3); max-width: 90ch; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <span class="eyebrow">Banco de Dados Relacionais · UFPI · pergunta 4</span>
+    <h1>Quem estuda mais se elege mais?</h1>
+    <p class="question">Grau de escolaridade do candidato × grau de escolaridade dos votadores; existe relação entre escolaridade do candidato e sua chance de ser eleito? Também, locais com menor escolaridade costumam eleger pessoas de semelhante escolaridade?</p>
+    <div class="chips">
+      <span class="chip">AM · GO · MA · MT · RS · SE</span>
+      <span class="chip">Eleições ordinárias de 2022 e 2024</span>
+      <span class="chip">Candidatos: TSE <span class="mono">consulta_cand</span></span>
+      <span class="chip">População 18+: Censo 2022 (SIDRA 10061)</span>
+    </div>
+  </header>
+
+  <nav class="filters" aria-label="Filtros">
+    <div class="fgroup"><span class="flabel">Ano</span><div class="seg" id="f-ano"></div></div>
+    <div class="fgroup"><span class="flabel">UF</span><div class="seg" id="f-uf"></div></div>
+  </nav>
+
+  <!-- PARTE A -->
+  <section class="part" id="parte-a">
+    <div class="part-head">
+      <span class="part-tag"><b>A</b><span class="eyebrow">Perfil</span></span>
+      <h2>Candidatos e eleitos se parecem com a população?</h2>
+      <p class="answer" id="a-answer"></p>
+    </div>
+    <div class="stats" id="a-stats"></div>
+    <div class="card">
+      <div class="legend" id="a-legend"></div>
+      <svg class="chart" id="a-chart" role="img" aria-label="Barras 100% empilhadas: população, candidatos e eleitos por nível de escolaridade"></svg>
+    </div>
+    <div class="card">
+      <h3>Superior completo: população × eleitos, por UF</h3>
+      <svg class="chart" id="a-dumbbell" role="img" aria-label="Percentual com superior completo na população e entre os eleitos, por UF"></svg>
+      <p class="note">Cada linha liga o % da população adulta com superior completo (<i class="sw" style="background:var(--n1);border-radius:50%;vertical-align:-1px"></i> população) ao % dos eleitos (<i class="sw" style="background:var(--n4);border-radius:50%;vertical-align:-1px"></i> eleitos). Quanto mais longa a linha, maior a distância entre quem governa e quem é governado. Clique numa UF para filtrar.</p>
+    </div>
+  </section>
+
+  <!-- PARTE B -->
+  <section class="part" id="parte-b">
+    <div class="part-head">
+      <span class="part-tag"><b>B</b><span class="eyebrow">Chance de ser eleito</span></span>
+      <h2>A escolaridade muda a chance de ser eleito?</h2>
+      <p class="answer" id="b-answer"></p>
+    </div>
+    <div class="controls"><span class="flabel">Cargo</span><div class="seg" id="f-cargo"></div></div>
+    <div class="grid2">
+      <div class="card">
+        <svg class="chart" id="b-chart" role="img" aria-label="Taxa de eleição por grau de escolaridade"></svg>
+        <p class="note">Taxa = eleitos ÷ candidatos daquele grau. Rótulo: eleitos/candidatos. Barra clara: menos de 30 candidatos, taxa instável. Linha tracejada: taxa geral do cargo.</p>
+      </div>
+      <div class="card">
+        <h3>O teste</h3>
+        <div id="b-test"></div>
+        <p class="note">Qui-quadrado de independência entre grau e resultado (eleito / não eleito). Graus 1 a 3 juntos para evitar caselas vazias. p &lt; 0,05: a taxa não é a mesma em todos os graus.</p>
+        <h3>Por que taxa, e não só contar eleitos?</h3>
+        <p class="note" style="font-size:14px;color:var(--ink-2)">Contar “quantos eleitos têm superior” mistura duas coisas: quantos candidatos com superior existem e quanto eles vencem. A taxa divide pelos candidatos de cada grau, então mede só a chance.</p>
+        <details><summary>Ver tabela</summary><div class="scroll-x" id="b-table"></div></details>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:grid;gap:8px">
+        <h3 id="b-who-title">Quem são os eleitos</h3>
+        <div class="controls"><span class="flabel">Grau</span><div class="seg" id="f-grau"></div></div>
+      </div>
+      <div id="b-who"></div>
+      <p class="note">Nome de urna (como o eleitor conhece) em destaque; abaixo, o nome civil do cadastro. Escolaridade declarada pelo próprio candidato ao TSE. A Constituição só exige saber ler e escrever (art. 14, §4º: analfabetos são inelegíveis), por isso o grau 1 quase não tem candidatos. Clique numa barra do gráfico ou num grau para trocar a lista.</p>
+    </div>
+  </section>
+
+  <!-- PARTE C -->
+  <section class="part" id="parte-c">
+    <div class="part-head">
+      <span class="part-tag"><b>C</b><span class="eyebrow">Locais · 2024</span></span>
+      <h2>Município menos escolarizado elege gente menos escolarizada?</h2>
+      <p class="answer" id="c-answer"></p>
+      <p class="note">Só 2024: é a eleição em que os eleitos (prefeito e vereadores) são do município. Em 2022 os eleitos são estaduais e federais. A escolaridade do município é a do Censo 2022.</p>
+    </div>
+    <div class="controls">
+      <span class="flabel">Mapa</span><div class="seg" id="f-mapa-uf"></div>
+      <select id="f-metrica" aria-label="O que o mapa mostra">
+        <option value="pop">% da população 18+ com superior</option>
+        <option value="el">% dos eleitos com superior</option>
+        <option value="dist">Distância: eleitos − população (p.p.)</option>
+        <option value="moda">Nível mais comum dos eleitos</option>
+      </select>
+      <input type="search" id="f-busca" list="lista-mun" placeholder="Buscar município" aria-label="Buscar município">
+      <datalist id="lista-mun"></datalist>
+    </div>
+    <div class="grid2">
+      <div class="card map-wrap">
+        <svg class="chart map" id="c-map" role="img" aria-label="Mapa dos municípios"></svg>
+        <div id="c-ramp"></div>
+      </div>
+      <div class="card detail" id="c-detail"></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">
+          <h3 id="c-scatter-title">Cada ponto é um município</h3>
+          <label class="toggle"><input type="checkbox" id="f-semcap"> sem a capital</label>
+        </div>
+        <svg class="chart" id="c-scatter" role="img" aria-label="Dispersão: % da população com superior × % dos eleitos com superior"></svg>
+        <div id="c-corr"></div>
+      </div>
+      <div class="card">
+        <h3>Municípios em 5 faixas de escolaridade</h3>
+        <svg class="chart" id="c-quint" role="img" aria-label="Média do % com superior por quintil"></svg>
+        <p class="note">Os municípios da seleção divididos em 5 grupos de mesmo tamanho pelo % da população com superior. Em cada grupo, a média do % com superior na população (<i class="sw" style="background:var(--n1);vertical-align:-1px"></i>) e entre os eleitos (<i class="sw" style="background:var(--n4);vertical-align:-1px"></i>).</p>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Moda: o nível mais comum, população × eleitos</h3>
+      <div class="scroll-x" id="c-moda"></div>
+      <p class="note">Quantos municípios em cada combinação. A moda é boa para uma frase (“aqui predomina fundamental incompleto, mas os eleitos têm médio completo”), mas com 4 níveis ela se repete muito e não separa um município do outro. A resposta vem da dispersão.</p>
+    </div>
+  </section>
+
+  <section class="part" id="metodo">
+    <div class="part-head">
+      <span class="part-tag"><b>M</b><span class="eyebrow">Método e limites</span></span>
+      <h2>Como chegamos a esses números</h2>
+    </div>
+    <div class="method">
+      <details open><summary>Duas escalas e a ponte entre elas</summary>
+        <div class="scroll-x" id="m-ponte"></div>
+        <p class="note">O candidato declara 1 de 8 graus ao TSE; o Censo publica 4 níveis. A parte B usa os 8 graus (compara candidatos com candidatos). As partes A e C convertem para os 4 níveis, porque comparam com a população.</p>
+      </details>
+      <details><summary>Quem entra na análise</summary>
+        <ul>
+          <li>Eleições ordinárias de 2022 e 2024 nas 6 UFs. Suplementares ficam fora.</li>
+          <li>Sem presidente (eleição nacional), vices e suplentes (herdam o resultado da chapa).</li>
+          <li>Só candidaturas que foram a voto. Indeferidas e renúncias ficam fora.</li>
+          <li>Graus de 1 a 8. "Não informado" e "não divulgável" ficam fora.</li>
+          <li>Total: <span class="num" id="m-total"></span>.</li>
+        </ul>
+      </details>
+      <details><summary>Exceções nos dados</summary>
+        <ul>
+          <li><b>9 municípios sem prefeito eleito</b> na ordinária de 2024: eleição anulada ou <i>sub judice</i>, que vira suplementar. Os vereadores deles seguem na análise.</li>
+          <li><b>17 municípios sem resultado de vereador</b> no arquivo do TSE (todos os candidatos com situação #NULO). Ficam fora da parte C e aparecem em cinza no mapa.</li>
+          <li><b>Boa Esperança do Norte (MT)</b> foi criado depois do Censo 2022: sem dado de população e sem polígono na malha do IBGE.</li>
+        </ul>
+      </details>
+      <details><summary>O que os dados não permitem concluir</summary>
+        <ul>
+          <li><b>Associação não é causa.</b> Escolaridade anda junto com renda, dinheiro de campanha, partido e mandato atual.</li>
+          <li><b>Falácia ecológica (parte C).</b> A comparação é entre municípios. Não sabemos em quem cada eleitor votou, então não dá para dizer que o eleitor pouco escolarizado vota em candidato pouco escolarizado.</li>
+          <li><b>Escalas diferentes.</b> A escolaridade do candidato é declarada; a da população é medida pelo Censo, de 2022.</li>
+          <li><b>Município pequeno</b> elege 10 a 12 pessoas: um eleito a mais ou a menos muda o % em 8 a 10 pontos.</li>
+        </ul>
+      </details>
+      <p class="foot">Dados: TSE, Portal de Dados Abertos (<span class="mono">consulta_cand</span> e <span class="mono">consulta_vagas</span> 2022 e 2024, <span class="mono">municipio_tse_ibge</span>); IBGE, Censo Demográfico 2022, tabela SIDRA 10061, e malha municipal (API de malhas, qualidade mínima). Consultas em <span class="mono">sql/10_q4_escolaridade.sql</span> do repositório analiseCandidatos. Grupo: Davi, Duda, Eduardo e Enrico.</p>
+    </div>
+  </section>
+</div>
+<div id="tip" hidden></div>
+
+<script id="dados" type="application/json">__DADOS__</script>
+<script>
+(function () {
+  "use strict";
+  const D = JSON.parse(document.getElementById("dados").textContent);
+  const UFS = ["AM", "GO", "MA", "MT", "RS", "SE"];
+  const UF_NOME = { AM: "Amazonas", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", RS: "Rio Grande do Sul", SE: "Sergipe" };
+  const NIVEL = { 1: "Sem instrução / fund. incompleto", 2: "Fund. completo / médio incompleto", 3: "Médio completo / sup. incompleto", 4: "Superior completo" };
+  const GRAU = { 1: "Analfabeto", 2: "Lê e escreve", 3: "Fund. incompleto", 4: "Fund. completo", 5: "Médio incompleto", 6: "Médio completo", 7: "Superior incompleto", 8: "Superior completo" };
+  const GRAU_NIVEL = { 1: 1, 2: 1, 3: 1, 4: 2, 5: 2, 6: 3, 7: 3, 8: 4 };
+  const GRUPO = ["População 18+", "Candidatos", "Eleitos"];
+  const CARGOS = { 2022: [7, 6, 5, 3], 2024: [13, 11] };
+  const PLURAL = { 3: "governadores", 5: "senadores", 6: "deputados federais", 7: "deputados estaduais", 11: "prefeitos", 13: "vereadores" };
+  const CARGO_NOME = { 3: "Governador", 5: "Senador", 6: "Deputado federal", 7: "Deputado estadual", 11: "Prefeito", 13: "Vereador" };
+  const NS = "http://www.w3.org/2000/svg";
+
+  const st = { ano: 2024, uf: "TODAS", cargo: 13, mapaUf: "MA", metrica: "pop", sel: null, hl: null, semCap: false, grauB: null };
+  try { const s = JSON.parse(localStorage.getItem("q4-estado") || "{}"); Object.assign(st, s); st.sel = null; st.hl = null; } catch (e) { /* armazenamento indisponível */ }
+  function salvar() { try { localStorage.setItem("q4-estado", JSON.stringify({ ano: st.ano, uf: st.uf, cargo: st.cargo, mapaUf: st.mapaUf, metrica: st.metrica, semCap: st.semCap })); } catch (e) { /* ignora */ } }
+
+  // ---------- utilidades ----------
+  const fmt = (x, d = 1) => (x == null || isNaN(x)) ? "–" : x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const int = x => x.toLocaleString("pt-BR");
+  const pc = (a, b) => b > 0 ? 100 * a / b : null;
+  function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function txt(parent, x, y, s, cls, anchor) { const t = el("text", { x, y, class: cls || "lbl", "text-anchor": anchor || "start", "dominant-baseline": "middle" }, parent); t.textContent = s; return t; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function escuro() { const t = document.documentElement.getAttribute("data-theme"); return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; }
+  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const tip = document.getElementById("tip");
+  function showTip(ev, html) { tip.innerHTML = html; tip.hidden = false; const w = tip.offsetWidth, h = tip.offsetHeight; let x = ev.clientX + 14, y = ev.clientY + 14; if (x + w > innerWidth - 8) x = ev.clientX - w - 14; if (y + h > innerHeight - 8) y = ev.clientY - h - 14; tip.style.left = x + "px"; tip.style.top = y + "px"; }
+  function hideTip() { tip.hidden = true; }
+  const ufsSel = () => st.uf === "TODAS" ? UFS : [st.uf];
+  const ondeTxt = () => st.uf === "TODAS" ? "nas 6 UFs" : (st.uf === "AM" || st.uf === "MA" || st.uf === "MT" || st.uf === "RS" ? "no " : "em ") + UF_NOME[st.uf];
+
+  // qui-quadrado: série + fração contínua (mesma função do notebook)
+  function lgamma(z) { const g = 7, c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7]; if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lgamma(1 - z); z -= 1; let x = c[0]; for (let i = 1; i < g + 2; i++) x += c[i] / (z + i); const t = z + g + 0.5; return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x); }
+  function pQui2(q, gl) {
+    const a = gl / 2, x = q / 2; if (x <= 0) return 1;
+    const f = Math.exp(-x + a * Math.log(x) - lgamma(a));
+    if (x < a + 1) { let t = 1 / a, s = t; for (let k = 1; k < 1000; k++) { t *= x / (a + k); s += t; if (Math.abs(t) < Math.abs(s) * 1e-15) break; } return 1 - f * s; }
+    const tiny = 1e-300; let b = x + 1 - a, c = 1 / tiny, d = 1 / b, h = d;
+    for (let i = 1; i < 500; i++) { const an = -i * (i - a); b += 2; d = an * d + b; if (Math.abs(d) < tiny) d = tiny; c = b + an / c; if (Math.abs(c) < tiny) c = tiny; d = 1 / d; const del = d * c; h *= del; if (Math.abs(del - 1) < 1e-15) break; }
+    return f * h;
+  }
+  const fmtP = p => { if (p === 0) return "< 10^-300"; if (p >= 0.001) return fmt(p, 3); const [m, e] = p.toExponential(1).split("e"); return m.replace(".", ",") + " × 10^" + e.replace("+", ""); };
+  function pearson(xs, ys) { const n = xs.length; if (n < 3) return null; const mx = xs.reduce((a, b) => a + b) / n, my = ys.reduce((a, b) => a + b) / n; let sxy = 0, sxx = 0, syy = 0; for (let i = 0; i < n; i++) { const dx = xs[i] - mx, dy = ys[i] - my; sxy += dx * dy; sxx += dx * dx; syy += dy * dy; } return sxx && syy ? sxy / Math.sqrt(sxx * syy) : null; }
+  function postos(v) { const idx = v.map((x, i) => [x, i]).sort((a, b) => a[0] - b[0]); const r = new Array(v.length); let i = 0; while (i < idx.length) { let j = i; while (j + 1 < idx.length && idx[j + 1][0] === idx[i][0]) j++; const m = (i + j) / 2 + 1; for (let k = i; k <= j; k++) r[idx[k][1]] = m; i = j + 1; } return r; }
+  const spearman = (xs, ys) => pearson(postos(xs), postos(ys));
+
+  // ---------- dados derivados ----------
+  function perfil(ano, ufs) { const q = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]; for (const [a, u, g, n, v] of D.perfil) if (a === ano && ufs.includes(u)) q[g][n - 1] += v; return q; }
+  function chance(ano, ufs, cargo) { const r = {}; for (let g = 1; g <= 8; g++) r[g] = { n: 0, e: 0 }; for (const [a, u, c, g, n, e] of D.chance) if (a === ano && ufs.includes(u) && c === cargo) { r[g].n += n; r[g].e += e; } return r; }
+  const MUN = Object.entries(D.mun).map(([cod, m]) => ({ cod: +cod, ...m }));
+  for (const m of MUN) {
+    const tp = m.pop ? m.pop.reduce((a, b) => a + b) : 0, te = m.el.reduce((a, b) => a + b);
+    m.ok = !!m.pop && m.ver > 0;
+    m.pPop = m.pop ? pc(m.pop[3], tp) : null;
+    m.pEl = te ? pc(m.el[3], te) : null;
+    m.te = te;
+    m.modaPop = m.pop ? m.pop.indexOf(Math.max(...m.pop)) + 1 : null;
+    const mx = Math.max(...m.el); m.modaEl = te ? m.el.indexOf(mx) + 1 : null;
+  }
+  const MUN_BY = Object.fromEntries(MUN.map(m => [m.cod, m]));
+  // eleitos: [ano, uf, cod_ibge (0 em 2022), cargo, grau, nome de urna, partido, nome civil]
+  const PART = new Set(["de", "da", "do", "das", "dos", "e", "di", "du", "del"]);
+  const nomeProprio = s => (s || "").toLowerCase().split(" ").map((w, i) => (i && PART.has(w)) ? w : w.replace(/(^|[-'])(\p{L})/gu, (m, a, b) => a + b.toUpperCase())).join(" ");
+  const ELEITOS = D.eleitos.map(([ano, uf, cod, cargo, grau, urna, partido, civil]) => ({ ano, uf, cod, cargo, grau, urna: nomeProprio(urna), civil: civil && civil !== urna ? nomeProprio(civil) : "", partido }));
+  const popMun = cod => { const m = MUN_BY[cod]; return m && m.pop ? m.pop.reduce((a, b) => a + b) : 0; };
+  const swNivel = g => `<i class="sw" style="background:var(--n${GRAU_NIVEL[g]})"></i>`;
+
+  // ---------- filtros ----------
+  function seg(id, items, get, set) {
+    const box = document.getElementById(id); box.innerHTML = "";
+    for (const [v, label] of items) { const b = document.createElement("button"); b.type = "button"; b.textContent = label; b.setAttribute("aria-pressed", String(get() === v)); b.addEventListener("click", () => { set(v); salvar(); render(); }); box.appendChild(b); }
+  }
+  function filtros() {
+    seg("f-ano", [[2022, "2022 · geral"], [2024, "2024 · municipal"]], () => st.ano, v => { st.ano = v; if (!CARGOS[v].includes(st.cargo)) st.cargo = CARGOS[v][0]; });
+    seg("f-uf", [["TODAS", "Todas"], ...UFS.map(u => [u, u])], () => st.uf, v => { st.uf = v; if (v !== "TODAS") st.mapaUf = v; st.sel = null; });
+    seg("f-cargo", CARGOS[st.ano].map(c => [c, CARGO_NOME[c]]), () => st.cargo, v => { st.cargo = v; });
+    seg("f-mapa-uf", UFS.map(u => [u, u]), () => st.mapaUf, v => { st.mapaUf = v; st.sel = null; if (st.uf !== "TODAS") st.uf = v; });
+  }
+
+  // ---------- PARTE A ----------
+  function renderA() {
+    const q = perfil(st.ano, ufsSel());
+    const tot = q.map(r => r.reduce((a, b) => a + b));
+    const p = q.map((r, i) => r.map(v => pc(v, tot[i])));
+    document.getElementById("a-answer").innerHTML = `${ondeTxt()[0].toUpperCase() + ondeTxt().slice(1)}, <strong>${fmt(p[0][3], 0)}% da população adulta</strong> tem superior completo; entre os <strong>eleitos de ${st.ano}, ${fmt(p[2][3], 0)}%</strong>. O grupo mais numeroso da população, sem instrução ou com fundamental incompleto (${fmt(p[0][0], 0)}%), é ${fmt(p[2][0], 0)}% dos eleitos.`;
+    const s = document.getElementById("a-stats");
+    s.innerHTML = [[0, "da população 18+ (Censo 2022)"], [1, `dos candidatos de ${st.ano}`], [2, `dos eleitos de ${st.ano}`]].map(([g, sub]) => `<div class="stat"><span class="eyebrow">Superior completo</span><span class="big">${fmt(p[g][3], 1)}%</span><span class="sub">${sub} · ${int(tot[g])} pessoas</span></div>`).join("");
+    document.getElementById("a-legend").innerHTML = [1, 2, 3, 4].map(n => `<span><i class="sw" style="background:var(--n${n})"></i>${NIVEL[n]}</span>`).join("");
+
+    const svg = document.getElementById("a-chart"); clear(svg);
+    const W = 900, L = 120, R = 10, bh = 38, gap = 18, H = 3 * bh + 2 * gap + 26;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const x = v => L + (W - L - R) * v / 100;
+    [0, 25, 50, 75, 100].forEach(t => { el("line", { x1: x(t), x2: x(t), y1: 0, y2: H - 22, class: "gridline" }, svg); txt(svg, x(t), H - 9, t + "%", "axis", "middle"); });
+    [0, 1, 2].forEach(g => {
+      const y = g * (bh + gap);
+      txt(svg, 0, y + bh / 2, GRUPO[g], "lbl");
+      let acc = 0;
+      for (let n = 1; n <= 4; n++) {
+        const w = p[g][n - 1];
+        const r = el("rect", { x: x(acc) + 1, y, width: Math.max(0, x(acc + w) - x(acc) - 2), height: bh, rx: 3, style: `fill:var(--n${n})` }, svg);
+        r.addEventListener("mousemove", ev => showTip(ev, `<b>${GRUPO[g]}${g ? " " + st.ano : ""}</b><br>${NIVEL[n]}<br>${fmt(w)}% · ${int(q[g][n - 1])} pessoas`));
+        r.addEventListener("mouseleave", hideTip);
+        if (w >= 6) { const t = txt(svg, x(acc + w / 2), y + bh / 2, fmt(w, 0) + "%", "val", "middle"); t.style.fill = `var(--on-n${n})`; t.style.pointerEvents = "none"; }
+        acc += w;
+      }
+    });
+
+    // dumbbell por UF
+    const d = document.getElementById("a-dumbbell"); clear(d);
+    const rows = UFS.map(u => { const qq = perfil(st.ano, [u]); const t0 = qq[0].reduce((a, b) => a + b), t2 = qq[2].reduce((a, b) => a + b); return { u, pop: pc(qq[0][3], t0), el: pc(qq[2][3], t2) }; });
+    const DW = 900, DL = 150, rh = 30, DH = rows.length * rh + 30, max = 100;
+    d.setAttribute("viewBox", `0 0 ${DW} ${DH}`);
+    const dx = v => DL + (DW - DL - 40) * v / max;
+    [0, 25, 50, 75, 100].forEach(t => { el("line", { x1: dx(t), x2: dx(t), y1: 0, y2: DH - 24, class: "gridline" }, d); txt(d, dx(t), DH - 10, t + "%", "axis", "middle"); });
+    rows.forEach((r, i) => {
+      const y = i * rh + rh / 2, ativo = st.uf === "TODAS" || st.uf === r.u;
+      const gg = el("g", { opacity: ativo ? 1 : 0.35 }, d);
+      txt(gg, 0, y, `${r.u} · ${UF_NOME[r.u]}`, "lbl");
+      el("line", { x1: dx(r.pop), x2: dx(r.el), y1: y, y2: y, stroke: "var(--n2)", "stroke-width": 3, "stroke-linecap": "round" }, gg);
+      el("circle", { cx: dx(r.pop), cy: y, r: 7, style: "fill:var(--n1);stroke:var(--surface);stroke-width:2" }, gg);
+      el("circle", { cx: dx(r.el), cy: y, r: 7, style: "fill:var(--n4);stroke:var(--surface);stroke-width:2" }, gg);
+      txt(gg, dx(r.pop) - 12, y, fmt(r.pop, 0) + "%", "val", "end");
+      txt(gg, dx(r.el) + 12, y, fmt(r.el, 0) + "%", "val", "start");
+      const hit = el("rect", { x: 0, y: y - rh / 2, width: DW, height: rh, fill: "transparent" }, gg);
+      hit.addEventListener("mousemove", ev => showTip(ev, `<b>${UF_NOME[r.u]} · ${st.ano}</b><br>População 18+ com superior: ${fmt(r.pop)}%<br>Eleitos com superior: ${fmt(r.el)}%<br>Distância: ${fmt(r.el - r.pop)} p.p.`));
+      hit.addEventListener("mouseleave", hideTip);
+      hit.style.cursor = "pointer";
+      hit.addEventListener("click", () => { st.uf = r.u; st.mapaUf = r.u; salvar(); render(); });
+    });
+  }
+
+  // ---------- PARTE B ----------
+  function renderB() {
+    const r = chance(st.ano, ufsSel(), st.cargo);
+    let N = 0, E = 0; for (let g = 1; g <= 8; g++) { N += r[g].n; E += r[g].e; }
+    const geral = pc(E, N);
+    const taxa = g => r[g].n ? pc(r[g].e, r[g].n) : null;
+    const nome = CARGO_NOME[st.cargo].toLowerCase();
+
+    // teste
+    const faixas = [[1, 2, 3], [4], [5], [6], [7], [8]].map(gs => gs.reduce((acc, g) => ({ n: acc.n + r[g].n, e: acc.e + r[g].e }), { n: 0, e: 0 })).filter(f => f.n > 0);
+    let q = 0, minEsp = Infinity;
+    for (const f of faixas) for (const [obs, col] of [[f.e, E], [f.n - f.e, N - E]]) { const esp = f.n * col / N; minEsp = Math.min(minEsp, esp); q += esp > 0 ? (obs - esp) ** 2 / esp : 0; }
+    const gl = faixas.length - 1, p = gl > 0 && E > 0 && E < N ? pQui2(q, gl) : null;
+    const conf = minEsp >= 5;
+    const tb = document.getElementById("b-test");
+    if (p == null) tb.innerHTML = `<span class="pill neutral">Sem variação suficiente para testar</span>`;
+    else tb.innerHTML = `<div style="display:grid;gap:8px"><span class="pill ${p < 0.05 ? "good" : "neutral"}">${p < 0.05 ? "A taxa varia com o grau" : "Sem evidência de diferença"}</span>
+      <div class="detail"><div class="row"><span>qui² (gl)</span><span>${fmt(q, 1)} (${gl})</span></div><div class="row"><span>p-valor</span><span>${fmtP(p)}</span></div><div class="row"><span>candidatos · eleitos</span><span>${int(N)} · ${int(E)}</span></div><div class="row"><span>taxa geral do cargo</span><span>${fmt(geral)}%</span></div></div>
+      ${conf ? "" : `<span class="pill warn">Teste pouco confiável: casela esperada ${fmt(minEsp, 1)} &lt; 5</span>`}</div>`;
+
+    // frase
+    const t8 = taxa(8), tb2 = [2, 3].map(taxa).filter(x => x != null);
+    const baixo = tb2.length ? Math.min(...tb2) : null;
+    let ans = `Para <strong>${nome}</strong> em ${st.ano} ${ondeTxt()}, a taxa geral de eleição é ${fmt(geral)}%. `;
+    if (p != null && p < 0.05 && conf && t8 != null) ans += `Ela <strong>varia com a escolaridade</strong>: ${fmt(t8)}% entre quem tem superior completo${baixo != null ? `, contra ${fmt(baixo)}% no grau mais baixo com candidatos` : ""}.`;
+    else if (p != null && p < 0.05) ans += `O teste aponta diferença, mas com poucos candidatos em alguns graus; leia com cautela.`;
+    else if (p != null) ans += `<strong>Não há evidência</strong> de que a escolaridade mude a chance neste cargo.`;
+    else ans += `Há poucos candidatos para comparar os graus.`;
+    document.getElementById("b-answer").innerHTML = ans;
+
+    // gráfico
+    const svg = document.getElementById("b-chart"); clear(svg);
+    const W = 640, L = 150, R = 110, bh = 24, gap = 10, H = 8 * (bh + gap) + 28;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const tmax = Math.max(5, ...[1, 2, 3, 4, 5, 6, 7, 8].map(g => taxa(g) || 0), geral || 0);
+    const nice = tmax <= 10 ? 10 : tmax <= 25 ? 25 : tmax <= 50 ? 50 : 100;
+    const x = v => L + (W - L - R) * v / nice;
+    const passo = { 10: 2, 25: 5, 50: 10, 100: 25 }[nice];
+    for (let t = 0; t <= nice; t += passo) { el("line", { x1: x(t), x2: x(t), y1: 0, y2: H - 22, class: "gridline" }, svg); txt(svg, x(t), H - 9, t + "%", "axis", "middle"); }
+    // taxa geral do cargo: atrás das barras e dos rótulos
+    if (geral != null) { el("line", { x1: x(geral), x2: x(geral), y1: -4, y2: H - 22, stroke: "var(--ink-3)", "stroke-width": 1.5, "stroke-dasharray": "4 4" }, svg); }
+    for (let g = 1; g <= 8; g++) {
+      const y = (g - 1) * (bh + gap), t = taxa(g), n = r[g].n;
+      txt(svg, 0, y + bh / 2, `${g} · ${GRAU[g]}`, "lbl");
+      if (!n) { txt(svg, L + 4, y + bh / 2, "sem candidatos", "axis"); continue; }
+      const rect = el("rect", { x: L, y, width: Math.max(2, x(t) - L), height: bh, rx: 3, style: `fill:${n >= 30 ? "var(--accent)" : "var(--weak)"}` }, svg);
+      txt(svg, x(t) + 6, y + bh / 2, `${fmt(t)}%  (${int(r[g].e)}/${int(n)})`, "val");
+      const hit = el("rect", { x: 0, y, width: W, height: bh, fill: "transparent" }, svg);
+      hit.addEventListener("mousemove", ev => showTip(ev, `<b>${GRAU[g]}</b> · ${CARGO_NOME[st.cargo]} ${st.ano}<br>${int(n)} candidatos, ${int(r[g].e)} eleitos<br>Taxa: ${fmt(t)}%${n < 30 ? "<br><i>menos de 30 candidatos</i>" : ""}`));
+      hit.addEventListener("mouseleave", hideTip);
+      hit.style.cursor = r[g].e ? "pointer" : "default";
+      hit.addEventListener("click", () => { if (r[g].e) { st.grauB = g; renderQuem(r); } });
+      rect.style.pointerEvents = "none";
+      if (g === st.grauB) el("rect", { x: L - 4, y: y - 3, width: 3, height: bh + 6, rx: 1.5, style: "fill:var(--hi)" }, svg);
+    }
+    // tabela
+    renderQuem(r);
+    document.getElementById("b-table").innerHTML = `<table><thead><tr><th>Grau</th><th>Candidatos</th><th>Eleitos</th><th>Taxa</th></tr></thead><tbody>${[1, 2, 3, 4, 5, 6, 7, 8].map(g => `<tr><td>${g} · ${GRAU[g]}</td><td>${int(r[g].n)}</td><td>${int(r[g].e)}</td><td>${r[g].n ? fmt(taxa(g)) + "%" : "–"}</td></tr>`).join("")}<tr><td><b>Total</b></td><td>${int(N)}</td><td>${int(E)}</td><td>${fmt(geral)}%</td></tr></tbody></table>`;
+  }
+
+  function renderQuem(r) {
+    const comEleito = [1, 2, 3, 4, 5, 6, 7, 8].filter(g => r[g].e > 0);
+    if (!comEleito.includes(st.grauB)) st.grauB = comEleito[0] || null;
+    const box = document.getElementById("f-grau"); box.innerHTML = "";
+    for (let g = 1; g <= 8; g++) {
+      const b = document.createElement("button"); b.type = "button"; b.textContent = `${g} · ${GRAU[g]}`;
+      b.disabled = !r[g].e; b.setAttribute("aria-pressed", String(st.grauB === g));
+      b.addEventListener("click", () => { st.grauB = g; renderB(); });
+      box.appendChild(b);
+    }
+    const lista = ELEITOS.filter(e => e.ano === st.ano && e.cargo === st.cargo && e.grau === st.grauB && ufsSel().includes(e.uf));
+    // 2024: cidades maiores primeiro (capitais no topo), para os nomes serem reconhecíveis
+    lista.sort((a, b) => (popMun(b.cod) - popMun(a.cod)) || a.urna.localeCompare(b.urna, "pt"));
+    const MAX = 24, vis = lista.slice(0, MAX);
+    const g = st.grauB, tot = r[g] ? r[g].e : 0;
+    document.getElementById("b-who-title").innerHTML = g ? `Quem são: ${PLURAL[st.cargo]} eleitos em ${st.ano} com ${swNivel(g)} ${GRAU[g].toLowerCase()} <span class="mono" style="color:var(--ink-3);font-weight:400">· ${int(tot)}</span>` : "Quem são os eleitos";
+    const local = e => e.cod ? `${MUN_BY[e.cod] ? MUN_BY[e.cod].n : ""} (${e.uf})` : UF_NOME[e.uf];
+    document.getElementById("b-who").innerHTML = !g ? `<p class="empty">Nenhum eleito com este filtro.</p>` :
+      `<div class="who">${vis.map(e => `<div class="who-item"><span class="nm">${e.urna}</span>${e.civil ? `<span class="civ">${e.civil}</span>` : ""}<span class="meta"><span class="tag">${e.partido}</span>${local(e)}</span></div>`).join("")}</div>` +
+      (lista.length > MAX ? `<p class="note" style="margin-top:8px">Mostrando ${MAX} de ${int(lista.length)}, ${st.ano === 2024 ? "das cidades maiores para as menores" : "em ordem alfabética"}. Escolha uma UF no topo ou um município no mapa (parte C) para ver outros nomes.</p>` : "");
+  }
+
+  // ---------- PARTE C ----------
+  const RAMP_L = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"];
+  const RAMP_D = ["#184f95", "#1c5cab", "#256abf", "#3987e5", "#6da7ec", "#9ec5f4", "#cde2fb"];
+  function hex2rgb(h) { return [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); }
+  function rampa(t) { const R = escuro() ? RAMP_D : RAMP_L; t = Math.max(0, Math.min(1, t)); const p = t * (R.length - 1), i = Math.min(R.length - 2, Math.floor(p)), f = p - i; const a = hex2rgb(R[i]), b = hex2rgb(R[i + 1]); return `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(",")})`; }
+  const METRICA = {
+    pop: { nome: "% da população 18+ com superior", v: m => m.pPop, dom: [0, 30], un: "%" },
+    el: { nome: "% dos eleitos com superior", v: m => m.pEl, dom: [0, 100], un: "%" },
+    dist: { nome: "Eleitos − população (p.p.)", v: m => m.pEl - m.pPop, dom: [-10, 80], un: " p.p." },
+    moda: { nome: "Nível mais comum dos eleitos", v: m => m.modaEl, cat: true },
+  };
+  function corMun(m) {
+    if (!m.ok) return css("--nodata");
+    const M = METRICA[st.metrica];
+    if (M.cat) return `var(--n${m.modaEl})`;
+    const v = M.v(m); return rampa((v - M.dom[0]) / (M.dom[1] - M.dom[0]));
+  }
+
+  function renderC() {
+    const ufMun = MUN.filter(m => m.u === st.mapaUf);
+    const sel = MUN.filter(m => ufsSel().includes(m.u) && m.ok);
+    // frase
+    const xs = sel.map(m => m.pPop), ys = sel.map(m => m.pEl);
+    const r = pearson(xs, ys), rho = spearman(xs, ys);
+    const ord = [...sel].sort((a, b) => a.pPop - b.pPop), k = Math.floor(ord.length / 5);
+    const media = arr => arr.reduce((a, b) => a + b, 0) / arr.length;
+    const q1 = media(ord.slice(0, k).map(m => m.pEl)), q5 = media(ord.slice(ord.length - k).map(m => m.pEl));
+    const sem5 = ord.slice(0, ord.length - k), r80 = pearson(sem5.map(m => m.pPop), sem5.map(m => m.pEl));
+    document.getElementById("c-answer").innerHTML = `${ondeTxt()[0].toUpperCase() + ondeTxt().slice(1)}, municípios com a população mais escolarizada elegem gente mais escolarizada (r = ${fmt(r, 2)}). Nos 20% menos escolarizados, <strong>${fmt(q1, 0)}%</strong> dos eleitos têm superior; nos 20% mais escolarizados, <strong>${fmt(q5, 0)}%</strong>. Mas a relação vem do topo: sem os 20% mais escolarizados, r cai para <strong>${fmt(r80, 2)}</strong>. E em todo lugar os eleitos estudaram bem mais que a população: não é “semelhante”.`;
+
+    // mapa
+    const svg = document.getElementById("c-map"); clear(svg);
+    const mp = D.mapas[st.mapaUf]; svg.setAttribute("viewBox", `-4 -4 ${mp.w + 8} ${mp.h + 8}`);
+    svg.classList.toggle("dim", st.hl != null);
+    for (const m of ufMun) {
+      const d = mp.p[m.cod]; if (!d) continue;
+      const path = el("path", { d, "data-cod": m.cod }, svg);
+      path.style.fill = corMun(m);
+      if (st.sel === m.cod) path.classList.add("sel");
+      if (st.hl === m.cod) path.classList.add("hl");
+      path.addEventListener("mousemove", ev => showTip(ev, tipMun(m)));
+      path.addEventListener("mouseleave", hideTip);
+      path.addEventListener("click", () => { st.sel = st.sel === m.cod ? null : m.cod; renderC(); });
+    }
+    // destaca o selecionado por cima
+    const s = svg.querySelector("path.sel"); if (s) svg.appendChild(s);
+    // capital: marcador
+    const cap = ufMun.find(m => m.cap);
+    if (cap && mp.p[cap.cod]) { const b = svg.querySelector(`path[data-cod="${cap.cod}"]`).getBBox(); const c = el("circle", { cx: b.x + b.width / 2, cy: b.y + b.height / 2, r: 4, style: "fill:none;stroke:var(--hi);stroke-width:2;pointer-events:none" }, svg); el("title", {}, c).textContent = "capital"; }
+    // legenda
+    const M = METRICA[st.metrica], rb = document.getElementById("c-ramp");
+    if (M.cat) rb.innerHTML = `<div class="legend">${[1, 2, 3, 4].map(n => `<span><i class="sw" style="background:var(--n${n})"></i>${NIVEL[n]}</span>`).join("")}<span><i class="sw" style="background:var(--nodata)"></i>sem dado</span><span><i class="sw" style="border:2px solid var(--hi);border-radius:50%"></i>capital</span></div>`;
+    else { const stops = Array.from({ length: 11 }, (_, i) => rampa(i / 10)).join(","); const t = [0, 0.25, 0.5, 0.75, 1].map(f => fmt(M.dom[0] + f * (M.dom[1] - M.dom[0]), 0)); rb.innerHTML = `<div class="ramp"><span class="flabel">${M.nome}</span><div class="ramp-bar" style="background:linear-gradient(90deg,${stops})"></div><div class="ramp-ticks">${t.map(v => `<span>${v}${M.un.trim() === "%" ? "%" : ""}</span>`).join("")}</div></div><div class="legend" style="margin-top:6px"><span><i class="sw" style="background:var(--nodata)"></i>sem dado (V5, V7)</span><span><i class="sw" style="border:2px solid var(--hi);border-radius:50%"></i>capital</span><span>Clique num município para fixar o detalhe.</span></div>`; }
+
+    renderDetalhe();
+    renderScatter();
+    renderQuint(sel);
+    renderModa(sel);
+    // busca
+    const dl = document.getElementById("lista-mun"); dl.innerHTML = ufMun.filter(m => mp.p[m.cod]).sort((a, b) => a.n.localeCompare(b.n, "pt")).map(m => `<option value="${m.n}">`).join("");
+  }
+
+  function tipMun(m) {
+    if (!m.pop) return `<b>${m.n} (${m.u})</b><br>Sem dado do Censo 2022`;
+    if (!m.ok) return `<b>${m.n} (${m.u})</b><br>Sem resultado de vereador no arquivo do TSE`;
+    return `<b>${m.n} (${m.u})</b>${m.cap ? " · capital" : ""}<br>População com superior: ${fmt(m.pPop)}%<br>Eleitos com superior: ${fmt(m.pEl)}% (${m.te} eleitos)<br>Mais comum na população: ${NIVEL[m.modaPop].toLowerCase()}<br>Mais comum entre os eleitos: ${NIVEL[m.modaEl].toLowerCase()}${m.emp ? " (empate)" : ""}`;
+  }
+
+  function barra4(vals, titulo) {
+    const tot = vals.reduce((a, b) => a + b, 0);
+    let acc = 0, segs = "";
+    for (let n = 1; n <= 4; n++) { const w = tot ? 100 * vals[n - 1] / tot : 0; if (w > 0) segs += `<div title="${NIVEL[n]}: ${fmt(w)}%" style="flex:${w};background:var(--n${n});color:var(--on-n${n});font:500 11px var(--f-data);display:grid;place-items:center;min-width:0;overflow:hidden">${w >= 12 ? fmt(w, 0) + "%" : ""}</div>`; acc += w; }
+    return `<div style="display:grid;gap:4px"><span style="font-size:12.5px;color:var(--ink-2)">${titulo}</span><div style="display:flex;gap:2px;height:26px;border-radius:4px;overflow:hidden">${segs}</div></div>`;
+  }
+
+  function renderDetalhe() {
+    const box = document.getElementById("c-detail");
+    const m = st.sel != null ? MUN_BY[st.sel] : null;
+    if (!m) {
+      const uf = MUN.filter(x => x.u === st.mapaUf && x.ok);
+      const tp = uf.reduce((a, x) => a + x.pop.reduce((p, q) => p + q), 0);
+      const pp = [0, 1, 2, 3].map(i => uf.reduce((a, x) => a + x.pop[i], 0));
+      const ee = [0, 1, 2, 3].map(i => uf.reduce((a, x) => a + x.el[i], 0));
+      box.innerHTML = `<span class="eyebrow">${UF_NOME[st.mapaUf]} · ${uf.length} municípios com dado</span><h3>Selecione um município</h3><p class="empty">Passe o mouse para ver os números; clique para fixar o detalhe aqui. Abaixo, o estado inteiro.</p>${barra4(pp, "População 18+ (Censo 2022)")}${barra4(ee, "Eleitos em 2024 (prefeitos e vereadores)")}<div class="legend">${[1, 2, 3, 4].map(n => `<span><i class="sw" style="background:var(--n${n})"></i>${NIVEL[n]}</span>`).join("")}</div>`;
+      return;
+    }
+    const tp = m.pop ? m.pop.reduce((a, b) => a + b) : 0;
+    let h = `<span class="eyebrow">${UF_NOME[m.u]}${m.cap ? " · capital" : ""}</span><h3>${m.n}</h3>`;
+    if (!m.pop) { box.innerHTML = h + `<p class="empty">Município criado depois do Censo 2022: sem dado de escolaridade da população.</p>`; return; }
+    if (!m.ok) { box.innerHTML = h + `<p class="empty">O arquivo do TSE (gerado em 06/10/2026) não traz o resultado de vereador deste município. Fica fora da parte C.</p>` + barra4(m.pop, "População 18+ (Censo 2022)"); return; }
+    h += `<p class="answer" style="font-size:15px">Na população predomina <b>${NIVEL[m.modaPop].toLowerCase()}</b>; entre os ${m.te} eleitos, <b>${NIVEL[m.modaEl].toLowerCase()}</b>${m.emp ? " (empate)" : ""}.</p>`;
+    h += barra4(m.pop, `População 18+ (Censo 2022) · ${int(tp)} pessoas`) + barra4(m.el, `Eleitos em 2024 · ${m.te} pessoas`);
+    h += `<div><div class="row"><span>Superior completo, população</span><span>${fmt(m.pPop)}%</span></div><div class="row"><span>Superior completo, eleitos</span><span>${fmt(m.pEl)}%</span></div><div class="row"><span>Distância</span><span>${fmt(m.pEl - m.pPop)} p.p.</span></div><div class="row"><span>Prefeito eleito</span><span>${m.pref ? GRAU[m.pref] : "sem resultado (V4)"}</span></div><div class="row"><span>Vereadores eleitos</span><span>${m.ver}</span></div></div>`;
+    const doMun = ELEITOS.filter(e => e.ano === 2024 && e.cod === m.cod).sort((x, y) => (y.cargo - x.cargo === 0 ? 0 : x.cargo === 11 ? -1 : 1) || (y.grau - x.grau) || x.urna.localeCompare(y.urna, "pt"));
+    h += `<div style="display:grid;gap:6px"><span class="flabel">Quem foi eleito · ${doMun.length}</span><div class="elist">${doMun.map(e => `<div class="r"><span class="nm">${e.urna}${e.cargo === 11 ? ' <span class="tag">prefeito(a)</span>' : ""}</span><span class="grau-chip">${swNivel(e.grau)}${GRAU[e.grau]}</span><span class="sub">${e.partido}${e.civil ? " · " + e.civil : ""}</span></div>`).join("")}</div></div>`;
+    box.innerHTML = h;
+  }
+
+  function renderScatter() {
+    const svg = document.getElementById("c-scatter"); clear(svg);
+    const pts = MUN.filter(m => m.u === st.mapaUf && m.ok && !(st.semCap && m.cap));
+    document.getElementById("c-scatter-title").textContent = `${UF_NOME[st.mapaUf]}: cada ponto é um município`;
+    const W = 560, H = 380, L = 46, B = 40, T = 10, R = 12;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const xmax = Math.max(20, Math.ceil(Math.max(...pts.map(m => m.pPop)) / 5) * 5);
+    const X = v => L + (W - L - R) * v / xmax, Y = v => T + (H - T - B) * (1 - v / 100);
+    for (let t = 0; t <= xmax; t += xmax > 30 ? 10 : 5) { el("line", { x1: X(t), x2: X(t), y1: T, y2: H - B, class: "gridline" }, svg); txt(svg, X(t), H - B + 14, t + "%", "axis", "middle"); }
+    for (let t = 0; t <= 100; t += 25) { el("line", { x1: L, x2: W - R, y1: Y(t), y2: Y(t), class: "gridline" }, svg); txt(svg, L - 6, Y(t), t + "%", "axis", "end"); }
+    txt(svg, (L + W - R) / 2, H - 8, "% da população 18+ com superior (Censo 2022)", "axis", "middle");
+    const yl = txt(svg, 12, (T + H - B) / 2, "% dos eleitos com superior (2024)", "axis", "middle"); yl.setAttribute("transform", `rotate(-90 12 ${(T + H - B) / 2})`);
+    // reta de regressão
+    const xs = pts.map(m => m.pPop), ys = pts.map(m => m.pEl), n = xs.length;
+    if (n > 2) {
+      const mx = xs.reduce((a, b) => a + b) / n, my = ys.reduce((a, b) => a + b) / n;
+      let sxy = 0, sxx = 0; for (let i = 0; i < n; i++) { sxy += (xs[i] - mx) * (ys[i] - my); sxx += (xs[i] - mx) ** 2; }
+      const a = sxy / sxx, b = my - a * mx, x0 = Math.min(...xs), x1 = Math.max(...xs);
+      el("line", { x1: X(x0), x2: X(x1), y1: Y(a * x0 + b), y2: Y(a * x1 + b), stroke: "var(--n4)", "stroke-width": 2 }, svg);
+    }
+    for (const m of pts) {
+      const c = el("circle", { cx: X(m.pPop), cy: Y(m.pEl), r: m.cod === st.sel ? 7 : 4.5, style: `fill:${m.cap ? "var(--hi)" : "var(--accent)"};fill-opacity:${m.cod === st.sel ? 1 : 0.6};stroke:${m.cod === st.sel ? "var(--ink)" : "var(--surface)"};stroke-width:${m.cod === st.sel ? 2 : 1}` }, svg);
+      c.style.cursor = "pointer";
+      c.addEventListener("mousemove", ev => { showTip(ev, tipMun(m)); if (st.hl !== m.cod) { st.hl = m.cod; marcaMapa(); } });
+      c.addEventListener("mouseleave", () => { hideTip(); st.hl = null; marcaMapa(); });
+      c.addEventListener("click", () => { st.sel = st.sel === m.cod ? null : m.cod; renderC(); });
+    }
+    const r = pearson(xs, ys), rho = spearman(xs, ys);
+    const cap = MUN.find(m => m.u === st.mapaUf && m.cap);
+    document.getElementById("c-corr").innerHTML = `<div class="legend"><span class="pill neutral">Pearson r = ${fmt(r, 2)}</span><span class="pill neutral">Spearman ρ = ${fmt(rho, 2)}</span><span class="pill neutral">${n} municípios</span><span><i class="sw" style="background:var(--hi);border-radius:50%"></i>${cap ? cap.n : "capital"}</span></div><p class="note" style="margin-top:6px">r mede a reta e é puxado por pontos extremos, como a capital; ρ usa só a ordem. Marque “sem a capital” para ver quanto da relação vem dela.</p>`;
+  }
+  function marcaMapa() {
+    const svg = document.getElementById("c-map");
+    svg.classList.toggle("dim", st.hl != null);
+    svg.querySelectorAll("path.hl").forEach(p => p.classList.remove("hl"));
+    if (st.hl != null) { const p = svg.querySelector(`path[data-cod="${st.hl}"]`); if (p) { p.classList.add("hl"); svg.appendChild(p); } }
+  }
+
+  function renderQuint(sel) {
+    const svg = document.getElementById("c-quint"); clear(svg);
+    const ord = [...sel].sort((a, b) => a.pPop - b.pPop), n = ord.length;
+    const grupos = [0, 1, 2, 3, 4].map(i => ord.slice(Math.round(i * n / 5), Math.round((i + 1) * n / 5)));
+    const med = (g, f) => g.reduce((a, m) => a + f(m), 0) / g.length;
+    const W = 520, H = 300, L = 40, B = 46, T = 18;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const vals = grupos.map(g => [med(g, m => m.pPop), med(g, m => m.pEl)]);
+    const ymax = Math.max(50, Math.ceil(Math.max(...vals.flat()) / 10) * 10);
+    const Y = v => T + (H - T - B) * (1 - v / ymax), cw = (W - L) / 5;
+    for (let t = 0; t <= ymax; t += ymax > 50 ? 20 : 10) { el("line", { x1: L, x2: W, y1: Y(t), y2: Y(t), class: "gridline" }, svg); txt(svg, L - 6, Y(t), t + "%", "axis", "end"); }
+    const rot = ["1º (menos)", "2º", "3º", "4º", "5º (mais)"];
+    vals.forEach(([p, e], i) => {
+      const x0 = L + i * cw + cw * 0.14, bw = cw * 0.34;
+      el("rect", { x: x0, y: Y(p), width: bw, height: Y(0) - Y(p), rx: 3, style: "fill:var(--n1)" }, svg);
+      el("rect", { x: x0 + bw + 3, y: Y(e), width: bw, height: Y(0) - Y(e), rx: 3, style: "fill:var(--n4)" }, svg);
+      txt(svg, x0 + bw / 2, Y(p) - 9, fmt(p, 0) + "%", "val", "middle");
+      txt(svg, x0 + bw * 1.5 + 3, Y(e) - 9, fmt(e, 0) + "%", "val", "middle");
+      txt(svg, L + i * cw + cw / 2, H - B + 16, rot[i], "axis", "middle");
+      txt(svg, L + i * cw + cw / 2, H - B + 31, `${grupos[i].length} mun.`, "axis", "middle");
+      const hit = el("rect", { x: L + i * cw, y: T, width: cw, height: H - T - B, fill: "transparent" }, svg);
+      hit.addEventListener("mousemove", ev => showTip(ev, `<b>${rot[i]} quintil</b> · ${grupos[i].length} municípios<br>População com superior: ${fmt(p)}%<br>Eleitos com superior: ${fmt(e)}%`));
+      hit.addEventListener("mouseleave", hideTip);
+    });
+  }
+
+  function renderModa(sel) {
+    const t = {}; for (const m of sel) { const k = m.modaPop + "-" + m.modaEl; t[k] = (t[k] || 0) + 1; }
+    const linhas = [1, 2, 3, 4].filter(a => sel.some(m => m.modaPop === a));
+    const cols = [1, 2, 3, 4].filter(b => sel.some(m => m.modaEl === b));
+    document.getElementById("c-moda").innerHTML = `<table><thead><tr><th>População ↓ · eleitos →</th>${cols.map(b => `<th>${NIVEL[b]}</th>`).join("")}<th>Total</th></tr></thead><tbody>${linhas.map(a => `<tr><td>${NIVEL[a]}</td>${cols.map(b => `<td>${int(t[a + "-" + b] || 0)}</td>`).join("")}<td>${int(cols.reduce((s, b) => s + (t[a + "-" + b] || 0), 0))}</td></tr>`).join("")}</tbody></table>`;
+  }
+
+  // ---------- método ----------
+  function renderMetodo() {
+    document.getElementById("m-ponte").innerHTML = `<table><thead><tr><th>Grau do candidato (TSE)</th><th>Nível do Censo (IBGE)</th></tr></thead><tbody>${[1, 2, 3, 4, 5, 6, 7, 8].map(g => `<tr><td>${g} · ${GRAU[g]}</td><td style="text-align:left;font-family:var(--f-body)"><i class="sw" style="background:var(--n${GRAU_NIVEL[g]});margin-right:6px;vertical-align:-1px"></i>${GRAU_NIVEL[g]} · ${NIVEL[GRAU_NIVEL[g]]}</td></tr>`).join("")}</tbody></table>`;
+    let n22 = 0, e22 = 0, n24 = 0, e24 = 0;
+    for (const [a, , , , n, e] of D.chance) { if (a === 2022) { n22 += n; e22 += e; } else { n24 += n; e24 += e; } }
+    document.getElementById("m-total").textContent = `${int(n22)} candidaturas em 2022 (${int(e22)} eleitos) e ${int(n24)} em 2024 (${int(e24)} eleitos)`;
+  }
+
+  // ---------- busca e eventos ----------
+  document.getElementById("f-metrica").addEventListener("change", e => { st.metrica = e.target.value; salvar(); renderC(); });
+  document.getElementById("f-semcap").addEventListener("change", e => { st.semCap = e.target.checked; salvar(); renderScatter(); });
+  document.getElementById("f-busca").addEventListener("change", e => {
+    const v = e.target.value.trim().toLowerCase(); const m = MUN.find(x => x.u === st.mapaUf && x.n.toLowerCase() === v) || MUN.find(x => x.n.toLowerCase() === v);
+    if (m) { st.mapaUf = m.u; st.sel = m.cod; if (st.uf !== "TODAS") st.uf = m.u; e.target.value = ""; render(); document.getElementById("c-map").scrollIntoView({ block: "nearest", behavior: "smooth" }); }
+  });
+
+  function render() {
+    filtros();
+    document.getElementById("f-metrica").value = st.metrica;
+    document.getElementById("f-semcap").checked = st.semCap;
+    renderA(); renderB(); renderC();
+  }
+  renderMetodo();
+  render();
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => renderC());
+  new MutationObserver(() => renderC()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+})();
+</script>

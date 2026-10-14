@@ -55,8 +55,8 @@ INNER JOIN v
 WHERE q.eleitos <> v.vagas;
 
 -- V4. 2024: cada município tem 1 prefeito eleito.
---     Exceção conhecida (9 de 1.239): Iporá e Americano do Brasil (GO); Anajatuba,
---     Guimarães e Santana do Maranhão (MA); Barra dos Coqueiros, Cedro de São João e
+--     Exceção conhecida (9 de 1.239): Iporá e Americano do Brasil (GO), Anajatuba,
+--     Guimarães e Santana do Maranhão (MA), Barra dos Coqueiros, Cedro de São João e
 --     Nossa Senhora do Socorro (SE) têm todos os candidatos com situação #NULO, e
 --     Arroio do Sal (RS) todos como NÃO ELEITO: eleição anulada ou sub judice, que
 --     vira suplementar, e a suplementar fica fora pela R1.
@@ -94,3 +94,15 @@ SELECT
 FROM q4_perfil_uf
 GROUP BY ALL
 HAVING abs(sum(pc) - 100) > 0.5;
+
+-- V7. 2024: todo município tem vereadores eleitos (sem isso, a parte C compara só o prefeito).
+--     Exceção conhecida (17): o consulta_cand_2024 gerado em 06/10/2026 traz todos os
+--     candidatos a vereador desses municípios com situação #NULO e registro #NE, ou seja,
+--     sem o resultado. A parte C usa só municípios com qt_vereadores_eleitos > 0.
+SELECT
+    'V7 sem vereador eleito' AS checagem,
+    sg_uf,
+    nm_municipio,
+    qt_eleitos
+FROM q4_municipio
+WHERE qt_vereadores_eleitos = 0;

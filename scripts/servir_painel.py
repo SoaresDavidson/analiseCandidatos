@@ -35,6 +35,12 @@ class Silencioso(SimpleHTTPRequestHandler):
     def log_message(self, formato: str, *args: object) -> None:
         pass
 
+    def end_headers(self) -> None:
+        # o navegador confere se a página mudou (resposta 304 se não mudou): depois de um
+        # git pull ou de regerar uma aba, ninguém fica vendo a versão velha do cache
+        self.send_header("Cache-Control", "no-cache")
+        super().end_headers()
+
 
 def baixar_fotos() -> None:
     dados = json.loads((CANDIDATOS / "dados.json").read_text(encoding="utf-8"))

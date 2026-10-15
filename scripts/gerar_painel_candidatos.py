@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 from pathlib import Path
 
 import duckdb
@@ -47,7 +46,7 @@ SELECT
     nr_idade_eleicao, ds_genero, ds_cor_raca, ds_grau_instrucao, ds_ocupacao, ds_sit_tot_turno,
     qt_votos, nm_municipio_mais_votos, vr_patrimonio, qt_bens,
     vr_receita, vr_publico, vr_privado, vr_proprio, vr_partidario, vr_transferencia, qt_doadores,
-    vr_propaganda, ds_canal_principal
+    vr_propaganda, ds_canal_principal, coalesce(cod_ibge, 0) AS cod_ibge
 FROM ficha_eleito
 WHERE sg_uf IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE')
 ORDER BY ano DESC, cd_cargo, sg_uf, nm_ue, qt_votos DESC NULLS LAST
@@ -67,6 +66,17 @@ def main() -> None:
     con.execute("INSTALL encodings; LOAD encodings;")
     linhas = con.execute(SQL_FICHA).fetchall()
     carreira_bruta = con.execute(SQL_CARREIRA).fetchall()
+    # espectro: "ano|sigla" -> [nota de 0 a 10, categoria, observação da fonte (estimado, renomeado)]
+    espectro = {
+        f"{ano}|{sg}": [float(vl), cat, fonte.split(" — ", 1)[1] if " — " in fonte else ""]
+        for ano, sg, vl, cat, fonte in con.execute(
+            """SELECT e.ano, p.sg_partido, e.vl_ideologia, e.cd_espectro, e.ds_fonte
+               FROM modelo.espectro_partido AS e INNER JOIN modelo.partido AS p USING (ano, nr_partido)"""
+        ).fetchall()
+    }
+    regua = con.execute(
+        "SELECT sg_mais_esquerda, vl_mais_esquerda, sg_mais_direita, vl_mais_direita FROM espectro_regua"
+    ).fetchone()
     con.close()
 
     listas: dict[str, list[str]] = {k: [] for k in ("ues", "partidos", "ocupacoes", "graus", "cores", "generos")}
@@ -94,7 +104,7 @@ def main() -> None:
     for (
         ano, uf, nm_ue, cargo, _sq, titulo, urna, civil, partido, idade, genero, cor, grau, ocupacao, situacao,
         votos, mun_votos, patrimonio, qt_bens, receita, publico, privado, proprio, partidario, transf,
-        doadores, propaganda, canal,
+        doadores, propaganda, canal, cod_ibge,
     ) in linhas:  # fmt: skip
         local = nm_ue if nm_ue and nm_ue.upper() != uf else uf
         eleitos.append(
@@ -107,13 +117,29 @@ def main() -> None:
                 reais(receita), reais(publico), reais(privado), reais(proprio), reais(partidario), reais(transf),
                 doadores, reais(propaganda), CANAIS.index(canal) if canal in CANAIS else -1,
                 carreira.get(titulo, []),
+                cod_ibge,
             ]
         )  # fmt: skip
 
     # sq_candidato do TSE, na mesma ordem: nome da foto e chave para as outras abas abrirem a ficha
-    dados = {"ufs": UFS, "canais": CANAIS, **listas, "eleitos": eleitos, "sq": [r[4] for r in linhas]}
+    dados = {
+        "ufs": UFS,
+        "canais": CANAIS,
+        **listas,
+        "eleitos": eleitos,
+        "sq": [r[4] for r in linhas],
+        "espectro": espectro,
+        "regua": [regua[0], float(regua[1]), regua[2], float(regua[3])],
+    }
     (PASTA / "dados.json").write_text(json.dumps(dados, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    shutil.copyfile(PASTA / "modelo.html", PASTA / "index.html")
+    # o modelo é o corpo da página; aqui ganha o esqueleto completo (sem doctype o navegador entra em modo quirks)
+    corpo = (PASTA / "modelo.html").read_text(encoding="utf-8")
+    (PASTA / "index.html").write_text(
+        '<!doctype html>\n<html lang="pt-BR">\n<head>\n<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+        "</head>\n<body>\n" + corpo + "\n</body>\n</html>\n",
+        encoding="utf-8",
+    )
     com_foto = fotos_tse.garantir([(r[0], r[1], r[4]) for r in linhas], FOTOS)
     mb = (PASTA / "dados.json").stat().st_size >> 20
     print(f"docs/candidatos-painel/dados.json: {mb} MB, {len(eleitos)} eleitos, {com_foto} com foto em fotos/")

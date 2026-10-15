@@ -1,0 +1,35 @@
+sg_partido_tse;sigla_artigo;regra
+PSTU;PSTU;mesma sigla
+PCO;PCO;mesma sigla
+PCB;PCB;mesma sigla
+PSOL;PSOL;mesma sigla
+UP;UP;mesma sigla
+PC do B;PCdoB;sigla diferente no TSE
+PT;PT;mesma sigla
+PSB;PSB;mesma sigla
+REDE;REDE;mesma sigla
+PDT;PDT;mesma sigla
+PV;PV;mesma sigla
+SOLIDARIEDADE;SDD;sigla diferente no TSE
+CIDADANIA;CDD;sigla diferente no TSE
+AVANTE;AVANTE;mesma sigla
+MDB;MDB;mesma sigla
+PMN;PMN;mesma sigla
+PSDB;PSDB;mesma sigla
+PSD;PSD;mesma sigla
+PMB;PMB;mesma sigla
+PODE;PODE;mesma sigla
+PROS;PROS;mesma sigla
+PRTB;PRTB;mesma sigla
+AGIR;AGIR;mesma sigla
+PTB;PTB;mesma sigla
+PP;PROGRE;sigla diferente no TSE
+DC;DC;mesma sigla
+REPUBLICANOS;REP;sigla diferente no TSE
+PSC;PSC;mesma sigla
+UNIÃO;UNIAO;sigla diferente no TSE
+PATRIOTA;PATRI;sigla diferente no TSE
+NOVO;NOVO;mesma sigla
+PL;PL;mesma sigla
+MOBILIZA;PMN;renomeado: o PMN passou a se chamar Mobiliza em 2023 (mesmo número, 33)
+PRD;PTB+PATRI;"estimado: fusão de PTB e Patriota em 2023, fora das rodadas; média das notas de 2022 dos dois"

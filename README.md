@@ -196,7 +196,7 @@ antiga (Q10 e Q11 viraram Q8 e Q9) e medidos no PI.
 uv run python -m scripts.servir_painel      # http://localhost:8000/painel.html
 ```
 
-Na primeira vez ele baixa do TSE as ~14 mil fotos dos eleitos (uns 3 minutos, sem precisar do banco) para `docs/candidatos-painel/fotos/`, que fica fora do git. Depois abre na hora. As abas das perguntas também abrem com dois cliques no arquivo; a de Candidatos precisa do servidor, porque lê `dados.json` e as fotos por arquivo.
+Na primeira vez ele baixa do TSE as ~14 mil fotos dos eleitos (uns 3 minutos, sem precisar do banco) para `docs/candidatos-painel/fotos/`, que fica fora do git. Depois abre na hora. As abas das perguntas também abrem com dois cliques no arquivo; a de Candidatos e o patrimônio da Carreira precisam do servidor, porque leem arquivos à parte (`dados.json`, fotos, `financas/`).
 
 Cada aba mostra a página como ela está no disco:
 
@@ -205,8 +205,9 @@ Cada aba mostra a página como ela está no disco:
 | Q4 Escolaridade | `docs/q4-painel/index.html` | `scripts/gerar_painel_q4.py` | `00_limpeza`, `00_modelo`, `06_carga_nucleo`, `10_q4` + malhas do IBGE |
 | Q8 Dinheiro público | `docs/q8-painel/index.html` | `scripts/gerar_painel_q8_q9.py` (gera as duas) | `01`–`05` + `11_q8`, `12_q9` |
 | Q9 Propaganda | `docs/q9-painel/index.html` | `scripts/gerar_painel_q8_q9.py` (gera as duas) | `01`–`05` + `11_q8`, `12_q9` |
-| Q10 Carreira | `docs/q10-painel/index.html` | `scripts/gerar_painel_q10.py` | `00_limpeza`, `04_politico`, `07_q10` |
-| Candidatos | `docs/candidatos-painel/index.html` + `dados.json` | `python -m scripts.gerar_painel_candidatos` | `01`–`07` + `13_ficha` (coleta: `recorte_remoto --uf ...`) |
+| Q10 Carreira | `docs/q10-painel/index.html` + `financas/` | `scripts/gerar_painel_q10.py` | `00_limpeza`, `04_politico`, `07_q10`; patrimônio e campanha: `13_ficha`, `14_q10` (coleta: `recorte_remoto --uf ...` e `coleta_ibge ipca`) |
+| Municípios | `docs/municipios-painel/index.html` + `dados.json` | `python -m scripts.gerar_painel_municipios` | `13_ficha`, `15_espectro` (espectro: `dados/referencia/`) |
+| Candidatos | `docs/candidatos-painel/index.html` + `dados.json` | `python -m scripts.gerar_painel_candidatos` | `01`–`07` + `13_ficha`, `15_espectro` (coleta: `recorte_remoto --uf ...`) |
 
 Para atualizar uma aba, regere a página da pergunta com o script dela; o painel mostra a versão nova sem mudar mais nada.
 

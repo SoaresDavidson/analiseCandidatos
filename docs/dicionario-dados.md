@@ -215,8 +215,8 @@ Posição ideológica de um partido num ano, com a rodada e a fonte acadêmica u
 | `ano` | `INTEGER` | N | PK, FK → `PARTIDO` | Ano da eleição. | igual a `PARTIDO.ano` | FK composta (`ano`, `nr_partido`). |
 | `nr_partido` | `INTEGER` | N | PK, FK → `PARTIDO` | Partido. | igual a `PARTIDO.nr_partido` | |
 | `nr_rodada` | `INTEGER` | N | — | Rodada do survey aplicada. | regra do grupo | 2018 para as eleições de 2014 a 2020; 2022 dali em diante. |
-| `vl_ideologia` | `DECIMAL(4,2)` | S | — | Posição na escala de 0 (esquerda) a 10 (direita). | Bolognesi, Ribeiro e Codato (2023, *Dados* 66(2)); Bolognesi, Ribeiro, Codato e Silva (2025, *Opinião Pública* 31) | ⚠️ Ainda não existe como dado no repositório (F1). Nulo para partido fora das rodadas (ex.: PRD, 2023). |
-| `cd_espectro` | `VARCHAR(20)` | S | — | Categoria de espectro. | derivado de `vl_ideologia` | Cinco categorias, da esquerda à direita. Os cortes ainda não foram definidos; usar os dos artigos, se houver. |
+| `vl_ideologia` | `DECIMAL(4,2)` | S | — | Posição na escala de 0 (esquerda) a 10 (direita). | Bolognesi, Ribeiro e Codato (2023, *Dados* 66(2)); Bolognesi, Ribeiro, Codato e Silva (2025, *Opinião Pública* 31) | Carregado para 2022 e 2024 pelo `sql/15_espectro.sql` (média da rodada de 2022). PRD (2023) = média de PTB e Patriota, marcado como estimado em `ds_fonte`; Mobiliza = PMN. |
+| `cd_espectro` | `VARCHAR(20)` | S | — | Categoria de espectro. | derivado de `vl_ideologia` | Sete categorias, com os cortes do artigo de 2025: 0–1,5 extrema esquerda; 1,51–3 esquerda; 3,01–4,49 centro-esquerda; 4,5–5,5 centro; 5,51–7 centro-direita; 7,01–8,5 direita; 8,51–10 extrema direita. |
 | `ds_fonte` | `VARCHAR(200)` | N | — | Referência bibliográfica da classificação. | regra do grupo | Única fonte não governamental do modelo; por isso fica fora de `PARTIDO`. |
 
 #### `FEDERACAO`

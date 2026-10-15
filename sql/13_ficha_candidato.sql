@@ -6,7 +6,7 @@
 --
 --     uv run python scripts/carregar_staging.py 01_staging 02_fonte 03_tipo 04_politico 05_marts 13_ficha
 --
--- Dados (coleta sem baixar os zips inteiros):
+-- Dados (coleta sem baixar os zips inteiros; bens de 2006 a 2024, votos de 2022 e 2024):
 --
 --     uv run python -m scripts.coleta.coleta_tse recorte_remoto --uf AM,GO,MA,MT,RS,SE
 --
@@ -22,8 +22,9 @@ DELETE FROM modelo.bem_candidato;
 DELETE FROM modelo.votacao_candidato_municipio;
 
 -- ---------------------------------------------------------------------------
--- BEM_CANDIDATO: um bem declarado por linha. A candidatura é achada por
--- (ano, sq_candidato), que o TSE não repete dentro de uma eleição ordinária.
+-- BEM_CANDIDATO: um bem declarado por linha, de 2006 a 2024. A candidatura é
+-- achada por (ano, sg_ue, sq_candidato): até 2012 o TSE repete o sq_candidato em
+-- UEs diferentes, então só o par (ano, sq) multiplicaria as linhas.
 -- Bem sem tipo ou sem valor (o TSE grava "#NULO") fica de fora: as duas colunas
 -- são obrigatórias no DER.
 -- ---------------------------------------------------------------------------
@@ -36,8 +37,10 @@ SELECT
 FROM (
     SELECT
         ano_eleicao::integer AS ano,
+        limpa(sg_ue) AS sg_ue,
         try_cast(sq_candidato AS bigint) AS sq_candidato,
-        try_cast(nr_ordem_bem_candidato AS integer) AS nr_ordem_bem,
+        -- a coluna muda de nome em 2018 (NR_ORDEM_CANDIDATO até 2016)
+        try_cast(coalesce(nr_ordem_bem_candidato, nr_ordem_candidato) AS integer) AS nr_ordem_bem,
         left(limpa(ds_tipo_bem_candidato), 100) AS ds_tipo_bem,
         valor_br(vr_bem_candidato) AS vr_bem
     FROM
@@ -46,9 +49,10 @@ FROM (
             delim = ';', quote = '"', header = TRUE, encoding = 'cp1252',
             all_varchar = TRUE, union_by_name = TRUE
         )
-    WHERE cd_tipo_eleicao = '2'
+    -- eleição ordinária: código 2; em 2006 o TSE gravou 0 (mesma regra do 06)
+    WHERE cd_tipo_eleicao = '2' OR (cd_tipo_eleicao = '0' AND ano_eleicao = '2006')
 ) AS b
-INNER JOIN modelo.candidatura AS c ON b.ano = c.ano AND b.sq_candidato = c.sq_candidato
+INNER JOIN modelo.candidatura AS c ON b.ano = c.ano AND b.sg_ue = c.sg_ue AND b.sq_candidato = c.sq_candidato
 WHERE b.nr_ordem_bem IS NOT NULL AND b.ds_tipo_bem IS NOT NULL AND b.vr_bem IS NOT NULL
 GROUP BY c.id_candidatura, b.nr_ordem_bem;
 
@@ -67,6 +71,7 @@ FROM (
     SELECT
         ano_eleicao::integer AS ano,
         nr_turno::integer AS nr_turno,
+        limpa(sg_ue) AS sg_ue,
         try_cast(sq_candidato AS bigint) AS sq_candidato,
         lpad(cd_municipio, 5, '0') AS cd_municipio,
         coalesce(try_cast(qt_votos_nominais AS bigint), 0) AS qt_votos_nominais,
@@ -79,7 +84,7 @@ FROM (
         )
     WHERE cd_tipo_eleicao = '2'
 ) AS v
-INNER JOIN modelo.candidatura AS c ON v.ano = c.ano AND v.sq_candidato = c.sq_candidato
+INNER JOIN modelo.candidatura AS c ON v.ano = c.ano AND v.sg_ue = c.sg_ue AND v.sq_candidato = c.sq_candidato
 INNER JOIN modelo.municipio AS m ON v.cd_municipio = lpad(m.cod_tse, 5, '0')
 GROUP BY c.id_candidatura, m.cod_ibge, v.nr_turno;
 
@@ -130,13 +135,25 @@ bens AS (
     GROUP BY id_candidatura
 ),
 
+por_canal AS (
+    -- mart_q9 tem uma linha por canal e tipo de despesa: soma o canal antes de comparar
+    SELECT
+        ano,
+        sq_candidato,
+        ds_canal,
+        sum(vr_despesa) AS vr_canal
+    FROM mart_q9
+    GROUP BY ano, sq_candidato, ds_canal
+),
+
 propaganda AS (
     SELECT
         ano,
         sq_candidato,
-        sum(vr_despesa) AS vr_propaganda,
-        arg_max(ds_canal, vr_despesa) AS ds_canal_principal
-    FROM mart_q9
+        sum(vr_canal) AS vr_propaganda,
+        -- o canal com mais dinheiro; empate desfeito pelo nome, para o resultado não variar
+        arg_max(ds_canal, (vr_canal, ds_canal)) AS ds_canal_principal
+    FROM por_canal
     GROUP BY ano, sq_candidato
 )
 
@@ -171,6 +188,7 @@ SELECT
     q8.pc_publico,
     pr.vr_propaganda,
     pr.ds_canal_principal,
+    c.cod_ibge,                                     -- município (NULL na eleição geral)
     -- eleição geral: sg_ue é a sigla da UF; municipal: UF e nome vêm do município
     coalesce(m.sg_uf, c.sg_ue) AS sg_uf,
     coalesce(m.nm_municipio, c.sg_ue) AS nm_ue,

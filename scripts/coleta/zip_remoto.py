@@ -51,15 +51,21 @@ class ArquivoRemoto(io.RawIOBase):
 
 
 def tamanho(url: str, tentativas: int = 3) -> int:
-    """Tamanho do arquivo remoto. Com o arquivo fora do cache, o CDN às vezes ignora
-    o pedido de 1 byte (sem Content-Range); aí tenta de novo e, por fim, pergunta
-    com HEAD."""
+    """Tamanho do arquivo remoto, pelo Content-Range de um pedido de 1 byte.
+
+    Com o zip fora do cache, o CDN às vezes ignora o pedido e manda o arquivo
+    inteiro, que pode estourar o tempo: tenta de novo, com pausa. O HEAD fica por
+    último porque o CDN já respondeu Content-Length: 1 para um zip de 50 MB.
+    """
     for n in range(tentativas):
-        if (tam := tamanho_remoto(url)) is not None:
-            return tam
-        time.sleep(2 * (n + 1))
+        try:
+            if (tam := tamanho_remoto(url)) is not None:
+                return tam
+        except Exception as e:  # tempo esgotado no CDN
+            log(f"  tentativa {n + 1} de ler o tamanho de {url}: {e}")
+        time.sleep(5 * (n + 1))
     r = session.head(url, timeout=60)
-    if r.status_code == 200 and r.headers.get("content-length"):
+    if r.status_code == 200 and int(r.headers.get("content-length") or 0) > 22:  # 22 = zip vazio
         return int(r.headers["content-length"])
     raise OSError(f"o servidor não informou o tamanho de {url}")
 

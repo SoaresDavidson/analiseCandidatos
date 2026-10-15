@@ -66,7 +66,7 @@ TSE em `dados/raw/`; nomes entre aspas são do leiaute antigo (2014–2016, `.tx
 | `ELEICAO` | `cd_eleicao` | `CD_ELEICAO`, `ANO_ELEICAO`, `NR_TURNO`, `DT_ELEICAO`, `CD_TIPO_ELEICAO`, `TP_ABRANGENCIA` | R1, R5 |
 | `CARGO` | `cd_cargo` | `CD_CARGO`, `DS_CARGO` | |
 | `PARTIDO` | `ano, nr_partido` | `consulta_cand` → `NR_PARTIDO`, `SG_PARTIDO`, `NM_PARTIDO` | R2 |
-| `ESPECTRO_PARTIDO` | `ano, nr_partido` | Bolognesi, Ribeiro e Codato (2023, *Dados* 66(2)) — rodada 2018; Bolognesi, Ribeiro, Codato e Silva (2025, *Opinião Pública* 31) — rodada 2022 | ⚠️ **ainda não existe como dado no repo** |
+| `ESPECTRO_PARTIDO` | `ano, nr_partido` | Bolognesi, Ribeiro e Codato (2023, *Dados* 66(2)) — rodada 2018; Bolognesi, Ribeiro, Codato e Silva (2025, *Opinião Pública* 31) — rodada 2022 | carregado para 2022 e 2024 (`sql/15_espectro.sql`) |
 | `FEDERACAO` | `ano, nr_federacao` | `NR_FEDERACAO`, `SG_FEDERACAO`, `DS_COMPOSICAO_FEDERACAO` (2022+) | a mesma federação muda de número entre eleições (PSDB/Cidadania: 1 → 100): série da Q5 por composição, não por número |
 | `PARTIDO_FEDERACAO` | `ano, nr_partido` | idem | modelo do Dudu, com ano no lugar de `id_eleicao` |
 | `POLITICO` | `nr_titulo_eleitoral` | `NR_TITULO_ELEITORAL_CANDIDATO` (LPAD 12), `NM_CANDIDATO`, `DT_NASCIMENTO`, `SG_UF_NASCIMENTO` | valores divergem entre eleições: usar os da candidatura mais recente |
@@ -149,7 +149,7 @@ arquivos. A coluna "Afeta" usa a numeração da lista de 10; "fora da lista" mar
 
 | # | Falta | Afeta | Situação e como resolver |
 |---|---|---|---|
-| F1 | **Espectro partidário não existe como dado**: `modelo.espectro_partido` está criada em `sql/00_modelo.sql`, mas não há CSV nem coletor | Q6, Q7 | **Aberto.** Montar `espectro_partido.csv` a partir das duas rodadas de Bolognesi et al., com a fonte por linha. PRD (2023) não está em nenhuma: decidir e documentar |
+| F1 | **Espectro partidário não existe como dado**: `modelo.espectro_partido` está criada em `sql/00_modelo.sql`, mas não há CSV nem coletor | Q6, Q7 | **Resolvido para 2022 e 2024** (`sql/15_espectro.sql`): a tabela do artigo de 2025 está, sem alteração, em `dados/referencia/espectro_bolognesi_2025.csv`, com o de-para das siglas em `espectro_de_para_tse.csv`. Mobiliza = PMN renomeado; PRD = média de PTB e Patriota, marcado como estimado. **Falta** 2014–2020 (rodada 2018), que exige o de-para das siglas antigas |
 | F2 | **População só de 2026**: `coleta_ibge.py` baixa a 6579 com `p/last` | Q3, Q6 | **Aberto.** Pedir os anos de eleição de cada pergunta (`p/2008,2012` para a Q3). A 6579 não tem 2022 nem 2023: para 2022, usar a 9606 (Censo) |
 | F3 | **IDHM municipal sem coletor**, e só existe até 2010 | Q3 | **Aberto.** Atlas Brasil (download manual); o `dados/raw/pnud/idhm/` atual só tem Brasil e UF. Com a Q3 em 2008–2012, o IDHM 2010 casa com o período e deixa de ser só validação |
 | F4 | Propostas de presidente não são coletadas | fora da lista | **Sem efeito.** Propostas de governo saíram da lista de 10 |

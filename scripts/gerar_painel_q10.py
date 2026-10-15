@@ -7,9 +7,15 @@ Quem entra na busca: quem se elegeu pelo menos uma vez entre 2002 e 2024 nas 6 U
 Entram todas as participações dessas pessoas, inclusive derrotas. 2026 fica de fora
 (fl_divulgado, #15).
 
+Patrimônio e campanha de cada pessoa (sql/14_q10_patrimonio.sql) vão em 64 arquivos
+pequenos, docs/q10-painel/financas/NN.json (pessoa i no arquivo i % 64): a página só
+busca o da pessoa aberta. Por isso essa parte precisa do site local
+(uv run python -m scripts.servir_painel).
+
 Pré-requisitos (da raiz do repositório):
-    uv run python -m scripts.coleta.coleta_tse candidatos historico --uf AM,GO,MA,MT,RS,SE
-    uv run python scripts/carregar_staging.py 00_limpeza 04_politico 07_q10
+    uv run python -m scripts.coleta.coleta_tse candidatos historico recorte_remoto --uf AM,GO,MA,MT,RS,SE
+    uv run python -m scripts.coleta.coleta_ibge ipca
+    uv run python scripts/carregar_staging.py 00_limpeza 04_politico 07_q10 13_ficha 14_q10
 
 Uso:
     uv run python scripts/gerar_painel_q10.py
@@ -27,6 +33,10 @@ RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
 MODELO = RAIZ / "docs" / "q10-painel" / "modelo.html"
 SAIDA = RAIZ / "docs" / "q10-painel" / "index.html"
+FINANCAS = RAIZ / "docs" / "q10-painel" / "financas"
+PARTES = 64
+# grupos de bem de q10_bem_tipo, na ordem do gráfico (de baixo para cima)
+GRUPOS = ["IMOVEIS", "EMPRESAS", "APLICACOES", "DINHEIRO", "VEICULOS", "OUTROS", "SEM TIPO"]
 
 RESULTADO = {"ELEITO": 0, "NAO ELEITO": 1, "SEM RESULTADO": 2}
 
@@ -59,6 +69,41 @@ INNER JOIN eleitos USING (nr_titulo_eleitoral)
 WHERE t.fl_divulgado
 ORDER BY t.nr_titulo_eleitoral, t.ano
 """
+
+
+def ler_financas(con: duckdb.DuckDBPyConnection, titulos: list[str]) -> tuple[dict[int, list], list[list]]:
+    """Por pessoa (índice em titulos): [ano - 2000, receita, público, despesa, bens] de cada eleição.
+
+    bens = [tipo, valor, tipo, valor, ...] (tipo indexa a lista de tipos); None quando
+    não declarou nenhum bem. Receita e despesa: None antes de 2018.
+    """
+    con.execute("CREATE OR REPLACE TEMP TABLE pessoa_q10 (nr_titulo_eleitoral VARCHAR, i INTEGER)")
+    con.executemany("INSERT INTO pessoa_q10 VALUES (?, ?)", [(t, i) for i, t in enumerate(titulos)])
+    tipos: list[list] = []
+    idx_tipo: dict[tuple[str, str], int] = {}
+    bens: dict[int, list] = {}
+    for cand, tipo, grupo, valor in con.execute(
+        """SELECT id_candidatura, coalesce(ds_tipo_bem, ''), ds_grupo, vr_bem FROM q10_bem_tipo
+           WHERE nr_titulo_eleitoral IN (SELECT nr_titulo_eleitoral FROM pessoa_q10)
+           ORDER BY id_candidatura, vr_bem DESC"""
+    ).fetchall():
+        if (tipo, grupo) not in idx_tipo:
+            idx_tipo[(tipo, grupo)] = len(tipos)
+            tipos.append([tipo, GRUPOS.index(grupo)])
+        bens.setdefault(cand, []).extend([idx_tipo[(tipo, grupo)], round(float(valor))])
+
+    def reais(x: object) -> int | None:
+        return None if x is None else round(float(x))
+
+    financas: dict[int, list] = {}
+    for i, ano, cand, receita, publico, despesa in con.execute(
+        """SELECT p.i, f.ano, f.id_candidatura, f.vr_receita, f.vr_publico, f.vr_despesa
+           FROM q10_financas AS f INNER JOIN pessoa_q10 AS p USING (nr_titulo_eleitoral)
+           WHERE f.ano <= 2024 AND (f.vr_patrimonio IS NOT NULL OR f.vr_receita IS NOT NULL)
+           ORDER BY p.i, f.ano"""
+    ).fetchall():
+        financas.setdefault(i, []).append([ano - 2000, reais(receita), reais(publico), reais(despesa), bens.get(cand)])
+    return financas, tipos
 
 
 def main() -> None:
@@ -120,7 +165,16 @@ def main() -> None:
     totais = con.execute(
         "SELECT count(*), count(DISTINCT nr_titulo_eleitoral) FROM q10_linha_do_tempo WHERE fl_divulgado"
     ).fetchone()
+    financas, tipos = ler_financas(con, list(pessoas))
+    fatores = dict(con.execute("SELECT ano, fator_2024 FROM q10_ipca").fetchall())
     con.close()
+
+    FINANCAS.mkdir(exist_ok=True)
+    for parte in range(PARTES):
+        bloco = {i: financas[i] for i in range(parte, len(pessoas), PARTES) if i in financas}
+        (FINANCAS / f"{parte:02d}.json").write_text(
+            json.dumps(bloco, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
+        )
 
     dados = {
         "pessoas": list(pessoas.values()),
@@ -130,6 +184,13 @@ def main() -> None:
         "sobrevivencia": sobrevivencia,
         "curva": curva,
         "totais": {"participacoes": totais[0], "pessoas": totais[1], "eleitos": len(pessoas)},
+        # tipos de bem do TSE e o grupo de cada um; fator do IPCA para reais de 2024
+        "fin": {
+            "tipos": tipos,
+            "grupos": GRUPOS,
+            "partes": PARTES,
+            "fator": {a: round(f, 6) for a, f in fatores.items()},
+        },
     }
     texto = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
     assert "</script" not in texto

@@ -114,6 +114,18 @@ def coletar_sidra(force: bool, _ufs: Ufs) -> None:
     log(f"  baixado {destino.relative_to(ROOT)} ({len(linhas) - 1} linhas)")
 
 
+def coletar_ipca(force: bool, _ufs: Ufs) -> None:
+    """IPCA (número-índice, dez/1993 = 100) de agosto de cada ano de eleição.
+
+    Agosto é o mês do registro da candidatura, quando os bens são declarados: corrige
+    o patrimônio pela inflação na carreira do político (Q10). Fica fora de `sidra`
+    porque lá os metadados (servicodados.ibge.gov.br) podem falhar no certificado.
+    """
+    log("[ibge/ipca]")
+    meses = ",".join(f"{ano}08" for ano in range(2006, 2026, 2))
+    baixar_json(f"{SIDRA}/t/1737/n1/all/v/2266/p/{meses}", RAW / "ibge" / "sidra" / "1737_ipca_agosto.json", force)
+
+
 def coletar_pib(force: bool, _ufs: Ufs) -> None:
     """PIB dos municípios: pega a última edição publicada no FTP.
 
@@ -151,6 +163,7 @@ def coletar_malha(force: bool, ufs: Ufs) -> None:
 
 COLETORES = {
     "sidra": coletar_sidra,
+    "ipca": coletar_ipca,
     "pib": coletar_pib,
     "malha": coletar_malha,
 }

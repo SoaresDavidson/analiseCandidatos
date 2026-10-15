@@ -125,6 +125,14 @@ svg text { font-family: var(--fonte); }
 #f-busca { flex: 1 1 320px; }
 .aviso-carga { background: var(--branco); border: 2px solid var(--ouro); border-radius: 12px; padding: 14px 18px; font-weight: 600; }
 .aviso-carga code { background: var(--bege); padding: 1px 6px; border-radius: 4px; }
+body.so-ficha { background: transparent; }
+body.so-ficha main, body.so-ficha .sub { display: none; }
+.pt { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: 0; }
+.espectro-ficha { display: grid; gap: 6px; }
+.regua-ficha { position: relative; height: 10px; border-radius: 5px; margin: 10px 0 2px; background: linear-gradient(90deg, #8a0f16, #c53d33 22%, #e57f68 38%, #dcd9d1 50%, #73a7d4 62%, #2f72b4 78%, #0c3f7c); }
+.regua-ficha i { position: absolute; top: -5px; width: 20px; height: 20px; margin-left: -10px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px var(--texto); }
+.regua-ficha em { position: absolute; top: -4px; bottom: -4px; border-left: 2px dashed var(--texto); }
+.regua-rot { display: flex; justify-content: space-between; font-size: 12px; color: var(--texto-2); }
 .mais-btn { justify-self: center; border: 2px solid var(--ouro); background: #fff; border-radius: 8px; padding: 8px 22px; font-weight: 700; cursor: pointer; }
 .mais-btn:hover { background: #fff6d6; }
 dialog { border: 0; border-radius: 16px; padding: 0; width: min(760px, calc(100vw - 24px)); max-height: calc(100vh - 32px); box-shadow: 0 20px 50px rgb(0 0 0 / .3); color: var(--texto); }
@@ -200,6 +208,7 @@ ol.tempo li.r0 em { color: var(--verde-esc); }
       </div>
     </div>
     <div class="numeros" id="f-numeros"></div>
+    <section class="espectro-ficha" id="f-espectro"></section>
     <div class="ficha-grade">
       <section><h3>Perfil</h3><div id="f-perfil"></div></section>
       <section><h3>Campanha</h3><div id="f-campanha"></div></section>
@@ -221,6 +230,9 @@ ol.tempo li.r0 em { color: var(--verde-esc); }
     });
 
   function iniciar(D) {
+  // aberta por cima de outra aba do painel (#c=...&so=1): mostra só a ficha
+  const SO_FICHA = /(^|[#&])so=1/.test(location.hash);
+  if (SO_FICHA) document.body.classList.add("so-ficha");
   document.getElementById("carregando").hidden = true;
   const UF_NOME = { AM: "Amazonas", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", RS: "Rio Grande do Sul", SE: "Sergipe" };
   const CARGO = { 3: "Governador", 5: "Senador", 6: "Deputado federal", 7: "Deputado estadual", 11: "Prefeito", 13: "Vereador" };
@@ -246,7 +258,8 @@ ol.tempo li.r0 em { color: var(--verde-esc); }
   //           transferência, doadores, propaganda, canal principal, foto, carreira]
   const E = D.eleitos.map((r, id) => {
     const [local, uf] = lugar(r[3]);
-    const e = { id, ano: 2000 + r[0], uf: D.ufs[r[1]], cargo: r[2], local, partido: D.partidos[r[4]], nome: nomeProprio(r[5]), civil: nomeProprio(r[6]), idade: r[7], genero: D.generos[r[8]], cor: D.cores[r[9]], grau: D.graus[r[10]], ocupacao: D.ocupacoes[r[11]], situacao: r[12], votos: r[13], munVotos: lugar(r[14])[0], patrimonio: r[15], bens: r[16], receita: r[17], publico: r[18], privado: r[19], proprio: r[20], partidario: r[21], transf: r[22], doadores: r[23], propaganda: r[24], canal: r[25], carreira: r[26] };
+    const e = { id, ano: 2000 + r[0], uf: D.ufs[r[1]], cargo: r[2], local, partido: D.partidos[r[4]], nome: nomeProprio(r[5]), civil: nomeProprio(r[6]), idade: r[7], genero: D.generos[r[8]], cor: D.cores[r[9]], grau: D.graus[r[10]], ocupacao: D.ocupacoes[r[11]], situacao: r[12], votos: r[13], munVotos: lugar(r[14])[0], patrimonio: r[15], bens: r[16], receita: r[17], publico: r[18], privado: r[19], proprio: r[20], partidario: r[21], transf: r[22], doadores: r[23], propaganda: r[24], canal: r[25], carreira: r[26], cod: r[27] };
+    e.espectro = D.espectro[`${e.ano}|${e.partido}`] || null;   // [nota 0–10, categoria, observação]
     e.busca = semAcento([e.nome, e.civil, local, e.partido, UF_NOME[uf] || ""].join(" "));
     return e;
   });
@@ -285,6 +298,7 @@ ol.tempo li.r0 em { color: var(--verde-esc); }
       [brl(mediana(xs.map(e => e.patrimonio || 0))), "patrimônio típico declarado"],
       [brl(mediana(comReceita.map(e => e.receita))), "campanha típica (arrecadado)"],
       [pub == null ? "–" : fmt(pub, 0) + "%", "tiveram metade ou mais da campanha paga pelo fundo público"],
+      [pct(e => e.espectro && e.espectro[0] > (D.regua[1] + D.regua[3]) / 2), "são de partidos à direita do meio da régua do espectro"],
     ].map(([v, r]) => `<div class="num"><b>${v}</b><span>${r}</span></div>`).join("");
     document.getElementById("perfil-nota").textContent = "Mediana: metade dos eleitos está acima e metade abaixo. Patrimônio e campanha como foram declarados ao TSE; quem não declarou bens conta como zero.";
   }
@@ -296,23 +310,46 @@ ol.tempo li.r0 em { color: var(--verde-esc); }
     const xs = doFiltro().filter(e => termos.every(t => e.busca.includes(t))).sort(ORDENS[st.ordem]);
     document.getElementById("contagem").textContent = xs.length ? `${int(xs.length)} eleito${xs.length > 1 ? "s" : ""}${st.busca ? " encontrados" : ""}. Mostrando ${int(Math.min(st.n, xs.length))}.` : "Ninguém encontrado com essa busca neste filtro.";
     const box = document.getElementById("cartoes");
-    box.innerHTML = xs.slice(0, st.n).map(e => `<button type="button" class="cand" data-id="${e.id}">${foto(e)}<span class="cand-txt"><b>${esc(e.nome)}</b><small>${esc(e.partido)} · ${esc(e.local)}${st.uf === "TODAS" && e.cargo >= 11 ? ` (${e.uf})` : ""}</small><span class="cand-num">${st.ordem === "patrimonio" ? `${brl(e.patrimonio || 0)} em bens` : st.ordem === "receita" ? `${brl(e.receita)} arrecadados` : `${int(e.votos)} votos`}</span></span></button>`).join("");
+    box.innerHTML = xs.slice(0, st.n).map(e => `<button type="button" class="cand" data-id="${e.id}">${foto(e)}<span class="cand-txt"><b>${esc(e.nome)}</b><small>${pontoEspectro(e)}${esc(e.partido)} · ${esc(e.local)}${st.uf === "TODAS" && e.cargo >= 11 ? ` (${e.uf})` : ""}</small><span class="cand-num">${st.ordem === "patrimonio" ? `${brl(e.patrimonio || 0)} em bens` : st.ordem === "receita" ? `${brl(e.receita)} arrecadados` : `${int(e.votos)} votos`}</span></span></button>`).join("");
     document.getElementById("mais").hidden = xs.length <= st.n;
   }
   document.getElementById("cartoes").addEventListener("click", ev => { const b = ev.target.closest("button.cand"); if (b) abrir(E[+b.dataset.id]); });
 
   // ---------- 3. a ficha ----------
   const dlg = document.getElementById("ficha");
-  document.getElementById("fechar").addEventListener("click", () => dlg.close());
-  dlg.addEventListener("click", ev => { if (ev.target === dlg) dlg.close(); });
-  dlg.addEventListener("close", () => { try { if (location.hash) history.replaceState(null, "", location.pathname + location.search); } catch (err) { /* endereço fixo */ } });
+  // fecha e, se a ficha estiver por cima de outra aba, avisa o painel na hora. Não espera o evento
+  // "close": o navegador só o dispara no próximo quadro desenhado, e isso pode atrasar
+  const avisarPainel = () => { if (SO_FICHA && window.parent !== window) window.parent.postMessage({ tipo: "fechar-ficha" }, "*"); };
+  const fecharFicha = () => { if (dlg.open) dlg.close(); avisarPainel(); };
+  document.getElementById("fechar").addEventListener("click", fecharFicha);
+  dlg.addEventListener("click", ev => { if (ev.target === dlg) fecharFicha(); });
+  dlg.addEventListener("cancel", ev => { ev.preventDefault(); fecharFicha(); });   // tecla Esc
+  dlg.addEventListener("close", () => {
+    avisarPainel();
+    try { if (location.hash && !SO_FICHA) history.replaceState(null, "", location.pathname + location.search); } catch (err) { /* endereço fixo */ }
+  });
   const linha = (k, v) => `<div class="linha"><span>${k}</span><b>${v}</b></div>`;
+  // espectro do partido (sql/15_espectro.sql): Bolognesi, Ribeiro, Codato e Silva (2025)
+  const CATS = ["EXTREMA ESQUERDA", "ESQUERDA", "CENTRO-ESQUERDA", "CENTRO", "CENTRO-DIREITA", "DIREITA", "EXTREMA DIREITA"];
+  const CAT_COR = ["#8a0f16", "#c53d33", "#e57f68", "#dcd9d1", "#73a7d4", "#2f72b4", "#0c3f7c"];
+  const corCat = c => CAT_COR[Math.max(0, CATS.indexOf(c))];
+  const pontoEspectro = e => e.espectro ? `<i class="pt" style="background:${corCat(e.espectro[1])}" title="${e.espectro[1].toLowerCase()}"></i>` : "";
+  function fichaEspectro(e) {
+    if (!e.espectro) return `<h3>Espectro do partido</h3><p class="nota">${esc(e.partido)} não tem nota na pesquisa usada.</p>`;
+    const [v, cat, obs] = e.espectro, [sgE, vE, sgD, vD] = D.regua, meio = (vE + vD) / 2;
+    return `<h3>Espectro do partido</h3>
+      <p><b>${esc(e.partido)}: ${fmt(v, 2).replace(".", ",")}</b> na escala de 0 (esquerda) a 10 (direita), <b>${cat.toLowerCase()}</b>; ${v < meio ? "à esquerda" : "à direita"} do meio da régua.</p>
+      <div class="regua-ficha"><i style="left:${v * 10}%;background:${corCat(cat)}"></i><em style="left:${meio * 10}%"></em></div>
+      <div class="regua-rot"><span>◂ ${sgE} ${fmt(vE, 2)}</span><span>meio ${fmt(meio, 2)}</span><span>${sgD} ${fmt(vD, 2)} ▸</span></div>
+      <p class="nota">Nota dada por cientistas políticos (Bolognesi, Ribeiro, Codato e Silva, 2025, rodada 2022).${obs ? " " + esc(obs[0].toUpperCase() + obs.slice(1)) + "." : ""}</p>`;
+  }
   function abrir(e) {
     document.getElementById("f-foto").outerHTML = foto(e, "grande").replace('class="foto', 'id="f-foto" class="foto');
     document.getElementById("f-situacao").textContent = frase(e.situacao).replace(/ por qp$/, " por quociente partidário").replace(/ por media$/, " por média");
     document.getElementById("f-nome").textContent = e.nome;
     document.getElementById("f-civil").textContent = e.civil ? `Nome civil: ${e.civil}` : "";
     document.getElementById("f-cargo-local").textContent = `${CARGO[e.cargo]} · ${e.local}${e.cargo >= 11 ? ` (${e.uf})` : ""} · ${e.partido} · ${e.ano}`;
+    document.getElementById("f-espectro").innerHTML = fichaEspectro(e);
     document.getElementById("f-numeros").innerHTML = [
       [int(e.votos), `votos${e.cargo < 11 && e.munVotos ? `, mais em ${esc(e.munVotos)}` : ""}`],
       [brl(e.patrimonio || 0), `em bens declarados${e.bens ? ` (${e.bens} ${e.bens > 1 ? "itens" : "item"})` : ""}`],
@@ -347,10 +384,14 @@ ol.tempo li.r0 em { color: var(--verde-esc); }
   window.abrirCandidato = (ano, sq) => {
     const i = D.sq.findIndex((s, k) => s === sq && 2000 + D.eleitos[k][0] === ano);
     if (i < 0) return false;
-    const e = E[i]; st.ano = e.ano; st.cargo = e.cargo; st.uf = e.uf; tudo(); abrir(e); return true;
+    const e = E[i];
+    if (!SO_FICHA) { st.ano = e.ano; st.cargo = e.cargo; st.uf = e.uf; tudo(); }
+    abrir(e); return true;
   };
   const m = /c=(\d{4})-(\d+)/.exec(location.hash);
   if (m) window.abrirCandidato(+m[1], +m[2]);
+  // em modo ficha, o painel troca só o # para abrir outro eleito
+  if (SO_FICHA) window.addEventListener("hashchange", () => { const h = /c=(\d{4})-(\d+)/.exec(location.hash); if (h) window.abrirCandidato(+h[1], +h[2]); });
   }
 })();
 </script>

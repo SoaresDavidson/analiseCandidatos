@@ -83,8 +83,16 @@ RECORTE_REMOTO = [
         [2018, 2020, 2022, 2024],
         ("receitas_candidatos_2", "despesas_contratadas_candidatos_2"),
     ),
-    # ficha dos candidatos: patrimônio declarado e votos dos eleitos de 2022 e 2024
-    ("candidatos", "bens_candidato", CANDIDATOS["bens_candidato"], [2022, 2024], ("bem_candidato_",)),
+    # patrimônio declarado: a ficha dos eleitos e a evolução na carreira (Q10). O TSE
+    # só publica bens de 2006 em diante.
+    (
+        "candidatos",
+        "bens_candidato",
+        CANDIDATOS["bens_candidato"],
+        [2006, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022, 2024],
+        ("bem_candidato_",),
+    ),
+    # votos dos eleitos de 2022 e 2024 (ficha dos candidatos)
     (
         "resultados",
         "votacao_candidato_munzona",

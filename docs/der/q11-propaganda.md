@@ -1,5 +1,7 @@
 # Q11 — critério de canal de propaganda
 
+> **Numeração antiga.** Esta Q11 é a **Q9** da lista de 10 perguntas. Correspondência no [`der-geral.md`](der-geral.md#correspondência-com-a-lista-antiga-de-12).
+
 Documento de decisão. Implementação em
 [`sql/03_tipo_despesa.sql`](../../sql/03_tipo_despesa.sql) e no mart `mart_q11`.
 Medido sobre o Piauí, 2014–2026: **367.004 despesas**, 81 tipos distintos, dos

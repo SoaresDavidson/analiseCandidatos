@@ -1,4 +1,4 @@
-# DER geral — as 12 perguntas num modelo só
+# DER geral — as 10 perguntas num modelo só
 
 Une os DERs do Davi (PR #4), do Enrico (PR #2), do Dudu (PR #3) e da Duda
 (`der-duda.md`), com as chaves corrigidas pela revisão de 23/09/2026
@@ -71,7 +71,7 @@ TSE em `dados/raw/`; nomes entre aspas são do leiaute antigo (2014–2016, `.tx
 | `PARTIDO_FEDERACAO` | `ano, nr_partido` | idem | modelo do Dudu, com ano no lugar de `id_eleicao` |
 | `POLITICO` | `nr_titulo_eleitoral` | `NR_TITULO_ELEITORAL_CANDIDATO` (LPAD 12), `NM_CANDIDATO`, `DT_NASCIMENTO`, `SG_UF_NASCIMENTO` | valores divergem entre eleições: usar os da candidatura mais recente |
 | `CANDIDATURA` | `id_candidatura` | `SQ_CANDIDATO`, `SG_UE`, `CD_CARGO`, `CD_GRAU_INSTRUCAO`, `DS_GENERO`, `DS_COR_RACA`, `DS_OCUPACAO`, `DS_SIT_TOT_TURNO` | R4. Cor/raça fica **aqui**, não em `POLITICO`: muda entre eleições. `fl_eleito` sai da **descrição** (ELEITO, ELEITO POR QP, ELEITO POR MEDIA, MEDIA), não do código, que muda de sentido entre anos |
-| `BEM_CANDIDATO` | `id_candidatura, nr_ordem_bem` | `SQ_CANDIDATO`, `NR_ORDEM_BEM_CANDIDATO` (**2016: `NR_ORDEM_CANDIDATO`**), `DS_TIPO_BEM_CANDIDATO`, `VR_BEM_CANDIDATO` | cobre a leitura "$$ = patrimônio" da Q2 |
+| `BEM_CANDIDATO` | `id_candidatura, nr_ordem_bem` | `SQ_CANDIDATO`, `NR_ORDEM_BEM_CANDIDATO` (**2016: `NR_ORDEM_CANDIDATO`**), `DS_TIPO_BEM_CANDIDATO`, `VR_BEM_CANDIDATO` | patrimônio declarado da Q2 |
 
 ### Resultados
 
@@ -88,7 +88,7 @@ TSE em `dados/raw/`; nomes entre aspas são do leiaute antigo (2014–2016, `.tx
 |---|---|---|---|
 | `AGENTE_FINANCEIRO` | `id_agente` | 2018+: `NR_CPF_CNPJ_DOADOR`/`_FORNECEDOR`, `NM_*_RFB`, `CD_CNAE_*`; 2014–16: "CPF/CNPJ do doador", "Nome do doador (Receita Federal)", "Cod setor econômico do doador" | R9. CNAE vem com 7 dígitos no antigo e 5 no novo |
 | `ORGAO_PARTIDARIO` | `id_orgao` | 2014: `receitas_partidos`/`receitas_comites` → "Sequencial Diretorio"/"Sequencial Comite", "Tipo diretorio"/"Tipo Comite", "UF", "Sigla  Partido", "CNPJ Prestador Conta"; 2018+: `receitas_orgaos_partidarios` → `SQ_PRESTADOR_CONTAS`, `DS_ESFERA_PARTIDARIA`, `SG_UF`, `NR_PARTIDO`, `NR_CNPJ_PRESTADOR_CONTA` | **nova**. Em 2014, R$ 1,34 bi de empresas entraram em partidos e R$ 406 mi em comitês. O antigo só traz a sigla: o número sai de `PARTIDO` por (ano, sigla) |
-| `FONTE_RECURSO` | `id_fonte_recurso` | 2018+: `DS_FONTE_RECEITA`, `DS_ORIGEM_RECEITA`; 2014–16: "Fonte recurso", "Tipo receita" | `tp_origem` é regra do grupo (Q10) |
+| `FONTE_RECURSO` | `id_fonte_recurso` | 2018+: `DS_FONTE_RECEITA`, `DS_ORIGEM_RECEITA`; 2014–16: "Fonte recurso", "Tipo receita" | `tp_origem` é regra do grupo (Q8) |
 | `RECEITA_CAMPANHA` | `id_receita` | 2018+: `SQ_CANDIDATO`, `SQ_RECEITA`, `DT_RECEITA`, `VR_RECEITA`; 2014–16: "Sequencial Candidato", "Data da receita", "Valor receita", "CPF/CNPJ do doador originário" | pertence a **uma** candidatura **ou** a um órgão. Doador originário só em 2014–2016: de 2018 em diante vem em arquivo separado, com várias linhas por receita e `SQ_RECEITA` sentinela em ~97% das linhas (não liga) |
 | `TIPO_DESPESA` | `id_tipo_despesa` | 2018+: `DS_ORIGEM_DESPESA`; 2014–16: "Tipo despesa" | canal de propaganda: regra do Enrico |
 | `DESPESA_CAMPANHA` | `id_despesa` | 2018+: `SQ_CANDIDATO`, `SQ_DESPESA`, `DT_DESPESA`, `VR_DESPESA_CONTRATADA`, `DS_DESPESA`; 2014–16: "Sequencial Candidato", "Data da despesa", "Valor despesa", "Descriçao da despesa" (sic) | |
@@ -104,41 +104,62 @@ TSE em `dados/raw/`; nomes entre aspas são do leiaute antigo (2014–2016, `.tx
 
 ## 3. Caminho de cada pergunta
 
-| # | Pergunta | Caminho no modelo |
-|---|---|---|
-| Q1 | $ por cadeira | `DESPESA_CAMPANHA` → `CANDIDATURA` → agrupa por (`cd_eleicao`, `sg_ue`, `cd_cargo`) ÷ `VAGA.qt_vaga`. Funciona para eleição geral também, porque `VAGA` é por unidade eleitoral |
-| Q2 | Taxa de sucesso × $$ | `CANDIDATURA.fl_eleito` × soma de `DESPESA_CAMPANHA` (gasto) **ou** de `BEM_CANDIDATO` (patrimônio) — ⚠️ o grupo precisa decidir qual leitura |
-| Q3 | Perfil do município × partido × votação × abstenção | `MUNICIPIO_ANO` + `MUNICIPIO_CENSO` (+ `IDHM_MUNICIPIO` 2010) ↔ `VOTACAO_CANDIDATO_MUNICIPIO` → `CANDIDATURA` → `PARTIDO`; abstenção por cargo em `COMPARECIMENTO_MUNICIPIO` |
-| Q4 | Instrução do candidato × população | `CANDIDATURA` → `GRAU_INSTRUCAO` → `NIVEL_INSTRUCAO` ← `CENSO_INSTRUCAO` |
-| Q5 | Votos de legenda × partido | `VOTACAO_LEGENDA_MUNICIPIO` → `PARTIDO` (→ `PARTIDO_FEDERACAO` → `FEDERACAO` a partir de 2022), somando as coligações |
-| Q6 | Proposta → nuvem de palavras | `PROPOSTA_GOVERNO` → `TERMO_PROPOSTA`, filtrando `CANDIDATURA.cd_cargo` (prefeito, governador, presidente) |
-| Q7 | Jovens × não jovens × viés | `CANDIDATURA.nr_idade_eleicao` + `FAIXA_ETARIA.fl_jovem`; `COMPARECIMENTO_PERFIL` e `CENSO_FAIXA_ETARIA` por município ↔ votos → `ESPECTRO_PARTIDO` |
-| Q8 | PJ × viés (doação) | `RECEITA_CAMPANHA` (de candidatura **e** de órgão) → `AGENTE_FINANCEIRO` com `tp_agente = EMPRESA` (direto ou originário) → `PARTIDO` → `ESPECTRO_PARTIDO`. Para não contar duas vezes: dinheiro de empresa conta na entrada (candidato ou órgão); o originário só rastreia para qual candidato o dinheiro do partido foi |
-| Q9 | Viés do município na linha do tempo | `VOTACAO_CANDIDATO_MUNICIPIO` → `CANDIDATURA` → `PARTIDO` → `ESPECTRO_PARTIDO`, por `MUNICIPIO`/`cd_regiao_imediata` e `ELEICAO.ano` |
-| Q10 | Eleito × recurso público/privado | `RECEITA_CAMPANHA` → `FONTE_RECURSO.tp_origem` × `CANDIDATURA.fl_eleito` |
-| Q11 | Onde investe em propaganda | `DESPESA_CAMPANHA` → `TIPO_DESPESA.fl_propaganda`/`ds_canal_propaganda`; nuvem sobre `ds_despesa` |
-| Q12 | Linha do tempo do político | `POLITICO` → `CANDIDATURA` (2002–2026) → `PARTIDO`, `CARGO`, `ELEICAO` |
+Numeração da lista de 10 perguntas entregue ao professor. E.P. = 2018, 2020, 2022 e 2024.
+
+| # | Pergunta | Período | Caminho no modelo |
+|---|---|---|---|
+| Q1 | Quanto custa uma cadeira | E.P. | `DESPESA_CAMPANHA` → `CANDIDATURA` → agrupa por (`cd_eleicao`, `sg_ue`, `cd_cargo`) ÷ `VAGA.qt_vaga`. Funciona para eleição geral também, porque `VAGA` é por unidade eleitoral |
+| Q2 | Taxa de sucesso por patrimônio declarado | E.P. | `CANDIDATURA.fl_eleito` × soma de `BEM_CANDIDATO.vr_bem` por candidatura |
+| Q3 | Índices do município × eleitos e partidos mais vitoriosos | 2008–2012 | `MUNICIPIO_ANO` + `IDHM_MUNICIPIO` (2010) ↔ `CANDIDATURA` eleitas → `PARTIDO`; alienação em `COMPARECIMENTO_MUNICIPIO` (só existe de 2016 em diante, F10) |
+| Q4 | Escolaridade do candidato × dos eleitores × chance de eleição | 2022, 2024 | `CANDIDATURA` → `GRAU_INSTRUCAO` → `NIVEL_INSTRUCAO` ← `CENSO_INSTRUCAO`, com `CANDIDATURA.fl_eleito` |
+| Q5 | Eleitos por votos de legenda | E.P. | `VOTACAO_LEGENDA_MUNICIPIO` → `PARTIDO` (→ `PARTIDO_FEDERACAO` → `FEDERACAO` a partir de 2022), somando as coligações, ao lado de `VOTACAO_CANDIDATO_MUNICIPIO` e `VAGA` |
+| Q6 | Idade média do município × alternância de poder × idade dos eleitos | E.P. | `CENSO_FAIXA_ETARIA` por município; `CANDIDATURA.nr_idade_eleicao` + `FAIXA_ETARIA.fl_jovem` dos eleitos; troca de `PARTIDO` do prefeito eleito entre eleições; `COMPARECIMENTO_PERFIL` para o comparecimento por idade |
+| Q7 | Viés do município na linha do tempo | E.P. | `VOTACAO_CANDIDATO_MUNICIPIO` → `CANDIDATURA` → `PARTIDO` → `ESPECTRO_PARTIDO`, por `MUNICIPIO`/`cd_regiao_imediata` e `ELEICAO.ano` |
+| Q8 | Sucesso × repasses públicos e outras fontes | E.P. | `RECEITA_CAMPANHA` → `FONTE_RECURSO.tp_origem` × `CANDIDATURA.fl_eleito` |
+| Q9 | Onde investe em propaganda | E.P. | `DESPESA_CAMPANHA` → `TIPO_DESPESA.fl_propaganda`/`ds_canal_propaganda`; nuvem sobre `ds_despesa` |
+| Q10 | Sobrevivência da carreira do político | 2002–2026 | `POLITICO` → `CANDIDATURA` (2002–2026) → `PARTIDO`, `CARGO`, `ELEICAO` |
+
+### Correspondência com a lista antiga de 12
+
+Os DERs individuais, os arquivos `q10-publico-privado.md`, `q11-propaganda.md` e `q12-linha-do-tempo.md` e o `docs/estrategia.md` usam a numeração antiga.
+
+| Lista antiga | Lista de 10 |
+|---|---|
+| Q1 $ por cadeira | Q1 |
+| Q2 Taxa de sucesso × $$ | Q2, só na leitura "$$ = patrimônio" |
+| Q3 Perfil do município | Q3 |
+| Q4 Instrução do candidato × população | Q4 |
+| Q5 Votos de legenda | Q5 |
+| Q6 Propostas de governo | saiu da lista |
+| Q7 Jovens × não jovens × viés | Q6 |
+| Q8 Doação de PJ × viés | saiu da lista |
+| Q9 Viés do município na linha do tempo | Q7 |
+| Q10 Eleito × recurso público/privado | Q8 |
+| Q11 Onde investe em propaganda | Q9 |
+| Q12 Linha do tempo do político | Q10 |
+
+`PROPOSTA_GOVERNO`, `TERMO_PROPOSTA` (antiga Q6) e `ORGAO_PARTIDARIO` (antiga Q8) continuam no modelo, mas nenhuma pergunta da lista de 10 depende deles.
 
 ---
 
 ## 4. Dados faltantes
 
 O modelo está completo; **os dados, não**. Levantado pela revisão e conferido nos
-arquivos.
+arquivos. A coluna "Afeta" usa a numeração da lista de 10; "fora da lista" marca o que só servia a uma pergunta que saiu.
 
-| # | Falta | Afeta | Como resolver |
+| # | Falta | Afeta | Situação e como resolver |
 |---|---|---|---|
-| F1 | **Espectro partidário não existe como dado** — nem CSV, nem coletor | Q7, Q8, Q9 | Montar `espectro_partido.csv` a partir das duas rodadas de Bolognesi et al., com a fonte por linha. PRD (2023) não está em nenhuma: decidir e documentar |
-| F2 | **População só de 2026**: `coleta_ibge.py` baixa a 6579 com `p/last` | Q3, Q7 | `p/2016,2018,2020,2024`. A 6579 não tem 2022 nem 2023: para 2022, somar a 9606 (Censo) |
-| F3 | **IDHM municipal sem coletor**, e só existe até 2010 | Q3 | Atlas Brasil (download manual). Tratar como validação, com PIB per capita e renda 2022 como eixo |
-| F4 | **Propostas de presidente não são coletadas**: só `_PI.zip` | Q6 | Baixar também `proposta_governo_{2018,2022,2026}_BR.zip` (~43 MB, 13–14 PDFs cada). Em 2024 (municipal) não existe `_BR` |
-| F5 | Prestação de contas está extraída **só do PI** no disco, embora o `main` diga nacional | Q1, Q3, Q8 | Re-extrair o `_BRASIL` dos zips que já estão no disco (sem rebaixar 4,5 GB) |
-| F6 | `receitas_candidatos_2014_brasil.txt` e `receitas_comites_2014_brasil.txt` têm aspas sem escape | Q8 | Dobrar as aspas internas antes de ler; com `ignore_errors` somem 11.734 linhas e R$ 206 mi |
-| F7 | Staging do Enrico não acha arquivo com a extração nacional e não traz o doador originário | Q1, Q2, Q8, Q10, Q11 | Globs para `_brasil`/`_BRASIL`, ano pelo conteúdo e não pelo nome, colunas do originário no `stg_receita` |
-| F8 | Comparecimento por idade só do PI | Q7 | Aceitar o recorte de 224 municípios ou coletar nacional |
-| F9 | Q8 só tem 2014 e 2016 | Q8 | 2008–2012 existem no CDN; 2002–2006 têm < 1 MB (suspeito) |
-| F10 | Votos por candidato só de 2016 em diante | Q12 | 2002–2014 mostram eleito/não eleito, sem votos. Coletar `votacao_candidato_munzona` antiga, se a linha do tempo precisar de votos |
-| F11 | Malha só do PI | Q9 | `/api/v3/malhas/paises/BR?...&intrarregiao=municipio` (3,6 MB), se o mapa passar do PI |
+| F1 | **Espectro partidário não existe como dado**: `modelo.espectro_partido` está criada em `sql/00_modelo.sql`, mas não há CSV nem coletor | Q6, Q7 | **Aberto.** Montar `espectro_partido.csv` a partir das duas rodadas de Bolognesi et al., com a fonte por linha. PRD (2023) não está em nenhuma: decidir e documentar |
+| F2 | **População só de 2026**: `coleta_ibge.py` baixa a 6579 com `p/last` | Q3, Q6 | **Aberto.** Pedir os anos de eleição de cada pergunta (`p/2008,2012` para a Q3). A 6579 não tem 2022 nem 2023: para 2022, usar a 9606 (Censo) |
+| F3 | **IDHM municipal sem coletor**, e só existe até 2010 | Q3 | **Aberto.** Atlas Brasil (download manual); o `dados/raw/pnud/idhm/` atual só tem Brasil e UF. Com a Q3 em 2008–2012, o IDHM 2010 casa com o período e deixa de ser só validação |
+| F4 | Propostas de presidente não são coletadas | fora da lista | **Sem efeito.** Propostas de governo saíram da lista de 10 |
+| F5 | ~~Prestação de contas extraída só do PI~~ | Q1, Q8, Q9 | **Resolvido** com o recorte de AM, GO, MA, MT, RS e SE, sorteados pelo professor (#14). A coleta extrai os 6 estados com `--uf AM,GO,MA,MT,RS,SE` (#28), e o staging lê os arquivos por UF (#32) |
+| F6 | `receitas_candidatos_2014_brasil.txt` e `receitas_comites_2014_brasil.txt` têm aspas sem escape | fora da lista | **Sem efeito.** Nenhuma pergunta da lista de 10 usa 2014, e o staging só lê o leiaute de 2018 em diante |
+| F7 | ~~Staging não acha a extração nacional e não traz o doador originário~~ | Q1, Q8, Q9 | **Resolvido** no #32: o glob lê os arquivos `_??` de cada UF. O doador originário só servia à antiga pergunta de doação de PJ |
+| F8 | ~~Comparecimento por idade só do PI~~ | Q6 | **Resolvido** com o recorte das 6 UFs (#14): `perfil_comparecimento_abstencao_{ano}_{UF}.csv` dos 6 estados |
+| F9 | Doação de PJ só com 2014 e 2016 | fora da lista | **Sem efeito.** A pergunta de doação de PJ saiu da lista de 10 |
+| F10 | **Votos e comparecimento só de 2016 em diante**: de 2002 a 2014 há só eleito ou não eleito, pelo cadastro | Q3, Q10 | **Aberto.** Coletar `votacao_candidato_munzona` e `detalhe_votacao_munzona` de 2008 e 2012 para a Q3, e os anos anteriores se a carreira da Q10 precisar de votos |
+| F11 | ~~Malha só do PI~~ | Q7 | **Resolvido** com o recorte das 6 UFs (#14): `coleta_ibge malha --uf AM,GO,MA,MT,RS,SE` grava `malha_municipios_{UF}.geojson` por estado |
 
 ---
 
@@ -157,7 +178,7 @@ arquivos.
 | `ELEITORADO_MUNICIPIO` | entidade própria | removida: `QT_APTOS` já é o eleitorado |
 | `RECEITA_CAMPANHA` | um agente, só candidato | doador direto + originário; candidato **ou** órgão |
 | `AGENTE_FINANCEIRO` | `tp_pessoa` por dígitos | `tp_agente` por CNAE (R9) |
-| `ORGAO_PARTIDARIO` | não existia | nova (Q8) |
+| `ORGAO_PARTIDARIO` | não existia | nova (antiga Q8) |
 | `PROPOSTA_GOVERNO` | 1:0..1 (Davi) | 1:N com `nr_sequencial` (Dudu) |
 | Espectro | atributo de `PARTIDO` | entidade própria, com a fonte |
 | Socioeconômico | população + PIB | + renda e anos de estudo do Censo 2022, + IDHM |

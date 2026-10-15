@@ -1,5 +1,7 @@
 # Q12 — linha do tempo do político, 2002–2026
 
+> **Numeração antiga.** Esta Q12 é a **Q10** da lista de 10 perguntas. Correspondência no [`der-geral.md`](der-geral.md#correspondência-com-a-lista-antiga-de-12).
+
 Implementação em [`sql/04_politico.sql`](../../sql/04_politico.sql) (entidades) e
 `mart_q12` (a trajetória montada). Cobertura nacional, 13 eleições.
 

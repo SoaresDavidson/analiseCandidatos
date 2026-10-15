@@ -1,5 +1,7 @@
 # DER — questões de Davi
 
+> **Numeração antiga (lista de 12 perguntas).** A lista em uso é a de 10; a correspondência está na seção 3 do [`der-geral.md`](der-geral.md#correspondência-com-a-lista-antiga-de-12).
+
 Este arquivo detalha, em ordem, as três perguntas atribuídas ao Davi no
 [`estrategia.md`](../estrategia.md): Q1, Q2 e Q3.
 

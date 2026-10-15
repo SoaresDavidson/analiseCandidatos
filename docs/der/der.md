@@ -1,5 +1,7 @@
 # DER proposto — entrega de quinta (24/09/2026)
 
+> **Numeração antiga (lista de 12 perguntas).** A lista em uso é a de 10; a correspondência está na seção 3 do [`der-geral.md`](der-geral.md#correspondência-com-a-lista-antiga-de-12).
+
 Modelo lógico em notação pé-de-galinha (Mermaid `erDiagram`). Cada módulo é a
 tarefa de um integrante; a soma dos quatro é o DER da entrega.
 

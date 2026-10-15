@@ -1,5 +1,7 @@
 # Q10 — critério de classificação público × privado
 
+> **Numeração antiga.** Esta Q10 é a **Q8** da lista de 10 perguntas. Correspondência no [`der-geral.md`](der-geral.md#correspondência-com-a-lista-antiga-de-12).
+
 Documento de decisão. O TSE **não** publica uma coluna "este dinheiro é público".
 A classificação abaixo é contribuição nossa e precisa aparecer no relatório com a
 justificativa — é justamente o tipo de escolha que o professor vai questionar.

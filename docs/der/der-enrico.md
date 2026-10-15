@@ -1,5 +1,7 @@
 # DER — módulo do Enrico (Q10, Q11, Q12)
 
+> **Numeração antiga (lista de 12 perguntas).** A lista em uso é a de 10; a correspondência está na seção 3 do [`der-geral.md`](der-geral.md#correspondência-com-a-lista-antiga-de-12).
+
 Prestação de contas + linha do tempo do político. Este é o módulo que os outros
 três consomem: a prestação de contas alimenta a Q1 e a Q2 do Davi e a Q8 da Duda.
 

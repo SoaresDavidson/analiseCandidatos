@@ -1,0 +1,323 @@
+<title>Propaganda Eleitoral</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap">
+<style>
+/* Visual inspirado no site de resultados do TSE: fundo cinza-claro, cartões brancos,
+   destaque amarelo-ouro e verde-oliva. Cada pergunta abre com a resposta em linguagem
+   simples, dois números e um gráfico; o detalhe técnico fica nos blocos "Ver mais". */
+:root {
+  color-scheme: light;
+  --fundo: #f4f4f4; --branco: #ffffff; --texto: #333333; --texto-2: #6b6b6b; --linha: #e6e4df; --bege: #eae8e4;
+  --ouro: #ebb400; --ouro-esc: #8f6c00; --verde: #9eb735; --verde-esc: #5e7a12;
+  /* 4 níveis de escolaridade: um tom de verde, do claro ao escuro (validado, ordinal) */
+  --n1: #a5bd4e; --n2: #7e9a2e; --n3: #576f14; --n4: #32440a;
+  --sem-dado: #d9d6cf; --capital: #c0392b;
+  --fonte: "Open Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fundo); color: var(--texto); font: 15px/1.55 var(--fonte); }
+button, select, input { font: inherit; color: inherit; }
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+
+/* barra de filtros (como "Brasil / Turno" do TSE) */
+.sub { background: var(--branco); border-radius: 0 0 18px 18px; box-shadow: 0 4px 10px rgb(0 0 0 / .06); position: sticky; top: 0; z-index: 5; }
+.sub-in { max-width: 1160px; margin: 0 auto; padding: 10px 20px 14px; display: flex; gap: 14px 24px; align-items: flex-end; flex-wrap: wrap; }
+.campo { display: grid; gap: 3px; font-weight: 700; font-size: 13px; }
+.local { appearance: none; border: 2px solid var(--ouro); border-radius: 8px; padding: 7px 34px 7px 14px; font-weight: 700; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23333' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center; cursor: pointer; }
+.tog { display: inline-flex; border: 2px solid var(--ouro); border-radius: 7px; overflow: hidden; background: #fff; flex-wrap: wrap; }
+.tog button { border: 0; background: transparent; padding: 6px 13px; font-weight: 700; cursor: pointer; }
+.tog button[aria-pressed="true"] { background: var(--ouro); }
+.tog button:hover:not([aria-pressed="true"]) { background: #fff6d6; }
+
+main { max-width: 1160px; margin: 0 auto; padding: 22px 20px 64px; display: grid; gap: 18px; }
+.etiqueta { justify-self: start; background: var(--verde-esc); color: #fff; font-weight: 700; font-size: 13px; padding: 6px 14px; border-radius: 6px; letter-spacing: .03em; }
+h1 { font-size: clamp(24px, 3.2vw, 30px); font-weight: 800; margin: 0; line-height: 1.2; }
+h2 { font-size: 19px; font-weight: 800; margin: 0; line-height: 1.3; }
+h3 { font-size: 16px; font-weight: 700; margin: 0; }
+p { margin: 0; }
+.enunciado { color: var(--texto-2); font-size: 13.5px; max-width: 90ch; }
+.caixa { background: var(--branco); border-radius: 14px; padding: 18px 20px; display: grid; gap: 12px; min-width: 0; }
+.duas { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .duas { grid-template-columns: minmax(0, 1fr); } }
+.simples { font-size: 17px; line-height: 1.55; }
+.simples b { font-weight: 800; }
+.linha { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--linha); font-size: 14.5px; }
+.linha b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.aneis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 600px) { .aneis { grid-template-columns: minmax(0, 1fr); } }
+.anel { background: var(--branco); border: 2px solid var(--ouro); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 14px; align-items: center; }
+.anel.verde { border-color: var(--verde); }
+.anel .pct { font-size: 34px; font-weight: 800; color: var(--ouro-esc); line-height: 1; font-variant-numeric: tabular-nums; }
+.anel.verde .pct { color: var(--verde-esc); }
+.anel .q { font-size: 13px; color: var(--texto-2); }
+.anel .nome { font-size: 16px; font-weight: 800; text-transform: uppercase; margin-top: 4px; line-height: 1.2; }
+.barras { display: grid; gap: 10px; }
+.barra { display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr) 3.4em; gap: 10px; align-items: center; font-size: 14px; }
+.barra .trilho { height: 18px; background: var(--bege); border-radius: 3px; position: relative; }
+.barra .trilho i { display: block; height: 100%; border-radius: 3px; }
+.barra .trilho .media { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 2px dashed var(--texto-2); }
+.barra b { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.nota { font-size: 13px; color: var(--texto-2); }
+.selo { justify-self: start; display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; padding: 6px 12px; border-radius: 999px; }
+.selo.sim { background: #eef4d8; color: var(--verde-esc); }
+.selo.nao { background: var(--bege); color: var(--texto); }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--texto-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.cor { width: 13px; height: 13px; border-radius: 3px; display: inline-block; flex: none; }
+
+/* mapa */
+.mapa-grade { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .mapa-grade { grid-template-columns: minmax(0, 1fr); } }
+.mapa { width: 100%; height: auto; max-height: 560px; display: block; }
+.mapa path { stroke: #fff; stroke-width: 0.6; cursor: pointer; vector-effect: non-scaling-stroke; }
+.mapa path.sel { stroke: var(--texto); stroke-width: 2.5; }
+.controles { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: flex-end; }
+.busca { border: 2px solid var(--linha); border-radius: 8px; padding: 7px 12px; min-width: 200px; max-width: 100%; }
+.rampa { display: grid; gap: 4px; max-width: 340px; font-size: 12.5px; color: var(--texto-2); }
+.rampa .faixa-cor { height: 10px; border-radius: 3px; }
+.rampa .marcas { display: flex; justify-content: space-between; }
+.detalhe { display: grid; gap: 10px; }
+.detalhe .vazio { color: var(--texto-2); }
+.empilhada { display: flex; gap: 2px; height: 24px; border-radius: 4px; overflow: hidden; }
+.empilhada span { display: grid; place-items: center; color: #fff; font-size: 11.5px; font-weight: 700; min-width: 0; overflow: hidden; }
+.eleitos { max-height: 300px; overflow-y: auto; border-top: 1px solid var(--linha); }
+.eleitos div { display: flex; justify-content: space-between; gap: 10px; padding: 6px 2px; border-bottom: 1px solid var(--linha); font-size: 13.5px; }
+.eleitos small { color: var(--texto-2); }
+
+/* "ver mais": blocos recolhidos */
+details.mais { background: var(--branco); border-radius: 14px; padding: 0; }
+details.mais > summary { list-style: none; cursor: pointer; padding: 14px 20px; font-weight: 700; display: flex; justify-content: space-between; gap: 12px; align-items: center; border: 2px solid var(--ouro); border-radius: 14px; }
+details.mais > summary::-webkit-details-marker { display: none; }
+details.mais > summary::after { content: "+"; font-size: 22px; line-height: 1; color: var(--ouro-esc); }
+details.mais[open] > summary { border-radius: 14px 14px 0 0; }
+details.mais[open] > summary::after { content: "–"; }
+details.mais > div { padding: 16px 20px 20px; display: grid; gap: 14px; border: 2px solid var(--ouro); border-top: 0; border-radius: 0 0 14px 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--linha); font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 12.5px; color: var(--texto-2); font-weight: 700; }
+.rolagem { overflow-x: auto; }
+svg text { font-family: var(--fonte); }
+.eixo { fill: var(--texto-2); font-size: 11.5px; }
+.rot { fill: var(--texto); font-size: 12.5px; }
+.grade { stroke: var(--linha); stroke-width: 1; }
+.grafico { width: 100%; height: auto; display: block; }
+.metodo ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 90ch; }
+#dica { position: fixed; z-index: 20; pointer-events: none; background: var(--texto); color: #fff; font-size: 13px; line-height: 1.45; padding: 8px 11px; border-radius: 8px; max-width: 280px; box-shadow: 0 6px 18px rgb(0 0 0 / .2); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.nuvem { max-height: 440px; }
+.nuvem text { cursor: pointer; }
+.nuvem text:hover { text-decoration: underline; }
+</style>
+<div class="sub"><div class="sub-in">
+  <label class="campo">Estado<select class="local" id="f-uf"></select></label>
+  <span class="campo">Eleição<span class="tog" id="f-ano"></span></span>
+  <span class="campo">Cargo<span class="tog" id="f-cargo"></span></span>
+</div></div>
+
+<main>
+  <span class="etiqueta">PERGUNTA 9 · PROPAGANDA</span>
+  <h1>Onde o candidato gasta com propaganda?</h1>
+  <p class="enunciado">Enunciado: onde o candidato investe em propaganda (nuvem de palavras)? [2018, 2020, 2022, 2024]</p>
+
+  <div class="duas">
+    <section class="caixa">
+      <h2>A resposta</h2>
+      <p class="simples" id="resposta"></p>
+      <div id="linhas"></div>
+    </section>
+    <div style="display:grid;gap:14px;min-width:0">
+      <div class="aneis" id="aneis"></div>
+      <section class="caixa">
+        <h2>Para onde vai cada R$ 100 gastos com propaganda</h2>
+        <div class="barras" id="canais"></div>
+        <p class="nota" id="canais-nota"></p>
+      </section>
+    </div>
+  </div>
+
+  <section class="caixa">
+    <h2>O que os candidatos escrevem quando declaram o gasto</h2>
+    <p class="simples" id="nuvem-resposta" style="font-size:16px"></p>
+    <div class="controles">
+      <span class="campo">Quem<span class="tog" id="f-eleito"></span></span>
+      <span class="campo">Só um tipo de gasto<span class="tog" id="f-canal"></span></span>
+    </div>
+    <div class="mapa-grade">
+      <svg class="grafico nuvem" id="nuvem" role="img" aria-label="Nuvem de palavras das descrições de despesa de propaganda"></svg>
+      <div class="detalhe" id="palavra"></div>
+    </div>
+    <p class="nota">Tamanho da palavra = em quantas despesas ela aparece (frequência, não valor). Clique numa palavra para ver o dinheiro por trás dela.</p>
+  </section>
+
+  <details class="mais"><summary>Comparar eleitos e não eleitos</summary><div>
+    <div class="legenda"><span><i class="cor" style="background:var(--verde-esc)"></i>eleitos</span><span><i class="cor" style="background:var(--ouro)"></i>não eleitos</span></div>
+    <div class="barras" id="comparar"></div>
+    <p class="nota">De cada R$ 100 que cada grupo gastou em propaganda, quanto foi para cada tipo.</p>
+  </div></details>
+
+  <details class="mais"><summary>Comparar com a eleição anterior</summary><div>
+    <p class="simples" id="tend-resposta" style="font-size:15.5px"></p>
+    <div class="rolagem" id="tendencia"></div>
+    <p class="nota">Municipais (vereador e prefeito) e estaduais e federais (deputados, senador, governador) ficam separadas porque os cargos são diferentes. Soma todos os cargos da eleição no estado escolhido.</p>
+  </div></details>
+
+  <details class="mais metodo"><summary>Como calculamos</summary><div>
+    <ul>
+      <li><b>Fonte:</b> TSE, prestação de contas das campanhas (despesas contratadas) e cadastro de candidaturas, 2018 a 2024.</li>
+      <li><b>Tipo de gasto:</b> o tipo de despesa que o TSE registra, agrupado em 8 (material impresso, rua, rádio e TV, adesivos, internet, jingle, carro de som, jornal e revista).</li>
+      <li><b>Palavras:</b> a descrição livre que o candidato escreveu, sem acento, no singular, juntando expressões como "cabo eleitoral". Ficam de fora palavras que não dizem onde se gastou ("serviço", "campanha").</li>
+      <li><b>Valor de uma palavra:</b> soma das despesas que a citam. Uma despesa com três palavras entra nas três, então esses valores não se somam.</li>
+      <li><b>Quem entra:</b> eleições ordinárias, sem vices e suplentes. 2026 fica de fora até a prestação final.</li>
+      <li><b>Cuidado:</b> a nuvem mostra frequência, não dinheiro. "Cabo eleitoral" aparece em muitas despesas pequenas; rádio e TV, em poucas e caras.</li>
+    </ul>
+  </div></details>
+</main>
+<div id="dica" hidden></div>
+
+<script id="dados" type="application/json">__DADOS__</script>
+<script>
+(function () {
+  "use strict";
+  const D = JSON.parse(document.getElementById("dados").textContent);
+  const UFS = D.ufs;
+  const UF_NOME = { AM: "Amazonas", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", RS: "Rio Grande do Sul", SE: "Sergipe" };
+  const CARGO = ["Vereador", "Prefeito", "Dep. estadual", "Dep. federal", "Senador", "Governador"];
+  const PLUR = ["vereadores", "prefeitos", "deputados estaduais", "deputados federais", "senadores", "governadores"];
+  // mesma ordem de D.canais: impresso, rua, rádio e TV, adesivo, digital, jingle, carro de som, jornal e revista
+  const CANAL = ["Material impresso", "Campanha de rua", "Rádio e TV", "Adesivos", "Internet", "Jingle", "Carro de som", "Jornal e revista"];
+  const ANOS = [[2018, "2018"], [2020, "2020"], [2022, "2022"], [2024, "2024"]];
+  const CARGOS_ANO = a => (a === 2020 || a === 2024) ? [0, 1] : [2, 3, 4, 5];
+  const NS = "http://www.w3.org/2000/svg";
+
+  const st = { ano: 2024, uf: "TODAS", cargo: 0, eleito: 2, canal: 8, termo: null };
+  try { const s = JSON.parse(localStorage.getItem("q9-tse") || "{}"); for (const k of ["ano", "uf", "cargo", "eleito"]) if (k in s) st[k] = s[k]; } catch (e) { /* sem armazenamento */ }
+  if (!CARGOS_ANO(st.ano).includes(st.cargo)) st.cargo = CARGOS_ANO(st.ano)[0];
+  const salvar = () => { try { localStorage.setItem("q9-tse", JSON.stringify({ ano: st.ano, uf: st.uf, cargo: st.cargo, eleito: st.eleito })); } catch (e) { /* ignora */ } };
+
+  const fmt = (x, d = 1) => (x == null || isNaN(x)) ? "–" : x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const int = x => Math.round(x).toLocaleString("pt-BR");
+  const pc = (a, b) => b > 0 ? 100 * a / b : null;
+  const reais = v => v >= 1e6 ? `R$ ${fmt(v / 1e6, 1)} milhões` : v >= 1e3 ? `R$ ${fmt(v / 1e3, 0)} mil` : `R$ ${int(v)}`;
+  function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  const limpa = svg => { while (svg.firstChild) svg.removeChild(svg.firstChild); };
+  const dica = document.getElementById("dica");
+  function mostra(ev, html) { dica.innerHTML = html; dica.hidden = false; const w = dica.offsetWidth, h = dica.offsetHeight; let x = ev.clientX + 14, y = ev.clientY + 14; if (x + w > innerWidth - 8) x = ev.clientX - w - 14; if (y + h > innerHeight - 8) y = ev.clientY - h - 14; dica.style.left = x + "px"; dica.style.top = y + "px"; }
+  const esconde = () => { dica.hidden = true; };
+  const ufIdx = () => st.uf === "TODAS" ? [0, 1, 2, 3, 4, 5] : [UFS.indexOf(st.uf)];
+  const onde = () => st.uf === "TODAS" ? "nos 6 estados" : (["AM", "MA", "MT", "RS"].includes(st.uf) ? "no " : "em ") + UF_NOME[st.uf];
+
+  // valor por canal: [eleitos/não eleitos][canal]
+  function canais(anos, cargos) {
+    const v = [Array(8).fill(0), Array(8).fill(0)], nd = [0, 0], us = ufIdx();
+    for (const [a, u, c, e, k, nc, ndesp, vr] of D.q9c) if (anos.includes(a) && cargos.includes(c) && us.includes(u)) { v[e][k] += vr; nd[e] += ndesp; }
+    return { v, nd };
+  }
+  const chaveT = (eleito, canal) => `${st.ano}|${st.cargo}|${st.uf === "TODAS" ? 6 : UFS.indexOf(st.uf)}|${eleito}|${canal}`;
+  const grupoT = (eleito, canal) => { const g = D.q9t[chaveT(eleito, canal)]; return g ? g[0].map((t, i) => ({ t, termo: D.termos[t], n: g[1][i], vr: g[2][i] })) : []; };
+  const totalT = (eleito, canal) => D.q9tot[chaveT(eleito, canal)] || 0;
+
+  function tog(id, itens, get, set, depois) {
+    const box = document.getElementById(id); box.innerHTML = "";
+    for (const [v, rot] of itens) { const b = document.createElement("button"); b.type = "button"; b.textContent = rot; b.setAttribute("aria-pressed", String(get() === v)); b.addEventListener("click", () => { set(v); salvar(); (depois || tudo)(); }); box.appendChild(b); }
+  }
+  const selUf = document.getElementById("f-uf");
+  selUf.innerHTML = `<option value="TODAS">Todos os 6 estados</option>` + UFS.map(u => `<option value="${u}">${UF_NOME[u]}</option>`).join("");
+  selUf.addEventListener("change", () => { st.uf = selUf.value; st.termo = null; salvar(); tudo(); });
+  function anel(classe, pct, legenda, nome, cor) {
+    const C = 2 * Math.PI * 38, v = Math.max(0, Math.min(100, pct || 0));
+    return `<div class="anel ${classe}"><svg viewBox="0 0 88 88" width="88" height="88" aria-hidden="true"><circle cx="44" cy="44" r="38" fill="none" stroke="var(--bege)" stroke-width="9"/><circle cx="44" cy="44" r="38" fill="none" stroke="${cor}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C * v / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 44 44)"/></svg><div><span class="pct">${pct == null ? "–" : fmt(pct, 0) + "%"}</span><div class="q">${legenda}</div><div class="nome">${nome}</div></div></div>`;
+  }
+
+  // ---------- 1. resposta ----------
+  function renderResposta() {
+    const { v, nd } = canais([st.ano], [st.cargo]), tot = v[0].map((x, k) => x + v[1][k]), T = tot.reduce((a, b) => a + b, 0);
+    const p = tot.map(x => pc(x, T)), ordem = p.map((x, k) => [k, x || 0]).sort((a, b) => b[1] - a[1]);
+    const ir = (p[0] || 0) + (p[1] || 0), top = grupoT(2, 8);
+    document.getElementById("resposta").innerHTML = !T ? "Sem despesas de propaganda neste recorte." :
+      `Os ${PLUR[st.cargo]} de ${st.ano} ${onde()} gastaram <b>${reais(T)}</b> com propaganda. De cada R$ 100, <b>R$ ${fmt(p[0], 0)}</b> foram para material impresso e <b>R$ ${fmt(p[1], 0)}</b> para campanha de rua. A internet ficou com R$ ${fmt(p[4], 0)}.`;
+    document.getElementById("linhas").innerHTML = [["Gasto total com propaganda", reais(T)], ["Despesas declaradas", int(nd[0] + nd[1])], ["Palavra mais escrita", top.length ? `"${top[0].termo}"` : "–"]].map(([k, x]) => `<div class="linha"><span>${k}</span><b>${x}</b></div>`).join("");
+    document.getElementById("aneis").innerHTML = anel("", ir, "do gasto", "Impresso e rua", "var(--ouro)") + anel("verde", p[4], "do gasto", "Internet", "var(--verde-esc)");
+    const mx = Math.max(...p.map(x => x || 0)) * 1.12;
+    document.getElementById("canais").innerHTML = ordem.map(([k, x]) => `<div class="barra" title="${reais(tot[k])}"><span>${CANAL[k]}</span><span class="trilho"><i style="width:${(100 * x / mx).toFixed(1)}%;background:${k === ordem[0][0] ? "var(--verde-esc)" : "var(--verde)"}"></i></span><b>R$ ${fmt(x, 0)}</b></div>`).join("");
+    document.getElementById("canais-nota").textContent = `${PLUR[st.cargo][0].toUpperCase() + PLUR[st.cargo].slice(1)} em ${st.ano} ${onde()}, todos os candidatos. Passe o mouse para ver o valor em reais.`;
+    // eleitos × não eleitos
+    const te = v.map(g => g.reduce((a, b) => a + b, 0)), cmx = Math.max(...[0, 1].flatMap(e => v[e].map(x => pc(x, te[e]) || 0))) * 1.12;
+    document.getElementById("comparar").innerHTML = ordem.map(([k]) => {
+      const a = pc(v[1][k], te[1]) || 0, b = pc(v[0][k], te[0]) || 0;
+      return `<div class="barra" style="align-items:start"><span>${CANAL[k]}</span><span style="display:grid;gap:3px"><span class="trilho" style="height:11px"><i style="width:${(100 * a / cmx).toFixed(1)}%;background:var(--verde-esc)"></i></span><span class="trilho" style="height:11px"><i style="width:${(100 * b / cmx).toFixed(1)}%;background:var(--ouro)"></i></span></span><b style="font-size:12.5px;line-height:14px">${fmt(a, 0)}<br>${fmt(b, 0)}</b></div>`;
+    }).join("");
+  }
+
+  // ---------- 2. nuvem ----------
+  const medidor = document.createElement("canvas").getContext("2d");
+  function renderNuvem() {
+    const svg = document.getElementById("nuvem"); limpa(svg);
+    const W = 600, H = 380; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const ws = grupoT(st.eleito, st.canal), tot = totalT(st.eleito, st.canal);
+    const quem = ["os não eleitos", "os eleitos", "os candidatos"][st.eleito];
+    document.getElementById("nuvem-resposta").innerHTML = ws.length ? `Entre ${quem}${st.canal === 8 ? "" : ` (só ${CANAL[st.canal].toLowerCase()})`}, as palavras mais escritas são <b>"${ws[0].termo}"</b>${ws[1] ? `, <b>"${ws[1].termo}"</b>` : ""}${ws[2] ? ` e <b>"${ws[2].termo}"</b>` : ""}: a primeira aparece em ${fmt(pc(ws[0].n, tot), 0)}% das despesas.` : "Sem despesas com descrição neste recorte.";
+    if (!ws.length) { renderPalavra(); return; }
+    const nmax = ws[0].n, nmin = ws[ws.length - 1].n, fam = getComputedStyle(document.body).fontFamily, ocup = [];
+    const bate = a => ocup.some(b => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y);
+    ws.forEach((w, i) => {
+      const tz = (Math.sqrt(w.n) - Math.sqrt(nmin)) / Math.max(1e-9, Math.sqrt(nmax) - Math.sqrt(nmin)), fs = Math.round(13 + tz * 40), peso = i < 8 ? 800 : 600;
+      medidor.font = `${peso} ${fs}px ${fam}`;
+      const lw = medidor.measureText(w.termo).width + 8, lh = fs * 1.05;
+      for (let k = 0; k < 2500; k++) {
+        const ang = 0.33 * k, raio = 1.6 * ang, cx = W / 2 + raio * Math.cos(ang) * 1.6, cy = H / 2 + raio * Math.sin(ang), r = { x: cx - lw / 2, y: cy - lh / 2, w: lw, h: lh };
+        if (r.x < 2 || r.y < 2 || r.x + r.w > W - 2 || r.y + r.h > H - 2 || bate(r)) continue;
+        ocup.push(r);
+        const t = el("text", { x: cx, y: cy + fs * 0.05, "text-anchor": "middle", "dominant-baseline": "middle", "font-size": fs, "font-weight": peso }, svg);
+        t.textContent = w.termo; t.setAttribute("tabindex", "0"); t.setAttribute("role", "button");
+        t.style.fill = st.termo === w.t ? "var(--ouro-esc)" : i < 8 ? "var(--verde-esc)" : "var(--verde)";
+        t.style.cursor = "pointer";
+        t.addEventListener("mousemove", ev => mostra(ev, `<b>${w.termo}</b><br>${int(w.n)} despesas (${fmt(pc(w.n, tot), 0)}%)<br>${reais(w.vr)} no total`));
+        t.addEventListener("mouseleave", esconde);
+        const escolhe = () => { st.termo = st.termo === w.t ? null : w.t; renderNuvem(); };
+        t.addEventListener("click", escolhe); t.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); escolhe(); } });
+        break;
+      }
+    });
+    renderPalavra();
+  }
+  function renderPalavra() {
+    const box = document.getElementById("palavra");
+    if (st.termo == null) { box.innerHTML = `<p class="vazio">Clique numa palavra para ver quanto dinheiro há por trás dela, em que tipo de gasto aparece e se os eleitos a usam mais.</p>`; return; }
+    const termo = D.termos[st.termo], acha = (e, c) => grupoT(e, c).find(w => w.t === st.termo), w = acha(st.eleito, st.canal), tot = totalT(st.eleito, st.canal);
+    if (!w) { box.innerHTML = `<p class="vazio">"${termo}" não está entre as ${D.top} palavras deste recorte.</p>`; return; }
+    const uso = e => { const x = acha(e, st.canal), t = totalT(e, st.canal); return x && t ? `${fmt(pc(x.n, t), 0)}% das despesas` : "fora das mais citadas"; };
+    const por = []; if (st.canal === 8) for (let c = 0; c < 8; c++) { const x = acha(st.eleito, c); if (x) por.push([c, x.n]); }
+    por.sort((a, b) => b[1] - a[1]); const mx = por.length ? por[0][1] : 1;
+    box.innerHTML = `<h3>"${termo}"</h3>
+      <div class="linha"><span>Despesas que citam</span><b>${int(w.n)} (${fmt(pc(w.n, tot), 0)}%)</b></div>
+      <div class="linha"><span>Valor dessas despesas</span><b>${reais(w.vr)}</b></div>
+      <div class="linha"><span>Valor médio por despesa</span><b>${reais(w.vr / w.n)}</b></div>
+      <div class="linha"><span>Entre os eleitos</span><b>${uso(1)}</b></div>
+      <div class="linha"><span>Entre os não eleitos</span><b>${uso(0)}</b></div>
+      ${por.length ? `<div class="barras" style="margin-top:6px">${por.map(([c, n]) => `<div class="barra"><span>${CANAL[c]}</span><span class="trilho" style="height:10px"><i style="width:${(100 * n / mx).toFixed(1)}%;background:var(--verde)"></i></span><b style="font-size:12.5px">${int(n)}</b></div>`).join("")}</div>` : ""}`;
+  }
+
+  // ---------- 3. comparar com a eleição anterior ----------
+  function renderTendencia() {
+    const linha = (anos, cargos) => anos.map(a => { const { v } = canais([a], cargos), tot = v[0].map((x, k) => x + v[1][k]), T = tot.reduce((x, y) => x + y, 0); return tot.map(x => pc(x, T)); });
+    const mun = linha([2020, 2024], [0, 1]), ger = linha([2018, 2022], [2, 3, 4, 5]), ks = [0, 1, 4, 2];
+    const seta = (a, b) => b == null || a == null ? "" : Math.abs(b - a) < 1 ? "≈" : b > a ? "▲" : "▼";
+    document.getElementById("tendencia").innerHTML = `<table><thead><tr><th>De cada R$ 100</th><th>Municipais 2020</th><th>Municipais 2024</th><th>Estaduais e federais 2018</th><th>Estaduais e federais 2022</th></tr></thead><tbody>${ks.map(k => `<tr><td>${CANAL[k]}</td><td>R$ ${fmt(mun[0][k], 0)}</td><td>R$ ${fmt(mun[1][k], 0)} ${seta(mun[0][k], mun[1][k])}</td><td>R$ ${fmt(ger[0][k], 0)}</td><td>R$ ${fmt(ger[1][k], 0)} ${seta(ger[0][k], ger[1][k])}</td></tr>`).join("")}</tbody></table>`;
+    const cresceu = par => { let k = -1, d = 0; par[1].forEach((x, i) => { if (x != null && par[0][i] != null && x - par[0][i] > d) { d = x - par[0][i]; k = i; } }); return k < 0 ? "nenhum canal cresceu" : `<b>${CANAL[k].toLowerCase()}</b> (R$ ${fmt(par[0][k], 0)} → R$ ${fmt(par[1][k], 0)})`; };
+    document.getElementById("tend-resposta").innerHTML = `${onde()[0].toUpperCase() + onde().slice(1)}, a internet foi de R$ ${fmt(mun[0][4], 0)} para R$ ${fmt(mun[1][4], 0)} em cada R$ 100 nas municipais e de R$ ${fmt(ger[0][4], 0)} para R$ ${fmt(ger[1][4], 0)} nas estaduais e federais. O que mais cresceu nas municipais: ${cresceu(mun)}; nas estaduais e federais: ${cresceu(ger)}.`;
+  }
+
+  function tudo() {
+    selUf.value = st.uf;
+    tog("f-ano", ANOS, () => st.ano, v => { st.ano = v; if (!CARGOS_ANO(v).includes(st.cargo)) st.cargo = CARGOS_ANO(v)[0]; st.termo = null; st.canal = 8; });
+    tog("f-cargo", CARGOS_ANO(st.ano).map(c => [c, CARGO[c]]), () => st.cargo, v => { st.cargo = v; st.termo = null; st.canal = 8; });
+    tog("f-eleito", [[2, "Todos"], [1, "Eleitos"], [0, "Não eleitos"]], () => st.eleito, v => { st.eleito = v; st.termo = null; }, () => { tog("f-eleito", [[2, "Todos"], [1, "Eleitos"], [0, "Não eleitos"]], () => st.eleito, v => { st.eleito = v; st.termo = null; }); renderNuvem(); });
+    tog("f-canal", [[8, "Todos"], [0, "Impresso"], [1, "Rua"], [4, "Internet"], [2, "Rádio e TV"], [3, "Adesivos"]], () => st.canal, v => { st.canal = v; st.termo = null; }, () => tudo());
+    renderResposta(); renderNuvem(); renderTendencia();
+  }
+  tudo();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => renderNuvem());
+})();
+</script>

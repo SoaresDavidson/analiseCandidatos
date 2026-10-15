@@ -195,7 +195,8 @@ antiga (Q10 e Q11 viraram Q8 e Q9) e medidos no PI.
 | Aba | Página | Gerada por | Precisa no banco |
 |---|---|---|---|
 | Q4 Escolaridade | `docs/q4-painel/index.html` | `scripts/gerar_painel_q4.py` | `00_limpeza`, `00_modelo`, `06_carga_nucleo`, `10_q4` + malhas do IBGE |
-| Q8 · Q9 Financiamento e propaganda | `docs/q8-q9-painel/index.html` | `scripts/gerar_painel_q8_q9.py` | `01`–`05` + `11_q8`, `12_q9` |
+| Q8 Dinheiro público | `docs/q8-painel/index.html` | `scripts/gerar_painel_q8_q9.py` (gera as duas) | `01`–`05` + `11_q8`, `12_q9` |
+| Q9 Propaganda | `docs/q9-painel/index.html` | `scripts/gerar_painel_q8_q9.py` (gera as duas) | `01`–`05` + `11_q8`, `12_q9` |
 | Q10 Carreira | `docs/q10-painel/index.html` | `scripts/gerar_painel_q10.py` | `00_limpeza`, `04_politico`, `07_q10` |
 
 Para atualizar uma aba, regere a página da pergunta com o script dela; o painel mostra a versão nova sem mudar mais nada.

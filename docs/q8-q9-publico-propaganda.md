@@ -6,7 +6,7 @@
 
 Responsável pela apresentação: Enrico. Recorte: **AM, GO, MA, MT, RS e SE**, eleições ordinárias de **2018 a 2024**. A prestação de contas está no banco de 2018 a 2026, mas 2026 fica fora até o TSE publicar o resultado e a prestação final.
 
-Este texto explica o que foi feito, por que cada decisão foi tomada, quais interfaces foram consideradas e o que os resultados permitem (e não permitem) dizer. Os números saem de [`notebooks/q8_q9_interface.ipynb`](../notebooks/q8_q9_interface.ipynb); os gráficos estão em [`output/q8_q9/`](../output/q8_q9/); o painel está em [`docs/q8-q9-painel/`](q8-q9-painel/).
+Este texto explica o que foi feito, por que cada decisão foi tomada, quais interfaces foram consideradas e o que os resultados permitem (e não permitem) dizer. Os números saem de [`notebooks/q8_q9_interface.ipynb`](../notebooks/q8_q9_interface.ipynb); os gráficos estão em [`output/q8_q9/`](../output/q8_q9/); as páginas estão em [`docs/q8-painel/`](q8-painel/) e [`docs/q9-painel/`](q9-painel/).
 
 ---
 
@@ -295,7 +295,7 @@ A aula de 15/10 discute alternativas de interface. Para cada pergunta, as opçõ
 
 ## 9. Como rodar
 
-**Só ver:** o notebook já foi salvo com os gráficos e tabelas, e o painel abre direto no navegador (`docs/q8-q9-painel/index.html`).
+**Só ver:** o notebook já foi salvo com os gráficos e tabelas, e as páginas abrem direto no navegador (`docs/q8-painel/index.html` e `docs/q9-painel/index.html`).
 
 **Rodar do zero.** O banco (`dados/processed/tse.duckdb`) não vai para o git.
 
@@ -318,13 +318,12 @@ A aula de 15/10 discute alternativas de interface. Para cada pergunta, as opçõ
 
 ## 10. Painel interativo
 
-`docs/q8-q9-painel/index.html`, na mesma identidade visual do painel da Q4, para virar abas de um painel só:
+Uma página por pergunta, no visual do painel do grupo (inspirado no site de resultados do TSE): a resposta em linguagem simples primeiro, os detalhes técnicos em blocos recolhidos no fim. Filtros no topo: Estado, eleição (2018 a 2024) e cargo.
 
-- **Filtros** no topo: eleição (2018 a 2024), UF e cargo.
-- **Q8:** controle deslizante do corte (5% a 100%, botões "50%" e "mediana"); taxa dos dois grupos com o teste qui-quadrado; taxa por faixa de 5 pontos com a distribuição dos candidatos (clique numa barra para pôr o corte ali); gráfico da diferença conforme o corte.
-- **Q9:** valor por canal, eleitos × não eleitos (clique num canal para filtrar a nuvem); nuvem de palavras com filtro eleitos / não eleitos (clique numa palavra para ver o valor, o valor médio, os canais e o uso por eleitos e não eleitos).
+- **Q8 (`docs/q8-painel/index.html`):** chance de se eleger de quem depende do fundo público (metade ou mais da campanha) × outras fontes, com o teste qui-quadrado; barras em 4 faixas (nada, menos da metade, metade ou mais, tudo do fundo); panorama de todos os cargos e anos (clique num quadro para abri-lo); bloco recolhido para mudar o corte (5% a 100%) e ver se a conclusão muda; tabela por faixa de 5%.
+- **Q9 (`docs/q9-painel/index.html`):** de cada R$ 100 de propaganda, quanto vai para cada canal; nuvem de palavras com filtro eleitos / não eleitos e por canal (clique numa palavra para ver o dinheiro por trás dela); blocos recolhidos com eleitos × não eleitos e a comparação com a eleição anterior.
 
 Arquivos:
 
-- `docs/q8-q9-painel/modelo.html`: a página, com `__DADOS__` no lugar dos dados.
-- `scripts/gerar_painel_q8_q9.py`: lê as views do banco e gera o `index.html` (≈ 1,1 MB). A nuvem guarda as 40 palavras mais citadas de cada combinação de filtros.
+- `docs/q8-painel/modelo.html` e `docs/q9-painel/modelo.html`: as páginas, com `__DADOS__` no lugar dos dados.
+- `scripts/gerar_painel_q8_q9.py`: lê as views do banco e gera os dois `index.html` (Q8 ≈ 50 KB, Q9 ≈ 1,1 MB), cada um só com os seus dados. A nuvem guarda as 40 palavras mais citadas de cada combinação de filtros.

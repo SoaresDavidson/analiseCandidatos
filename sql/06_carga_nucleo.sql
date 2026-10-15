@@ -51,6 +51,9 @@ WHERE try_cast(d1c AS integer) IS NOT NULL;
 -- ---------------------------------------------------------------------------
 
 DELETE FROM modelo.vaga;
+-- filhas de CANDIDATURA carregadas pelo 13_ficha_candidato (rodar o 13 de novo depois)
+DELETE FROM modelo.bem_candidato;
+DELETE FROM modelo.votacao_candidato_municipio;
 DELETE FROM modelo.candidatura;
 DELETE FROM modelo.politico;
 DELETE FROM modelo.partido;

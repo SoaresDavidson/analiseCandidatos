@@ -1,0 +1,356 @@
+<title>Candidatos Eleitos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap">
+<style>
+/* Visual inspirado no site de resultados do TSE: fundo cinza-claro, cartões brancos,
+   destaque amarelo-ouro e verde-oliva. Cada pergunta abre com a resposta em linguagem
+   simples, dois números e um gráfico; o detalhe técnico fica nos blocos "Ver mais". */
+:root {
+  color-scheme: light;
+  --fundo: #f4f4f4; --branco: #ffffff; --texto: #333333; --texto-2: #6b6b6b; --linha: #e6e4df; --bege: #eae8e4;
+  --ouro: #ebb400; --ouro-esc: #8f6c00; --verde: #9eb735; --verde-esc: #5e7a12;
+  /* 4 níveis de escolaridade: um tom de verde, do claro ao escuro (validado, ordinal) */
+  --n1: #a5bd4e; --n2: #7e9a2e; --n3: #576f14; --n4: #32440a;
+  --sem-dado: #d9d6cf; --capital: #c0392b;
+  --fonte: "Open Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fundo); color: var(--texto); font: 15px/1.55 var(--fonte); }
+button, select, input { font: inherit; color: inherit; }
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+
+/* barra de filtros (como "Brasil / Turno" do TSE) */
+.sub { background: var(--branco); border-radius: 0 0 18px 18px; box-shadow: 0 4px 10px rgb(0 0 0 / .06); position: sticky; top: 0; z-index: 5; }
+.sub-in { max-width: 1160px; margin: 0 auto; padding: 10px 20px 14px; display: flex; gap: 14px 24px; align-items: flex-end; flex-wrap: wrap; }
+.campo { display: grid; gap: 3px; font-weight: 700; font-size: 13px; }
+.local { appearance: none; border: 2px solid var(--ouro); border-radius: 8px; padding: 7px 34px 7px 14px; font-weight: 700; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23333' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center; cursor: pointer; }
+.tog { display: inline-flex; border: 2px solid var(--ouro); border-radius: 7px; overflow: hidden; background: #fff; flex-wrap: wrap; }
+.tog button { border: 0; background: transparent; padding: 6px 13px; font-weight: 700; cursor: pointer; }
+.tog button[aria-pressed="true"] { background: var(--ouro); }
+.tog button:hover:not([aria-pressed="true"]) { background: #fff6d6; }
+
+main { max-width: 1160px; margin: 0 auto; padding: 22px 20px 64px; display: grid; gap: 18px; }
+.etiqueta { justify-self: start; background: var(--verde-esc); color: #fff; font-weight: 700; font-size: 13px; padding: 6px 14px; border-radius: 6px; letter-spacing: .03em; }
+h1 { font-size: clamp(24px, 3.2vw, 30px); font-weight: 800; margin: 0; line-height: 1.2; }
+h2 { font-size: 19px; font-weight: 800; margin: 0; line-height: 1.3; }
+h3 { font-size: 16px; font-weight: 700; margin: 0; }
+p { margin: 0; }
+.enunciado { color: var(--texto-2); font-size: 13.5px; max-width: 90ch; }
+.caixa { background: var(--branco); border-radius: 14px; padding: 18px 20px; display: grid; gap: 12px; min-width: 0; }
+.duas { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .duas { grid-template-columns: minmax(0, 1fr); } }
+.simples { font-size: 17px; line-height: 1.55; }
+.simples b { font-weight: 800; }
+.linha { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--linha); font-size: 14.5px; }
+.linha b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.aneis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 600px) { .aneis { grid-template-columns: minmax(0, 1fr); } }
+.anel { background: var(--branco); border: 2px solid var(--ouro); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 14px; align-items: center; }
+.anel.verde { border-color: var(--verde); }
+.anel .pct { font-size: 34px; font-weight: 800; color: var(--ouro-esc); line-height: 1; font-variant-numeric: tabular-nums; }
+.anel.verde .pct { color: var(--verde-esc); }
+.anel .q { font-size: 13px; color: var(--texto-2); }
+.anel .nome { font-size: 16px; font-weight: 800; text-transform: uppercase; margin-top: 4px; line-height: 1.2; }
+.barras { display: grid; gap: 10px; }
+.barra { display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr) 3.4em; gap: 10px; align-items: center; font-size: 14px; }
+.barra .trilho { height: 18px; background: var(--bege); border-radius: 3px; position: relative; }
+.barra .trilho i { display: block; height: 100%; border-radius: 3px; }
+.barra .trilho .media { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 2px dashed var(--texto-2); }
+.barra b { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.nota { font-size: 13px; color: var(--texto-2); }
+.selo { justify-self: start; display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; padding: 6px 12px; border-radius: 999px; }
+.selo.sim { background: #eef4d8; color: var(--verde-esc); }
+.selo.nao { background: var(--bege); color: var(--texto); }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--texto-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.cor { width: 13px; height: 13px; border-radius: 3px; display: inline-block; flex: none; }
+
+/* mapa */
+.mapa-grade { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .mapa-grade { grid-template-columns: minmax(0, 1fr); } }
+.mapa { width: 100%; height: auto; max-height: 560px; display: block; }
+.mapa path { stroke: #fff; stroke-width: 0.6; cursor: pointer; vector-effect: non-scaling-stroke; }
+.mapa path.sel { stroke: var(--texto); stroke-width: 2.5; }
+.controles { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: flex-end; }
+.busca { border: 2px solid var(--linha); border-radius: 8px; padding: 7px 12px; min-width: 200px; max-width: 100%; }
+.rampa { display: grid; gap: 4px; max-width: 340px; font-size: 12.5px; color: var(--texto-2); }
+.rampa .faixa-cor { height: 10px; border-radius: 3px; }
+.rampa .marcas { display: flex; justify-content: space-between; }
+.detalhe { display: grid; gap: 10px; }
+.detalhe .vazio { color: var(--texto-2); }
+.empilhada { display: flex; gap: 2px; height: 24px; border-radius: 4px; overflow: hidden; }
+.empilhada span { display: grid; place-items: center; color: #fff; font-size: 11.5px; font-weight: 700; min-width: 0; overflow: hidden; }
+.eleitos { max-height: 300px; overflow-y: auto; border-top: 1px solid var(--linha); }
+.eleitos div { display: flex; justify-content: space-between; gap: 10px; padding: 6px 2px; border-bottom: 1px solid var(--linha); font-size: 13.5px; }
+.eleitos small { color: var(--texto-2); }
+
+/* "ver mais": blocos recolhidos */
+details.mais { background: var(--branco); border-radius: 14px; padding: 0; }
+details.mais > summary { list-style: none; cursor: pointer; padding: 14px 20px; font-weight: 700; display: flex; justify-content: space-between; gap: 12px; align-items: center; border: 2px solid var(--ouro); border-radius: 14px; }
+details.mais > summary::-webkit-details-marker { display: none; }
+details.mais > summary::after { content: "+"; font-size: 22px; line-height: 1; color: var(--ouro-esc); }
+details.mais[open] > summary { border-radius: 14px 14px 0 0; }
+details.mais[open] > summary::after { content: "–"; }
+details.mais > div { padding: 16px 20px 20px; display: grid; gap: 14px; border: 2px solid var(--ouro); border-top: 0; border-radius: 0 0 14px 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--linha); font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 12.5px; color: var(--texto-2); font-weight: 700; }
+.rolagem { overflow-x: auto; }
+svg text { font-family: var(--fonte); }
+.eixo { fill: var(--texto-2); font-size: 11.5px; }
+.rot { fill: var(--texto); font-size: 12.5px; }
+.grade { stroke: var(--linha); stroke-width: 1; }
+.grafico { width: 100%; height: auto; display: block; }
+.metodo ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 90ch; }
+#dica { position: fixed; z-index: 20; pointer-events: none; background: var(--texto); color: #fff; font-size: 13px; line-height: 1.45; padding: 8px 11px; border-radius: 8px; max-width: 280px; box-shadow: 0 6px 18px rgb(0 0 0 / .2); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* aba de candidatos: cartões com foto e a ficha em janela */
+.numeros { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.num { border: 2px solid var(--ouro); border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; align-content: start; }
+.num b { font-size: 22px; font-weight: 800; color: var(--ouro-esc); line-height: 1.15; font-variant-numeric: tabular-nums; }
+.num span { font-size: 13px; color: var(--texto-2); }
+.grade-cand { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.cand { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; align-items: center; text-align: left; background: var(--branco); border: 1px solid var(--linha); border-radius: 10px; padding: 8px; cursor: pointer; }
+.cand:hover, .cand:focus-visible { box-shadow: 0 0 0 2px var(--ouro); border-color: var(--ouro); }
+.cand-txt { display: grid; gap: 1px; min-width: 0; }
+.cand-txt b { font-size: 15px; line-height: 1.25; }
+.cand-txt small { color: var(--texto-2); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cand-num { font-size: 13px; font-weight: 700; color: var(--verde-esc); font-variant-numeric: tabular-nums; }
+.foto { width: 64px; aspect-ratio: 81 / 113; border-radius: 8px; overflow: hidden; background: var(--bege); }
+.foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.foto.sem { display: grid; place-items: center; font-size: 26px; font-weight: 800; color: var(--texto-2); }
+.foto.grande { width: 110px; border-radius: 12px; }
+#f-busca { flex: 1 1 320px; }
+.aviso-carga { background: var(--branco); border: 2px solid var(--ouro); border-radius: 12px; padding: 14px 18px; font-weight: 600; }
+.aviso-carga code { background: var(--bege); padding: 1px 6px; border-radius: 4px; }
+.mais-btn { justify-self: center; border: 2px solid var(--ouro); background: #fff; border-radius: 8px; padding: 8px 22px; font-weight: 700; cursor: pointer; }
+.mais-btn:hover { background: #fff6d6; }
+dialog { border: 0; border-radius: 16px; padding: 0; width: min(760px, calc(100vw - 24px)); max-height: calc(100vh - 32px); box-shadow: 0 20px 50px rgb(0 0 0 / .3); color: var(--texto); }
+dialog::backdrop { background: rgb(0 0 0 / .45); }
+.ficha-in { padding: 22px; display: grid; gap: 16px; position: relative; border-top: 6px solid var(--ouro); }
+.fechar { position: absolute; top: 10px; right: 12px; border: 0; background: transparent; font-size: 30px; line-height: 1; cursor: pointer; color: var(--texto-2); }
+.ficha-topo { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 16px; align-items: center; }
+.ficha-topo h2 { font-size: 24px; margin-top: 6px; }
+.ficha-grade { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 18px; }
+@media (max-width: 640px) { .ficha-grade { grid-template-columns: minmax(0, 1fr); } .ficha-topo { grid-template-columns: 84px minmax(0, 1fr); } .foto.grande { width: 84px; } }
+.ficha-in h3 { margin-bottom: 6px; }
+.ficha-in .barra { grid-template-columns: minmax(0, 11em) minmax(0, 1fr) 3.6em; font-size: 13px; }
+ol.tempo { list-style: none; margin: 0 0 0 10px; padding: 2px 0 2px 18px; border-left: 3px solid var(--linha); display: grid; gap: 8px; }
+ol.tempo li { position: relative; display: grid; grid-template-columns: 3.2em minmax(0, 1fr) auto; gap: 10px; font-size: 14px; align-items: baseline; }
+ol.tempo li::before { content: ""; position: absolute; left: -27px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 3px solid var(--ouro); }
+ol.tempo li.r0::before { background: var(--verde-esc); border-color: var(--verde-esc); }
+ol.tempo li.r2::before { border: 2px dashed var(--texto-2); }
+ol.tempo li em { font-style: normal; font-size: 12.5px; font-weight: 700; color: var(--texto-2); }
+ol.tempo li.r0 em { color: var(--verde-esc); }
+</style>
+<div class="sub"><div class="sub-in">
+  <label class="campo">Estado<select class="local" id="f-uf"></select></label>
+  <span class="campo">Eleição<span class="tog" id="f-ano"></span></span>
+  <span class="campo">Cargo<span class="tog" id="f-cargo"></span></span>
+</div></div>
+
+<main>
+  <span class="etiqueta">CANDIDATOS ELEITOS</span>
+  <h1>Quem são os eleitos?</h1>
+  <p class="enunciado">Todos os eleitos de 2022 e 2024 nos 6 estados, com foto, votos, patrimônio declarado, campanha e carreira. Clique em um eleito para ver a ficha completa.</p>
+
+  <p class="aviso-carga" id="carregando" role="status">Carregando as fichas dos 14 mil eleitos…</p>
+
+  <section class="caixa">
+    <h2 id="perfil-titulo"></h2>
+    <div class="numeros" id="perfil"></div>
+    <p class="nota" id="perfil-nota"></p>
+  </section>
+
+  <section class="caixa">
+    <div class="controles">
+      <input class="busca" type="search" id="f-busca" placeholder="Buscar por nome, cidade ou partido" aria-label="Buscar eleito por nome, cidade ou partido" autocomplete="off">
+      <span class="campo">Ordenar por<span class="tog" id="f-ordem"></span></span>
+    </div>
+    <p class="nota" id="contagem" aria-live="polite"></p>
+    <div class="grade-cand" id="cartoes"></div>
+    <button type="button" class="mais-btn" id="mais" hidden>Mostrar mais</button>
+  </section>
+
+  <details class="mais metodo"><summary>Como calculamos</summary><div>
+    <ul>
+      <li><b>Quem entra:</b> eleitos de 2022 (governador, senador, deputados federal e estadual) e de 2024 (prefeito e vereador) nos 6 estados. Sem vices e suplentes.</li>
+      <li><b>Foto:</b> a que o candidato entregou ao TSE no registro (dados abertos do TSE, um arquivo por estado e eleição), reduzida para caber no painel.</li>
+      <li><b>Votos:</b> votos nominais no turno que decidiu a eleição (TSE, votação por município e zona), carregados na tabela VOTACAO_CANDIDATO_MUNICIPIO.</li>
+      <li><b>Patrimônio:</b> soma dos bens declarados ao TSE no registro (tabela BEM_CANDIDATO). É o que o candidato declarou, não uma avaliação.</li>
+      <li><b>Campanha:</b> receitas da prestação de contas, separadas pela mesma regra da Pergunta 8: dinheiro público = Fundo Especial + Fundo Partidário. Propaganda: despesas contratadas, pelos canais da Pergunta 9.</li>
+      <li><b>Carreira:</b> todas as candidaturas da pessoa de 2002 a 2024 nos 6 estados, ligadas pelo título de eleitor (a mesma linha do tempo da Pergunta 10).</li>
+      <li><b>Consulta no banco:</b> view <i>ficha_eleito</i> em <i>sql/13_ficha_candidato.sql</i>.</li>
+    </ul>
+  </div></details>
+</main>
+
+<dialog id="ficha" aria-labelledby="f-nome">
+  <div class="ficha-in">
+    <button type="button" class="fechar" id="fechar" aria-label="Fechar a ficha">×</button>
+    <div class="ficha-topo">
+      <div class="foto grande" id="f-foto"></div>
+      <div>
+        <span class="selo sim" id="f-situacao"></span>
+        <h2 id="f-nome"></h2>
+        <p class="nota" id="f-civil"></p>
+        <p id="f-cargo-local" style="font-weight:700"></p>
+      </div>
+    </div>
+    <div class="numeros" id="f-numeros"></div>
+    <div class="ficha-grade">
+      <section><h3>Perfil</h3><div id="f-perfil"></div></section>
+      <section><h3>Campanha</h3><div id="f-campanha"></div></section>
+    </div>
+    <section><h3>Carreira</h3><p class="nota" id="f-carreira-resumo"></p><div class="rolagem" id="f-carreira"></div></section>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  "use strict";
+  // as fichas vêm de dados.json e as fotos de fotos/<ano>/<sq>.jpg: a página precisa de servidor
+  // (uv run python -m scripts.servir_painel), porque o navegador não lê arquivos soltos por file://
+  fetch("dados.json")
+    .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(iniciar)
+    .catch(() => {
+      document.getElementById("carregando").innerHTML = "Não deu para carregar as fichas. Abra o painel pelo servidor local: na pasta do projeto, rode <code>uv run python -m scripts.servir_painel</code>.";
+    });
+
+  function iniciar(D) {
+  document.getElementById("carregando").hidden = true;
+  const UF_NOME = { AM: "Amazonas", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", RS: "Rio Grande do Sul", SE: "Sergipe" };
+  const CARGO = { 3: "Governador", 5: "Senador", 6: "Deputado federal", 7: "Deputado estadual", 11: "Prefeito", 13: "Vereador" };
+  const CARGO_CURTO = { 1: "Presidente", 2: "Vice-presidente", 3: "Governador", 4: "Vice-governador", 5: "Senador", 6: "Dep. federal", 7: "Dep. estadual", 8: "Dep. distrital", 9: "1º suplente", 10: "2º suplente", 11: "Prefeito", 12: "Vice-prefeito", 13: "Vereador" };
+  const PLURAL = { 3: "governadores", 5: "senadores", 6: "deputados federais", 7: "deputados estaduais", 11: "prefeitos", 13: "vereadores" };
+  const CARGOS_ANO = { 2022: [3, 5, 6, 7], 2024: [11, 13] };
+  const CANAL = ["Material impresso", "Campanha de rua", "Rádio e TV", "Adesivos", "Internet", "Jingle", "Carro de som", "Jornal e revista"];
+  const RES = ["Eleito", "Não eleito", "Sem resultado"];
+  const PART = new Set(["de", "da", "do", "das", "dos", "e", "di", "du", "del"]);
+  const nomeProprio = s => (s || "").toLowerCase().split(" ").map((w, i) => (i && PART.has(w)) ? w : w.replace(/(^|[-'])(\p{L})/gu, (m, a, b) => a + b.toUpperCase())).join(" ");
+  const frase = s => { s = (s || "").toLowerCase(); return s ? s[0].toUpperCase() + s.slice(1) : ""; };
+  const semAcento = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const fmt = (x, d = 0) => (x == null || isNaN(x)) ? "–" : x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const int = x => x == null ? "–" : Math.round(x).toLocaleString("pt-BR");
+  const brl = v => v == null ? "–" : v >= 1e6 ? `R$ ${fmt(v / 1e6, v >= 1e7 ? 0 : 1)} ${v < 2e6 ? "milhão" : "milhões"}` : v >= 1e4 ? `R$ ${fmt(v / 1e3, 0)} mil` : `R$ ${int(v)}`;
+  const mediana = xs => { const v = xs.filter(x => x != null).sort((a, b) => a - b); if (!v.length) return null; const m = v.length >> 1; return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2; };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  // estado: nome oficial com acento (o TSE grava "GOIAS" em alguns anos)
+  const lugar = i => { if (i < 0) return ["", ""]; const [l, u] = D.ues[i].split("|"); return [l === u || semAcento(l) === semAcento(UF_NOME[u] || "") ? UF_NOME[u] || u : nomeProprio(l), u]; };
+
+  // eleitos: [ano-2000, uf, cargo, ue, partido, urna, civil, idade, gênero, cor, grau, ocupação, situação, votos,
+  //           cidade com mais votos, patrimônio, nº de bens, receita, público, privado, próprio, partidário,
+  //           transferência, doadores, propaganda, canal principal, foto, carreira]
+  const E = D.eleitos.map((r, id) => {
+    const [local, uf] = lugar(r[3]);
+    const e = { id, ano: 2000 + r[0], uf: D.ufs[r[1]], cargo: r[2], local, partido: D.partidos[r[4]], nome: nomeProprio(r[5]), civil: nomeProprio(r[6]), idade: r[7], genero: D.generos[r[8]], cor: D.cores[r[9]], grau: D.graus[r[10]], ocupacao: D.ocupacoes[r[11]], situacao: r[12], votos: r[13], munVotos: lugar(r[14])[0], patrimonio: r[15], bens: r[16], receita: r[17], publico: r[18], privado: r[19], proprio: r[20], partidario: r[21], transf: r[22], doadores: r[23], propaganda: r[24], canal: r[25], carreira: r[26] };
+    e.busca = semAcento([e.nome, e.civil, local, e.partido, UF_NOME[uf] || ""].join(" "));
+    return e;
+  });
+
+  const st = { uf: "TODAS", ano: 2024, cargo: 11, busca: "", ordem: "votos", n: 48 };
+  try { const s = JSON.parse(localStorage.getItem("cand-tse") || "{}"); delete s.busca; delete s.n; Object.assign(st, s); } catch (e) { /* sem armazenamento */ }
+  const salvar = () => { try { localStorage.setItem("cand-tse", JSON.stringify({ uf: st.uf, ano: st.ano, cargo: st.cargo, ordem: st.ordem })); } catch (e) { /* ignora */ } };
+  const onde = () => st.uf === "TODAS" ? "nos 6 estados" : (["AM", "MA", "MT", "RS"].includes(st.uf) ? "no " : "em ") + UF_NOME[st.uf];
+
+  function tog(id, itens, get, set) {
+    const box = document.getElementById(id); box.innerHTML = "";
+    for (const [v, rot] of itens) { const b = document.createElement("button"); b.type = "button"; b.textContent = rot; b.setAttribute("aria-pressed", String(get() === v)); b.addEventListener("click", () => { set(v); st.n = 48; salvar(); tudo(); }); box.appendChild(b); }
+  }
+  const selUf = document.getElementById("f-uf");
+  selUf.innerHTML = `<option value="TODAS">Todos os 6 estados</option>` + D.ufs.map(u => `<option value="${u}">${UF_NOME[u]}</option>`).join("");
+  selUf.addEventListener("change", () => { st.uf = selUf.value; st.n = 48; salvar(); tudo(); });
+  const busca = document.getElementById("f-busca");
+  busca.addEventListener("input", () => { st.busca = semAcento(busca.value.trim()); st.n = 48; renderCartoes(); });
+  document.getElementById("mais").addEventListener("click", () => { st.n += 96; renderCartoes(); });
+
+  const doFiltro = () => E.filter(e => e.ano === st.ano && e.cargo === st.cargo && (st.uf === "TODAS" || e.uf === st.uf));
+  // foto do TSE; se o arquivo faltar, fica a inicial do nome
+  const foto = (e, cls) => `<div class="foto ${cls || ""}" data-inicial="${esc(e.nome[0] || "?")}"><img src="fotos/${e.ano}/${D.sq[e.id]}.jpg" alt="Foto de ${esc(e.nome)}" loading="lazy" onerror="this.parentNode.classList.add('sem');this.replaceWith(this.parentNode.dataset.inicial)"></div>`;
+
+  // ---------- 1. o perfil de quem está no filtro ----------
+  function renderPerfil() {
+    const xs = doFiltro(), n = xs.length;
+    const pct = f => n ? fmt(100 * xs.filter(f).length / n, 0) + "%" : "–";
+    const comReceita = xs.filter(e => e.receita > 0);
+    const pub = comReceita.length ? 100 * comReceita.filter(e => e.publico >= 0.5 * e.receita).length / comReceita.length : null;
+    document.getElementById("perfil-titulo").textContent = n === 1 ? `O ${CARGO[st.cargo].toLowerCase()} eleito em ${st.ano} ${onde()}` : `Os ${int(n)} ${PLURAL[st.cargo]} eleitos em ${st.ano} ${onde()}`;
+    document.getElementById("perfil").innerHTML = [
+      [pct(e => e.genero === "FEMININO"), "são mulheres"],
+      [fmt(mediana(xs.map(e => e.idade)), 0) + " anos", "idade típica (mediana)"],
+      [pct(e => /SUPERIOR COMPLETO/.test(e.grau)), "têm faculdade completa"],
+      [brl(mediana(xs.map(e => e.patrimonio || 0))), "patrimônio típico declarado"],
+      [brl(mediana(comReceita.map(e => e.receita))), "campanha típica (arrecadado)"],
+      [pub == null ? "–" : fmt(pub, 0) + "%", "tiveram metade ou mais da campanha paga pelo fundo público"],
+    ].map(([v, r]) => `<div class="num"><b>${v}</b><span>${r}</span></div>`).join("");
+    document.getElementById("perfil-nota").textContent = "Mediana: metade dos eleitos está acima e metade abaixo. Patrimônio e campanha como foram declarados ao TSE; quem não declarou bens conta como zero.";
+  }
+
+  // ---------- 2. os cartões ----------
+  const ORDENS = { votos: (a, b) => (b.votos || 0) - (a.votos || 0), nome: (a, b) => a.nome.localeCompare(b.nome, "pt-BR"), patrimonio: (a, b) => (b.patrimonio || 0) - (a.patrimonio || 0), receita: (a, b) => (b.receita || 0) - (a.receita || 0) };
+  function renderCartoes() {
+    const termos = st.busca ? st.busca.split(/\s+/) : [];
+    const xs = doFiltro().filter(e => termos.every(t => e.busca.includes(t))).sort(ORDENS[st.ordem]);
+    document.getElementById("contagem").textContent = xs.length ? `${int(xs.length)} eleito${xs.length > 1 ? "s" : ""}${st.busca ? " encontrados" : ""}. Mostrando ${int(Math.min(st.n, xs.length))}.` : "Ninguém encontrado com essa busca neste filtro.";
+    const box = document.getElementById("cartoes");
+    box.innerHTML = xs.slice(0, st.n).map(e => `<button type="button" class="cand" data-id="${e.id}">${foto(e)}<span class="cand-txt"><b>${esc(e.nome)}</b><small>${esc(e.partido)} · ${esc(e.local)}${st.uf === "TODAS" && e.cargo >= 11 ? ` (${e.uf})` : ""}</small><span class="cand-num">${st.ordem === "patrimonio" ? `${brl(e.patrimonio || 0)} em bens` : st.ordem === "receita" ? `${brl(e.receita)} arrecadados` : `${int(e.votos)} votos`}</span></span></button>`).join("");
+    document.getElementById("mais").hidden = xs.length <= st.n;
+  }
+  document.getElementById("cartoes").addEventListener("click", ev => { const b = ev.target.closest("button.cand"); if (b) abrir(E[+b.dataset.id]); });
+
+  // ---------- 3. a ficha ----------
+  const dlg = document.getElementById("ficha");
+  document.getElementById("fechar").addEventListener("click", () => dlg.close());
+  dlg.addEventListener("click", ev => { if (ev.target === dlg) dlg.close(); });
+  dlg.addEventListener("close", () => { try { if (location.hash) history.replaceState(null, "", location.pathname + location.search); } catch (err) { /* endereço fixo */ } });
+  const linha = (k, v) => `<div class="linha"><span>${k}</span><b>${v}</b></div>`;
+  function abrir(e) {
+    document.getElementById("f-foto").outerHTML = foto(e, "grande").replace('class="foto', 'id="f-foto" class="foto');
+    document.getElementById("f-situacao").textContent = frase(e.situacao).replace(/ por qp$/, " por quociente partidário").replace(/ por media$/, " por média");
+    document.getElementById("f-nome").textContent = e.nome;
+    document.getElementById("f-civil").textContent = e.civil ? `Nome civil: ${e.civil}` : "";
+    document.getElementById("f-cargo-local").textContent = `${CARGO[e.cargo]} · ${e.local}${e.cargo >= 11 ? ` (${e.uf})` : ""} · ${e.partido} · ${e.ano}`;
+    document.getElementById("f-numeros").innerHTML = [
+      [int(e.votos), `votos${e.cargo < 11 && e.munVotos ? `, mais em ${esc(e.munVotos)}` : ""}`],
+      [brl(e.patrimonio || 0), `em bens declarados${e.bens ? ` (${e.bens} ${e.bens > 1 ? "itens" : "item"})` : ""}`],
+      [brl(e.receita), "arrecadados na campanha"],
+    ].map(([v, r]) => `<div class="num"><b>${v}</b><span>${r}</span></div>`).join("");
+    document.getElementById("f-perfil").innerHTML = [["Idade na eleição", e.idade == null ? "–" : e.idade + " anos"], ["Gênero", frase(e.genero)], ["Cor ou raça", frase(e.cor)], ["Escolaridade", frase(e.grau)], ["Ocupação declarada", frase(e.ocupacao)]].map(([k, v]) => linha(k, esc(v || "–"))).join("");
+    const R = e.receita || 0, fontes = [["Fundo público (FEFC e Fundo Partidário)", e.publico], ["Doações de pessoas", e.privado], ["Dinheiro do próprio candidato", e.proprio], ["Outros repasses do partido", e.partidario], ["Repasses de outros candidatos", e.transf]];
+    document.getElementById("f-campanha").innerHTML = R > 0
+      ? `<p class="nota">De cada R$ 100 arrecadados${e.doadores ? ` (${int(e.doadores)} doador${e.doadores > 1 ? "es" : ""})` : ""}:</p><div class="barras">${fontes.map(([k, v]) => `<div class="barra"><span>${k}</span><span class="trilho"><i style="width:${(100 * (v || 0) / R).toFixed(1)}%;background:var(--verde-esc)"></i></span><b>R$ ${fmt(100 * (v || 0) / R, 0)}</b></div>`).join("")}</div>${e.propaganda ? linha("Gasto com propaganda", `${brl(e.propaganda)}${e.canal >= 0 ? `, mais em ${CANAL[e.canal][0].toLowerCase() + CANAL[e.canal].slice(1)}` : ""}`) : ""}`
+      : `<p class="nota">Sem receita registrada na prestação de contas.</p>`;
+    const c = [];
+    for (let i = 0; i < e.carreira.length; i += 5) { const [a, cargo, ue, part, res] = e.carreira.slice(i, i + 5), [l, u] = lugar(ue); c.push({ ano: 2000 + a, cargo, local: l, uf: u, partido: D.partidos[part], res }); }
+    const vit = c.filter(x => x.res === 0).length;
+    document.getElementById("f-carreira-resumo").textContent = c.length ? `${c.length} candidatura${c.length > 1 ? "s" : ""} de ${c[0].ano} a ${c[c.length - 1].ano}, ${vit} vitória${vit > 1 ? "s" : ""}.` : "";
+    document.getElementById("f-carreira").innerHTML = `<ol class="tempo">${c.map(x => `<li class="r${x.res}"><b>${x.ano}</b><span>${CARGO_CURTO[x.cargo] || ""} · ${esc(x.local)} (${x.uf}) · ${esc(x.partido)}</span><em>${RES[x.res]}</em></li>`).join("")}</ol>`;
+    try { history.replaceState(null, "", `#c=${e.ano}-${D.sq[e.id]}`); } catch (err) { /* endereço fixo */ }
+    if (!dlg.open) dlg.showModal();
+    dlg.scrollTop = 0;
+  }
+
+  function tudo() {
+    selUf.value = st.uf;
+    if (!CARGOS_ANO[st.ano].includes(st.cargo)) st.cargo = CARGOS_ANO[st.ano][0];
+    tog("f-ano", [[2024, "2024"], [2022, "2022"]], () => st.ano, v => { st.ano = v; });
+    tog("f-cargo", CARGOS_ANO[st.ano].map(c => [c, CARGO[c]]), () => st.cargo, v => { st.cargo = v; });
+    tog("f-ordem", [["votos", "Votos"], ["nome", "Nome"], ["patrimonio", "Patrimônio"], ["receita", "Campanha"]], () => st.ordem, v => { st.ordem = v; });
+    renderPerfil(); renderCartoes();
+  }
+  tudo();
+
+  // aberto a partir de outra aba do painel: #c=<ano>-<sq do TSE>
+  window.abrirCandidato = (ano, sq) => {
+    const i = D.sq.findIndex((s, k) => s === sq && 2000 + D.eleitos[k][0] === ano);
+    if (i < 0) return false;
+    const e = E[i]; st.ano = e.ano; st.cargo = e.cargo; st.uf = e.uf; tudo(); abrir(e); return true;
+  };
+  const m = /c=(\d{4})-(\d+)/.exec(location.hash);
+  if (m) window.abrirCandidato(+m[1], +m[2]);
+  }
+})();
+</script>

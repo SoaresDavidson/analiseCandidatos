@@ -84,6 +84,8 @@ p { margin: 0; }
 .eleitos { max-height: 300px; overflow-y: auto; border-top: 1px solid var(--linha); }
 .eleitos div { display: flex; justify-content: space-between; gap: 10px; padding: 6px 2px; border-bottom: 1px solid var(--linha); font-size: 13.5px; }
 .eleitos small { color: var(--texto-2); }
+.ver-ficha { border: 0; background: none; padding: 0; font-weight: 700; color: var(--texto); text-decoration: underline; text-decoration-color: var(--ouro); text-underline-offset: 3px; cursor: pointer; text-align: left; }
+.ver-ficha:hover { color: var(--verde-esc); }
 
 /* "ver mais": blocos recolhidos */
 details.mais { background: var(--branco); border-radius: 14px; padding: 0; }
@@ -274,7 +276,11 @@ svg text { font-family: var(--fonte); }
     m.modaEl = te ? m.el.indexOf(Math.max(...m.el)) + 1 : null;
   }
   const MUN_BY = Object.fromEntries(MUN.map(m => [m.cod, m]));
-  const ELEITOS = D.eleitos.map(([ano, uf, cod, cargo, grau, urna, partido, civil]) => ({ ano, uf, cod, cargo, grau, urna: nomeProprio(urna), civil: civil && civil !== urna ? nomeProprio(civil) : "", partido }));
+  const ELEITOS = D.eleitos.map(([ano, uf, cod, cargo, grau, urna, partido, civil, sq]) => ({ ano, uf, cod, cargo, grau, urna: nomeProprio(urna), civil: civil && civil !== urna ? nomeProprio(civil) : "", partido, sq }));
+  // dentro do painel do grupo, o nome do eleito abre a ficha dele na aba Candidatos
+  const NO_PAINEL = window.parent !== window;
+  const nomeEleito = e => NO_PAINEL ? `<button type="button" class="ver-ficha" data-ano="${e.ano}" data-sq="${e.sq}" title="Ver a ficha com foto">${e.urna}</button>` : `<b>${e.urna}</b>`;
+  document.addEventListener("click", ev => { const b = ev.target.closest("button.ver-ficha"); if (b) window.parent.postMessage({ tipo: "abrir-candidato", ano: +b.dataset.ano, sq: +b.dataset.sq }, "*"); });
 
   // ---------- filtros ----------
   function tog(id, itens, get, set, depois) {
@@ -370,7 +376,7 @@ svg text { font-family: var(--fonte); }
     h += `<p>Na população predomina <b>${NIVEL[m.modaPop].toLowerCase()}</b>; entre os ${m.te} eleitos, <b>${NIVEL[m.modaEl].toLowerCase()}</b>${m.emp ? " (empate)" : ""}.</p>`;
     h += empilhada(m.pop, "População adulta (Censo 2022)") + empilhada(m.el, `Eleitos em 2024 · ${m.te} pessoas`) + leg;
     const lista = ELEITOS.filter(e => e.ano === 2024 && e.cod === m.cod).sort((x, y) => (x.cargo === 11 ? -1 : y.cargo === 11 ? 1 : 0) || (y.grau - x.grau) || x.urna.localeCompare(y.urna, "pt"));
-    h += `<div class="eleitos">${lista.map(e => `<div><span><b>${e.urna}</b>${e.cargo === 11 ? " · prefeito(a)" : ""}<br><small>${e.partido}${e.civil ? " · " + e.civil : ""}</small></span><span style="display:inline-flex;gap:6px;align-items:center;text-align:right"><i class="cor" style="background:var(--n${GRAU_NIVEL[e.grau]})"></i>${GRAU[e.grau]}</span></div>`).join("")}</div>`;
+    h += `<div class="eleitos">${lista.map(e => `<div><span>${nomeEleito(e)}${e.cargo === 11 ? " · prefeito(a)" : ""}<br><small>${e.partido}${e.civil ? " · " + e.civil : ""}</small></span><span style="display:inline-flex;gap:6px;align-items:center;text-align:right"><i class="cor" style="background:var(--n${GRAU_NIVEL[e.grau]})"></i>${GRAU[e.grau]}</span></div>`).join("")}</div>`;
     box.innerHTML = h;
   }
   function renderMapaResposta() {
@@ -405,7 +411,7 @@ svg text { font-family: var(--fonte); }
     const lista = ELEITOS.filter(e => e.ano === st.ano && e.cargo === st.cargo && e.grau === st.grau && ufsSel().includes(e.uf))
       .sort((a, b) => ((b.cod ? (MUN_BY[b.cod] && MUN_BY[b.cod].pop ? MUN_BY[b.cod].pop.reduce((x, y) => x + y) : 0) : 0) - (a.cod ? (MUN_BY[a.cod] && MUN_BY[a.cod].pop ? MUN_BY[a.cod].pop.reduce((x, y) => x + y) : 0) : 0)) || a.urna.localeCompare(b.urna, "pt"));
     document.getElementById("quem-titulo").textContent = st.grau ? `Quem são: ${int(lista.length)} ${lista.length > 1 ? PLURAIS[st.cargo] : PLURAL[st.cargo]} eleito${lista.length > 1 ? "s" : ""} que declararam "${GRAU[st.grau].toLowerCase()}"` : "Quem são";
-    document.getElementById("quem").innerHTML = lista.slice(0, 40).map(e => `<div><span><b>${e.urna}</b><br><small>${e.civil || ""}</small></span><span style="text-align:right">${e.partido}<br><small>${e.cod ? (MUN_BY[e.cod] ? MUN_BY[e.cod].n : "") + " (" + e.uf + ")" : UF_NOME[e.uf]}</small></span></div>`).join("") + (lista.length > 40 ? `<div><small>Mostrando 40 de ${int(lista.length)}, das cidades maiores para as menores.</small></div>` : "");
+    document.getElementById("quem").innerHTML = lista.slice(0, 40).map(e => `<div><span>${nomeEleito(e)}<br><small>${e.civil || ""}</small></span><span style="text-align:right">${e.partido}<br><small>${e.cod ? (MUN_BY[e.cod] ? MUN_BY[e.cod].n : "") + " (" + e.uf + ")" : UF_NOME[e.uf]}</small></span></div>`).join("") + (lista.length > 40 ? `<div><small>Mostrando 40 de ${int(lista.length)}, das cidades maiores para as menores.</small></div>` : "");
   }
   function renderDispersao() {
     const pts = MUN.filter(m => m.u === st.mapaUf && m.ok && !(st.semCap && m.cap)), svg = document.getElementById("dispersao"); limpa(svg);

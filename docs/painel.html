@@ -3,93 +3,67 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Painel Eleitoral do Grupo</title>
+<title>Eleições em 6 Estados</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap">
 <style>
-/* Layout: barra fixa com as abas; abaixo, a página da pergunta escolhida ocupa o resto da tela. A aba Início resume as perguntas. */
+/* Visual inspirado no site de resultados do TSE: faixa amarela, cabeçalho branco com abas
+   sublinhadas, cartões de pergunta como os cartões de eleição. Cada pergunta abre numa
+   página própria, com a resposta primeiro. */
 :root {
-  --bg: #f2f4f7; --surface: #fcfcfb; --ink: #11161d; --ink-2: #4a5361; --ink-3: #7b8594; --line: #dde2e9; --accent: #2a78d6;
-  --m1: #86b6ef; --m2: #3987e5; --m3: #1c5cab; --m4: #0d366b;
-  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
-  --f-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
-  --f-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+  --fundo: #f4f4f4; --branco: #ffffff; --texto: #333333; --texto-2: #6b6b6b; --linha: #e6e4df;
+  --ouro: #ebb400; --ouro-esc: #8f6c00; --verde-esc: #5e7a12; --breve: #9a9a9a;
+  --fonte: "Open Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --m1: #184f95; --m2: #2a78d6; --m3: #6da7ec; --m4: #b7d3f6; --bg: #0f1215; --surface: #1a1a19; --ink: #f1f3f6; --ink-2: #bcc3cd; --ink-3: #8a93a0; --line: #2d333b; --accent: #3987e5; color-scheme: dark; }
-}
-:root[data-theme="dark"] { --m1: #184f95; --m2: #2a78d6; --m3: #6da7ec; --m4: #b7d3f6; --bg: #0f1215; --surface: #1a1a19; --ink: #f1f3f6; --ink-2: #bcc3cd; --ink-3: #8a93a0; --line: #2d333b; --accent: #3987e5; color-scheme: dark; }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 var(--f-body); display: flex; flex-direction: column; }
-.bar { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; padding: calc(10px + env(safe-area-inset-top, 0px)) 20px 10px; background: var(--surface); border-bottom: 1px solid var(--line); }
-.brand { display: grid; line-height: 1.2; }
-.brand b { font: 700 17px/1.2 var(--f-display); }
-.brand span { font: 500 11.5px/1.3 var(--f-data); color: var(--ink-3); letter-spacing: 0.05em; text-transform: uppercase; }
-.tabs { display: flex; flex-wrap: wrap; gap: 4px; }
-.tabs a { text-decoration: none; color: var(--ink-2); font: 500 14px/1 var(--f-body); padding: 9px 12px; border-radius: 8px; border: 1px solid transparent; }
-.tabs a:hover { background: var(--bg); color: var(--ink); }
-.tabs a[aria-current="page"] { background: var(--accent); color: #fff; }
-.tabs a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.solo { font-size: 13px; color: var(--accent); text-decoration: none; }
-.solo:hover { text-decoration: underline; }
-.tabs .n { font-family: var(--f-data); margin-right: 6px; opacity: 0.8; }
-.stage { flex: 1; min-height: 0; position: relative; }
-iframe { border: 0; width: 100%; height: 100%; display: block; background: var(--bg); }
-.home { height: 100%; overflow-y: auto; }
-.wrap { max-width: 1100px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; display: grid; gap: 22px; }
-h1 { font: 700 clamp(28px, 4vw, 40px)/1.08 var(--f-display); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
-.lede { color: var(--ink-2); max-width: 70ch; margin: 0; font-size: 16px; }
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 8px; align-content: start; text-decoration: none; color: inherit; }
-.card:hover { border-color: var(--accent); }
-.card .q { font: 500 12px/1 var(--f-data); color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase; }
-.card h2 { font: 600 19px/1.25 var(--f-display); margin: 0; text-wrap: balance; }
-.card p { margin: 0; font-size: 14px; color: var(--ink-2); }
-.card .who { font-size: 12.5px; color: var(--ink-3); }
-.card .go { font-weight: 600; color: var(--accent); font-size: 14px; }
-.pend { display: grid; gap: 6px; background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; padding: 16px 18px; }
-.pend h3 { margin: 0; font: 600 15px var(--f-body); }
-.pend ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; display: grid; gap: 4px; }
-.hero { display: grid; gap: 10px; }
-.kicker { font: 500 12px/1.3 var(--f-data); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
-.achados { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-@media (max-width: 760px) { .achados { grid-template-columns: minmax(0, 1fr); } }
-.achado { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 10px; align-content: start; text-decoration: none; color: inherit; }
-.achado:hover { border-color: var(--accent); }
-.achado .num { font: 700 clamp(40px, 5.5vw, 60px)/1 var(--f-display); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
-.achado .frase { font-size: 16px; color: var(--ink); margin: 0; max-width: 46ch; }
-.achado .tag { font: 500 12px/1 var(--f-data); color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase; }
-.achado .go { font-weight: 600; color: var(--accent); font-size: 14px; }
-.mini { display: grid; gap: 6px; }
-.mini div { display: grid; grid-template-columns: 9.5em minmax(0, 1fr) 3.2em; gap: 8px; align-items: center; font-size: 12.5px; color: var(--ink-2); }
-.mini i { display: block; height: 10px; border-radius: 0 3px 3px 0; }
-.mini b { font: 500 12.5px var(--f-data); text-align: right; color: var(--ink); }
-.ler { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-@media (max-width: 760px) { .ler { grid-template-columns: minmax(0, 1fr); } }
-.ler div { border-top: 2px solid var(--accent); padding-top: 8px; font-size: 14px; color: var(--ink-2); }
-.ler b { display: block; color: var(--ink); font-size: 14.5px; }
-.navbtn { border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); border-radius: 8px; padding: 7px 10px; font: 500 14px/1 var(--f-body); cursor: pointer; }
-.navbtn:hover { color: var(--ink); border-color: var(--ink-3); }
-.navbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.navs { display: flex; gap: 6px; align-items: center; }
-.foot { font-size: 12.5px; color: var(--ink-3); max-width: 90ch; }
-.mono { font-family: var(--f-data); }
+body { margin: 0; background: var(--fundo); color: var(--texto); font: 15px/1.5 var(--fonte); display: flex; flex-direction: column; }
+a { color: inherit; }
+.faixa { flex: none; background: var(--ouro); color: #fff; font-size: 12.5px; font-weight: 700; display: flex; justify-content: flex-end; align-items: center; gap: 12px; padding: calc(4px + env(safe-area-inset-top, 0px)) 20px 4px; flex-wrap: wrap; }
+.faixa button { border: 0; background: transparent; color: #fff; font: 700 12.5px var(--fonte); cursor: pointer; padding: 2px 4px; }
+.faixa button:hover { text-decoration: underline; }
+.cab { flex: none; background: var(--branco); box-shadow: 0 2px 8px rgb(0 0 0 / .06); position: relative; z-index: 2; }
+.cab-in { max-width: 1160px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 10px 28px; min-height: 62px; flex-wrap: wrap; }
+.marca { display: grid; line-height: 1; text-decoration: none; }
+.marca b { font-size: 11.5px; font-weight: 800; letter-spacing: .02em; }
+.marca span { font-size: 21px; font-weight: 800; color: var(--ouro); }
+.marca small { font-size: 9px; font-weight: 700; color: var(--texto-2); margin-top: 2px; }
+.nav { display: flex; gap: 4px 24px; margin-left: auto; flex-wrap: wrap; }
+.nav a { text-decoration: none; font-weight: 600; font-size: 14.5px; padding: 19px 0 15px; border-bottom: 4px solid transparent; }
+.nav a[aria-current="page"] { border-color: var(--ouro); }
+.nav a:hover { border-color: #f5dc8a; }
+.nav a:focus-visible, .cartao:focus-visible, .faixa button:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+.palco { flex: 1; min-height: 0; }
+iframe { border: 0; width: 100%; height: 100%; display: block; background: var(--fundo); }
+.inicio { height: 100%; overflow-y: auto; }
+.wrap { max-width: 1160px; margin: 0 auto; padding: 26px 20px 56px; display: grid; gap: 16px; }
+h1 { font-size: clamp(24px, 3.2vw, 30px); font-weight: 800; margin: 0; line-height: 1.2; }
+.lead { margin: 0; color: var(--texto-2); max-width: 72ch; }
+.cartoes { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+.cartao { display: grid; grid-template-columns: 76px minmax(0, 1fr); background: var(--branco); border-radius: 6px; overflow: hidden; text-decoration: none; min-height: 118px; box-shadow: 0 1px 2px rgb(0 0 0 / .06); }
+a.cartao:hover { box-shadow: 0 0 0 2px var(--ouro); }
+.cartao .lado { background: var(--ouro); color: #fff; display: grid; place-items: center; align-content: center; gap: 2px; font-weight: 800; }
+.cartao .lado small { font-size: 11px; font-weight: 700; }
+.cartao .lado b { font-size: 24px; line-height: 1; }
+.cartao.breve .lado { background: var(--breve); }
+.cartao .corpo { padding: 12px 14px; display: grid; gap: 2px; align-content: center; }
+.cartao .tema { font-size: 13px; color: var(--texto-2); }
+.cartao .perg { font-weight: 700; font-size: 15.5px; line-height: 1.3; }
+.cartao .resp { font-size: 13.5px; margin-top: 4px; }
+.cartao .resp b { color: var(--ouro-esc); font-weight: 800; }
+.cartao.breve .perg { color: var(--texto-2); }
+.aviso { font-size: 13px; color: var(--texto-2); max-width: 90ch; margin: 0; }
 </style>
 </head>
 <body>
-<header class="bar">
-  <div class="brand"><b>Eleições em AM, GO, MA, MT, RS e SE</b><span>Banco de Dados Relacionais · UFPI</span></div>
-  <nav class="tabs" id="abas" aria-label="Perguntas"></nav>
-  <div class="navs" style="margin-left:auto">
-    <a class="solo" id="solo" href="#" target="_blank" rel="noopener" hidden>Abrir esta pergunta sozinha ↗</a>
-    <button type="button" class="navbtn" id="ant" aria-label="Aba anterior">‹</button>
-    <button type="button" class="navbtn" id="prox" aria-label="Próxima aba">›</button>
-    <button type="button" class="navbtn" id="tela" aria-label="Tela cheia">Apresentar</button>
-  </div>
-</header>
-<main class="stage" id="palco"></main>
+<div class="faixa"><span>Banco de Dados Relacionais · UFPI</span><span aria-hidden="true">|</span><span>Davi, Duda, Eduardo e Enrico</span><span aria-hidden="true">|</span><button type="button" id="ant" aria-label="Pergunta anterior">‹ anterior</button><button type="button" id="prox" aria-label="Próxima pergunta">próxima ›</button><button type="button" id="tela">Tela cheia</button></div>
+<header class="cab"><div class="cab-in">
+  <a class="marca" href="#inicio"><b>ELEIÇÕES</b><span>6 ESTADOS</span><small>AM · GO · MA · MT · RS · SE</small></a>
+  <nav class="nav" id="abas" aria-label="Perguntas"></nav>
+</div></header>
+<main class="palco" id="palco"></main>
 
 <script>
 (function () {
@@ -97,83 +71,62 @@ h1 { font: 700 clamp(28px, 4vw, 40px)/1.08 var(--f-display); margin: 0; letter-s
   // ------------------------------------------------------------------
   // PARA COLOCAR UMA PERGUNTA NO PAINEL: gere a página dela em
   // docs/<pasta>/index.html (com o script da pergunta) e acrescente uma
-  // linha nesta lista. O painel mostra a página como ela estiver no disco,
-  // então regerar a sua página já atualiza o painel.
+  // linha em ABAS e um cartão em CARTOES. A frase do cartão é um resumo
+  // dos números da página: atualize-a junto quando a análise mudar.
   // ------------------------------------------------------------------
   const ABAS = [
-    { id: "q4", n: "Q4", nome: "Escolaridade", pagina: "q4-painel/index.html", quem: "Duda e Davi",
-      titulo: "Quem estuda mais se elege mais?",
-      resumo: "Escolaridade de candidatos e eleitos × população adulta (Censo 2022), chance de eleição por grau e mapa dos municípios. 2022 e 2024." },
-    { id: "q8-q9", n: "Q8 · Q9", nome: "Financiamento e propaganda", pagina: "q8-q9-painel/index.html", quem: "Enrico",
-      titulo: "Dinheiro público elege? Onde se gasta com propaganda?",
-      resumo: "Taxa de eleição por dependência de recurso público, com corte ajustável, e nuvem de palavras das despesas de propaganda por canal. 2018 a 2024." },
-    { id: "q10", n: "Q10", nome: "Carreira", pagina: "q10-painel/index.html", quem: "Eduardo e Enrico",
-      titulo: "Quanto dura a carreira de um político?",
-      resumo: "Busca por nome com a linha do tempo da carreira, ranking das carreiras mais longas e taxa de reeleição por cargo. 2002 a 2024." },
+    { id: "q4", nome: "Escolaridade", pagina: "q4-painel/index.html" },
+    { id: "q8", nome: "Dinheiro público", pagina: "q8-painel/index.html" },
+    { id: "q9", nome: "Propaganda", pagina: "q9-painel/index.html" },
+    { id: "q10", nome: "Carreira", pagina: "q10-painel/index.html" },
   ];
-  // Os números da capa. Quem mudar a página da pergunta atualiza o achado aqui.
-  const ACHADOS = [
-    { aba: "q4", tag: "Q4 · Escolaridade", num: "15% × 37%", frase: "da população adulta tem superior completo, contra os eleitos em 2024. Em 2022, 79% dos eleitos.",
-      mini: [["População 18+", 15, "var(--m1)"], ["Candidatos 2024", 28.5, "var(--m2)"], ["Eleitos 2024", 37, "var(--m3)"], ["Eleitos 2022", 79.2, "var(--m4)"]] },
-    { aba: "q10", tag: "Q10 · Carreira", num: "27%", frase: "dos vereadores que ganham a primeira eleição ainda estão eleitos 8 anos depois. A maioria das carreiras acaba no primeiro mandato.",
-      mini: [["Estreia", 100, "var(--m3)"], ["+4 anos", 42.6, "var(--m3)"], ["+8 anos", 26.7, "var(--m3)"], ["+16 anos", 13.6, "var(--m3)"]] },
-    { aba: "q8-q9", tag: "Q8 · Dinheiro público", num: "14% × 20%", frase: "dos vereadores de 2024 que dependem de dinheiro público se elegem, contra os financiados por outras fontes. O padrão se repete na maior parte dos cargos.",
-      mini: [["≥ 50% público", 14.0, "var(--m2)"], ["< 50% público", 20.4, "var(--m4)"]] },
-    { aba: "q8-q9", tag: "Q9 · Propaganda", num: "65%", frase: "do gasto de propaganda dos vereadores e prefeitos de 2024 vai para impresso e rua. O digital cresce, mas ainda é 7%.",
-      mini: [["Impresso", 36, "var(--m4)"], ["Rua", 29, "var(--m3)"], ["Rádio e TV", 12, "var(--m2)"], ["Digital", 7, "var(--m1)"]] },
+  // números conferidos no banco em 15/10/2026 (6 estados)
+  const CARTOES = [
+    { n: 4, aba: "q4", tema: "Escolaridade", perg: "Quem estuda mais se elege mais?", resp: "Só <b>15%</b> dos adultos têm faculdade; entre os eleitos de 2024, <b>37%</b>." },
+    { n: 8, aba: "q8", tema: "Dinheiro público", perg: "Depender do fundo público ajuda a vencer?", resp: "Em geral, não: vereadores de 2024 que dependem dele se elegem <b>14%</b> das vezes; os outros, <b>20%</b>." },
+    { n: 9, aba: "q9", tema: "Propaganda", perg: "Onde o candidato gasta com propaganda?", resp: "Nas eleições de 2024, <b>65%</b> foi para papel impresso e campanha de rua. Internet: 7%." },
+    { n: 10, aba: "q10", tema: "Carreira", perg: "Quanto dura a carreira de um político?", resp: "De cada 100 vereadores novatos, só <b>27</b> seguem eleitos 8 anos depois." },
+    { n: 1, tema: "Custo da campanha", perg: "Quanto custa uma cadeira?" },
+    { n: 2, tema: "Patrimônio", perg: "Quem é mais rico se elege mais?" },
+    { n: 3, tema: "Perfil da cidade", perg: "Riqueza, IDHM e abstenção da cidade × quem vence" },
+    { n: 5, tema: "Voto de legenda", perg: "Quantos se elegem graças ao voto no partido?" },
+    { n: 6, tema: "Idade", perg: "Jovem vota em jovem? A cidade troca de comando?" },
+    { n: 7, tema: "Viés político", perg: "Para que lado a cidade vota ao longo do tempo?" },
   ];
-  const PENDENTES = ["Q1 Quanto custa uma cadeira?", "Q2 Taxa de sucesso por patrimônio declarado", "Q3 Índices do município × eleitos", "Q5 Eleitos por voto de legenda", "Q6 Idade média do município e alternância de poder", "Q7 Viés político do município ao longo do tempo"];
 
   const abas = document.getElementById("abas"), palco = document.getElementById("palco");
-  const links = [{ id: "inicio", n: "", nome: "Início" }, ...ABAS].map(a => {
-    const l = document.createElement("a"); l.href = "#" + a.id; l.innerHTML = a.n ? `<span class="n">${a.n}</span>${a.nome}` : a.nome; abas.appendChild(l); return [a.id, l];
-  });
+  const links = [{ id: "inicio", nome: "Início" }, ...ABAS].map(a => { const l = document.createElement("a"); l.href = "#" + a.id; l.textContent = a.nome; abas.appendChild(l); return [a.id, l]; });
+  const pagina = p => (window.urlPagina ? window.urlPagina(p) : p);  // no arquivo único, as páginas vêm embutidas
 
   function inicio() {
-    const mini = m => `<div class="mini">${m.map(([r, v, c]) => `<div><span>${r}</span><i style="width:${Math.max(1, v)}%;background:${c}"></i><b>${String(v).replace(".", ",")}%</b></div>`).join("")}</div>`;
-    palco.innerHTML = `<div class="home"><div class="wrap">
-      <div class="hero"><span class="kicker">AM · GO · MA · MT · RS · SE · eleições de 2002 a 2024</span>
-      <h1>Quem chega ao poder, e quanto tempo fica</h1>
-      <p class="lede">Quatro perguntas da disciplina, respondidas com os dados do TSE e do IBGE carregados no banco do grupo. Cada número abaixo abre a pergunta com os filtros, os testes e o método.</p></div>
-      <div class="achados">${ACHADOS.map(a => `<a class="achado" href="#${a.aba}"><span class="tag">${a.tag}</span><span class="num">${a.num}</span><p class="frase">${a.frase}</p>${mini(a.mini)}<span class="go">Ver a pergunta →</span></a>`).join("")}</div>
-      <div class="ler">
-        <div><b>Associação, não causa</b>Os gráficos mostram o que anda junto. Escolaridade, dinheiro e mandato se misturam.</div>
-        <div><b>Sempre dentro do cargo</b>Vereador e governador têm chances muito diferentes; toda comparação é feita cargo a cargo.</div>
-        <div><b>Método em cada página</b>Fontes, definições, exceções e limites estão no fim de cada pergunta.</div>
-      </div>
-      <div class="pend"><h3>Ainda fora do painel</h3><ul>${PENDENTES.map(p => `<li>${p}</li>`).join("")}</ul></div>
-      <p class="foot">Cada página é gerada a partir do banco (<span class="mono">dados/processed/tse.duckdb</span>) por um script em <span class="mono">scripts/</span>. Navegue pelas abas, pelas setas ‹ › no topo ou pelas setas do teclado. Grupo: Davi, Duda, Eduardo e Enrico.</p>
+    const prontos = CARTOES.filter(c => c.aba), breve = CARTOES.filter(c => !c.aba);
+    const cartao = c => c.aba
+      ? `<a class="cartao" href="#${c.aba}"><span class="lado"><small>Pergunta</small><b>${c.n}</b></span><span class="corpo"><span class="tema">${c.tema}</span><span class="perg">${c.perg}</span><span class="resp">${c.resp}</span></span></a>`
+      : `<div class="cartao breve"><span class="lado"><small>Em breve</small><b>${c.n}</b></span><span class="corpo"><span class="tema">${c.tema}</span><span class="perg">${c.perg}</span></span></div>`;
+    palco.innerHTML = `<div class="inicio"><div class="wrap">
+      <h1>O que os dados das eleições respondem</h1>
+      <p class="lead">Candidaturas e resultados do TSE e dados do IBGE, de 2002 a 2024, nos seis estados sorteados. Escolha uma pergunta: cada uma abre com a resposta em linguagem simples e um gráfico. Os detalhes técnicos ficam no fim de cada página.</p>
+      <div class="cartoes">${prontos.map(cartao).join("")}</div>
+      <div class="cartoes">${breve.map(cartao).join("")}</div>
+      <p class="aviso">Os gráficos mostram o que anda junto, não o que causa. Toda comparação de chance de vitória é feita dentro do mesmo cargo.</p>
     </div></div>`;
   }
 
-  function tema(frame) {
-    // repassa a escolha de tema do visualizador para a página da pergunta, quando o navegador deixa
-    try { const t = document.documentElement.getAttribute("data-theme"); const r = frame.contentDocument && frame.contentDocument.documentElement; if (r) { if (t) r.setAttribute("data-theme", t); else r.removeAttribute("data-theme"); } } catch (e) { /* páginas em origens diferentes */ }
-  }
-
   function abrir() {
-    const id = (location.hash || "#inicio").slice(1);
-    const aba = ABAS.find(a => a.id === id);
+    const id = (location.hash || "#inicio").slice(1), aba = ABAS.find(a => a.id === id);
     for (const [k, l] of links) l.setAttribute("aria-current", k === (aba ? aba.id : "inicio") ? "page" : "false");
-    const solo = document.getElementById("solo");
-    solo.hidden = !aba; if (aba) solo.href = aba.pagina;
-    if (!aba) { inicio(); document.title = "Painel Eleitoral do Grupo"; return; }
+    if (!aba) { inicio(); return; }
     palco.innerHTML = "";
-    const f = document.createElement("iframe"); f.src = aba.pagina; f.title = `${aba.n} · ${aba.titulo}`;
-    f.addEventListener("load", () => tema(f));
+    const f = document.createElement("iframe"); f.src = pagina(aba.pagina); f.title = aba.nome;
     palco.appendChild(f);
   }
   const ordem = ["inicio", ...ABAS.map(a => a.id)];
-  function passo(d) { const atual = ordem.indexOf((location.hash || "#inicio").slice(1)); location.hash = "#" + ordem[(Math.max(0, atual) + d + ordem.length) % ordem.length]; }
+  const passo = d => { const i = ordem.indexOf((location.hash || "#inicio").slice(1)); location.hash = "#" + ordem[(Math.max(0, i) + d + ordem.length) % ordem.length]; };
   document.getElementById("ant").addEventListener("click", () => passo(-1));
   document.getElementById("prox").addEventListener("click", () => passo(1));
   document.addEventListener("keydown", e => { if (e.target.closest("input, select, textarea")) return; if (e.key === "ArrowRight") passo(1); if (e.key === "ArrowLeft") passo(-1); });
-  document.getElementById("tela").addEventListener("click", () => {
-    const d = document.documentElement;
-    try { if (document.fullscreenElement) document.exitFullscreen(); else if (d.requestFullscreen) d.requestFullscreen().catch(() => {}); } catch (e) { /* o navegador não deixa */ }
-  });
+  document.getElementById("tela").addEventListener("click", () => { try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {}); } catch (e) { /* o navegador não deixa */ } });
   window.addEventListener("hashchange", abrir);
-  new MutationObserver(() => { const f = palco.querySelector("iframe"); if (f) tema(f); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
   abrir();
 })();
 </script>

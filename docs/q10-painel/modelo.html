@@ -261,7 +261,7 @@ table.rank th:nth-child(2), table.rank td:nth-child(2), table.rank th:nth-child(
       <div class="card">
         <h3>Os três números</h3>
         <div class="detail" id="c-detail"></div>
-        <p class="note"><b>Tentaram:</b> disputaram o mesmo cargo, na mesma cidade ou UF, no ciclo seguinte. <b>Reeleitos:</b> tentaram e venceram. <b>Sucesso de quem tentou:</b> reeleitos ÷ quem tentou. <b>Seguiram na política:</b> disputaram qualquer cargo em qualquer eleição depois.</p>
+        <p class="note"><b>Tentaram:</b> disputaram o mesmo cargo, na mesma cidade ou UF, no ciclo seguinte. <b>Reeleitos:</b> tentaram e venceram. <b>Sucesso de quem tentou:</b> reeleitos ÷ quem tentou. <b>Seguiram na política:</b> disputaram qualquer cargo em qualquer eleição depois. <b>Prefeito:</b> quem está no segundo mandato não pode tentar de novo, então "tentaram" fica baixo; no primeiro mandato, 66% tentam.</p>
       </div>
     </div>
   </section>
@@ -297,7 +297,7 @@ table.rank th:nth-child(2), table.rank td:nth-child(2), table.rank th:nth-child(
       <details><summary>Quem aparece na busca</summary>
         <ul>
           <li>Quem se elegeu pelo menos uma vez entre 2002 e 2024 nas 6 UFs: <span class="num" id="m-eleitos"></span> pessoas, com todas as participações delas, inclusive as derrotas.</li>
-          <li>Os números das partes B e C usam a mesma base. A parte C vem da view <span class="mono">q10_sobrevivencia</span>.</li>
+          <li>Os números das partes B e C usam a mesma base. A parte B vem da view <span class="mono">q10_curva_sobrevivencia</span> (o filtro de UF usa a UF da primeira vitória) e a parte C da <span class="mono">q10_sobrevivencia</span>.</li>
           <li>2026 está carregado, mas fica fora até o TSE publicar o resultado final.</li>
         </ul>
       </details>
@@ -305,7 +305,8 @@ table.rank th:nth-child(2), table.rank td:nth-child(2), table.rank th:nth-child(
         <ul>
           <li>A carreira só aparece dentro das 6 UFs. Quem disputou em outro estado tem esse trecho fora da linha do tempo.</li>
           <li>Até 2010 o TSE não registra resultado de vice e de suplente de senador; esses cargos aparecem "sem resultado".</li>
-          <li>Quem não tem título válido no arquivo (1,7% das linhas de 2002) não entra.</li>
+          <li>Quem não tem título válido no arquivo não entra: até 0,4% das candidaturas por ano (0,75% em 2018), e 16 eleitos em 2004, 2012 e 2016.</li>
+          <li>Em 235 títulos o TSE grava nomes de pessoas diferentes (erro de digitação do título). Essas carreiras misturam duas pessoas; são 0,07% dos títulos.</li>
           <li>O nome exibido é o de urna mais recente; o nome civil aparece embaixo quando é diferente.</li>
         </ul>
       </details>
@@ -428,20 +429,16 @@ table.rank th:nth-child(2), table.rank td:nth-child(2), table.rank th:nth-child(
   }
 
   // ---------- B: curva de sobrevivência ----------
-  // turma = cargo da primeira vitória; "ainda eleito" no ciclo k = venceu alguma eleição
-  // em (ano da estreia + 4k − 2) ou (ano + 4k): quem tem mandato naquele momento.
+  // vem pronta da view q10_curva_sobrevivencia: turma = cargo da primeira vitória,
+  // "ainda eleito" no ciclo k = venceu alguma eleição em (estreia + 4k − 2) ou (estreia + 4k).
+  // linhas: [UF da 1ª vitória, cargo, ciclo, turma, ainda eleitos, ainda disputando]
   const TURMAS = [[13, "Vereador", "var(--accent)"], [11, "Prefeito", "var(--lose)"], [7, "Dep. estadual", "var(--win2)"], [6, "Dep. federal", "var(--ink-2)"]];
   function sobrevivencia(medida) {
     const out = {}; for (const [c] of TURMAS) out[c] = Array.from({ length: 5 }, () => [0, 0]);
-    for (const p of P) {
-      if (!naUF(p) || p.r[0].ano < 2006) continue;
-      const v = p.r.find(x => x.res === 0); if (!v || !out[v.cargo]) continue;
-      const anosVit = new Set(p.r.filter(x => x.res === 0).map(x => x.ano)), anosPart = new Set(p.r.map(x => x.ano));
-      const conj = medida === "mandato" ? anosVit : anosPart;
-      for (let k = 1; k <= 4; k++) {
-        const alvo = v.ano + 4 * k; if (alvo > 2024) break;
-        out[v.cargo][k][0] += 1; if (conj.has(alvo) || conj.has(alvo - 2)) out[v.cargo][k][1] += 1;
-      }
+    const ufs = ufsSel();
+    for (const [uf, cargo, k, n, eleitos, disputando] of D.curva) {
+      if (!out[cargo] || !ufs.includes(uf)) continue;
+      out[cargo][k][0] += n; out[cargo][k][1] += medida === "mandato" ? eleitos : disputando;
     }
     return out;
   }
@@ -464,7 +461,7 @@ table.rank th:nth-child(2), table.rank td:nth-child(2), table.rank th:nth-child(
     labels.forEach(([x, y, s2]) => txt(svg, x, y, s2, "val"));
     const v8 = s[13][2], v4 = s[13][1], p4 = v4[0] ? 100 * v4[1] / v4[0] : null, p8 = v8[0] ? 100 * v8[1] / v8[0] : null;
     const verbo = st.surv === "mandato" ? "ainda estão eleitos" : "ainda disputam eleições";
-    document.getElementById("s-answer").innerHTML = p8 == null ? "Poucos casos para este filtro." : `De cada 100 vereadores que ganham a primeira eleição, <strong>${fmt(p4, 0)}</strong> ${verbo} 4 anos depois e só <strong>${fmt(p8, 0)}</strong> depois de 8. A maioria das carreiras acaba no primeiro mandato.`;
+    document.getElementById("s-answer").innerHTML = p8 == null ? "Poucos casos para este filtro." : `De cada 100 vereadores que ganham a primeira eleição, <strong>${fmt(p4, 0)}</strong> ${verbo} 4 anos depois e só <strong>${fmt(p8, 0)}</strong> depois de 8. ${st.surv === "mandato" ? "A maioria das carreiras acaba no primeiro mandato." : "A distância para a curva de quem ainda está eleito é quem tentou e perdeu."}`;
     document.getElementById("s-kpi-lbl").textContent = st.surv === "mandato" ? "Vereadores estreantes ainda eleitos 8 anos depois" : "Vereadores estreantes ainda disputando 8 anos depois";
     document.getElementById("s-kpi").textContent = p8 == null ? "–" : `${fmt(p8, 0)}%`;
     document.getElementById("s-kpi-sub").textContent = st.surv === "mandato" ? "Contam mandatos em qualquer cargo: quem saiu de vereador para deputado segue vivo na curva." : "Conta quem continua se candidatando, mesmo perdendo.";

@@ -264,3 +264,90 @@ INNER JOIN seguinte AS s
         AND e.sg_ue = s.sg_ue
 WHERE e.ano + e.anos_mandato <= (SELECT max(c.ano) FROM candidatura AS c)
 GROUP BY e.ano, e.sg_uf, e.cd_cargo;
+
+-- ---------------------------------------------------------------------------
+-- Grão: UF × cargo da primeira vitória × ciclo. A curva de sobrevivência: de
+-- quem venceu a primeira eleição num cargo, quantos ainda tinham mandato (em
+-- qualquer cargo) 4, 8, 12 e 16 anos depois, e quantos ainda disputavam.
+--
+-- "Ainda eleito" no ciclo k = venceu alguma eleição em (vitória + 4k) ou
+-- (vitória + 4k − 2): quem tem mandato naquele momento, municipal ou geral.
+-- Só entra quem estreou de 2006 em diante, para a primeira vitória ser de fato a
+-- primeira (antes de 2002 não há dado), e cada ciclo só conta as turmas que já
+-- chegaram a ele. A UF é a da primeira vitória. Só anos divulgados.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE VIEW q10_curva_sobrevivencia AS
+WITH linha AS (
+    SELECT * FROM q10_linha_do_tempo
+    WHERE fl_divulgado
+),
+
+estreia AS (
+    SELECT
+        nr_titulo_eleitoral,
+        min(ano) AS ano_estreia,
+        min(ano) FILTER (WHERE fl_eleito) AS ano_vitoria
+    FROM linha
+    GROUP BY nr_titulo_eleitoral
+),
+
+turma AS (
+    SELECT
+        e.nr_titulo_eleitoral,
+        e.ano_vitoria,
+        t.sg_uf,
+        t.cd_cargo,
+        t.ds_cargo
+    FROM estreia AS e
+    INNER JOIN linha AS t ON e.nr_titulo_eleitoral = t.nr_titulo_eleitoral AND e.ano_vitoria = t.ano
+    WHERE e.ano_estreia >= 2006 AND t.cd_cargo IN (6, 7, 11, 13)
+),
+
+ciclo AS (
+    SELECT unnest(range(1, 5)) AS nr_ciclo
+),
+
+ultimo AS (
+    SELECT max(ano) AS ano_ultimo
+    FROM linha
+),
+
+marco AS (
+    SELECT
+        tu.*,
+        c.nr_ciclo,
+        tu.ano_vitoria + 4 * c.nr_ciclo AS ano_alvo
+    FROM turma AS tu
+    CROSS JOIN ciclo AS c
+    CROSS JOIN ultimo AS u
+    WHERE tu.ano_vitoria + 4 * c.nr_ciclo <= u.ano_ultimo
+),
+
+situacao AS (
+    SELECT
+        m.nr_titulo_eleitoral,
+        m.sg_uf,
+        m.cd_cargo,
+        m.ds_cargo,
+        m.nr_ciclo,
+        coalesce(bool_or(t.fl_eleito), FALSE) AS fl_ainda_eleito,
+        bool_or(t.ano IS NOT NULL) AS fl_ainda_disputando
+    FROM marco AS m
+    LEFT JOIN linha AS t
+        ON m.nr_titulo_eleitoral = t.nr_titulo_eleitoral AND t.ano IN (m.ano_alvo, m.ano_alvo - 2)
+    GROUP BY ALL
+)
+
+SELECT
+    sg_uf,
+    cd_cargo,
+    nr_ciclo,
+    any_value(ds_cargo) AS ds_cargo,
+    4 * nr_ciclo AS anos_depois,
+    count(*) AS qt_turma,
+    count(*) FILTER (WHERE fl_ainda_eleito) AS qt_ainda_eleitos,
+    count(*) FILTER (WHERE fl_ainda_disputando) AS qt_ainda_disputando,
+    round(100.0 * count(*) FILTER (WHERE fl_ainda_eleito) / count(*), 1) AS pct_ainda_eleitos,
+    round(100.0 * count(*) FILTER (WHERE fl_ainda_disputando) / count(*), 1) AS pct_ainda_disputando
+FROM situacao
+GROUP BY sg_uf, cd_cargo, nr_ciclo;

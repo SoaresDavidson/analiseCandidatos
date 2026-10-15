@@ -110,6 +110,13 @@ def main() -> None:
                FROM q10_sobrevivencia WHERE fl_divulgado ORDER BY 1, 2, 3"""
         ).fetchall()
     ]
+    curva = [
+        list(r)
+        for r in con.execute(
+            """SELECT sg_uf, cd_cargo, nr_ciclo, qt_turma, qt_ainda_eleitos, qt_ainda_disputando
+               FROM q10_curva_sobrevivencia ORDER BY 1, 2, 3"""
+        ).fetchall()
+    ]
     totais = con.execute(
         "SELECT count(*), count(DISTINCT nr_titulo_eleitoral) FROM q10_linha_do_tempo WHERE fl_divulgado"
     ).fetchone()
@@ -121,6 +128,7 @@ def main() -> None:
         "partidos": partidos,
         "ues": ues,
         "sobrevivencia": sobrevivencia,
+        "curva": curva,
         "totais": {"participacoes": totais[0], "pessoas": totais[1], "eleitos": len(pessoas)},
     }
     texto = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))

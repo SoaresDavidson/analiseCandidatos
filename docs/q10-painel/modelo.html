@@ -173,6 +173,12 @@ details[open] summary { margin-bottom: 10px; }
 .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; box-sizing: border-box; }
 .tl-cargo { font-weight: 600; fill: var(--ink); }
 table.rank tbody tr { cursor: pointer; }
+.atalhos { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.atalho { font: 500 13px/1 var(--f-body); border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); padding: 7px 10px; border-radius: 999px; cursor: pointer; }
+.atalho:hover { border-color: var(--accent); color: var(--ink); }
+.atalho[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.lane-lbl { fill: var(--ink-2); font-size: 12px; font-weight: 600; }
+.big-num { font: 700 clamp(34px, 5vw, 52px)/1 var(--f-display); font-variant-numeric: tabular-nums; }
 table.rank tbody tr:hover, table.rank tbody tr:focus-visible { background: var(--bg); outline: none; }
 table.rank td { vertical-align: top; }
 table.rank th:nth-child(2), table.rank td:nth-child(2), table.rank th:nth-child(3), table.rank td:nth-child(3), table.rank th:nth-child(4), table.rank td:nth-child(4) { text-align: left; font-family: var(--f-body); }
@@ -202,6 +208,7 @@ table.rank th:nth-child(2), table.rank td:nth-child(2), table.rank th:nth-child(
       <h2>A linha do tempo de uma carreira</h2>
       <p class="answer" id="a-answer"></p>
     </div>
+    <div class="atalhos" id="atalhos"><span class="flabel">Exemplos</span></div>
     <div class="search">
       <input type="search" id="f-busca" placeholder="Digite um nome: Caiado, Flávio Dino, Eduardo Braide…" aria-label="Buscar político pelo nome" autocomplete="off">
       <div class="results" id="resultados" hidden></div>
@@ -214,24 +221,33 @@ table.rank th:nth-child(2), table.rank td:nth-child(2), table.rank th:nth-child(
     <details><summary>Ver todas as candidaturas</summary><div class="scroll-x" id="a-table"></div></details>
   </section>
 
-  <!-- PARTE B -->
-  <section class="part" id="parte-b">
+  <!-- PARTE B: CURVA DE SOBREVIVÊNCIA -->
+  <section class="part" id="parte-b2">
     <div class="part-head">
-      <span class="part-tag"><b>B</b><span class="eyebrow">Quem sobreviveu mais</span></span>
-      <h2>As carreiras mais longas</h2>
-      <p class="answer" id="b-answer"></p>
+      <span class="part-tag"><b>B</b><span class="eyebrow">Sobrevivência</span></span>
+      <h2>Quanto tempo uma carreira dura depois da primeira vitória?</h2>
+      <p class="answer" id="s-answer"></p>
     </div>
-    <div class="controls">
-      <span class="flabel">Ordenar por</span><div class="seg" id="f-ordem"></div>
-      <span class="flabel">Último cargo</span><select id="f-cargo-rank" aria-label="Último cargo disputado"></select>
+    <div class="controls"><span class="flabel">Mostrar</span><div class="seg" id="f-surv"></div></div>
+    <div class="grid2">
+      <div class="card">
+        <div class="legend" id="s-legend"></div>
+        <svg class="chart" id="s-chart" role="img" aria-label="Curva de sobrevivência: percentual que ainda tem mandato depois de cada ciclo, pelo cargo da primeira vitória"></svg>
+        <p class="note">Cada linha acompanha quem venceu a primeira eleição num cargo e mostra quantos ainda estavam eleitos (para qualquer cargo) 4, 8, 12 e 16 anos depois. Só entra quem estreou de 2006 em diante, para a primeira vitória ser de fato a primeira. Cada ponto usa só as turmas que já chegaram àquele ponto. A queda dos prefeitos aos 8 anos é a regra do jogo: a Constituição permite uma só reeleição seguida, então o prefeito reeleito precisa sair ou disputar outro cargo.</p>
+      </div>
+      <div class="card">
+        <span class="eyebrow" id="s-kpi-lbl"></span>
+        <span class="big-num" id="s-kpi"></span>
+        <p class="note" id="s-kpi-sub" style="font-size:14px;color:var(--ink-2)"></p>
+        <div class="detail" id="s-table"></div>
+      </div>
     </div>
-    <div class="card"><div class="scroll-x" id="b-rank"></div><p class="note">Clique numa linha para ver a linha do tempo na parte A.</p></div>
   </section>
 
   <!-- PARTE C -->
   <section class="part" id="parte-c">
     <div class="part-head">
-      <span class="part-tag"><b>C</b><span class="eyebrow">Sobrevivência no agregado</span></span>
+      <span class="part-tag"><b>C</b><span class="eyebrow">Reeleição</span></span>
       <h2>Quem se elege tenta de novo? E consegue?</h2>
       <p class="answer" id="c-answer"></p>
     </div>
@@ -248,6 +264,20 @@ table.rank th:nth-child(2), table.rank td:nth-child(2), table.rank th:nth-child(
         <p class="note"><b>Tentaram:</b> disputaram o mesmo cargo, na mesma cidade ou UF, no ciclo seguinte. <b>Reeleitos:</b> tentaram e venceram. <b>Sucesso de quem tentou:</b> reeleitos ÷ quem tentou. <b>Seguiram na política:</b> disputaram qualquer cargo em qualquer eleição depois.</p>
       </div>
     </div>
+  </section>
+
+  <!-- PARTE D -->
+  <section class="part" id="parte-b">
+    <div class="part-head">
+      <span class="part-tag"><b>D</b><span class="eyebrow">Quem sobreviveu mais</span></span>
+      <h2>As carreiras mais longas</h2>
+      <p class="answer" id="b-answer"></p>
+    </div>
+    <div class="controls">
+      <span class="flabel">Ordenar por</span><div class="seg" id="f-ordem"></div>
+      <span class="flabel">Último cargo</span><select id="f-cargo-rank" aria-label="Último cargo disputado"></select>
+    </div>
+    <div class="card"><div class="scroll-x" id="b-rank"></div><p class="note">Clique numa linha para ver a carreira na parte A.</p></div>
   </section>
 
   <section class="part" id="metodo">
@@ -317,9 +347,9 @@ table.rank th:nth-child(2), table.rank td:nth-child(2), table.rank th:nth-child(
       reel: r.filter(x => x.reeleito).length, anos: r[r.length - 1].ano - r[0].ano, partidos: new Set(r.map(x => x.partido)).size, ufs, ult: r[r.length - 1] };
   });
 
-  const st = { uf: "TODAS", sel: null, ordem: "vit", cargoRank: "0", cargoC: 13 };
+  const st = { uf: "TODAS", sel: null, ordem: "vit", cargoRank: "0", cargoC: 13, surv: "mandato" };
   try { const s = JSON.parse(localStorage.getItem("q10-estado") || "{}"); Object.assign(st, s); } catch (e) { /* sem armazenamento */ }
-  const salvar = () => { try { localStorage.setItem("q10-estado", JSON.stringify({ uf: st.uf, sel: st.sel, ordem: st.ordem, cargoRank: st.cargoRank, cargoC: st.cargoC })); } catch (e) { /* ignora */ } };
+  const salvar = () => { try { localStorage.setItem("q10-estado", JSON.stringify({ uf: st.uf, sel: st.sel, ordem: st.ordem, cargoRank: st.cargoRank, cargoC: st.cargoC, surv: st.surv })); } catch (e) { /* ignora */ } };
   const ufsSel = () => st.uf === "TODAS" ? UFS : [st.uf];
   const naUF = p => st.uf === "TODAS" || p.ufs.includes(st.uf);
 
@@ -357,28 +387,88 @@ table.rank th:nth-child(2), table.rank td:nth-child(2), table.rank th:nth-child(
     document.getElementById("a-answer").innerHTML = `<strong>${p.nome}</strong>${p.civil ? ` (${p.civil})` : ""} disputou <strong>${p.r.length} eleiç${p.r.length > 1 ? "ões" : "ão"}</strong> de ${p.r[0].ano} a ${p.ult.ano} e venceu <strong>${p.vit}</strong>${cargos.length ? ` (${cargos.join(", ")})` : ""}. ${tent ? `Tentou a reeleição ${tent} ${tent > 1 ? "vezes" : "vez"} e conseguiu ${reel}.` : "Nunca tentou a reeleição para o mesmo cargo."} ${p.partidos > 1 ? `Passou por ${p.partidos} partidos.` : "Ficou no mesmo partido."}`;
     const s = [["Participações", p.r.length], ["Vitórias", p.vit], ["Derrotas", p.der], ["Reeleições", `${reel}/${tent}`], ["Anos de carreira", p.anos], ["Partidos", p.partidos]];
     document.getElementById("a-stats").innerHTML = s.map(([k, v]) => `<div class="stat"><span class="eyebrow">${k}</span><span class="big">${v}</span></div>`).join("");
-    document.getElementById("a-legend").innerHTML = `<span><i class="dot" style="background:var(--win)"></i>Eleito</span><span><i class="dot" style="background:var(--surface);border:2.5px solid var(--lose)"></i>Não eleito</span><span><i class="dot" style="background:var(--surface);border:2px dashed var(--ink-3)"></i>Sem resultado</span><span><i class="dot" style="background:var(--win);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--win)"></i>Reeleito</span>`;
+    document.getElementById("a-legend").innerHTML = `<span><i class="dot" style="background:var(--win)"></i>Eleito</span><span><i class="dot" style="background:var(--surface);border:2.5px solid var(--lose)"></i>Não eleito</span><span><i class="dot" style="background:var(--surface);border:2px dashed var(--ink-3)"></i>Sem resultado</span><span><i class="dot" style="background:var(--win);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--win)"></i>Reeleito</span><span>Cada faixa é um cargo; a linha liga as candidaturas em ordem.</span>`;
+    // escada da carreira: uma faixa por cargo, de baixo (vereador) para cima (presidente)
     const svg = document.getElementById("a-timeline"); clear(svg);
-    const W = 1080, L = 30, R = 30, H = 210, cy = 100, step = (W - L - R) / (ANOS.length - 1);
+    const RANK = { 13: 0, 12: 1, 11: 2, 7: 3, 8: 3, 6: 4, 9: 5, 10: 5, 4: 5, 5: 6, 3: 7, 2: 8, 1: 9 };
+    const LANE = { 0: "Vereador", 1: "Vice-prefeito", 2: "Prefeito", 3: "Dep. estadual", 4: "Dep. federal", 5: "Vice / suplente", 6: "Senador", 7: "Governador", 8: "Vice-presidente", 9: "Presidente" };
+    const lanes = [...new Set(p.r.map(x => RANK[x.cargo]))].sort((a, b) => b - a);
+    const W = 1080, L = 120, R = 30, T = 18, LH = 62, H = T + lanes.length * LH + 40, step = (W - L - R) / (ANOS.length - 1);
     svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.style.minWidth = "760px";
-    const X = ano => L + ANOS.indexOf(ano) * step;
-    el("line", { x1: L, x2: W - R, y1: cy, y2: cy, stroke: "var(--line)", "stroke-width": 2 }, svg);
-    ANOS.forEach(a => { el("line", { x1: X(a), x2: X(a), y1: cy - 4, y2: cy + 4, stroke: "var(--ink-3)", "stroke-width": 1 }, svg); txt(svg, X(a), H - 12, String(a), "axis", "middle"); });
-    // traço da carreira: da estreia à última participação
-    el("line", { x1: X(p.r[0].ano), x2: X(p.ult.ano), y1: cy, y2: cy, stroke: "var(--accent)", "stroke-width": 3, "stroke-linecap": "round" }, svg);
-    p.r.forEach((x, i) => {
-      const g = el("g", {}, svg), cx = X(x.ano);
-      const cor = x.res === 0 ? "var(--win)" : "var(--surface)";
-      if (x.reeleito) el("circle", { cx, cy, r: 17, style: "fill:none;stroke:var(--win);stroke-width:2" }, g);
-      el("circle", { cx, cy, r: 12, style: `fill:${cor};stroke:${x.res === 1 ? "var(--lose)" : x.res === 2 ? "var(--ink-3)" : "var(--surface)"};stroke-width:${x.res === 0 ? 2 : 3}${x.res === 2 ? ";stroke-dasharray:4 3" : ""}` }, g);
-      const acima = i % 2 === 0;
-      txt(g, cx, acima ? cy - 34 : cy + 34, ABREV[x.cargo], "lbl tl-cargo", "middle");
-      txt(g, cx, acima ? cy - 50 : cy + 50, x.partido, "val", "middle");
-      const hit = el("rect", { x: cx - step / 2, y: 0, width: step, height: H - 24, fill: "transparent" }, g);
+    const X = ano => L + ANOS.indexOf(ano) * step, Yl = rk => T + lanes.indexOf(rk) * LH + LH / 2;
+    lanes.forEach((rk, i) => {
+      if (i % 2 === 0) el("rect", { x: L - 20, y: T + i * LH, width: W - L - R + 40, height: LH, rx: 6, style: "fill:var(--bg)" }, svg);
+      txt(svg, L - 30, Yl(rk), LANE[rk], "lane-lbl", "end");
+    });
+    ANOS.forEach(a => { el("line", { x1: X(a), x2: X(a), y1: T, y2: T + lanes.length * LH, class: "gridline" }, svg); txt(svg, X(a), H - 14, String(a), "axis", "middle"); });
+    // o caminho da carreira liga as candidaturas em ordem
+    el("polyline", { points: p.r.map(x => `${X(x.ano)},${Yl(RANK[x.cargo])}`).join(" "), fill: "none", stroke: "var(--accent)", "stroke-width": 2.5, "stroke-linejoin": "round", "stroke-opacity": 0.55 }, svg);
+    p.r.forEach(x => {
+      const g = el("g", {}, svg), cx = X(x.ano), cy = Yl(RANK[x.cargo]);
+      if (x.reeleito) el("circle", { cx, cy, r: 16, style: "fill:none;stroke:var(--win);stroke-width:2" }, g);
+      el("circle", { cx, cy, r: 11, style: `fill:${x.res === 0 ? "var(--win)" : "var(--surface)"};stroke:${x.res === 1 ? "var(--lose)" : x.res === 2 ? "var(--ink-3)" : "var(--surface)"};stroke-width:${x.res === 0 ? 2 : 3}${x.res === 2 ? ";stroke-dasharray:4 3" : ""}` }, g);
+      txt(g, cx, cy - 23, x.partido, "val", "middle");
+      const hit = el("rect", { x: cx - step / 2, y: cy - LH / 2, width: step, height: LH, fill: "transparent" }, g);
       hit.addEventListener("mousemove", ev => showTip(ev, `<b>${x.ano} · ${ABREV[x.cargo]}</b><br>${x.local} (${x.uf})<br>${x.partido} · ${RES[x.res]}${x.reeleito ? " · reeleito" : x.tentou ? " · tentou a reeleição" : ""}`));
       hit.addEventListener("mouseleave", hideTip);
     });
+    document.querySelectorAll("#atalhos .atalho").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.id === st.sel)));
     document.getElementById("a-table").innerHTML = `<table><thead><tr><th>Ano</th><th>Cargo</th><th>Local</th><th>Partido</th><th>Resultado</th></tr></thead><tbody>${p.r.map(x => `<tr><td>${x.ano}</td><td>${ABREV[x.cargo]}</td><td>${x.local} (${x.uf})</td><td>${x.partido}</td><td>${RES[x.res]}${x.reeleito ? " · reeleito" : ""}</td></tr>`).join("")}</tbody></table>`;
+  }
+
+  // ---------- atalhos de exemplo ----------
+  const EXEMPLOS = ["ronaldo ramos caiado", "flavio dino de castro e costa", "eduardo figueiredo cavalheiro leite", "omar jose abdelaziz", "iris rezende machado", "marconi ferreira perillo junior", "eduardo salim braide", "sebastiao de araujo melo"];
+  const at = document.getElementById("atalhos");
+  for (const civil of EXEMPLOS) {
+    const p = P.find(x => semAcento(x.civil || x.nome) === civil || x.busca.endsWith(" " + civil) || x.busca === civil);
+    if (!p) continue;
+    const b = document.createElement("button"); b.type = "button"; b.className = "atalho"; b.dataset.id = p.id; b.textContent = p.nome;
+    b.addEventListener("click", () => { st.sel = p.id; salvar(); renderA(); });
+    at.appendChild(b);
+  }
+
+  // ---------- B: curva de sobrevivência ----------
+  // turma = cargo da primeira vitória; "ainda eleito" no ciclo k = venceu alguma eleição
+  // em (ano da estreia + 4k − 2) ou (ano + 4k): quem tem mandato naquele momento.
+  const TURMAS = [[13, "Vereador", "var(--accent)"], [11, "Prefeito", "var(--lose)"], [7, "Dep. estadual", "var(--win2)"], [6, "Dep. federal", "var(--ink-2)"]];
+  function sobrevivencia(medida) {
+    const out = {}; for (const [c] of TURMAS) out[c] = Array.from({ length: 5 }, () => [0, 0]);
+    for (const p of P) {
+      if (!naUF(p) || p.r[0].ano < 2006) continue;
+      const v = p.r.find(x => x.res === 0); if (!v || !out[v.cargo]) continue;
+      const anosVit = new Set(p.r.filter(x => x.res === 0).map(x => x.ano)), anosPart = new Set(p.r.map(x => x.ano));
+      const conj = medida === "mandato" ? anosVit : anosPart;
+      for (let k = 1; k <= 4; k++) {
+        const alvo = v.ano + 4 * k; if (alvo > 2024) break;
+        out[v.cargo][k][0] += 1; if (conj.has(alvo) || conj.has(alvo - 2)) out[v.cargo][k][1] += 1;
+      }
+    }
+    return out;
+  }
+  function renderS() {
+    const s = sobrevivencia(st.surv), svg = document.getElementById("s-chart"); clear(svg);
+    const W = 620, H = 340, L = 44, R = 118, T = 14, B = 40;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const X = k => L + (W - L - R) * k / 4, Y = v => T + (H - T - B) * (1 - v / 100);
+    for (let v = 0; v <= 100; v += 25) { el("line", { x1: L, x2: W - R, y1: Y(v), y2: Y(v), class: "gridline" }, svg); txt(svg, L - 6, Y(v), v + "%", "axis", "end"); }
+    ["estreia", "+4 anos", "+8 anos", "+12 anos", "+16 anos"].forEach((r, k) => txt(svg, X(k), H - B + 16, r, "axis", "middle"));
+    document.getElementById("s-legend").innerHTML = TURMAS.map(([, n, c]) => `<span><i class="sw" style="background:${c}"></i>1ª vitória como ${n.toLowerCase()}</span>`).join("");
+    const labels = [];
+    for (const [c, nome, cor] of TURMAS) {
+      const pts = [[0, 100]]; for (let k = 1; k <= 4; k++) { const [n, ok] = s[c][k]; if (n >= 30) pts.push([k, 100 * ok / n]); }
+      el("polyline", { points: pts.map(([k, v]) => `${X(k)},${Y(v)}`).join(" "), fill: "none", stroke: cor, "stroke-width": 2.5, "stroke-linejoin": "round" }, svg);
+      pts.forEach(([k, v]) => { const ci = el("circle", { cx: X(k), cy: Y(v), r: 4.5, style: `fill:${cor};stroke:var(--surface);stroke-width:2` }, svg); if (k) { ci.addEventListener("mousemove", ev => showTip(ev, `<b>1ª vitória como ${nome.toLowerCase()}</b><br>${4 * k} anos depois: ${fmt(v)}% ${st.surv === "mandato" ? "ainda eleitos" : "ainda disputando"}<br>${int(s[c][k][1])} de ${int(s[c][k][0])}`)); ci.addEventListener("mouseleave", hideTip); } });
+      const [lk, lv] = pts[pts.length - 1]; labels.push([X(lk) + 10, Y(lv), `${nome} ${fmt(lv, 0)}%`]);
+    }
+    labels.sort((a, b) => a[1] - b[1]); for (let i = 1; i < labels.length; i++) if (labels[i][1] - labels[i - 1][1] < 14) labels[i][1] = labels[i - 1][1] + 14;
+    labels.forEach(([x, y, s2]) => txt(svg, x, y, s2, "val"));
+    const v8 = s[13][2], v4 = s[13][1], p4 = v4[0] ? 100 * v4[1] / v4[0] : null, p8 = v8[0] ? 100 * v8[1] / v8[0] : null;
+    const verbo = st.surv === "mandato" ? "ainda estão eleitos" : "ainda disputam eleições";
+    document.getElementById("s-answer").innerHTML = p8 == null ? "Poucos casos para este filtro." : `De cada 100 vereadores que ganham a primeira eleição, <strong>${fmt(p4, 0)}</strong> ${verbo} 4 anos depois e só <strong>${fmt(p8, 0)}</strong> depois de 8. A maioria das carreiras acaba no primeiro mandato.`;
+    document.getElementById("s-kpi-lbl").textContent = st.surv === "mandato" ? "Vereadores estreantes ainda eleitos 8 anos depois" : "Vereadores estreantes ainda disputando 8 anos depois";
+    document.getElementById("s-kpi").textContent = p8 == null ? "–" : `${fmt(p8, 0)}%`;
+    document.getElementById("s-kpi-sub").textContent = st.surv === "mandato" ? "Contam mandatos em qualquer cargo: quem saiu de vereador para deputado segue vivo na curva." : "Conta quem continua se candidatando, mesmo perdendo.";
+    document.getElementById("s-table").innerHTML = TURMAS.map(([c, nome]) => `<div class="row"><span>${nome}: +4 / +8 anos</span><span>${[1, 2].map(k => s[c][k][0] >= 30 ? fmt(100 * s[c][k][1] / s[c][k][0], 0) + "%" : "–").join(" / ")}</span></div>`).join("");
   }
 
   // ---------- B: ranking ----------
@@ -426,7 +516,8 @@ table.rank th:nth-child(2), table.rank td:nth-child(2), table.rank th:nth-child(
     seg("f-uf", [["TODAS", "Todas"], ...UFS.map(u => [u, u])], () => st.uf, v => { st.uf = v; });
     seg("f-ordem", [["vit", "Vitórias"], ["anos", "Anos de carreira"], ["reel", "Reeleições"]], () => st.ordem, v => { st.ordem = v; });
     seg("f-cargo", CARGOS_C, () => st.cargoC, v => { st.cargoC = v; });
-    renderA(); renderB(); renderC();
+    seg("f-surv", [["mandato", "Ainda eleitos"], ["disputa", "Ainda disputando"]], () => st.surv, v => { st.surv = v; });
+    renderA(); renderS(); renderB(); renderC();
   }
   const sel = document.getElementById("f-cargo-rank");
   sel.innerHTML = `<option value="0">Todos</option>` + [13, 11, 7, 6, 5, 3].map(c => `<option value="${c}">${ABREV[c]}</option>`).join("");

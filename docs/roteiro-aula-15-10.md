@@ -14,7 +14,8 @@ Tempo total: ~18 minutos. Para cada pergunta, a mesma ordem:
 ## Abertura · Duda (1 min)
 
 - Recorte: os 6 estados sorteados, eleições ordinárias. O banco é o mesmo para todas as perguntas, carregado do TSE e do IBGE.
-- Mostrar a aba **Início** do painel: as perguntas que já estão nele e as que faltam.
+- Clicar em **Apresentar** (tela cheia) e mostrar a capa do painel: um achado por pergunta em número grande. Ela já responde às quatro perguntas em 30 segundos; o resto da apresentação mostra de onde vem cada número.
+- Navegar pelas setas ‹ › no topo ou pelas setas do teclado.
 
 ## Q4 Escolaridade · Duda e Davi (4 min)
 
@@ -39,10 +40,14 @@ Tempo total: ~18 minutos. Para cada pergunta, a mesma ordem:
 
 **Demonstração:**
 
-1. Q8 em **prefeito 2024**: arrastar o corte de % público. Em 5% quem depende de dinheiro público se elege +26 p.p.; em 90%, −15 p.p. A conclusão depende do corte.
-2. Q9: clicar num canal para filtrar a nuvem; clicar numa palavra para ver valor, canais e uso por eleitos × não eleitos.
+1. Q8, **panorama**: o mapa de calor mostra todos os cargos e anos de uma vez. Quase tudo vermelho: quem depende mais de dinheiro público se elege menos (vereador 2020: −12,7 p.p.). A exceção é deputado federal 2018 (+6,0).
+2. Clicar em **prefeito 2024** no panorama e arrastar o corte de % público. Em 5% quem depende de dinheiro público se elege +26 p.p.; em 90%, −15 p.p. A conclusão depende do corte.
+3. Q9, **para onde vai o dinheiro**: impresso e rua levam 65% nas municipais de 2024. O digital cresce (5% → 7%), mas quem mais cresce é a rua (21% → 29%).
+4. Clicar num canal para filtrar a nuvem; clicar numa palavra para ver valor, canais e uso por eleitos × não eleitos.
 
 **Alternativas (texto completo em `docs/q8-q9-publico-propaganda.md`, seção 4):**
+
+- **Um recorte por vez × panorama.** Os filtros mostram um cargo e ano por vez; o mapa de calor mostra os 12 de uma vez e deixa claro que o padrão se repete.
 
 - **Q8:** corte fixo em 50% × corte na mediana × **faixas com corte ajustável** (escolhida: mostra a forma da relação e que o corte importa).
 - **Q9:** nuvem × barras por canal × treemap. **Nuvem + barras lado a lado**: a nuvem mede frequência, as barras medem valor. Treemap descartado porque uma despesa cita várias palavras, e o valor por palavra não soma.
@@ -53,15 +58,18 @@ Tempo total: ~18 minutos. Para cada pergunta, a mesma ordem:
 
 **Demonstração:**
 
-1. Buscar **Caiado**: 6 eleições, 6 vitórias, 3 reeleições, 3 partidos. A ida a governador em 2018 não conta como reeleição.
-2. Na parte B, ordenar por **vitórias** e clicar no primeiro do ranking.
-3. Na parte C, alternar **vereador** e **governador**: de cada 100 vereadores eleitos, ~72 tentam de novo e ~41 se reelegem.
+1. Clicar no atalho **Ronaldo Caiado**: a "escada" mostra a carreira subindo de deputado federal a senador e governador, com 3 reeleições. A ida a governador em 2018 não conta como reeleição. Trocar para **Flávio Dino** ou **Eduardo Leite**.
+2. Parte B, **curva de sobrevivência**: de cada 100 vereadores que ganham a primeira eleição, 43 ainda estão eleitos 4 anos depois e 27 depois de 8. Apontar a queda dos prefeitos aos 8 anos: a Constituição só permite uma reeleição seguida.
+3. Parte C: alternar **vereador** e **governador**: de cada 100 vereadores eleitos, ~72 tentam de novo e ~41 se reelegem.
+4. Parte D: ordenar por **vitórias** e clicar no primeiro do ranking.
 
 **Alternativas:**
 
 - **Lista de candidaturas × linha do tempo.** A lista tem tudo, mas a linha do tempo mostra de relance as lacunas, as trocas de cargo e as reeleições.
 - **Ligar a mesma pessoa pelo CPF × pelo `sq_candidato` × pelo título de eleitor.** O CPF veio vazio em 2024 e o `sq_candidato` se repete entre pessoas antes de 2010; o título é a única chave estável.
-- **Um político × o agregado.** A busca responde "dado certo político"; o gráfico de reeleição mostra se a história dele é comum.
+- **Linha do tempo plana × escada por cargo.** A linha plana mostra quando; a escada mostra também para onde a carreira foi (subiu, desceu, ficou).
+- **Taxa de reeleição × curva de sobrevivência.** A taxa olha um ciclo; a curva acompanha a mesma turma por 16 anos, que é o que "sobrevivência" quer dizer.
+- **Um político × o agregado.** A busca responde "dado certo político"; a curva e o gráfico de reeleição mostram se a história dele é comum.
 
 **Limite:** a carreira só aparece dentro das 6 UFs; quem disputou em outro estado tem esse trecho fora.
 

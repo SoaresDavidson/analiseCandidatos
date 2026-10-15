@@ -26,12 +26,16 @@
   /* Q9: eleitos × não eleitos */
   --el: #2a78d6;
   --nel: #8a93a0;
+  --div-pos: #1c5cab; --div-neg: #c43a3a; --div-mid: #f0efec;
+  --c1: #2a78d6; --c2: #eb6834; --c3: #1baf7a; --c4: #eda100;
   --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
   --f-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
   --f-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    --div-pos: #6da7ec; --div-neg: #e66767; --div-mid: #383835;
+    --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500;
     --bg: #0f1215; --surface: #1a1a19; --ink: #f1f3f6; --ink-2: #bcc3cd; --ink-3: #8a93a0; --line: #2d333b;
     --accent: #3987e5; --accent-ink: #86b6ef; --hi: #d95926; --nodata: #3a3e44;
     --weak: #26456b;
@@ -41,6 +45,8 @@
   }
 }
 :root[data-theme="dark"] {
+    --div-pos: #6da7ec; --div-neg: #e66767; --div-mid: #383835;
+    --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500;
   --bg: #0f1215; --surface: #1a1a19; --ink: #f1f3f6; --ink-2: #bcc3cd; --ink-3: #8a93a0; --line: #2d333b;
   --accent: #3987e5; --accent-ink: #86b6ef; --hi: #d95926; --nodata: #3a3e44;
   --weak: #26456b;
@@ -156,6 +162,19 @@ details[open] summary { margin-bottom: 10px; }
 .method { display: grid; gap: 12px; }
 .method ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 85ch; }
 .foot { font-size: 12.5px; color: var(--ink-3); max-width: 90ch; }
+/* panorama Q8 */
+.heat { display: grid; grid-template-columns: 9.5em repeat(4, minmax(0, 1fr)); gap: 4px; align-items: stretch; }
+.heat .hd { font: 500 11.5px/1.2 var(--f-data); color: var(--ink-3); text-align: center; padding-bottom: 2px; }
+.heat .rl { font-size: 13px; color: var(--ink-2); display: flex; align-items: center; }
+.heat .cell { border: 0; border-radius: 8px; padding: 10px 6px; min-height: 58px; display: grid; place-items: center; text-align: center; font: 600 16px/1.1 var(--f-data); cursor: pointer; color: var(--ink); }
+.heat .cell small { display: block; font: 400 11px/1.2 var(--f-body); opacity: .85; margin-top: 3px; }
+.heat .cell.na { background: transparent; border: 1px dashed var(--line); color: var(--ink-3); font: 400 12px var(--f-body); cursor: default; }
+.heat .cell.cur { outline: 2.5px solid var(--ink); outline-offset: 1px; }
+.heat .cell.weak { opacity: .55; }
+.heat .cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.divleg { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-2); flex-wrap: wrap; }
+.divleg .bar { width: 160px; height: 10px; border-radius: 3px; background: linear-gradient(90deg, var(--div-neg), var(--div-mid), var(--div-pos)); }
+@media (max-width: 640px) { .heat { grid-template-columns: 6.5em repeat(4, minmax(0, 1fr)); } .heat .cell { font-size: 13px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -185,6 +204,15 @@ details[open] summary { margin-bottom: 10px; }
       <span class="part-tag"><b>8</b><span class="eyebrow">Repasse público × outras fontes</span></span>
       <h2>Quem depende mais de dinheiro público se elege mais ou menos?</h2>
       <p class="answer" id="q8-answer"></p>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline">
+        <h3>Panorama: todos os cargos e eleições de uma vez</h3>
+        <div class="divleg"><span>se elege menos</span><span class="bar"></span><span>se elege mais</span></div>
+      </div>
+      <div class="heat" id="q8-heat"></div>
+      <p class="note">Cada célula: diferença na taxa de eleição (em pontos percentuais) entre quem tem pelo menos o corte de dinheiro público e quem tem menos, no recorte de UF escolhido. Azul: quem depende mais de dinheiro público se elege mais; vermelho: menos. Célula apagada: diferença sem evidência estatística (p ≥ 0,05) ou grupo com menos de 30 candidatos. Clique numa célula para abrir o detalhe abaixo.</p>
     </div>
 
     <div class="cut">
@@ -224,6 +252,16 @@ details[open] summary { margin-bottom: 10px; }
       <p class="answer" id="q9-answer"></p>
     </div>
     <div class="stats" id="q9-stats"></div>
+    <div class="card">
+      <h3>Para onde o dinheiro de propaganda está indo?</h3>
+      <p class="answer" id="q9-trend-answer" style="font-size:15.5px"></p>
+      <div class="legend" id="q9-trend-legend"></div>
+      <div class="grid2" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+        <svg class="chart" id="q9-trend-mun" role="img" aria-label="Participação de cada canal no gasto de propaganda, eleições municipais 2020 e 2024"></svg>
+        <svg class="chart" id="q9-trend-ger" role="img" aria-label="Participação de cada canal no gasto de propaganda, eleições gerais 2018 e 2022"></svg>
+      </div>
+      <p class="note">% do valor contratado em propaganda, somando todos os cargos da eleição e o recorte de UF escolhido. Municipais (vereador e prefeito) e gerais (deputados, senador, governador) ficam separadas porque os cargos são diferentes. Os outros quatro canais somam o restante.</p>
+    </div>
     <div class="grid2">
       <div class="card">
         <h3>Quanto vai para cada canal</h3>
@@ -406,6 +444,7 @@ details[open] summary { margin-bottom: 10px; }
       `<div class="stat"><span class="eyebrow"><i class="sw" style="background:var(--out)"></i> &lt; ${st.corte}% público</span><span class="big">${fmt(to)}%</span><span class="sub">se elegeram · ${int(g.out.e)} de ${int(g.out.n)} candidatos</span></div>` +
       `<div class="stat"><span class="eyebrow">Diferença</span><span class="big">${dif == null ? "–" : (dif > 0 ? "+" : dif < 0 ? "−" : "") + fmt(Math.abs(dif))} p.p.</span>${pill}<span class="sub">taxa geral do cargo: ${fmt(geral)}%</span></div>`;
 
+    renderHeat();
     renderFaixa(r, geral);
     renderSens(r);
     document.getElementById("q8-table").innerHTML = `<table><thead><tr><th>% público</th><th>Candidatos</th><th>Eleitos</th><th>Taxa</th></tr></thead><tbody>${r.map((b, f) => `<tr><td>${rotFaixa(f)}</td><td>${int(b.n)}</td><td>${int(b.e)}</td><td>${b.n ? fmt(pc(b.e, b.n)) + "%" : "–"}</td></tr>`).join("")}<tr><td><b>Total</b></td><td>${int(N)}</td><td>${int(E)}</td><td>${fmt(geral)}%</td></tr></tbody></table>`;
@@ -475,6 +514,68 @@ details[open] summary { margin-bottom: 10px; }
     hit.addEventListener("click", ev => { st.corte = perto(ev); salvar(); renderQ8(); });
   }
 
+  // ---------- Q8: panorama ----------
+  function renderHeat() {
+    const box = document.getElementById("q8-heat"), us = ufIdx();
+    const linhas = [[0, "Vereador"], [1, "Prefeito"], [2, "Dep. estadual"], [3, "Dep. federal"], [4, "Senador"], [5, "Governador"]];
+    let h = `<span></span>${[2018, 2020, 2022, 2024].map(a => `<span class="hd">${a}<br>${a % 4 === 0 ? "municipal" : "geral"}</span>`).join("")}`;
+    for (const [c, nome] of linhas) {
+      h += `<span class="rl">${nome}</span>`;
+      for (const a of [2018, 2020, 2022, 2024]) {
+        if (!CARGOS_ANO(a).includes(c)) { h += `<span class="cell na" aria-hidden="true">—</span>`; continue; }
+        const r = Array.from({ length: 22 }, () => ({ n: 0, e: 0 }));
+        for (const [aa, u, cc, f, n, e] of D.q8) if (aa === a && cc === c && us.includes(u)) { r[f].n += n; r[f].e += e; }
+        const g = grupos(r, st.corte), tp = pc(g.pub.e, g.pub.n), to = pc(g.out.e, g.out.n);
+        const ok = g.pub.n >= N_MIN && g.out.n >= N_MIN && tp != null && to != null;
+        const t = ok ? qui2x2(g.pub.e, g.pub.n, g.out.e, g.out.n) : { p: null };
+        const dif = ok ? tp - to : null, forte = ok && t.p != null && t.p < 0.05;
+        const inten = dif == null ? 0 : Math.min(100, Math.round(100 * Math.abs(dif) / 20));
+        const cor = dif == null ? "var(--div-mid)" : `color-mix(in srgb, ${dif > 0 ? "var(--div-pos)" : "var(--div-neg)"} ${inten}%, var(--div-mid))`;
+        const claro = inten > 60;
+        const cur = a === st.ano && c === st.cargo;
+        h += `<button type="button" class="cell${forte ? "" : " weak"}${cur ? " cur" : ""}" data-a="${a}" data-c="${c}" style="background:${cor};${claro ? "color:#fff" : ""}" aria-label="${nome} ${a}: ${dif == null ? "sem dados" : (dif > 0 ? "+" : "−") + fmt(Math.abs(dif)) + " pontos"}">${dif == null ? "–" : (dif > 0 ? "+" : dif < 0 ? "−" : "") + fmt(Math.abs(dif))}<small>${dif == null ? "poucos dados" : `${fmt(tp, 0)}% × ${fmt(to, 0)}%`}</small></button>`;
+      }
+    }
+    box.innerHTML = h;
+    box.querySelectorAll(".cell[data-a]").forEach(b => b.addEventListener("click", () => {
+      st.ano = +b.dataset.a; st.cargo = +b.dataset.c; st.termo = null; st.canal = 8; salvar(); render();
+      document.getElementById("f-corte").scrollIntoView({ block: "center", behavior: "smooth" });
+    }));
+  }
+
+  // ---------- Q9: tendência por canal ----------
+  const TREND = [[0, "Impresso", "var(--c1)"], [1, "Rua", "var(--c2)"], [4, "Digital", "var(--c3)"], [2, "Rádio e TV", "var(--c4)"]];
+  function partes(anos, cargos) {
+    const us = ufIdx(), out = {};
+    for (const a of anos) { const v = Array(8).fill(0); for (const [aa, u, c, e, k, nc, nd, vr] of D.q9c) if (aa === a && us.includes(u) && cargos.includes(c)) v[k] += vr; const tot = v.reduce((s, x) => s + x, 0); out[a] = v.map(x => pc(x, tot)); }
+    return out;
+  }
+  function slope(svgId, anos, titulo, dados) {
+    const svg = document.getElementById(svgId); clear(svg);
+    const W = 380, H = 270, L = 70, R = 118, T = 34, B = 26;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    txt(svg, 0, 12, titulo, "lbl").style.fontWeight = 600;
+    const vals = TREND.flatMap(([k]) => anos.map(a => dados[a][k] || 0)), mx = Math.max(10, ...vals);
+    const nice = mx <= 25 ? 25 : mx <= 50 ? 50 : 75, Y = v => T + (H - T - B) * (1 - v / nice), X = i => L + i * (W - L - R);
+    anos.forEach((a, i) => { el("line", { x1: X(i), x2: X(i), y1: T, y2: H - B, class: "gridline" }, svg); txt(svg, X(i), H - 8, String(a), "axis", "middle"); });
+    const lab = [[], []];
+    TREND.forEach(([k, nome, cor]) => {
+      const v0 = dados[anos[0]][k] || 0, v1 = dados[anos[1]][k] || 0;
+      el("line", { x1: X(0), x2: X(1), y1: Y(v0), y2: Y(v1), stroke: cor, "stroke-width": 2.5 }, svg);
+      [[0, v0], [1, v1]].forEach(([i, v]) => el("circle", { cx: X(i), cy: Y(v), r: 4.5, style: `fill:${cor};stroke:var(--surface);stroke-width:2` }, svg));
+      lab[0].push([Y(v0), `${fmt(v0, 0)}%`]); lab[1].push([Y(v1), `${nome} ${fmt(v1, 0)}%`]);
+    });
+    lab.forEach((ls, i) => { ls.sort((a, b) => a[0] - b[0]); for (let j = 1; j < ls.length; j++) if (ls[j][0] - ls[j - 1][0] < 13) ls[j][0] = ls[j - 1][0] + 13; ls.forEach(([y, s]) => txt(svg, i ? X(1) + 9 : X(0) - 9, y, s, "val", i ? "start" : "end")); });
+  }
+  function renderTrend() {
+    const mun = partes([2020, 2024], [0, 1]), ger = partes([2018, 2022], [2, 3, 4, 5]);
+    document.getElementById("q9-trend-legend").innerHTML = TREND.map(([, n, c]) => `<span><i class="sw" style="background:${c}"></i>${n}</span>`).join("");
+    slope("q9-trend-mun", [2020, 2024], "Municipais", mun);
+    slope("q9-trend-ger", [2018, 2022], "Gerais", ger);
+    const d = (o, a, b) => (o[b][4] || 0) - (o[a][4] || 0);
+    document.getElementById("q9-trend-answer").innerHTML = `${onde()[0].toUpperCase() + onde().slice(1)}, o <strong>digital</strong> foi de ${fmt(mun[2020][4], 0)}% para ${fmt(mun[2024][4], 0)}% do gasto nas municipais (2020 → 2024) e de ${fmt(ger[2018][4], 0)}% para ${fmt(ger[2022][4], 0)}% nas gerais (2018 → 2022). ${d(mun, 2020, 2024) > 0 && d(ger, 2018, 2022) > 0 ? "Cresce nos dois tipos de eleição, mas o papel impresso e a rua ainda levam a maior parte." : "O papel impresso e a rua ainda levam a maior parte."}`;
+  }
+
   // ---------- Q9 ----------
   const chaveT = (eleito, canal) => `${st.ano}|${st.cargo}|${st.uf === "TODAS" ? 6 : UFS.indexOf(st.uf)}|${eleito}|${canal}`;
   function grupoT(eleito, canal) {
@@ -508,6 +609,7 @@ details[open] summary { margin-bottom: 10px; }
       `<div class="stat"><span class="eyebrow">Rua (cabos, militância)</span><span class="big">${fmt(pRua[1], 0)}% · ${fmt(pRua[0], 0)}%</span><span class="sub">do gasto dos eleitos · dos não eleitos</span></div>` +
       `<div class="stat"><span class="eyebrow">Digital (impulsionamento)</span><span class="big">${fmt(pDig[1], 0)}% · ${fmt(pDig[0], 0)}%</span><span class="sub">do gasto dos eleitos · dos não eleitos</span></div>`;
 
+    renderTrend();
     renderCanal(r, tot);
     renderCloud();
   }

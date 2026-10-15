@@ -188,6 +188,23 @@ antiga (Q10 e Q11 viraram Q8 e Q9) e medidos no PI.
 > `ignore_errors=true`, como fazem `04_politico.sql` e
 > `convert_csv_parquet_candidatos.py`.
 
+## Painel do grupo
+
+`docs/painel.html` junta as perguntas numa página com uma aba por pergunta. Abre direto no navegador. Cada aba mostra a página da pergunta como ela está no disco:
+
+| Aba | Página | Gerada por | Precisa no banco |
+|---|---|---|---|
+| Q4 Escolaridade | `docs/q4-painel/index.html` | `scripts/gerar_painel_q4.py` | `00_limpeza`, `00_modelo`, `06_carga_nucleo`, `10_q4` + malhas do IBGE |
+| Q8 · Q9 Financiamento e propaganda | `docs/q8-q9-painel/index.html` | `scripts/gerar_painel_q8_q9.py` | `01`–`05` + `11_q8`, `12_q9` |
+| Q10 Carreira | `docs/q10-painel/index.html` | `scripts/gerar_painel_q10.py` | `00_limpeza`, `04_politico`, `07_q10` |
+
+Para atualizar uma aba, regere a página da pergunta com o script dela; o painel mostra a versão nova sem mudar mais nada.
+
+Para colocar uma pergunta nova:
+
+1. Gere a página em `docs/<pasta>/index.html` com um script `scripts/gerar_painel_<pergunta>.py`. O ponto de partida mais simples é copiar o `modelo.html` de uma pergunta pronta: tem o estilo, os filtros e o quadro de método.
+2. Acrescente uma linha na lista `ABAS`, no topo do script de `docs/painel.html`, e tire a pergunta da lista `PENDENTES`.
+
 ## Notebooks
 
 ```bash

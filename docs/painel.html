@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Painel Eleitoral do Grupo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: barra fixa com as abas; abaixo, a página da pergunta escolhida ocupa o resto da tela. A aba Início resume as perguntas. */
+:root {
+  --bg: #f2f4f7; --surface: #fcfcfb; --ink: #11161d; --ink-2: #4a5361; --ink-3: #7b8594; --line: #dde2e9; --accent: #2a78d6;
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --f-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0f1215; --surface: #1a1a19; --ink: #f1f3f6; --ink-2: #bcc3cd; --ink-3: #8a93a0; --line: #2d333b; --accent: #3987e5; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0f1215; --surface: #1a1a19; --ink: #f1f3f6; --ink-2: #bcc3cd; --ink-3: #8a93a0; --line: #2d333b; --accent: #3987e5; color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 var(--f-body); display: flex; flex-direction: column; }
+.bar { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; padding: calc(10px + env(safe-area-inset-top, 0px)) 20px 10px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.brand { display: grid; line-height: 1.2; }
+.brand b { font: 700 17px/1.2 var(--f-display); }
+.brand span { font: 500 11.5px/1.3 var(--f-data); color: var(--ink-3); letter-spacing: 0.05em; text-transform: uppercase; }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; }
+.tabs a { text-decoration: none; color: var(--ink-2); font: 500 14px/1 var(--f-body); padding: 9px 12px; border-radius: 8px; border: 1px solid transparent; }
+.tabs a:hover { background: var(--bg); color: var(--ink); }
+.tabs a[aria-current="page"] { background: var(--accent); color: #fff; }
+.tabs a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.solo { font-size: 13px; color: var(--accent); text-decoration: none; margin-left: auto; }
+.solo:hover { text-decoration: underline; }
+.tabs .n { font-family: var(--f-data); margin-right: 6px; opacity: 0.8; }
+.stage { flex: 1; min-height: 0; position: relative; }
+iframe { border: 0; width: 100%; height: 100%; display: block; background: var(--bg); }
+.home { height: 100%; overflow-y: auto; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; display: grid; gap: 22px; }
+h1 { font: 700 clamp(28px, 4vw, 40px)/1.08 var(--f-display); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.lede { color: var(--ink-2); max-width: 70ch; margin: 0; font-size: 16px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 8px; align-content: start; text-decoration: none; color: inherit; }
+.card:hover { border-color: var(--accent); }
+.card .q { font: 500 12px/1 var(--f-data); color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase; }
+.card h2 { font: 600 19px/1.25 var(--f-display); margin: 0; text-wrap: balance; }
+.card p { margin: 0; font-size: 14px; color: var(--ink-2); }
+.card .who { font-size: 12.5px; color: var(--ink-3); }
+.card .go { font-weight: 600; color: var(--accent); font-size: 14px; }
+.pend { display: grid; gap: 6px; background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; padding: 16px 18px; }
+.pend h3 { margin: 0; font: 600 15px var(--f-body); }
+.pend ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; display: grid; gap: 4px; }
+.foot { font-size: 12.5px; color: var(--ink-3); max-width: 90ch; }
+.mono { font-family: var(--f-data); }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="brand"><b>Eleições em AM, GO, MA, MT, RS e SE</b><span>Banco de Dados Relacionais · UFPI</span></div>
+  <nav class="tabs" id="abas" aria-label="Perguntas"></nav>
+  <a class="solo" id="solo" href="#" target="_blank" rel="noopener" hidden>Abrir esta pergunta sozinha ↗</a>
+</header>
+<main class="stage" id="palco"></main>
+
+<script>
+(function () {
+  "use strict";
+  // ------------------------------------------------------------------
+  // PARA COLOCAR UMA PERGUNTA NO PAINEL: gere a página dela em
+  // docs/<pasta>/index.html (com o script da pergunta) e acrescente uma
+  // linha nesta lista. O painel mostra a página como ela estiver no disco,
+  // então regerar a sua página já atualiza o painel.
+  // ------------------------------------------------------------------
+  const ABAS = [
+    { id: "q4", n: "Q4", nome: "Escolaridade", pagina: "q4-painel/index.html", quem: "Duda e Davi",
+      titulo: "Quem estuda mais se elege mais?",
+      resumo: "Escolaridade de candidatos e eleitos × população adulta (Censo 2022), chance de eleição por grau e mapa dos municípios. 2022 e 2024." },
+    { id: "q8-q9", n: "Q8 · Q9", nome: "Financiamento e propaganda", pagina: "q8-q9-painel/index.html", quem: "Enrico",
+      titulo: "Dinheiro público elege? Onde se gasta com propaganda?",
+      resumo: "Taxa de eleição por dependência de recurso público, com corte ajustável, e nuvem de palavras das despesas de propaganda por canal. 2018 a 2024." },
+    { id: "q10", n: "Q10", nome: "Carreira", pagina: "q10-painel/index.html", quem: "Eduardo e Enrico",
+      titulo: "Quanto dura a carreira de um político?",
+      resumo: "Busca por nome com a linha do tempo da carreira, ranking das carreiras mais longas e taxa de reeleição por cargo. 2002 a 2024." },
+  ];
+  const PENDENTES = ["Q1 Quanto custa uma cadeira?", "Q2 Taxa de sucesso por patrimônio declarado", "Q3 Índices do município × eleitos", "Q5 Eleitos por voto de legenda", "Q6 Idade média do município e alternância de poder", "Q7 Viés político do município ao longo do tempo"];
+
+  const abas = document.getElementById("abas"), palco = document.getElementById("palco");
+  const links = [{ id: "inicio", n: "", nome: "Início" }, ...ABAS].map(a => {
+    const l = document.createElement("a"); l.href = "#" + a.id; l.innerHTML = a.n ? `<span class="n">${a.n}</span>${a.nome}` : a.nome; abas.appendChild(l); return [a.id, l];
+  });
+
+  function inicio() {
+    palco.innerHTML = `<div class="home"><div class="wrap">
+      <h1>Painel das perguntas</h1>
+      <p class="lede">Cada aba é uma pergunta da disciplina, respondida com os dados do TSE e do IBGE carregados no banco do grupo. Todas usam o mesmo recorte: os seis estados sorteados pelo professor.</p>
+      <div class="cards">${ABAS.map(a => `<a class="card" href="#${a.id}"><span class="q">${a.n} · ${a.nome}</span><h2>${a.titulo}</h2><p>${a.resumo}</p><span class="who">${a.quem}</span><span class="go">Abrir →</span></a>`).join("")}</div>
+      <div class="pend"><h3>Ainda fora do painel</h3><ul>${PENDENTES.map(p => `<li>${p}</li>`).join("")}</ul></div>
+      <p class="foot">Cada página é gerada a partir do banco (<span class="mono">dados/processed/tse.duckdb</span>) por um script em <span class="mono">scripts/</span>, e traz uma seção de método e limites. Grupo: Davi, Duda, Eduardo e Enrico.</p>
+    </div></div>`;
+  }
+
+  function tema(frame) {
+    // repassa a escolha de tema do visualizador para a página da pergunta, quando o navegador deixa
+    try { const t = document.documentElement.getAttribute("data-theme"); const r = frame.contentDocument && frame.contentDocument.documentElement; if (r) { if (t) r.setAttribute("data-theme", t); else r.removeAttribute("data-theme"); } } catch (e) { /* páginas em origens diferentes */ }
+  }
+
+  function abrir() {
+    const id = (location.hash || "#inicio").slice(1);
+    const aba = ABAS.find(a => a.id === id);
+    for (const [k, l] of links) l.setAttribute("aria-current", k === (aba ? aba.id : "inicio") ? "page" : "false");
+    const solo = document.getElementById("solo");
+    solo.hidden = !aba; if (aba) solo.href = aba.pagina;
+    if (!aba) { inicio(); document.title = "Painel Eleitoral do Grupo"; return; }
+    palco.innerHTML = "";
+    const f = document.createElement("iframe"); f.src = aba.pagina; f.title = `${aba.n} · ${aba.titulo}`;
+    f.addEventListener("load", () => tema(f));
+    palco.appendChild(f);
+  }
+  window.addEventListener("hashchange", abrir);
+  new MutationObserver(() => { const f = palco.querySelector("iframe"); if (f) tema(f); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  abrir();
+})();
+</script>
+</body>
+</html>

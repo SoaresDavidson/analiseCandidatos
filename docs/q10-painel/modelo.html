@@ -115,6 +115,15 @@ svg text { font-family: var(--fonte); }
 .achados small { color: var(--texto-2); }
 table.clicavel tbody tr { cursor: pointer; }
 #tabela-pessoa th, #tabela-pessoa td { text-align: left; }
+.fin-grade { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+@media (max-width: 800px) { .fin-grade { grid-template-columns: minmax(0, 1fr); } }
+.fin-grade h3 { margin-bottom: 6px; }
+.bem { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--linha); font-size: 14px; }
+.bem b { font-variant-numeric: tabular-nums; }
+.bem small { color: var(--texto-2); }
+.aviso-bem { background: #fff6d6; border-left: 4px solid var(--ouro); padding: 8px 12px; border-radius: 6px; font-size: 14px; }
+#fin-graf .barra-ano { cursor: pointer; }
+#fin-graf .barra-ano.sel .contorno { stroke: var(--texto); stroke-width: 2; }
 table.clicavel tbody tr:hover { background: #fff6d6; }
 </style>
 <div class="sub"><div class="sub-in">
@@ -145,17 +154,31 @@ table.clicavel tbody tr:hover { background: #fff6d6; }
 
   <section class="caixa">
     <h2>A carreira de um político, eleição por eleição</h2>
-    <div class="controles">
-      <span class="campo">Exemplos<span class="tog" id="atalhos"></span></span>
-    </div>
+    <label class="campo" for="f-busca">Busque qualquer político que já se elegeu nos 6 estados</label>
     <div class="procura">
-      <input class="busca" type="search" id="f-busca" placeholder="Ou digite um nome: Caiado, Flávio Dino, Eduardo Braide…" aria-label="Buscar político pelo nome" autocomplete="off">
+      <input class="busca" type="search" id="f-busca" placeholder="Digite um nome: Flávio Dino, Caiado, Eduardo Leite, o vereador da sua cidade…" aria-label="Buscar político pelo nome" autocomplete="off">
       <div class="achados" id="achados" hidden></div>
     </div>
     <p class="simples" id="pessoa-resposta" style="font-size:16px"></p>
     <div class="legenda"><span><i class="ponto" style="background:var(--verde-esc)"></i>Eleito</span><span><i class="ponto" style="background:#fff;border:3px solid var(--ouro)"></i>Não eleito</span><span><i class="ponto" style="background:#fff;border:2px dashed var(--texto-2)"></i>Sem resultado</span><span><i class="ponto" style="background:var(--verde-esc);box-shadow:0 0 0 2px #fff,0 0 0 4px var(--verde-esc)"></i>Reeleito</span><span>Cada faixa é um cargo; a linha liga as candidaturas em ordem.</span></div>
     <div class="rolagem"><svg class="grafico" id="escada" role="img" aria-label="Linha do tempo da carreira, uma faixa por cargo"></svg></div>
     <details><summary style="cursor:pointer;font-weight:700">Ver todas as candidaturas desta pessoa</summary><div class="rolagem" id="tabela-pessoa" style="margin-top:8px"></div></details>
+  </section>
+
+  <section class="caixa" id="fin">
+    <h2 id="fin-titulo">Patrimônio e campanha, eleição por eleição</h2>
+    <p class="simples" id="fin-resposta" style="font-size:16px"></p>
+    <div class="controles">
+      <span class="campo">Valores<span class="tog" id="f-valor"></span></span>
+    </div>
+    <div class="legenda" id="fin-legenda"></div>
+    <div class="rolagem"><svg class="grafico" id="fin-graf" style="max-width:860px" role="img" aria-label="Patrimônio declarado em cada eleição, por tipo de bem"></svg></div>
+    <p class="aviso-bem" id="fin-alerta" hidden></p>
+    <div class="fin-grade">
+      <div><h3 id="fin-ano-titulo"></h3><div id="fin-ano"></div></div>
+      <div><h3>Campanha: quanto arrecadou e gastou</h3><div class="rolagem" id="fin-campanha"></div></div>
+    </div>
+    <p class="nota">Patrimônio: o que o candidato declarou ao TSE no registro de cada candidatura (o TSE publica desde 2006; em 2006 e 2008 sem separar o tipo). "Corrigido pela inflação" leva cada valor a reais de agosto de 2024 pelo IPCA do IBGE, para comparar anos diferentes. Campanha: prestação de contas, de 2018 em diante; o dinheiro arrecadado é da campanha, não do patrimônio pessoal.</p>
   </section>
 
   <details class="mais"><summary>Comparar os cargos de estreia</summary><div>
@@ -229,7 +252,7 @@ table.clicavel tbody tr:hover { background: #fff6d6; }
     return { id, nome: nomeProprio(p[0]), civil: nomeProprio(p[1]), busca: semAcento(p[0] + " " + p[1]), r, vit, der: r.filter(x => x.res === 1).length, reel: r.filter(x => x.reeleito).length, anos: r[r.length - 1].ano - r[0].ano, partidos: new Set(r.map(x => x.partido)).size, ufs: [...new Set(r.map(x => x.uf))], ult: r[r.length - 1] };
   });
 
-  const st = { uf: "TODAS", turma: 13, sel: null, medida: "mandato", cargoRe: 13, ordem: "vit" };
+  const st = { uf: "TODAS", turma: 13, sel: null, medida: "mandato", cargoRe: 13, ordem: "vit", valor: "real" };
   try { Object.assign(st, JSON.parse(localStorage.getItem("q10-tse") || "{}")); } catch (e) { /* sem armazenamento */ }
   const salvar = () => { try { localStorage.setItem("q10-tse", JSON.stringify(st)); } catch (e) { /* ignora */ } };
   const ufsSel = () => st.uf === "TODAS" ? UFS : [st.uf];
@@ -278,7 +301,6 @@ table.clicavel tbody tr:hover { background: #fff6d6; }
     const p = P[st.sel], reel = p.reel, tent = p.r.filter(x => x.tentou).length;
     const cargos = [...new Set(p.r.filter(x => x.res === 0).map(x => ABREV[x.cargo].toLowerCase()))];
     document.getElementById("pessoa-resposta").innerHTML = `<b>${p.nome}</b>${p.civil && p.civil !== p.nome ? ` (${p.civil})` : ""} disputou <b>${p.r.length} eleiç${p.r.length > 1 ? "ões" : "ão"}</b> de ${p.r[0].ano} a ${p.ult.ano} e venceu <b>${p.vit}</b>${cargos.length ? ` (${cargos.join(", ")})` : ""}. ${tent ? `Tentou se reeleger ${tent} ${tent > 1 ? "vezes" : "vez"} e conseguiu ${reel}.` : "Nunca tentou se reeleger para o mesmo cargo."} ${p.partidos > 1 ? `Passou por ${p.partidos} partidos.` : "Ficou no mesmo partido."}`;
-    document.querySelectorAll("#atalhos button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.id === st.sel)));
     const svg = document.getElementById("escada"); limpa(svg);
     const lanes = [...new Set(p.r.map(x => RANK[x.cargo]))].sort((a, b) => b - a);
     const W = 1080, L = 130, R = 30, T = 16, LH = 60, H = T + lanes.length * LH + 36, step = (W - L - R) / (ANOS.length - 1);
@@ -297,13 +319,7 @@ table.clicavel tbody tr:hover { background: #fff6d6; }
       hit.addEventListener("mouseleave", esconde);
     });
     document.getElementById("tabela-pessoa").innerHTML = `<table><thead><tr><th>Ano</th><th>Cargo</th><th>Local</th><th>Partido</th><th>Resultado</th></tr></thead><tbody>${p.r.map(x => `<tr><td>${x.ano}</td><td>${ABREV[x.cargo]}</td><td>${x.local} (${x.uf})</td><td>${x.partido}</td><td>${RES[x.res]}${x.reeleito ? " · reeleito" : ""}</td></tr>`).join("")}</tbody></table>`;
-  }
-  const EXEMPLOS = ["ronaldo ramos caiado", "flavio dino de castro e costa", "eduardo figueiredo cavalheiro leite", "omar jose abdelaziz", "iris rezende machado", "eduardo salim braide", "sebastiao de araujo melo"];
-  const at = document.getElementById("atalhos");
-  for (const civil of EXEMPLOS) {
-    const p = P.find(x => x.busca.endsWith(" " + civil) || x.busca === civil); if (!p) continue;
-    const b = document.createElement("button"); b.type = "button"; b.dataset.id = p.id; b.textContent = p.nome;
-    b.addEventListener("click", () => { st.sel = p.id; salvar(); renderPessoa(); }); at.appendChild(b);
+    renderFin();
   }
   const busca = document.getElementById("f-busca"), achados = document.getElementById("achados");
   busca.addEventListener("input", () => {
@@ -349,12 +365,108 @@ table.clicavel tbody tr:hover { background: #fff6d6; }
   }
 
   document.getElementById("m-total").textContent = `${int(D.totais.eleitos)} pessoas, com todas as candidaturas delas (${int(D.totais.participacoes)} candidaturas de ${int(D.totais.pessoas)} pessoas no total)`;
+  // ---------- patrimônio e campanha da pessoa aberta ----------
+  // financas/NN.json (pessoa i no arquivo i % partes): [ano-2000, receita, público, despesa, bens]
+  // bens = [tipo, valor, tipo, valor, ...] ou null (não declarou). Precisa do site local.
+  const GRUPO_NOME = ["Imóveis", "Empresas (cotas e participações)", "Aplicações e fundos", "Dinheiro em conta e poupança", "Veículos", "Outros bens", "Sem tipo (o TSE não separava)"];
+  const GRUPO_COR = ["#5e7a12", "#c58a00", "#2a78d6", "#eb6834", "#4a3aa7", "#b9b6ae", "#d9d6cf"];
+  const brl = v => v == null ? "–" : Math.abs(v) >= 1e9 ? `R$ ${fmt(v / 1e9, 1)} ${Math.abs(v) < 2e9 ? "bilhão" : "bilhões"}` : Math.abs(v) >= 1e6 ? `R$ ${fmt(v / 1e6, Math.abs(v) >= 1e7 ? 0 : 1)} ${Math.abs(v) < 2e6 ? "milhão" : "milhões"}` : Math.abs(v) >= 1e4 ? `R$ ${fmt(v / 1e3, 0)} mil` : `R$ ${int(v)}`;
+  const brlCurto = v => v >= 1e9 ? `${fmt(v / 1e9, 1)} bi` : v >= 1e6 ? `${fmt(v / 1e6, v >= 1e7 ? 0 : 1)} mi` : v >= 1e3 ? `${fmt(v / 1e3, 0)} mil` : int(v);
+  const partes = {};
+  const parteDe = id => { const k = id % D.fin.partes; if (!partes[k]) partes[k] = fetch(`financas/${String(k).padStart(2, "0")}.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }); return partes[k]; };
+  const fator = ano => st.valor === "real" ? (D.fin.fator[ano] || 1) : 1;
+  function anosFin(linhas) {
+    return linhas.map(([a, receita, publico, despesa, bens]) => {
+      const ano = 2000 + a, grupos = Array(7).fill(0), itens = [];
+      if (bens) for (let i = 0; i < bens.length; i += 2) { const [nome, g] = D.fin.tipos[bens[i]]; grupos[g] += bens[i + 1]; itens.push({ nome, g, v: bens[i + 1] }); }
+      return { ano, receita, publico, despesa, temBens: !!bens, total: grupos.reduce((x, y) => x + y, 0), grupos, itens };
+    });
+  }
+  let finSel = null, finPessoa = null;  // ano aberto no detalhe, e de quem
+  function renderFin() {
+    const p = P[st.sel], id = st.sel, box = document.getElementById("fin-resposta");
+    document.getElementById("fin-titulo").textContent = `Patrimônio e campanha de ${p.nome}, eleição por eleição`;
+    parteDe(id).then(parte => { if (st.sel !== id) return; desenhaFin(p, anosFin(parte[id] || [])); })
+      .catch(() => { box.innerHTML = "Para ver patrimônio e campanha, abra o painel pelo site local: na pasta do projeto, rode <code>uv run python -m scripts.servir_painel</code>."; });
+  }
+  function desenhaFin(p, anos) {
+    const comBens = anos.filter(x => x.temBens), k = x => x.total * fator(x.ano), corr = st.valor === "real";
+    const box = document.getElementById("fin-resposta"), alerta = document.getElementById("fin-alerta");
+    // um ano 50 vezes acima da mediana dos outros (e acima de R$ 10 milhões) tem cara de erro de digitação
+    const suspeitos = comBens.filter(x => { const outros = comBens.filter(y => y !== x).map(y => y.total).sort((a, b) => a - b); if (!outros.length) return false; const med = outros[outros.length >> 1]; return x.total >= 1e7 && x.total >= 50 * Math.max(med, 1); });
+    alerta.hidden = !suspeitos.length;
+    alerta.textContent = suspeitos.length ? `Atenção: em ${suspeitos.map(x => x.ano).join(" e ")} o valor declarado (${suspeitos.map(x => brl(x.total)).join(", ")}) é muito maior que nos outros anos. Pode ser erro de digitação na declaração ao TSE; o painel mostra o valor como foi publicado.` : "";
+    // a comparação deixa de fora os anos com cara de erro de digitação
+    const confiaveis = comBens.filter(x => !suspeitos.includes(x));
+    if (!comBens.length) box.innerHTML = `<b>${p.nome}</b> não tem declaração de bens no TSE nos anos da carreira (o TSE publica bens a partir de 2006).`;
+    else if (confiaveis.length < 2) box.innerHTML = comBens.length === 1 ? `<b>${p.nome}</b> declarou <b>${brl(comBens[0].total)}</b> em bens em ${comBens[0].ano}. É a única declaração disponível (o TSE publica bens a partir de 2006).` : `Não dá para comparar o patrimônio de <b>${p.nome}</b> entre os anos: sobra só uma declaração sem suspeita de erro.`;
+    else {
+      const a = confiaveis[0], b = confiaveis[confiaveis.length - 1], ra = a.total * (D.fin.fator[a.ano] || 1), rb = b.total * (D.fin.fator[b.ano] || 1);
+      const var_ = ra > 0 ? 100 * (rb - ra) / ra : null;
+      const verbo = var_ == null ? "" : Math.abs(var_) < 5 ? "ficou praticamente igual" : var_ > 0 ? `<b>cresceu ${fmt(var_, 0)}%</b>` : `<b>caiu ${fmt(-var_, 0)}%</b>`;
+      let frase = `De ${a.ano} a ${b.ano}, o patrimônio declarado de <b>${p.nome}</b> foi de ${brl(a.total)} para ${brl(b.total)}${suspeitos.length ? ` (sem contar ${suspeitos.map(x => x.ano).join(" e ")}: ver o aviso abaixo do gráfico)` : ""}.`;
+      if (var_ != null) frase += ` Descontada a inflação, ${verbo}: de ${brl(ra)} para ${brl(rb)} em reais de 2024.`;
+      // o que mais mudou, entre a primeira e a última declaração com tipo (2010 em diante)
+      const det = confiaveis.filter(x => x.ano >= 2010);
+      if (det.length >= 2) {
+        const x = det[0], y = det[det.length - 1], dif = [0, 1, 2, 3, 4, 5].map(g => ({ g, d: y.grupos[g] * (D.fin.fator[y.ano] || 1) - x.grupos[g] * (D.fin.fator[x.ano] || 1) })).sort((u, v) => Math.abs(v.d) - Math.abs(u.d));
+        if (Math.abs(dif[0].d) >= 1000) frase += ` O que mais mudou de ${x.ano} a ${y.ano}: ${GRUPO_NOME[dif[0].g].toLowerCase()} (${dif[0].d > 0 ? "+" : "−"}${brl(Math.abs(dif[0].d))}, corrigido).`;
+      }
+      box.innerHTML = frase;
+    }
+    // legenda: só os grupos que aparecem
+    const usados = [0, 1, 2, 3, 4, 5, 6].filter(g => comBens.some(x => x.grupos[g] > 0));
+    document.getElementById("fin-legenda").innerHTML = usados.map(g => `<span><i class="cor" style="background:${GRUPO_COR[g]}"></i>${GRUPO_NOME[g]}</span>`).join("");
+    // gráfico: uma barra empilhada por eleição com declaração
+    const svg = document.getElementById("fin-graf"); limpa(svg);
+    const W = 860, H = 300, L = 70, R = 16, T = 24, B = 30, n = Math.max(comBens.length, 1), banda = (W - L - R) / n, larg = Math.min(70, banda * 0.6);
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    // eixo com valores redondos: passo de 1, 2, 2,5 ou 5 × potência de 10
+    const maior = Math.max(1, ...comBens.map(k)), bruto = maior / 4, pot = 10 ** Math.floor(Math.log10(bruto));
+    const passo = pot * [1, 2, 2.5, 5, 10].find(m => m * pot >= bruto), topo = Math.ceil(maior / passo) * passo;
+    const mx = topo * 1.08, Y = v => T + (H - T - B) * (1 - v / mx);
+    for (let v = 0; v <= topo + 1e-6; v += passo) { el("line", { x1: L, x2: W - R, y1: Y(v), y2: Y(v), class: "grade" }, svg); txt(svg, L - 8, Y(v), v ? brlCurto(v) : "0", "eixo", "end"); }
+    if (!comBens.length) txt(svg, W / 2, H / 2, "Sem declaração de bens", "rot", "middle");
+    if (finPessoa !== st.sel || !comBens.some(x => x.ano === finSel)) { finPessoa = st.sel; finSel = comBens.length ? comBens[comBens.length - 1].ano : null; }
+    comBens.forEach((x, i) => {
+      const cx = L + banda * i + banda / 2, g = el("g", { class: "barra-ano" + (x.ano === finSel ? " sel" : "") }, svg);
+      let base = 0;
+      x.grupos.forEach((v, gi) => {
+        if (v <= 0) return;
+        const vv = v * fator(x.ano), y0 = Y(base + vv), y1 = Y(base);
+        const r = el("rect", { x: cx - larg / 2, y: y0, width: larg, height: Math.max(1, y1 - y0), fill: GRUPO_COR[gi], stroke: "#fff", "stroke-width": 1.5 }, g);
+        r.addEventListener("mousemove", ev => mostra(ev, `<b>${x.ano} · ${GRUPO_NOME[gi]}</b><br>${brl(vv)}${corr ? " (reais de 2024)" : ""}<br>${fmt(100 * v / x.total, 0)}% do patrimônio declarado`));
+        r.addEventListener("mouseleave", esconde);
+        base += vv;
+      });
+      el("rect", { class: "contorno", x: cx - larg / 2 - 3, y: Y(base) - 3, width: larg + 6, height: Y(0) - Y(base) + 6, fill: "none", rx: 4 }, g);
+      const suspeito = suspeitos.includes(x);
+      const rot = txt(g, cx, Y(base) - 12, (suspeito ? "⚠ " : "") + brlCurto(base), "rot", "middle"); rot.style.fontWeight = 700;
+      txt(g, cx, H - 12, String(x.ano), "eixo", "middle");
+      el("rect", { x: cx - banda / 2, y: T, width: banda, height: H - T - B, fill: "transparent" }, g).addEventListener("click", () => { finSel = x.ano; desenhaFin(p, anos); });
+    });
+    // detalhe do ano escolhido
+    const x = comBens.find(y => y.ano === finSel);
+    document.getElementById("fin-ano-titulo").textContent = x ? `Em que estavam os bens em ${x.ano}` : "Bens declarados";
+    document.getElementById("fin-ano").innerHTML = !x ? `<p class="nota">Sem declaração de bens.</p>` : (x.ano <= 2008 ? `<p class="nota">Em ${x.ano} o TSE publicou os bens sem o tipo: só o total.</p>` : "") +
+      `<div class="bem"><span></span><span><b>Total declarado</b>${corr ? " <small>(em reais de 2024)</small>" : ""}</span><b>${brl(x.total * fator(x.ano))}</b></div>` +
+      x.itens.slice().sort((u, v) => v.v - u.v).map(it => `<div class="bem"><i class="cor" style="background:${GRUPO_COR[it.g]}"></i><span>${!it.nome ? "Sem tipo" : it.nome === it.nome.toUpperCase() ? it.nome[0] + it.nome.slice(1).toLowerCase() : it.nome} <small>${x.total ? fmt(100 * it.v / x.total, 0) + "%" : ""}</small></span><b>${brl(it.v * fator(x.ano))}</b></div>`).join("") +
+      `<p class="nota" style="margin-top:6px">Clique em outra barra para ver outro ano.</p>`;
+    // campanha (2018 em diante)
+    const camp = anos.filter(y => y.receita != null);
+    const cargoDo = ano => { const c = p.r.find(r => r.ano === ano); return c ? `${ABREV[c.cargo]}${c.res === 0 ? " · eleito" : c.res === 1 ? " · não eleito" : ""}` : ""; };
+    document.getElementById("fin-campanha").innerHTML = camp.length
+      ? `<table><thead><tr><th>Eleição</th><th>Arrecadou</th><th>Do fundo público</th><th>Gastou</th></tr></thead><tbody>${camp.map(y => `<tr><td>${y.ano}<br><small>${cargoDo(y.ano)}</small></td><td>${brl(y.receita)}</td><td>${y.receita > 0 ? fmt(100 * (y.publico || 0) / y.receita, 0) + "%" : "–"}</td><td>${brl(y.despesa || 0)}</td></tr>`).join("")}</tbody></table>`
+      : `<p class="nota">Sem prestação de contas carregada para esta pessoa: o painel tem receita e gasto de campanha de 2018 em diante.</p>`;
+  }
+
   function tudo() {
     selUf.value = st.uf;
     tog("f-turma", TURMAS.map(([c, n]) => [c, n]), () => st.turma, v => { st.turma = v; });
     tog("f-medida", [["mandato", "Ainda eleitos"], ["disputa", "Ainda disputando"]], () => st.medida, v => { st.medida = v; });
     tog("f-cargo-re", CARGOS_RE, () => st.cargoRe, v => { st.cargoRe = v; });
     tog("f-ordem", [["vit", "Vitórias"], ["anos", "Anos de carreira"], ["reel", "Reeleições"]], () => st.ordem, v => { st.ordem = v; });
+    tog("f-valor", [["real", "Corrigidos pela inflação"], ["nominal", "Como declarados"]], () => st.valor, v => { st.valor = v; }, () => { document.querySelectorAll("#f-valor button").forEach((b, i) => b.setAttribute("aria-pressed", String((i === 0) === (st.valor === "real")))); renderFin(); });
     renderResposta(); renderPessoa(); renderComparar(); renderReeleicao(); renderRanking();
   }
   tudo();

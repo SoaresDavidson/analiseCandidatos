@@ -1,0 +1,535 @@
+<title>Municípios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap">
+<style>
+/* Visual inspirado no site de resultados do TSE: fundo cinza-claro, cartões brancos,
+   destaque amarelo-ouro e verde-oliva. Cada pergunta abre com a resposta em linguagem
+   simples, dois números e um gráfico; o detalhe técnico fica nos blocos "Ver mais". */
+:root {
+  color-scheme: light;
+  --fundo: #f4f4f4; --branco: #ffffff; --texto: #333333; --texto-2: #6b6b6b; --linha: #e6e4df; --bege: #eae8e4;
+  --ouro: #ebb400; --ouro-esc: #8f6c00; --verde: #9eb735; --verde-esc: #5e7a12;
+  /* 4 níveis de escolaridade: um tom de verde, do claro ao escuro (validado, ordinal) */
+  --n1: #a5bd4e; --n2: #7e9a2e; --n3: #576f14; --n4: #32440a;
+  --sem-dado: #d9d6cf; --capital: #c0392b;
+  --fonte: "Open Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fundo); color: var(--texto); font: 15px/1.55 var(--fonte); }
+button, select, input { font: inherit; color: inherit; }
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+
+/* barra de filtros (como "Brasil / Turno" do TSE) */
+.sub { background: var(--branco); border-radius: 0 0 18px 18px; box-shadow: 0 4px 10px rgb(0 0 0 / .06); position: sticky; top: 0; z-index: 5; }
+.sub-in { max-width: 1160px; margin: 0 auto; padding: 10px 20px 14px; display: flex; gap: 14px 24px; align-items: flex-end; flex-wrap: wrap; }
+.campo { display: grid; gap: 3px; font-weight: 700; font-size: 13px; }
+.local { appearance: none; border: 2px solid var(--ouro); border-radius: 8px; padding: 7px 34px 7px 14px; font-weight: 700; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23333' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center; cursor: pointer; }
+.tog { display: inline-flex; border: 2px solid var(--ouro); border-radius: 7px; overflow: hidden; background: #fff; flex-wrap: wrap; }
+.tog button { border: 0; background: transparent; padding: 6px 13px; font-weight: 700; cursor: pointer; }
+.tog button[aria-pressed="true"] { background: var(--ouro); }
+.tog button:hover:not([aria-pressed="true"]) { background: #fff6d6; }
+
+main { max-width: 1160px; margin: 0 auto; padding: 22px 20px 64px; display: grid; gap: 18px; }
+.etiqueta { justify-self: start; background: var(--verde-esc); color: #fff; font-weight: 700; font-size: 13px; padding: 6px 14px; border-radius: 6px; letter-spacing: .03em; }
+h1 { font-size: clamp(24px, 3.2vw, 30px); font-weight: 800; margin: 0; line-height: 1.2; }
+h2 { font-size: 19px; font-weight: 800; margin: 0; line-height: 1.3; }
+h3 { font-size: 16px; font-weight: 700; margin: 0; }
+p { margin: 0; }
+.enunciado { color: var(--texto-2); font-size: 13.5px; max-width: 90ch; }
+.caixa { background: var(--branco); border-radius: 14px; padding: 18px 20px; display: grid; gap: 12px; min-width: 0; }
+.duas { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .duas { grid-template-columns: minmax(0, 1fr); } }
+.simples { font-size: 17px; line-height: 1.55; }
+.simples b { font-weight: 800; }
+.linha { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--linha); font-size: 14.5px; }
+.linha b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.aneis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 600px) { .aneis { grid-template-columns: minmax(0, 1fr); } }
+.anel { background: var(--branco); border: 2px solid var(--ouro); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 14px; align-items: center; }
+.anel.verde { border-color: var(--verde); }
+.anel .pct { font-size: 34px; font-weight: 800; color: var(--ouro-esc); line-height: 1; font-variant-numeric: tabular-nums; }
+.anel.verde .pct { color: var(--verde-esc); }
+.anel .q { font-size: 13px; color: var(--texto-2); }
+.anel .nome { font-size: 16px; font-weight: 800; text-transform: uppercase; margin-top: 4px; line-height: 1.2; }
+.barras { display: grid; gap: 10px; }
+.barra { display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr) 3.4em; gap: 10px; align-items: center; font-size: 14px; }
+.barra .trilho { height: 18px; background: var(--bege); border-radius: 3px; position: relative; }
+.barra .trilho i { display: block; height: 100%; border-radius: 3px; }
+.barra .trilho .media { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 2px dashed var(--texto-2); }
+.barra b { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.nota { font-size: 13px; color: var(--texto-2); }
+.selo { justify-self: start; display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; padding: 6px 12px; border-radius: 999px; }
+.selo.sim { background: #eef4d8; color: var(--verde-esc); }
+.selo.nao { background: var(--bege); color: var(--texto); }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--texto-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.cor { width: 13px; height: 13px; border-radius: 3px; display: inline-block; flex: none; }
+
+/* mapa */
+.mapa-grade { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .mapa-grade { grid-template-columns: minmax(0, 1fr); } }
+.mapa { width: 100%; height: auto; max-height: 560px; display: block; }
+.mapa path { stroke: #fff; stroke-width: 0.6; cursor: pointer; vector-effect: non-scaling-stroke; }
+.mapa path.sel { stroke: var(--texto); stroke-width: 2.5; }
+.controles { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: flex-end; }
+.busca { border: 2px solid var(--linha); border-radius: 8px; padding: 7px 12px; min-width: 200px; max-width: 100%; }
+.rampa { display: grid; gap: 4px; max-width: 340px; font-size: 12.5px; color: var(--texto-2); }
+.rampa .faixa-cor { height: 10px; border-radius: 3px; }
+.rampa .marcas { display: flex; justify-content: space-between; }
+.detalhe { display: grid; gap: 10px; }
+.detalhe .vazio { color: var(--texto-2); }
+.empilhada { display: flex; gap: 2px; height: 24px; border-radius: 4px; overflow: hidden; }
+.empilhada span { display: grid; place-items: center; color: #fff; font-size: 11.5px; font-weight: 700; min-width: 0; overflow: hidden; }
+.eleitos { max-height: 300px; overflow-y: auto; border-top: 1px solid var(--linha); }
+.eleitos div { display: flex; justify-content: space-between; gap: 10px; padding: 6px 2px; border-bottom: 1px solid var(--linha); font-size: 13.5px; }
+.eleitos small { color: var(--texto-2); }
+
+/* "ver mais": blocos recolhidos */
+details.mais { background: var(--branco); border-radius: 14px; padding: 0; }
+details.mais > summary { list-style: none; cursor: pointer; padding: 14px 20px; font-weight: 700; display: flex; justify-content: space-between; gap: 12px; align-items: center; border: 2px solid var(--ouro); border-radius: 14px; }
+details.mais > summary::-webkit-details-marker { display: none; }
+details.mais > summary::after { content: "+"; font-size: 22px; line-height: 1; color: var(--ouro-esc); }
+details.mais[open] > summary { border-radius: 14px 14px 0 0; }
+details.mais[open] > summary::after { content: "–"; }
+details.mais > div { padding: 16px 20px 20px; display: grid; gap: 14px; border: 2px solid var(--ouro); border-top: 0; border-radius: 0 0 14px 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--linha); font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 12.5px; color: var(--texto-2); font-weight: 700; }
+.rolagem { overflow-x: auto; }
+svg text { font-family: var(--fonte); }
+.eixo { fill: var(--texto-2); font-size: 11.5px; }
+.rot { fill: var(--texto); font-size: 12.5px; }
+.grade { stroke: var(--linha); stroke-width: 1; }
+.grafico { width: 100%; height: auto; display: block; }
+.metodo ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 90ch; }
+#dica { position: fixed; z-index: 20; pointer-events: none; background: var(--texto); color: #fff; font-size: 13px; line-height: 1.45; padding: 8px 11px; border-radius: 8px; max-width: 280px; box-shadow: 0 6px 18px rgb(0 0 0 / .2); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* aba Municípios: no formato do Resumo Geral do TSE (cartões de estado, detalhe com busca, cidade) */
+.aviso-carga { background: var(--branco); border: 2px solid var(--ouro); border-radius: 12px; padding: 14px 18px; font-weight: 600; }
+.aviso-carga code { background: var(--bege); padding: 1px 6px; border-radius: 4px; }
+#v-estados, #v-uf, #v-cidade { display: grid; gap: 18px; }
+#v-estados[hidden], #v-uf[hidden], #v-cidade[hidden] { display: none; }
+.estados { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; }
+.estado { background: var(--branco); border-radius: 14px; padding: 14px 16px; display: grid; gap: 6px; box-shadow: 0 1px 2px rgb(0 0 0 / .06); }
+.estado header, .uf-cab { display: flex; align-items: center; gap: 10px; }
+.estado header img, .uf-cab img { width: 42px; height: 28px; object-fit: cover; border: 1px solid var(--linha); border-radius: 3px; }
+.estado header h3 { flex: 1; font-size: 17px; }
+.rotulos { display: flex; justify-content: space-between; font-size: 12px; color: var(--texto-2); }
+.dividida { display: flex; height: 22px; border-radius: 4px; overflow: hidden; gap: 2px; }
+.dividida span { display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 800; min-width: 0; }
+.mais-detalhes { margin-top: 6px; border: 0; border-radius: 8px; padding: 8px; background: var(--ouro); font-weight: 700; cursor: pointer; }
+.mais-detalhes:hover { background: #d9a600; }
+.chip { display: inline-block; border-left: 4px solid var(--c); background: color-mix(in srgb, var(--c) 14%, #fff); padding: 1px 7px; border-radius: 4px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.voltar { justify-self: start; border: 0; background: none; color: var(--ouro-esc); font-weight: 700; font-size: 16px; cursor: pointer; padding: 0; }
+.titulo-centro { text-align: center; }
+.uf-grade { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 900px) { .uf-grade { grid-template-columns: minmax(0, 1fr); } }
+.lateral { display: grid; gap: 12px; }
+.lateral .caixa { gap: 6px; }
+.uf-principal { display: grid; gap: 12px; min-width: 0; }
+.linha.busca, select.linha, .busca.linha { width: 100%; border: 0; border-bottom: 2px solid var(--texto); border-radius: 0; background: transparent; padding: 8px 2px; font-size: 18px; font-weight: 600; }
+select.linha { appearance: auto; cursor: pointer; }
+.ordem-vis { display: flex; gap: 18px; align-items: flex-end; flex-wrap: wrap; }
+.vis { display: inline-flex; gap: 6px; }
+.vis button { width: 42px; height: 38px; border: 1px solid var(--linha); border-radius: 8px; background: #fff; font-size: 18px; cursor: pointer; }
+.vis button[aria-pressed="true"] { border: 2px solid var(--ouro); background: #fff6d6; }
+.abas { display: flex; gap: 4px; border-bottom: 1px solid var(--linha); }
+.abas button { border: 0; background: #fff; padding: 9px 16px; border-radius: 8px 8px 0 0; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; }
+.abas button[aria-pressed="true"] { border-bottom-color: var(--ouro); }
+.cidades { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.cidade { display: grid; gap: 4px; text-align: left; background: var(--branco); border: 1px solid transparent; border-radius: 10px; padding: 12px 14px 14px; cursor: pointer; box-shadow: 0 1px 2px rgb(0 0 0 / .06); }
+.cidade:hover, .cidade:focus-visible { border-color: var(--ouro); box-shadow: 0 0 0 2px var(--ouro); }
+.cidade .nome { font-size: 17px; font-weight: 700; color: var(--texto-2); line-height: 1.25; }
+.cidade .nome small { font-size: 11px; color: var(--ouro-esc); }
+.cidade .linha { font-size: 13.5px; padding: 3px 0; border: 0; }
+.mini-regua { position: relative; height: 8px; margin-top: 6px; border-radius: 4px; background: linear-gradient(90deg, #8a0f16, #c53d33 22%, #e57f68 38%, #dcd9d1 50%, #73a7d4 62%, #2f72b4 78%, #0c3f7c); }
+.mini-regua i { position: absolute; top: -4px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px var(--texto); }
+.mini-regua em { position: absolute; top: -3px; bottom: -3px; width: 0; border-left: 2px dashed var(--texto); }
+.cidade-topo { display: flex; align-items: center; gap: 16px; }
+.cidade-topo img { width: 78px; height: 52px; object-fit: cover; border: 1px solid var(--linha); border-radius: 4px; }
+.cidade-topo h1 { margin-top: 6px; }
+.duas-c { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .duas-c { grid-template-columns: minmax(0, 1fr); } }
+#hemiciclo { max-width: 460px; justify-self: center; }
+.num-centro { font-size: 30px; font-weight: 800; fill: var(--texto); }
+.partidos { display: flex; flex-wrap: wrap; gap: 6px 10px; }
+.numeros { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.num { border: 2px solid var(--ouro); border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; align-content: start; }
+.num b { font-size: 22px; font-weight: 800; color: var(--ouro-esc); line-height: 1.15; font-variant-numeric: tabular-nums; }
+.num span { font-size: 13px; color: var(--texto-2); }
+.grade-cand { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.cand { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; align-items: center; text-align: left; background: var(--branco); border: 1px solid var(--linha); border-radius: 10px; padding: 8px; cursor: pointer; }
+.cand:hover, .cand:focus-visible { box-shadow: 0 0 0 2px var(--ouro); border-color: var(--ouro); }
+.cand-txt { display: grid; gap: 2px; min-width: 0; }
+.cand-txt b { font-size: 14.5px; line-height: 1.25; }
+.cand-num { font-size: 13px; font-weight: 700; color: var(--verde-esc); }
+.foto { width: 56px; aspect-ratio: 81 / 113; border-radius: 8px; overflow: hidden; background: var(--bege); }
+.foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.foto.sem { display: grid; place-items: center; font-size: 24px; font-weight: 800; color: var(--texto-2); }
+.mais-btn { justify-self: center; border: 2px solid var(--ouro); background: #fff; border-radius: 8px; padding: 8px 22px; font-weight: 700; cursor: pointer; }
+.procura { position: relative; }
+.achados { position: absolute; z-index: 6; left: 0; right: 0; top: calc(100% + 4px); background: #fff; border: 2px solid var(--ouro); border-radius: 8px; max-height: 320px; overflow-y: auto; box-shadow: 0 8px 20px rgb(0 0 0 / .12); }
+.achados button { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--linha); background: #fff; padding: 8px 12px; cursor: pointer; }
+.achados button:hover { background: #fff6d6; }
+.achados small { color: var(--texto-2); }
+table.clicavel tbody tr { cursor: pointer; }
+table.clicavel tbody tr:hover { background: #fff6d6; }
+</style>
+<main>
+  <p class="aviso-carga" id="carregando" role="status">Carregando os 1.239 municípios…</p>
+
+  <!-- 1. os 6 estados -->
+  <section id="v-estados" hidden>
+    <span class="etiqueta">MUNICÍPIOS · ESPECTRO E DINHEIRO</span>
+    <h1>Para que lado cada cidade vota?</h1>
+    <p class="enunciado">Cada partido tem uma nota de 0 (esquerda) a 10 (direita), dada por cientistas políticos (Bolognesi, Ribeiro, Codato e Silva, 2025). A nota de uma cidade é a média das notas dos partidos, pesada pelos votos para vereador em 2024.</p>
+    <section class="caixa">
+      <h2>A resposta</h2>
+      <p class="simples" id="resposta"></p>
+      <div class="rolagem"><svg class="grafico" id="distrib" role="img" aria-label="Quantas cidades em cada ponto da régua"></svg></div>
+      <p class="nota" id="distrib-nota"></p>
+    </section>
+    <div class="estados" id="estados"></div>
+  </section>
+
+  <!-- 2. um estado -->
+  <section id="v-uf" hidden>
+    <button type="button" class="voltar" data-ir="estados">← Voltar</button>
+    <h2 class="titulo-centro" id="uf-titulo"></h2>
+    <div class="uf-grade">
+      <aside class="lateral" id="uf-lateral"></aside>
+      <div class="uf-principal">
+        <label class="campo" for="f-busca">Município(s)</label>
+        <div class="procura">
+          <input class="busca linha" type="search" id="f-busca" placeholder="Selecione o(s) município(s)" autocomplete="off" aria-label="Buscar município">
+          <div class="achados" id="achados" hidden></div>
+        </div>
+        <div class="ordem-vis">
+          <label class="campo" style="flex:1">Ordenar por
+            <select class="linha" id="f-ordem">
+              <option value="nome">Ordem alfabética</option>
+              <option value="esq">Mais à esquerda primeiro</option>
+              <option value="dir">Mais à direita primeiro</option>
+              <option value="publico">Mais dinheiro público (%)</option>
+              <option value="voto">Mais caro por voto</option>
+            </select>
+          </label>
+          <span class="campo">Visualização<span class="vis" id="f-vis"><button type="button" data-vis="lista" aria-label="Lista">☰</button><button type="button" data-vis="grade" aria-label="Grade">▦</button></span></span>
+        </div>
+        <div class="abas" id="f-lado"></div>
+        <div id="cidades"></div>
+        <button type="button" class="mais-btn" id="mais" hidden>Mostrar mais</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. uma cidade -->
+  <section id="v-cidade" hidden>
+    <button type="button" class="voltar" id="voltar-uf">← Voltar</button>
+    <div class="cidade-topo" id="cidade-topo"></div>
+    <section class="caixa">
+      <h2>A resposta</h2>
+      <p class="simples" id="cidade-resposta"></p>
+      <div class="rolagem"><svg class="grafico" id="regua" role="img" aria-label="Régua do espectro com a posição da cidade"></svg></div>
+      <div class="legenda" id="regua-legenda"></div>
+    </section>
+    <div class="duas-c">
+      <section class="caixa">
+        <h2 id="camara-titulo">A câmara eleita em 2024</h2>
+        <svg class="grafico" id="hemiciclo" role="img" aria-label="Cadeiras da câmara de vereadores, da esquerda para a direita"></svg>
+        <div id="camara-lista"></div>
+      </section>
+      <section class="caixa">
+        <h2>O dinheiro das campanhas de 2024</h2>
+        <div class="numeros" id="dinheiro"></div>
+        <p class="nota">Prefeito e vereador, pela prestação de contas. Dinheiro público = Fundo Especial + Fundo Partidário, a mesma regra da Pergunta 8. "Por voto": arrecadado ÷ votos para vereador.</p>
+      </section>
+    </div>
+    <section class="caixa">
+      <h2>Quem foi eleito</h2>
+      <p class="nota">Clique em um eleito para ver a ficha. Ao fechar, você volta para esta cidade.</p>
+      <div class="grade-cand" id="eleitos"></div>
+    </section>
+  </section>
+
+  <details class="mais metodo"><summary>Como calculamos</summary><div>
+    <ul>
+      <li><b>Nota do partido:</b> média dada por cientistas políticos na rodada de 2022 (Bolognesi, Ribeiro, Codato e Silva, 2025, <i>Opinião Pública</i> 31), de 0 = esquerda a 10 = direita. Tabela do artigo em <i>dados/referencia/</i>.</li>
+      <li><b>Categorias:</b> os cortes do próprio artigo (0–1,5 extrema esquerda; até 3 esquerda; até 4,49 centro-esquerda; até 5,5 centro; até 7 centro-direita; até 8,5 direita; acima, extrema direita). Nenhum partido caiu no centro: é a conclusão do artigo.</li>
+      <li><b>A régua:</b> vai do partido mais à esquerda que elegeu alguém em 2024 nos 6 estados ao mais à direita; o meio dela separa "tende à esquerda" de "tende à direita".</li>
+      <li><b>Nota da cidade:</b> cada voto para vereador (1º turno de 2024) pesa a nota do partido do candidato. Também mostramos a média da câmara eleita, o partido do prefeito e o voto para deputado federal em 2022.</li>
+      <li><b>Fora das rodadas:</b> PRD (fusão de PTB e Patriota em 2023) recebe a média dos dois, marcado como estimado; Mobiliza é o PMN renomeado.</li>
+      <li><b>Consulta no banco:</b> views <i>espectro_municipio</i>, <i>espectro_regua</i> e <i>dinheiro_municipio</i> em <i>sql/15_espectro.sql</i>; tabela ESPECTRO_PARTIDO do modelo.</li>
+    </ul>
+  </div></details>
+</main>
+<div id="dica" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+  const UF_NOME = { AM: "Amazonas", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", RS: "Rio Grande do Sul", SE: "Sergipe" };
+  const CATS = ["EXTREMA ESQUERDA", "ESQUERDA", "CENTRO-ESQUERDA", "CENTRO", "CENTRO-DIREITA", "DIREITA", "EXTREMA DIREITA"];
+  const CAT_COR = ["#8a0f16", "#c53d33", "#e57f68", "#dcd9d1", "#73a7d4", "#2f72b4", "#0c3f7c"];
+  const CORTES = [1.5, 3, 4.49, 5.5, 7, 8.5];   // do artigo (limite superior de cada categoria)
+  const CANAL = ["material impresso", "campanha de rua", "rádio e TV", "adesivos", "internet", "jingle", "carro de som", "jornal e revista"];
+  const NS = "http://www.w3.org/2000/svg";
+  const fmt = (x, d = 1) => (x == null || isNaN(x)) ? "–" : x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const int = x => x == null ? "–" : Math.round(x).toLocaleString("pt-BR");
+  const brl = v => v == null ? "–" : v >= 1e9 ? `R$ ${fmt(v / 1e9, 1)} ${v < 2e9 ? "bilhão" : "bilhões"}` : v >= 1e6 ? `R$ ${fmt(v / 1e6, v >= 1e7 ? 0 : 1)} ${v < 2e6 ? "milhão" : "milhões"}` : v >= 1e4 ? `R$ ${fmt(v / 1e3, 0)} mil` : `R$ ${int(v)}`;
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const semAcento = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const PART = new Set(["de", "da", "do", "das", "dos", "e"]);
+  const maiuscula = w => w.replace(/(^|[-'])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+  // como o IBGE escreve: "São João d'Aliança", "Glória d'Oeste", "Itatiba do Sul"
+  const nomeProprio = s => (s || "").toLowerCase().split(" ").map((w, i) => (i && PART.has(w)) ? w : (i && w.startsWith("d'")) ? "d'" + maiuscula(w.slice(2)) : maiuscula(w)).join(" ");
+  const catDe = v => v == null ? -1 : CORTES.findIndex(c => v <= c) === -1 ? 6 : CORTES.findIndex(c => v <= c);
+  const catNome = v => v == null ? "sem nota" : CATS[catDe(v)].toLowerCase();
+  const corDe = v => v == null ? "#b9b6ae" : CAT_COR[catDe(v)];
+  function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function txt(parent, x, y, s, cls, anchor) { const t = el("text", { x, y, class: cls || "rot", "text-anchor": anchor || "start", "dominant-baseline": "middle" }, parent); t.textContent = s; return t; }
+  const limpa = svg => { while (svg.firstChild) svg.removeChild(svg.firstChild); };
+  const dica = document.getElementById("dica");
+  function mostra(ev, html) { dica.innerHTML = html; dica.hidden = false; const w = dica.offsetWidth, h = dica.offsetHeight; let x = ev.clientX + 14, y = ev.clientY + 14; if (x + w > innerWidth - 8) x = ev.clientX - w - 14; if (y + h > innerHeight - 8) y = ev.clientY - h - 14; dica.style.left = x + "px"; dica.style.top = y + "px"; }
+  const esconde = () => { dica.hidden = true; };
+  const chip = (sg, v) => `<span class="chip" style="--c:${corDe(v)}" title="${v == null ? "sem nota" : fmt(v, 2) + " · " + catNome(v)}">${esc(sg)}</span>`;
+
+  Promise.all([fetch("dados.json").then(r => { if (!r.ok) throw 0; return r.json(); })])
+    .then(([D]) => iniciar(D))
+    .catch(() => { document.getElementById("carregando").innerHTML = "Não deu para carregar os municípios. Abra o painel pelo servidor local: na pasta do projeto, rode <code>uv run python -m scripts.servir_painel</code>."; });
+
+  function iniciar(D) {
+  document.getElementById("carregando").hidden = true;
+  const R = D.regua, MEIO = R.meio, MEIA = (R.dir[1] - R.esq[1]) / 2;
+  // municípios: [cod, nome, uf, capital, voto 2024, % votos com nota, votos, vereadores, média câmara,
+  //              partido do prefeito, nota do prefeito, voto dep. federal 2022, candidatos, arrecadado,
+  //              público, propaganda, canal principal, cadeiras [partido, n, ...]]
+  const M = D.municipios.map(r => ({ cod: r[0], nome: nomeProprio(r[1]), uf: D.ufs[r[2]], cap: !!r[3], voto: r[4], pcNota: r[5], votos: r[6], qtVer: r[7], camara: r[8], sgPref: r[9], vlPref: r[10], voto22: r[11], qtCand: r[12], receita: r[13], publico: r[14], propaganda: r[15], canal: r[16], cadeiras: r[17], busca: semAcento(r[1]) }));
+  const POR_COD = new Map(M.map(m => [m.cod, m]));
+  const lado = m => m.voto == null ? null : m.voto < MEIO ? "esquerda" : "direita";
+  const pc = (a, b) => b ? 100 * a / b : null;
+
+  // estado da navegação: guardado para a página voltar ao mesmo ponto
+  const st = { nivel: "estados", uf: null, cod: null, ordem: "nome", vis: "grade", lado: "todos", busca: "", n: 60 };
+  try { Object.assign(st, JSON.parse(localStorage.getItem("mun-tse") || "{}")); st.busca = ""; st.n = 60; } catch (e) { /* sem armazenamento */ }
+  const salvar = () => { try { localStorage.setItem("mun-tse", JSON.stringify({ nivel: st.nivel, uf: st.uf, cod: st.cod, ordem: st.ordem, vis: st.vis, lado: st.lado })); } catch (e) { /* ignora */ } };
+  function ir(nivel, extra) { Object.assign(st, extra || {}, { nivel }); salvar(); mostrar(); window.scrollTo(0, 0); }
+
+  // ---------- régua (usada no gráfico de distribuição e na cidade) ----------
+  function faixas(svg, X, y0, y1) {
+    const lim = [0, ...CORTES, 10];
+    for (let i = 0; i < 7; i++) {
+      const a = X(lim[i]), b = X(lim[i + 1]);
+      el("rect", { x: a, y: y0, width: Math.max(0, b - a), height: y1 - y0, fill: CAT_COR[i], opacity: i === 3 ? 0.5 : 0.16 }, svg);
+    }
+  }
+
+  // ---------- 1. os 6 estados ----------
+  function renderEstados() {
+    const comVoto = M.filter(m => m.voto != null), dir = comVoto.filter(m => lado(m) === "direita").length;
+    const ord = comVoto.slice().sort((a, b) => a.voto - b.voto), maisEsq = ord[0], maisDir = ord[ord.length - 1];
+    const cats = CATS.map((_, i) => comVoto.filter(m => catDe(m.voto) === i).length);
+    document.getElementById("resposta").innerHTML = `Quase todas tendem à direita. Das <b>${int(comVoto.length)}</b> cidades com resultado de vereador, <b>${int(dir)}</b> (${fmt(pc(dir, comVoto.length), 0)}%) ficam à direita do meio da régua e <b>${int(comVoto.length - dir)}</b> à esquerda. A mais à esquerda é <b>${esc(maisEsq.nome)} (${maisEsq.uf})</b>, com ${fmt(maisEsq.voto, 2)}; a mais à direita, <b>${esc(maisDir.nome)} (${maisDir.uf})</b>, com ${fmt(maisDir.voto, 2)}. ${cats[3] === 0 ? "Nenhuma cidade ficou no centro." : ""}`;
+    // distribuição: quantas cidades em cada quarto de ponto
+    const svg = document.getElementById("distrib"); limpa(svg);
+    const W = 900, H = 230, L = 40, Rr = 20, T = 16, B = 46; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const X = v => L + (W - L - Rr) * v / 10, passo = 0.25, bins = Array.from({ length: 40 }, () => 0);
+    comVoto.forEach(m => bins[Math.min(39, Math.floor(m.voto / passo))]++);
+    const mx = Math.max(...bins), Y = n => T + (H - T - B) * (1 - n / mx);
+    faixas(svg, X, T, H - B);
+    bins.forEach((n, i) => { if (!n) return; const v = i * passo, r = el("rect", { x: X(v) + 1, y: Y(n), width: X(passo) - X(0) - 2, height: H - B - Y(n), fill: corDe(v + passo / 2), rx: 2 }, svg); r.addEventListener("mousemove", ev => mostra(ev, `<b>${int(n)} cidades</b><br>nota de ${fmt(v, 2)} a ${fmt(v + passo, 2)} · ${catNome(v + passo / 2)}`)); r.addEventListener("mouseleave", esconde); });
+    for (let v = 0; v <= 10; v++) txt(svg, X(v), H - B + 12, String(v), "eixo", "middle");
+    el("line", { x1: X(MEIO), x2: X(MEIO), y1: T - 6, y2: H - B, stroke: "var(--texto)", "stroke-dasharray": "4 3" }, svg);
+    txt(svg, X(MEIO) + 6, T, `meio da régua (${fmt(MEIO, 2)})`, "eixo");
+    [[R.esq, "mais à esquerda com eleitos"], [R.dir, "mais à direita com eleitos"]].forEach(([[sg, v], rot], i) => { el("line", { x1: X(v), x2: X(v), y1: H - B, y2: H - B + 22, stroke: "var(--texto-2)" }, svg); txt(svg, X(v), H - 8, `${sg} (${fmt(v, 2)}): ${rot}`, "eixo", i ? "end" : "start"); });
+    document.getElementById("distrib-nota").textContent = `Cada barra conta as cidades cuja nota cai naquele trecho da escala. A régua vai do ${R.esq[0]} (${fmt(R.esq[1], 2)}) ao ${R.dir[0]} (${fmt(R.dir[1], 2)}), o partido mais à esquerda e o mais à direita entre os que elegeram alguém em 2024. ${int(M.length - comVoto.length)} cidades não têm o resultado de vereador no arquivo do TSE.`;
+    // cartões dos estados
+    document.getElementById("estados").innerHTML = D.ufs.map(uf => {
+      const ms = M.filter(m => m.uf === uf), cv = ms.filter(m => m.voto != null), d = cv.filter(m => lado(m) === "direita").length;
+      const votos = cv.reduce((s, m) => s + m.votos, 0), media = cv.reduce((s, m) => s + m.voto * m.votos, 0) / (votos || 1);
+      const rec = ms.reduce((s, m) => s + (m.receita || 0), 0), pub = ms.reduce((s, m) => s + (m.publico || 0), 0);
+      return `<article class="estado"><header><img src="../assets/bandeiras/${uf}.svg" alt="Bandeira de ${UF_NOME[uf]}"><h3>${UF_NOME[uf]}</h3><b>${ms.length} cidades</b></header>
+        <div class="rotulos"><span>Tendem à esquerda</span><span>Tendem à direita</span></div>
+        <div class="dividida">${fatia(cv.length - d, cv.length, CAT_COR[1])}${fatia(d, cv.length, CAT_COR[5])}</div>
+        <div class="linha"><span>Voto médio para vereador</span><b>${fmt(media, 2)} ${chipCat(media)}</b></div>
+        <div class="linha"><span>Arrecadado nas campanhas</span><b>${brl(rec)}</b></div>
+        <div class="linha"><span>Do fundo público</span><b>${fmt(pc(pub, rec), 0)}%</b></div>
+        <button type="button" class="mais-detalhes" data-uf="${uf}">Mais Detalhes</button></article>`;
+    }).join("");
+  }
+  // fatia da barra esquerda × direita; o número só aparece se couber
+  const fatia = (n, t, cor) => { const p = pc(n, t) || 0; return p ? `<span style="width:${p}%;background:${cor}" title="${int(n)} cidades (${fmt(p, 0)}%)">${p >= 9 ? fmt(p, 0) + "%" : ""}</span>` : ""; };
+  const chipCat = v => `<span class="chip" style="--c:${corDe(v)}">${catNome(v)}</span>`;
+  document.getElementById("estados").addEventListener("click", ev => { const b = ev.target.closest("button[data-uf]"); if (b) ir("uf", { uf: b.dataset.uf, lado: "todos" }); });
+
+  // ---------- 2. um estado ----------
+  const ORDENS = {
+    nome: (a, b) => a.nome.localeCompare(b.nome, "pt-BR"),
+    esq: (a, b) => (a.voto ?? 99) - (b.voto ?? 99),
+    dir: (a, b) => (b.voto ?? -1) - (a.voto ?? -1),
+    publico: (a, b) => (pc(b.publico, b.receita) ?? -1) - (pc(a.publico, a.receita) ?? -1),
+    voto: (a, b) => ((b.receita || 0) / (b.votos || 1)) - ((a.receita || 0) / (a.votos || 1)),
+  };
+  function renderUf() {
+    const uf = st.uf, ms = M.filter(m => m.uf === uf), cv = ms.filter(m => m.voto != null), d = cv.filter(m => lado(m) === "direita").length;
+    const votos = cv.reduce((s, m) => s + m.votos, 0), media = cv.reduce((s, m) => s + m.voto * m.votos, 0) / (votos || 1);
+    const rec = ms.reduce((s, m) => s + (m.receita || 0), 0), pub = ms.reduce((s, m) => s + (m.publico || 0), 0);
+    const prefCat = CATS.map((_, i) => ms.filter(m => m.vlPref != null && catDe(m.vlPref) === i).length), np = prefCat.reduce((a, b) => a + b, 0);
+    document.getElementById("uf-titulo").textContent = `Detalhes - ${UF_NOME[uf]}`;
+    document.getElementById("uf-lateral").innerHTML = `<div class="caixa"><div class="uf-cab"><img src="../assets/bandeiras/${uf}.svg" alt=""><h3>${UF_NOME[uf]}</h3></div>
+      <div class="linha"><span>Municípios</span><b>${ms.length}</b></div>
+      <div class="linha"><span>Voto médio para vereador</span><b>${fmt(media, 2)}</b></div>
+      <p style="margin:6px 0 2px">${chipCat(media)} ${media < MEIO ? "à esquerda" : "à direita"} do meio da régua</p>
+      <div class="rotulos" style="margin-top:8px"><span>Esquerda ${cv.length - d}</span><span>Direita ${d}</span></div>
+      <div class="dividida"><span style="width:${pc(cv.length - d, cv.length)}%;background:${CAT_COR[1]}"></span><span style="width:${pc(d, cv.length)}%;background:${CAT_COR[5]}"></span></div></div>
+      <div class="caixa"><h3>Prefeitos eleitos, por espectro</h3><div class="empilhada">${prefCat.map((n, i) => n ? `<span style="flex:${n};background:${CAT_COR[i]}" title="${CATS[i].toLowerCase()}: ${n}"></span>` : "").join("")}</div>
+      ${prefCat.map((n, i) => n ? `<div class="linha"><span><i class="cor" style="background:${CAT_COR[i]}"></i> ${CATS[i].toLowerCase()}</span><b>${n} (${fmt(pc(n, np), 0)}%)</b></div>` : "").join("")}</div>
+      <div class="caixa"><h3>Dinheiro das campanhas (2024)</h3><div class="linha"><span>Arrecadado</span><b>${brl(rec)}</b></div><div class="linha"><span>Do fundo público</span><b>${fmt(pc(pub, rec), 0)}%</b></div></div>`;
+    document.getElementById("f-ordem").value = st.ordem;
+    document.querySelectorAll("#f-vis button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.vis === st.vis)));
+    document.getElementById("f-lado").innerHTML = [["todos", "Mostrar todos"], ["esquerda", "Tendem à esquerda"], ["direita", "Tendem à direita"]].map(([v, r]) => `<button type="button" data-lado="${v}" aria-pressed="${st.lado === v}">${r}</button>`).join("");
+    renderCidades();
+  }
+  function renderCidades() {
+    const termos = st.busca ? st.busca.split(/\s+/) : [];
+    const xs = M.filter(m => m.uf === st.uf && (st.lado === "todos" || lado(m) === st.lado) && termos.every(t => m.busca.includes(t))).sort(ORDENS[st.ordem]);
+    const box = document.getElementById("cidades"), mostrar = xs.slice(0, st.n);
+    if (st.vis === "grade") {
+      box.className = "cidades";
+      box.innerHTML = mostrar.map(m => `<button type="button" class="cidade" data-cod="${m.cod}"><span class="nome">${esc(m.nome.toUpperCase())}${m.cap ? " <small>capital</small>" : ""}</span>
+        <span class="linha"><span>Voto para vereador</span><b>${m.voto == null ? "sem resultado" : fmt(m.voto, 2)}</b></span>
+        <span class="linha"><span>Prefeito</span><b>${m.sgPref ? chip(m.sgPref, m.vlPref) : "–"}</b></span>
+        <span class="linha"><span>Do fundo público</span><b>${m.receita ? fmt(pc(m.publico, m.receita), 0) + "%" : "–"}</b></span>
+        <span class="mini-regua">${m.voto == null ? "" : `<i style="left:${m.voto * 10}%;background:${corDe(m.voto)}"></i>`}<em style="left:${MEIO * 10}%"></em></span></button>`).join("") || `<p class="nota">Nenhum município com esse filtro.</p>`;
+    } else {
+      box.className = "rolagem";
+      box.innerHTML = `<table class="clicavel"><thead><tr><th>Município</th><th>Voto vereador</th><th>Câmara</th><th>Prefeito</th><th>Arrecadado</th><th>Público</th></tr></thead><tbody>${mostrar.map(m => `<tr data-cod="${m.cod}" tabindex="0"><td><b>${esc(m.nome)}</b>${m.cap ? " <small>(capital)</small>" : ""}</td><td>${m.voto == null ? "–" : fmt(m.voto, 2) + " " + chipCat(m.voto)}</td><td>${fmt(m.camara, 2)}</td><td>${m.sgPref ? chip(m.sgPref, m.vlPref) : "–"}</td><td>${brl(m.receita)}</td><td>${m.receita ? fmt(pc(m.publico, m.receita), 0) + "%" : "–"}</td></tr>`).join("")}</tbody></table>`;
+    }
+    document.getElementById("mais").hidden = xs.length <= st.n;
+  }
+  document.getElementById("cidades").addEventListener("click", ev => { const b = ev.target.closest("[data-cod]"); if (b) ir("cidade", { cod: +b.dataset.cod }); });
+  document.getElementById("cidades").addEventListener("keydown", ev => { const b = ev.target.closest("tr[data-cod]"); if (b && ev.key === "Enter") ir("cidade", { cod: +b.dataset.cod }); });
+  document.getElementById("mais").addEventListener("click", () => { st.n += 120; renderCidades(); });
+  document.getElementById("f-ordem").addEventListener("change", ev => { st.ordem = ev.target.value; st.n = 60; salvar(); renderCidades(); });
+  document.getElementById("f-vis").addEventListener("click", ev => { const b = ev.target.closest("button[data-vis]"); if (!b) return; st.vis = b.dataset.vis; salvar(); renderUf(); });
+  document.getElementById("f-lado").addEventListener("click", ev => { const b = ev.target.closest("button[data-lado]"); if (!b) return; st.lado = b.dataset.lado; st.n = 60; salvar(); renderUf(); });
+  const busca = document.getElementById("f-busca"), achados = document.getElementById("achados");
+  busca.addEventListener("input", () => {
+    st.busca = semAcento(busca.value.trim()); st.n = 60; renderCidades();
+    if (st.busca.length < 2) { achados.hidden = true; return; }
+    const res = M.filter(m => m.uf === st.uf && m.busca.includes(st.busca)).slice(0, 8);
+    achados.innerHTML = res.map(m => `<button type="button" data-cod="${m.cod}"><b>${esc(m.nome)}</b> <small>${m.voto == null ? "" : fmt(m.voto, 2) + " · " + catNome(m.voto)}</small></button>`).join("");
+    achados.hidden = !res.length;
+  });
+  achados.addEventListener("click", ev => { const b = ev.target.closest("button[data-cod]"); if (!b) return; busca.value = ""; st.busca = ""; achados.hidden = true; ir("cidade", { cod: +b.dataset.cod }); });
+  document.addEventListener("click", ev => { if (!ev.target.closest(".procura")) achados.hidden = true; });
+
+  // ---------- 3. uma cidade ----------
+  let candidatos = null;   // fichas da aba Candidatos (fotos e eleitos), lidas uma vez
+  const carregarCandidatos = () => candidatos || (candidatos = fetch("../candidatos-painel/dados.json").then(r => r.json()));
+  function renderCidade() {
+    const m = POR_COD.get(st.cod); if (!m) { ir("estados"); return; }
+    document.getElementById("voltar-uf").textContent = `← Voltar para ${UF_NOME[m.uf]}`;
+    document.getElementById("cidade-topo").innerHTML = `<img src="../assets/bandeiras/${m.uf}.svg" alt="Bandeira de ${UF_NOME[m.uf]}"><div><span class="etiqueta">${UF_NOME[m.uf].toUpperCase()}${m.cap ? " · CAPITAL" : ""}</span><h1>${esc(m.nome)}</h1></div>`;
+    // a resposta
+    let f;
+    if (m.voto == null) f = `O arquivo do TSE não traz o resultado de vereador de ${esc(m.nome)} em 2024, então não dá para calcular a nota do voto da cidade.`;
+    else {
+      const dist = Math.abs(m.voto - MEIO), forca = dist < MEIA * 0.15 ? "levemente" : dist < MEIA * 0.45 ? "" : "fortemente";
+      f = `Em ${esc(m.nome)}, o voto para vereador em 2024 ficou em <b>${fmt(m.voto, 2)}</b> na escala de 0 a 10: <b>${catNome(m.voto)}</b>, ${forca ? forca + " " : ""}à <b>${lado(m)}</b> do meio da régua (${fmt(MEIO, 2)}).`;
+      if (m.camara != null) f += ` A câmara eleita (${m.qtVer} vereadores) fica em ${fmt(m.camara, 2)}.`;
+      if (m.sgPref) f += ` O prefeito eleito é do ${esc(m.sgPref)} (${fmt(m.vlPref, 2)}, ${catNome(m.vlPref)}).`;
+      if (m.voto22 != null) f += ` Em 2022, o voto para deputado federal na cidade ficou em ${fmt(m.voto22, 2)}${Math.abs(m.voto22 - m.voto) >= 0.3 ? `: em 2024 a cidade votou ${fmt(Math.abs(m.voto - m.voto22), 1)} ponto${Math.abs(m.voto - m.voto22) >= 1.95 ? "s" : ""} mais à ${m.voto > m.voto22 ? "direita" : "esquerda"} (cargos diferentes: compare com cuidado)` : ", quase igual"}.`;
+    }
+    document.getElementById("cidade-resposta").innerHTML = f;
+    desenhaRegua(m);
+    desenhaCamara(m);
+    const porVoto = m.votos ? (m.receita || 0) / m.votos : null;
+    document.getElementById("dinheiro").innerHTML = [
+      [brl(m.receita), `arrecadados por ${int(m.qtCand)} candidatos`],
+      [m.receita ? fmt(pc(m.publico, m.receita), 0) + "%" : "–", "veio do fundo público"],
+      [m.propaganda ? brl(m.propaganda) : "–", `em propaganda${m.canal >= 0 ? `, mais em ${CANAL[m.canal]}` : ""}`],
+      [porVoto == null ? "–" : `R$ ${fmt(porVoto, 2)}`, "arrecadados por voto para vereador"],
+    ].map(([v, r]) => `<div class="num"><b>${v}</b><span>${r}</span></div>`).join("");
+    const box = document.getElementById("eleitos"); box.innerHTML = `<p class="nota">Carregando os eleitos…</p>`;
+    carregarCandidatos().then(C => {
+      if (st.cod !== m.cod) return;
+      const idx = []; C.eleitos.forEach((r, i) => { if (r[27] === m.cod && r[0] === 24) idx.push(i); });
+      idx.sort((a, b) => (C.eleitos[a][2] - C.eleitos[b][2]) || ((C.eleitos[b][13] || 0) - (C.eleitos[a][13] || 0)));
+      box.innerHTML = idx.map(i => { const r = C.eleitos[i], sg = C.partidos[r[4]], e = (C.espectro[`2024|${sg}`] || [null])[0], nome = nomeProprio(r[5]); return `<button type="button" class="cand" data-sq="${C.sq[i]}"><div class="foto" data-inicial="${esc(nome[0] || "?")}"><img src="../candidatos-painel/fotos/2024/${C.sq[i]}.jpg" alt="" loading="lazy" onerror="this.parentNode.classList.add('sem');this.replaceWith(this.parentNode.dataset.inicial)"></div><span class="cand-txt"><b>${esc(nome)}</b><small>${r[2] === 11 ? "Prefeito · " : ""}${chip(sg, e)}</small><span class="cand-num">${int(r[13])} votos</span></span></button>`; }).join("") || `<p class="nota">Sem eleitos de 2024 nas fichas.</p>`;
+    });
+  }
+  document.getElementById("eleitos").addEventListener("click", ev => {
+    const b = ev.target.closest("button[data-sq]"); if (!b) return;
+    // dentro do painel, a ficha abre por cima desta página; ao fechar, a cidade continua aqui
+    if (window.parent !== window) window.parent.postMessage({ tipo: "abrir-candidato", ano: 2024, sq: +b.dataset.sq }, "*");
+    else location.href = `../candidatos-painel/index.html#c=2024-${b.dataset.sq}`;
+  });
+  function desenhaRegua(m) {
+    const svg = document.getElementById("regua"); limpa(svg);
+    const marcas = [
+      ["voto para vereador 2024", m.voto, "circle", 9], ["câmara eleita", m.camara, "diamond", 7], [`prefeito (${m.sgPref || "–"})`, m.vlPref, "square", 7], ["voto dep. federal 2022", m.voto22, "ring", 7],
+    ].filter(x => x[1] != null).sort((a, b) => a[1] - b[1]);
+    // cada marca ganha a sua linha acima da barra: os rótulos nunca se sobrepõem
+    const W = 900, L = 20, Rr = 20, LIN = 17, y0 = 18 + marcas.length * LIN, y1 = y0 + 30, H = y1 + 46;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const X = v => L + (W - L - Rr) * v / 10;
+    faixas(svg, X, y0, y1);
+    for (let v = 0; v <= 10; v++) txt(svg, X(v), y1 + 12, String(v), "eixo", "middle");
+    el("line", { x1: X(MEIO), x2: X(MEIO), y1: y0 - 6, y2: y1 + 4, stroke: "var(--texto)", "stroke-dasharray": "4 3" }, svg);
+    txt(svg, X(R.esq[1]), y1 + 32, `◂ ${R.esq[0]} ${fmt(R.esq[1], 2)}`, "eixo", "start"); txt(svg, X(R.dir[1]), y1 + 32, `${R.dir[0]} ${fmt(R.dir[1], 2)} ▸`, "eixo", "end");
+    txt(svg, X(MEIO), y1 + 32, `meio ${fmt(MEIO, 2)}`, "eixo", "middle");
+    marcas.forEach(([rot, v, forma, r], i) => {
+      const x = X(v), y = (y0 + y1) / 2, cor = corDe(v), ty = 12 + i * LIN, rotulo = `${rot}: ${fmt(v, 2)}`;
+      el("line", { x1: x, x2: x, y1: ty + 6, y2: y - r, stroke: "var(--texto-2)", "stroke-width": 1 }, svg);
+      // o texto fica à direita da marca; perto da borda direita, à esquerda
+      const t = txt(svg, x > W * 0.7 ? x - 6 : x + 6, ty, rotulo, "rot", x > W * 0.7 ? "end" : "start"); t.style.fontWeight = forma === "circle" ? 800 : 600;
+      if (forma === "circle") el("circle", { cx: x, cy: y, r, fill: cor, stroke: "#fff", "stroke-width": 2.5 }, svg);
+      else if (forma === "ring") el("circle", { cx: x, cy: y, r, fill: "#fff", stroke: cor, "stroke-width": 3 }, svg);
+      else if (forma === "square") el("rect", { x: x - r, y: y - r, width: 2 * r, height: 2 * r, fill: cor, stroke: "#fff", "stroke-width": 2 }, svg);
+      else el("path", { d: `M${x},${y - r - 2}L${x + r + 2},${y}L${x},${y + r + 2}L${x - r - 2},${y}Z`, fill: cor, stroke: "#fff", "stroke-width": 2 }, svg);
+    });
+    document.getElementById("regua-legenda").innerHTML = CATS.map((c, i) => `<span><i class="cor" style="background:${CAT_COR[i]}"></i>${c.toLowerCase()}</span>`).join("") + `<span>● voto 2024 · ◆ câmara · ■ prefeito · ○ dep. federal 2022</span>`;
+  }
+  function desenhaCamara(m) {
+    const svg = document.getElementById("hemiciclo"); limpa(svg);
+    const cad = []; for (let i = 0; i < m.cadeiras.length; i += 2) { const sg = m.cadeiras[i], p = D.partidos[sg]; cad.push({ sg, n: m.cadeiras[i + 1], v: p ? p[0] : null, nota: p ? p[2] : "" }); }
+    cad.sort((a, b) => (a.v ?? 99) - (b.v ?? 99));
+    const n = cad.reduce((s, c) => s + c.n, 0);
+    document.getElementById("camara-titulo").textContent = n ? `A câmara eleita em 2024: ${n} vereadores` : "A câmara eleita em 2024";
+    if (!n) { svg.setAttribute("viewBox", "0 0 400 40"); txt(svg, 200, 20, "Sem vereadores eleitos no arquivo do TSE", "rot", "middle"); document.getElementById("camara-lista").innerHTML = ""; return; }
+    // semicírculo: fileiras concêntricas; as cadeiras vão da esquerda (180°) para a direita (0°)
+    const W = 420, H = 230, cx = W / 2, cy = H - 14, rExt = 196, filas = Math.max(2, Math.min(6, Math.round(Math.sqrt(n / 1.6)))), rInt = rExt * (filas <= 2 ? 0.55 : 0.4);
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const raios = Array.from({ length: filas }, (_, i) => rInt + (rExt - rInt) * (filas === 1 ? 1 : i / (filas - 1))), soma = raios.reduce((a, b) => a + b, 0);
+    let resto = n; const porFila = raios.map((r, i) => { const k = i === filas - 1 ? resto : Math.max(1, Math.round(n * r / soma)); resto -= k; return k; });
+    const pos = []; raios.forEach((r, i) => { const k = porFila[i]; for (let j = 0; j < k; j++) { const a = Math.PI * (k === 1 ? 0.5 : 1 - j / (k - 1)); pos.push({ a, x: cx + r * Math.cos(a), y: cy - r * Math.sin(a) }); } });
+    pos.sort((p, q) => q.a - p.a);
+    const raio = Math.min(13, (rExt - rInt) / filas * 0.42 + 3, Math.PI * rExt / Math.max(...porFila) * 0.42);
+    let k = 0;
+    cad.forEach(c => { for (let j = 0; j < c.n; j++, k++) { const p = pos[k], dot = el("circle", { cx: p.x, cy: p.y, r: raio, fill: corDe(c.v), stroke: "#fff", "stroke-width": 1.5 }, svg); dot.addEventListener("mousemove", ev => mostra(ev, `<b>${esc(c.sg)}</b> · ${c.n} cadeira${c.n > 1 ? "s" : ""}<br>${c.v == null ? "sem nota" : fmt(c.v, 2) + " · " + catNome(c.v)}${c.nota ? "<br><small>" + esc(c.nota) + "</small>" : ""}`)); dot.addEventListener("mouseleave", esconde); } });
+    txt(svg, cx, cy - 6, `${n}`, "num-centro", "middle");
+    document.getElementById("camara-lista").innerHTML = `<div class="partidos">${cad.map(c => `<span>${chip(c.sg, c.v)} <b>${c.n}</b></span>`).join("")}</div><p class="nota">Da esquerda para a direita, pela nota do partido.${cad.some(c => c.nota) ? " Notas estimadas ou herdadas: " + cad.filter(c => c.nota).map(c => c.sg).join(", ") + " (ver Como calculamos)." : ""}</p>`;
+  }
+  document.getElementById("voltar-uf").addEventListener("click", () => { const m = POR_COD.get(st.cod); ir("uf", { uf: m ? m.uf : st.uf }); });
+  document.querySelectorAll("[data-ir]").forEach(b => b.addEventListener("click", () => ir(b.dataset.ir)));
+
+  function mostrar() {
+    if (st.nivel === "uf" && !st.uf) st.nivel = "estados";
+    if (st.nivel === "cidade" && !POR_COD.has(st.cod)) st.nivel = "estados";
+    document.getElementById("v-estados").hidden = st.nivel !== "estados";
+    document.getElementById("v-uf").hidden = st.nivel !== "uf";
+    document.getElementById("v-cidade").hidden = st.nivel !== "cidade";
+    if (st.nivel === "estados") renderEstados(); else if (st.nivel === "uf") renderUf(); else renderCidade();
+  }
+  // link direto: #uf=MA abre o estado; #cod=2111300 (código IBGE) abre a cidade
+  const alvo = /(?:^|[#&])(uf|cod)=([A-Za-z]{2}|\d{7})/.exec(location.hash);
+  if (alvo && alvo[1] === "uf" && D.ufs.includes(alvo[2].toUpperCase())) Object.assign(st, { nivel: "uf", uf: alvo[2].toUpperCase(), lado: "todos" });
+  if (alvo && alvo[1] === "cod" && POR_COD.has(+alvo[2])) Object.assign(st, { nivel: "cidade", cod: +alvo[2], uf: POR_COD.get(+alvo[2]).uf });
+  mostrar();
+  carregarCandidatos();   // já busca as fichas, para a cidade abrir na hora
+  }
+})();
+</script>

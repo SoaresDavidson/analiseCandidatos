@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Eleições em 6 Estados</title>
+<title>Politicagem</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap">
@@ -48,22 +48,29 @@ a.cartao:hover { box-shadow: 0 0 0 2px var(--ouro); }
 .cartao .lado small { font-size: 11px; font-weight: 700; }
 .cartao .lado b { font-size: 24px; line-height: 1; }
 .cartao.breve .lado { background: var(--breve); }
+.cartao.destaque { grid-template-columns: 92px minmax(0, 1fr); min-height: 96px; }
+.cartao.destaque .lado { background: var(--verde-esc); }
+.cartao.destaque .lado b { font-size: 20px; }
 .cartao .corpo { padding: 12px 14px; display: grid; gap: 2px; align-content: center; }
 .cartao .tema { font-size: 13px; color: var(--texto-2); }
 .cartao .perg { font-weight: 700; font-size: 15.5px; line-height: 1.3; }
 .cartao .resp { font-size: 13.5px; margin-top: 4px; }
 .cartao .resp b { color: var(--ouro-esc); font-weight: 800; }
 .cartao.breve .perg { color: var(--texto-2); }
+.sobre { position: fixed; inset: 0; z-index: 50; }
+.sobre iframe { width: 100%; height: 100%; border: 0; background: transparent; }
 .aviso { font-size: 13px; color: var(--texto-2); max-width: 90ch; margin: 0; }
 </style>
 </head>
 <body>
 <div class="faixa"><span>Banco de Dados Relacionais · UFPI</span><span aria-hidden="true">|</span><span>Davi, Duda, Eduardo e Enrico</span><span aria-hidden="true">|</span><button type="button" id="ant" aria-label="Pergunta anterior">‹ anterior</button><button type="button" id="prox" aria-label="Próxima pergunta">próxima ›</button><button type="button" id="tela">Tela cheia</button></div>
 <header class="cab"><div class="cab-in">
-  <a class="marca" href="#inicio"><b>ELEIÇÕES</b><span>6 ESTADOS</span><small>AM · GO · MA · MT · RS · SE</small></a>
+  <a class="marca" href="#inicio"><b>ELEIÇÕES</b><span>POLITICAGEM</span><small>AM · GO · MA · MT · RS · SE</small></a>
   <nav class="nav" id="abas" aria-label="Perguntas"></nav>
 </div></header>
 <main class="palco" id="palco"></main>
+<!-- a ficha de um eleito abre por cima da aba atual; ao fechar, a aba continua onde estava -->
+<div class="sobre" id="sobre" hidden><iframe id="sobre-quadro" title="Ficha do eleito"></iframe></div>
 
 <script>
 (function () {
@@ -79,6 +86,8 @@ a.cartao:hover { box-shadow: 0 0 0 2px var(--ouro); }
     { id: "q8", nome: "Dinheiro público", pagina: "q8-painel/index.html" },
     { id: "q9", nome: "Propaganda", pagina: "q9-painel/index.html" },
     { id: "q10", nome: "Carreira", pagina: "q10-painel/index.html" },
+    { id: "municipios", nome: "Municípios", pagina: "municipios-painel/index.html" },
+    { id: "candidatos", nome: "Candidatos", pagina: "candidatos-painel/index.html" },
   ];
   // números conferidos no banco em 15/10/2026 (6 estados)
   const CARTOES = [
@@ -106,6 +115,8 @@ a.cartao:hover { box-shadow: 0 0 0 2px var(--ouro); }
     palco.innerHTML = `<div class="inicio"><div class="wrap">
       <h1>O que os dados das eleições respondem</h1>
       <p class="lead">Candidaturas e resultados do TSE e dados do IBGE, de 2002 a 2024, nos seis estados sorteados. Escolha uma pergunta: cada uma abre com a resposta em linguagem simples e um gráfico. Os detalhes técnicos ficam no fim de cada página.</p>
+      <a class="cartao destaque" href="#municipios"><span class="lado"><small>Cidades</small><b>1.239</b></span><span class="corpo"><span class="tema">Municípios · espectro e dinheiro</span><span class="perg">Para que lado cada cidade vota?</span><span class="resp">A régua do espectro de cada cidade, a câmara eleita cadeira por cadeira, o dinheiro das campanhas e os eleitos com foto.</span></span></a>
+      <a class="cartao destaque" href="#candidatos"><span class="lado"><small>Fichas</small><b>14 mil</b></span><span class="corpo"><span class="tema">Candidatos</span><span class="perg">Quem são os eleitos?</span><span class="resp">Os <b>14.194</b> eleitos de 2022 e 2024 nos 6 estados, com foto, votos, patrimônio, campanha e carreira.</span></span></a>
       <div class="cartoes">${prontos.map(cartao).join("")}</div>
       <div class="cartoes">${breve.map(cartao).join("")}</div>
       <p class="aviso">Os gráficos mostram o que anda junto, não o que causa. Toda comparação de chance de vitória é feita dentro do mesmo cargo.</p>
@@ -113,20 +124,34 @@ a.cartao:hover { box-shadow: 0 0 0 2px var(--ouro); }
   }
 
   function abrir() {
-    const id = (location.hash || "#inicio").slice(1), aba = ABAS.find(a => a.id === id);
+    // #candidatos/2024-123 abre a ficha do eleito 123 (sq_candidato do TSE) de 2024
+    const [id, extra] = (location.hash || "#inicio").slice(1).split("/"), aba = ABAS.find(a => a.id === id);
     for (const [k, l] of links) l.setAttribute("aria-current", k === (aba ? aba.id : "inicio") ? "page" : "false");
     if (!aba) { inicio(); return; }
     palco.innerHTML = "";
-    const f = document.createElement("iframe"); f.src = pagina(aba.pagina); f.title = aba.nome;
+    // #candidatos/2024-123 abre uma ficha; #municipios/MA um estado; #municipios/2111300 uma cidade
+    const alvo = !extra ? "" : aba.id === "municipios" ? (/^\d+$/.test(extra) ? "#cod=" : "#uf=") + extra : "#c=" + extra;
+    const f = document.createElement("iframe"); f.src = pagina(aba.pagina) + alvo; f.title = aba.nome;
     palco.appendChild(f);
   }
   const ordem = ["inicio", ...ABAS.map(a => a.id)];
-  const passo = d => { const i = ordem.indexOf((location.hash || "#inicio").slice(1)); location.hash = "#" + ordem[(Math.max(0, i) + d + ordem.length) % ordem.length]; };
+  const passo = d => { const i = ordem.indexOf((location.hash || "#inicio").slice(1).split("/")[0]); location.hash = "#" + ordem[(Math.max(0, i) + d + ordem.length) % ordem.length]; };
   document.getElementById("ant").addEventListener("click", () => passo(-1));
   document.getElementById("prox").addEventListener("click", () => passo(1));
   document.addEventListener("keydown", e => { if (e.target.closest("input, select, textarea")) return; if (e.key === "ArrowRight") passo(1); if (e.key === "ArrowLeft") passo(-1); });
   document.getElementById("tela").addEventListener("click", () => { try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {}); } catch (e) { /* o navegador não deixa */ } });
   window.addEventListener("hashchange", abrir);
+  // as páginas das perguntas pedem para abrir a ficha de um eleito (ex.: lista de eleitos da Q4)
+  const sobre = document.getElementById("sobre"), quadro = document.getElementById("sobre-quadro");
+  window.addEventListener("message", ev => {
+    const m = ev.data;
+    if (m && m.tipo === "abrir-candidato" && m.ano && m.sq) {
+      // a página de Candidatos em modo ficha (so=1); trocar só o # não recarrega, ela abre a ficha nova
+      quadro.src = pagina("candidatos-painel/index.html") + `#c=${m.ano}-${m.sq}&so=1&n=${Date.now()}`;  // n: o mesmo eleito duas vezes ainda troca o #
+      sobre.hidden = false;
+    }
+    if (m && m.tipo === "fechar-ficha") sobre.hidden = true;
+  });
   abrir();
 })();
 </script>

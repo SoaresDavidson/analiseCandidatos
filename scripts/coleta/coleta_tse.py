@@ -14,7 +14,8 @@ from __future__ import annotations
 
 import sys
 
-from scripts.coleta.coleta_comum import RAW, UFS, Ufs, baixar_zip, executar, log
+from scripts.coleta import zip_remoto
+from scripts.coleta.coleta_comum import RAW, UFS, Ufs, baixar_zip, executar, filtrar_uf, log
 
 ANOS = [2016, 2018, 2020, 2022, 2024, 2026]
 CDN = "https://cdn.tse.jus.br/estatistica/sead/odsele"
@@ -72,6 +73,43 @@ RESULTADOS = {
     "detalhe_votacao_munzona": "detalhe_votacao_munzona/detalhe_votacao_munzona_{ano}.zip",
 }
 
+# recorte_remoto: (tema, nome local, caminho no CDN, anos, prefixos dos arquivos)
+RECORTE_REMOTO = [
+    # Q8, Q9 e campanha na ficha: recibos e despesas contratadas, leiaute de 2018+
+    (
+        "prestacao_contas",
+        "prestacao_contas_candidatos",
+        PRESTACAO_CONTAS["prestacao_contas_candidatos"],
+        [2018, 2020, 2022, 2024],
+        ("receitas_candidatos_2", "despesas_contratadas_candidatos_2"),
+    ),
+    # patrimônio declarado: a ficha dos eleitos e a evolução na carreira (Q10). O TSE
+    # só publica bens de 2006 em diante.
+    (
+        "candidatos",
+        "bens_candidato",
+        CANDIDATOS["bens_candidato"],
+        [2006, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022, 2024],
+        ("bem_candidato_",),
+    ),
+    # votos por município: ficha dos candidatos (2022, 2024) e viés na linha do tempo (Q7, E.P.)
+    (
+        "resultados",
+        "votacao_candidato_munzona",
+        RESULTADOS["votacao_candidato_munzona"],
+        [2018, 2020, 2022, 2024],
+        ("votacao_candidato_munzona_",),
+    ),
+    # aptos, abstenções, brancos e nulos por cargo (Q3: "isentos" e eleitores por habitante)
+    (
+        "resultados",
+        "detalhe_votacao_munzona",
+        RESULTADOS["detalhe_votacao_munzona"],
+        [2018, 2020, 2022, 2024],
+        ("detalhe_votacao_munzona_",),
+    ),
+]
+
 ABSTENCAO = {
     "comparecimento_abstencao": "perfil_comparecimento_abstencao/perfil_comparecimento_abstencao_{ano}.zip",
 }
@@ -122,6 +160,24 @@ def coletar_prestacao_contas(force: bool, ufs: Ufs) -> None:
     )
 
 
+def coletar_recorte_remoto(force: bool, ufs: Ufs) -> None:
+    """Extrai arquivos de dentro dos zips do TSE sem baixar os zips (precisa de --uf).
+
+    Só o que a Q8, a Q9 e as fichas dos candidatos usam. Grava nas mesmas pastas
+    dos outros coletores, então os .sql leem sem mudança nenhuma. Para os 6
+    estados, poupa ~3 GB de zips no disco.
+    """
+    if ufs is None:
+        raise ValueError("recorte_remoto precisa de --uf")
+    for tema, nome, caminho, anos, prefixos in RECORTE_REMOTO:
+        for ano in anos:
+            log(f"[tse/{tema}/{ano}] {nome} (sem baixar o zip)")
+            url = f"{CDN}/{caminho.format(ano=ano)}"
+            nomes = filtrar_uf(zip_remoto.abrir(url).namelist(), ufs)
+            nomes = [n for n in nomes if n.startswith(prefixos) and not n.upper().endswith("_BRASIL.CSV")]
+            zip_remoto.extrair(url, RAW / tema / str(ano) / f"{nome}_{ano}", nomes, force)
+
+
 def coletar_resultados(force: bool, ufs: Ufs) -> None:
     _coletar_tema("resultados", RESULTADOS, force, ufs)
 
@@ -161,6 +217,7 @@ COLETORES = {
     "historico": coletar_historico,
     "eleitorado": coletar_eleitorado,
     "prestacao_contas": coletar_prestacao_contas,
+    "recorte_remoto": coletar_recorte_remoto,
     "resultados": coletar_resultados,
     "abstencao": coletar_abstencao,
     "proposta_governo": coletar_proposta_governo,

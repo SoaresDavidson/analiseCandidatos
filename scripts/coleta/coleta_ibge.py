@@ -114,6 +114,42 @@ def coletar_sidra(force: bool, _ufs: Ufs) -> None:
     log(f"  baixado {destino.relative_to(ROOT)} ({len(linhas) - 1} linhas)")
 
 
+def coletar_ipca(force: bool, _ufs: Ufs) -> None:
+    """IPCA (número-índice, dez/1993 = 100) de agosto de cada ano de eleição.
+
+    Agosto é o mês do registro da candidatura, quando os bens são declarados: corrige
+    o patrimônio pela inflação na carreira do político (Q10). Fica fora de `sidra`
+    porque lá os metadados (servicodados.ibge.gov.br) podem falhar no certificado.
+    """
+    log("[ibge/ipca]")
+    meses = ",".join(f"{ano}08" for ano in range(2006, 2026, 2))
+    baixar_json(f"{SIDRA}/t/1737/n1/all/v/2266/p/{meses}", RAW / "ibge" / "sidra" / "1737_ipca_agosto.json", force)
+
+
+def coletar_indicadores(force: bool, _ufs: Ufs) -> None:
+    """Indicadores municipais da Q3 nos anos de eleição, só pela API do SIDRA.
+
+    Fica fora de `sidra` pelo mesmo motivo do IPCA (metadados podem falhar no
+    certificado). População estimada (6579) nos anos de eleição que a tabela tem
+    (não há 2022 nem 2023: em 2022 houve Censo); renda domiciliar per capita
+    (10295) e anos de estudo (10062) do Censo 2022, que substituem o IDHM
+    municipal, parado no Censo 2010.
+    """
+    log("[ibge/indicadores]")
+    pasta = RAW / "ibge" / "sidra"
+    baixar_json(f"{SIDRA}/t/6579/n6/all/v/9324/p/2018,2020,2024", pasta / "6579_populacao_anos_eleicao.json", force)
+    baixar_json(
+        f"{SIDRA}/t/10295/n6/all/v/13431,13534/p/2022/c2/6794/c86/95251/c58/95253",
+        pasta / "10295_renda_domiciliar_municipios.json",
+        force,
+    )
+    baixar_json(
+        f"{SIDRA}/t/10062/n6/all/v/13285/p/2022/c58/95253/c2/6794/c86/95251",
+        pasta / "10062_anos_estudo_municipios.json",
+        force,
+    )
+
+
 def coletar_pib(force: bool, _ufs: Ufs) -> None:
     """PIB dos municípios: pega a última edição publicada no FTP.
 
@@ -151,6 +187,8 @@ def coletar_malha(force: bool, ufs: Ufs) -> None:
 
 COLETORES = {
     "sidra": coletar_sidra,
+    "ipca": coletar_ipca,
+    "indicadores": coletar_indicadores,
     "pib": coletar_pib,
     "malha": coletar_malha,
 }

@@ -92,13 +92,21 @@ RECORTE_REMOTO = [
         [2006, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022, 2024],
         ("bem_candidato_",),
     ),
-    # votos dos eleitos de 2022 e 2024 (ficha dos candidatos)
+    # votos por município: ficha dos candidatos (2022, 2024) e viés na linha do tempo (Q7, E.P.)
     (
         "resultados",
         "votacao_candidato_munzona",
         RESULTADOS["votacao_candidato_munzona"],
-        [2022, 2024],
+        [2018, 2020, 2022, 2024],
         ("votacao_candidato_munzona_",),
+    ),
+    # aptos, abstenções, brancos e nulos por cargo (Q3: "isentos" e eleitores por habitante)
+    (
+        "resultados",
+        "detalhe_votacao_munzona",
+        RESULTADOS["detalhe_votacao_munzona"],
+        [2018, 2020, 2022, 2024],
+        ("detalhe_votacao_munzona_",),
     ),
 ]
 

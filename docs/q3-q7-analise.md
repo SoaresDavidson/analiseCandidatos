@@ -134,14 +134,39 @@ de 13% a 14% das prefeituras nos quatro primeiros quintos de renda e 10,5% no ma
 Nas cidades em que o setor público é a maior atividade (as mais pobres), o União lidera;
 nas do agronegócio, PP e MDB.
 
-**Isentos andam com o tamanho da cidade, não com a riqueza:** correlação de 0,54 entre
-o número de eleitores e a taxa de isentos; nas 20% de cidades com menos isentos (até
+**Isentos andam com o tamanho da cidade, não com a riqueza:** correlação de postos
+(Spearman) de 0,54 entre o número de eleitores e a taxa de isentos (a de Pearson é 0,22
+porque a relação não é linear: sem as 13 cidades com mais de 200 mil eleitores, sobe
+para 0,37); nas 20% de cidades com menos isentos (até
 13,6%) a mediana é de 3,2 mil eleitores; nas 20% com mais (25,5% a 59,4%), 16,8 mil.
 
 **Eleitores por habitante:** em 230 cidades (2024) há mais eleitores aptos que
-habitantes estimados, quase todas pequenas de Goiás (Davinópolis: 4.405 eleitores para
-1.901 habitantes). Pode ser cadastro desatualizado (gente que mudou e continua votando
-lá) ou estimativa baixa de população: é um achado para mostrar com cautela.
+habitantes estimados: GO 99, RS 89, SE 16, MA 15, MT 11 (nenhuma no AM). São cidades
+pequenas: mediana de 3 mil habitantes, contra 10 mil no conjunto. O caso extremo é
+Davinópolis (GO): 4.405 eleitores para 1.901 habitantes.
+
+**É o cadastro eleitoral, não a estimativa de população.** Três testes:
+
+- 227 das 230 têm mais eleitores que a população **contada** no Censo 2022 (SIDRA
+  9606), não só que a estimativa. A estimativa de 2024 é quase igual ao Censo
+  (Davinópolis: 1.901 estimados, 1.902 contados).
+- Todas as 230 têm mais eleitores que **moradores de 15 anos ou mais** no Censo 2022
+  (Davinópolis: 1.566). O excesso é grande demais para ser erro de estimativa.
+- 121 delas já tinham mais eleitores que habitantes em 2020, antes do Censo.
+
+O fenômeno é mais largo que as 230: em 835 das 1.238 cidades dos 6 estados (67%) há
+mais eleitores aptos que moradores de 15 anos ou mais. A explicação compatível com os
+dados é o **domicílio eleitoral**: a lei deixa votar onde a pessoa tem vínculo
+residencial, familiar, profissional ou comunitário, não só onde mora
+([Res. TSE 23.659/2021, art. 23](https://www.tse.jus.br/legislacao/compilada/res/2021/resolucao-no-23-659-de-26-de-outubro-de-2021);
+[TSE, Temas Selecionados](https://temasselecionados.tse.jus.br/temas-selecionados/eleitor-do-alistamento-ao-voto/domicilio-eleitoral)).
+Quem migra para a cidade grande pode manter o título na cidade de origem. O que os
+dados **não** permitem afirmar: quantos desses eleitores moram fora, ou se há
+irregularidade. A abstenção também não é maior nelas: 11,9% (mediana) nas 230, e entre
+as cidades de menos de 5 mil habitantes, 11,3% nas que têm mais eleitores que
+habitantes e 11,2% nas outras. A
+consequência para a Q3: nas cidades pequenas, "eleitores por habitante" mede o vínculo
+eleitoral com a cidade, não a participação dos moradores.
 
 ---
 

@@ -25,6 +25,7 @@ export const TEMAS: Tema[] = [
       { id: "q7", n: 7, nome: "Para que lado vota", Componente: lazy(() => import("./q7")) },
       { id: "q3", n: 3, nome: "Riqueza × quem vence", Componente: lazy(() => import("./q3")) },
       { id: "q4", n: 4, nome: "Escolaridade", Componente: lazy(() => import("./q4")) },
+      { id: "q6", n: 6, nome: "Idade e alternância", Componente: lazy(() => import("./q6")) },
       { id: "municipios", nome: "Explorar municípios", Componente: lazy(() => import("./municipios")) },
     ],
   },
@@ -34,6 +35,7 @@ export const TEMAS: Tema[] = [
     paginas: [
       { id: "q8", n: 8, nome: "Fundo público", Componente: lazy(() => import("./q8")) },
       { id: "q9", n: 9, nome: "Propaganda", Componente: lazy(() => import("./q9")) },
+      { id: "q2", n: 2, nome: "Patrimônio", Componente: lazy(() => import("./q2")) },
     ],
   },
   {
@@ -47,7 +49,8 @@ export const TEMAS: Tema[] = [
   },
 ];
 
-/** Páginas fora das abas: só por link ou pelo segredo (código Konami ou 5 cliques no logo). */
+/** Páginas fora das abas de tema: a Arena abre pela aba ⚔ na faixa do topo, por link ou pelo
+ *  segredo (código Konami ou 5 cliques no logo). */
 export const ESCONDIDAS: PaginaPainel[] = [{ id: "arena", nome: "Arena", Componente: lazy(() => import("./arena")) }];
 
 export const PAGINAS = TEMAS.flatMap(t => t.paginas.map(p => ({ ...p, tema: t })));

@@ -1,10 +1,9 @@
-"""Gera docs/q2-painel/index.html e docs/q6-painel/index.html, as páginas das perguntas
-Q2 (patrimônio declarado × sucesso eleitoral) e Q6 (idade do município, dos eleitos e
-alternância de poder).
+"""Gera os dados das perguntas Q2 (patrimônio declarado × sucesso eleitoral) e Q6 (idade do
+município, dos eleitos e alternância de poder) para o app React: web/public/dados/q2.json
+e q6.json.
 
-Lê as views de sql/18_q2_patrimonio.sql (Enrico) e sql/20_q6_idade.sql (Eduardo) e embute
-os dados no modelo.html de cada pergunta no lugar de __DADOS__ (abre direto no navegador).
-O mapa da Q6 reaproveita as malhas da Q4.
+Lê as views de sql/18_q2_patrimonio.sql (Enrico) e sql/20_q6_idade.sql (Eduardo). O mapa
+da Q6 reaproveita as malhas da Q4.
 
 Pré-requisitos (da raiz do repositório):
     uv run python -m scripts.coleta.coleta_ibge idade
@@ -21,8 +20,9 @@ import os
 
 import duckdb
 
-from scripts.gerar_painel_q3_q7 import BANCO, RAIZ, UFS, gerar, num
+from scripts.gerar_painel_q3_q7 import BANCO, RAIZ, UFS, num
 from scripts.gerar_painel_q4 import CAPITAIS, mapa
+from scripts.painel_web import gravar
 
 CARGOS_Q2 = ["VEREADOR", "PREFEITO", "DEPUTADO ESTADUAL", "DEPUTADO FEDERAL", "GOVERNADOR", "SENADOR"]
 GRUPOS_BEM = ["IMOVEIS", "VEICULOS", "DINHEIRO", "APLICACOES", "EMPRESAS", "OUTROS"]
@@ -149,8 +149,8 @@ def main() -> None:
     con = duckdb.connect(str(BANCO), read_only=True)
     q2, q6 = dados_q2(con), dados_q6(con)
     con.close()
-    gerar("q2-painel", q2)
-    gerar("q6-painel", q6)
+    gravar("q2.json", q2)
+    gravar("q6.json", q6)
 
 
 if __name__ == "__main__":

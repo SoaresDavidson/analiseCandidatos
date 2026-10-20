@@ -70,6 +70,7 @@ e gravam cada arquivo de `public/dados/` por `scripts/painel_web.py`:
 | arquivo | gerador |
 | --- | --- |
 | `q3.json`, `q7.json` | `uv run python -m scripts.gerar_painel_q3_q7` |
+| `q2.json`, `q6.json` | `uv run python -m scripts.gerar_painel_q2_q6` |
 | `q4.json` | `uv run python -m scripts.gerar_painel_q4` |
 | `q8.json`, `q9.json` | `uv run python -m scripts.gerar_painel_q8_q9` |
 | `q10.json`, `q10-financas/NN.json` | `uv run python -m scripts.gerar_painel_q10` |

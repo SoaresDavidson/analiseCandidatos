@@ -31,6 +31,11 @@ export const TEMAS: Tema[] = [
   ] },
 ];
 
+/** Páginas fora das abas: só por link ou pelo segredo (código Konami ou 5 cliques no logo). */
+export const ESCONDIDAS: PaginaPainel[] = [
+  { id: "arena", nome: "Arena", Componente: lazy(() => import("./arena")) },
+];
+
 export const PAGINAS = TEMAS.flatMap(t => t.paginas.map(p => ({ ...p, tema: t })));
 export type PaginaComTema = (typeof PAGINAS)[number];
 

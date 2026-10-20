@@ -3,6 +3,20 @@
 Painel do grupo em React + Vite + TypeScript + Tailwind CSS v4. Substitui os HTML
 gerados em `docs/*-painel/`.
 
+O app mostra as respostas às perguntas do trabalho para os 6 estados do recorte (AM, GO,
+MA, MT, RS, SE). É um site estático: não tem servidor nem banco. Os dados chegam já prontos
+em `public/dados/`, gravados pelos geradores Python (ver [Dados](#dados)).
+
+As páginas ficam em três temas, definidos em `src/paineis/registro.ts`:
+
+| tema | páginas |
+| --- | --- |
+| Cidades | Q7 para que lado vota · Q3 riqueza × quem vence · Q4 escolaridade · Q6 idade e alternância · explorar municípios |
+| Dinheiro | Q8 fundo público · Q9 propaganda · Q2 patrimônio |
+| Políticos | Q10 carreira · quem são os eleitos · plenários |
+
+A Arena fica fora dos temas e abre pela aba ⚔ na faixa do topo.
+
 ```bash
 npm install
 npm run dev      # http://localhost:5173

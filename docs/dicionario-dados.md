@@ -133,7 +133,7 @@ Quantidade de pessoas de 18 anos ou mais por município e nível de instrução.
 
 #### `FAIXA_ETARIA`
 
-Faixas de idade das duas fontes (TSE e IBGE) numa só dimensão, com a marca de "jovem". **PK:** `id_faixa`. **Grão:** uma linha por faixa de cada fonte. **Perguntas:** Q7.
+Faixas de idade das duas fontes (TSE e IBGE) numa só dimensão, com a marca de "jovem". **PK:** `id_faixa`. **Grão:** uma linha por faixa de cada fonte. **Perguntas:** Q6, Q7. Carga: `sql/19_faixa_etaria.sql` (IBGE de 1 a 21, TSE de 101 a 123).
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
@@ -147,22 +147,22 @@ Faixas de idade das duas fontes (TSE e IBGE) numa só dimensão, com a marca de 
 
 #### `CENSO_FAIXA_ETARIA`
 
-População por município e faixa etária no censo. **PK:** (`cod_ibge`, `ano_censo`, `id_faixa`). **Grão:** município × censo × faixa do IBGE. **Perguntas:** Q7.
+População por município e faixa etária no censo. **PK:** (`cod_ibge`, `ano_censo`, `id_faixa`). **Grão:** município × censo × faixa do IBGE. **Perguntas:** Q6, Q7.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
 | `cod_ibge` | `INTEGER` | N | PK, FK → `MUNICIPIO` | Município. | SIDRA 9606 → `D1C` | |
 | `ano_censo` | `INTEGER` | N | PK | Ano do censo. | SIDRA 9606 → `D3N` | 2022. |
-| `id_faixa` | `INTEGER` | N | PK, FK → `FAIXA_ETARIA` | Faixa etária (origem `IBGE`). | SIDRA 9606 → `D6C` | 116.970 linhas ÷ 5.570 = 21 por município: conferir se há linha de total antes de carregar. |
+| `id_faixa` | `INTEGER` | N | PK, FK → `FAIXA_ETARIA` | Faixa etária (origem `IBGE`). | SIDRA 9606 → `D6C` | 116.970 linhas ÷ 5.570 = 21 por município, sem linha de total (conferido: soma 203.080.756). As 1.314 faixas sem ninguém (`-` no SIDRA) não são carregadas. |
 | `qt_pessoas` | `BIGINT` | N | — | População residente na faixa. | SIDRA 9606 → `V` (var. 93) | Cor/raça e sexo = `Total`. |
 
 #### `COMPARECIMENTO_PERFIL`
 
-Eleitores aptos, comparecimento e abstenção por município, turno, faixa etária e gênero. **PK:** (`cod_ibge`, `ano`, `nr_turno`, `id_faixa`, `ds_genero`). **Grão:** município × ano × turno × faixa × gênero, com zonas e demais recortes somados. **Perguntas:** Q7.
+Eleitores aptos, comparecimento e abstenção por município, turno, faixa etária e gênero. **PK:** (`cod_ibge`, `ano`, `nr_turno`, `id_faixa`, `ds_genero`). **Grão:** município × ano × turno × faixa × gênero, com zonas e demais recortes somados. **Perguntas:** Q6, Q7.
 
 | Atributo | Tipo | Nulo | Chave | Descrição | Origem | Observações |
 |---|---|---|---|---|---|---|
-| `cod_ibge` | `INTEGER` | N | PK, FK → `MUNICIPIO` | Município. | `perfil_comparecimento_abstencao → CD_MUNICIPIO`, com `LPAD` para `cod_tse` | Coletado só no PI (F8). |
+| `cod_ibge` | `INTEGER` | N | PK, FK → `MUNICIPIO` | Município. | `perfil_comparecimento_abstencao → CD_MUNICIPIO`, com `LPAD` para `cod_tse` | Coletado nos 6 estados, 2018–2024, pelo `recorte_remoto` (F8). |
 | `ano` | `INTEGER` | N | PK | Ano da eleição. | `perfil_comparecimento_abstencao → ANO_ELEICAO` | O arquivo não tem `CD_ELEICAO` nem cargo; no mesmo dia pode haver eleição federal e estadual com os mesmos eleitores. |
 | `nr_turno` | `INTEGER` | N | PK | Turno. | `perfil_comparecimento_abstencao → NR_TURNO` | Sem o turno, os aptos do PI em 2020 ficam 22,7% maiores (2º turno em Teresina). |
 | `id_faixa` | `INTEGER` | N | PK, FK → `FAIXA_ETARIA` | Faixa etária (origem `TSE`). | `perfil_comparecimento_abstencao → CD_FAIXA_ETARIA` | |

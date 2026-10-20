@@ -65,7 +65,8 @@ SELECT
     q.cd_grau_instrucao,
     coalesce(u.nm_urna, p.nm_candidato),
     pa.sg_partido,
-    p.nm_candidato
+    p.nm_candidato,
+    c.sq_candidato  -- abre a ficha do eleito na aba Candidatos
 FROM q4_candidatura AS q
 INNER JOIN modelo.candidatura AS c ON q.id_candidatura = c.id_candidatura
 LEFT JOIN modelo.politico AS p ON c.nr_titulo_eleitoral = p.nr_titulo_eleitoral

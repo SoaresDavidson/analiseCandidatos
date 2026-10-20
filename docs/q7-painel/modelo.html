@@ -1,0 +1,369 @@
+<title>Viés Político</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap">
+<style>
+/* Visual inspirado no site de resultados do TSE: fundo cinza-claro, cartões brancos,
+   destaque amarelo-ouro e verde-oliva. Cada pergunta abre com a resposta em linguagem
+   simples, dois números e um gráfico; o detalhe técnico fica nos blocos "Ver mais". */
+:root {
+  color-scheme: light;
+  --fundo: #f4f4f4; --branco: #ffffff; --texto: #333333; --texto-2: #6b6b6b; --linha: #e6e4df; --bege: #eae8e4;
+  --ouro: #ebb400; --ouro-esc: #8f6c00; --verde: #9eb735; --verde-esc: #5e7a12;
+  /* 4 níveis de escolaridade: um tom de verde, do claro ao escuro (validado, ordinal) */
+  --n1: #a5bd4e; --n2: #7e9a2e; --n3: #576f14; --n4: #32440a;
+  --sem-dado: #d9d6cf; --capital: #c0392b;
+  --fonte: "Open Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fundo); color: var(--texto); font: 15px/1.55 var(--fonte); }
+button, select, input { font: inherit; color: inherit; }
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+
+/* barra de filtros (como "Brasil / Turno" do TSE) */
+.sub { background: var(--branco); border-radius: 0 0 18px 18px; box-shadow: 0 4px 10px rgb(0 0 0 / .06); position: sticky; top: 0; z-index: 5; }
+.sub-in { max-width: 1160px; margin: 0 auto; padding: 10px 20px 14px; display: flex; gap: 14px 24px; align-items: flex-end; flex-wrap: wrap; }
+.campo { display: grid; gap: 3px; font-weight: 700; font-size: 13px; }
+.local { appearance: none; border: 2px solid var(--ouro); border-radius: 8px; padding: 7px 34px 7px 14px; font-weight: 700; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23333' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center; cursor: pointer; }
+.tog { display: inline-flex; border: 2px solid var(--ouro); border-radius: 7px; overflow: hidden; background: #fff; flex-wrap: wrap; }
+.tog button { border: 0; background: transparent; padding: 6px 13px; font-weight: 700; cursor: pointer; }
+.tog button[aria-pressed="true"] { background: var(--ouro); }
+.tog button:hover:not([aria-pressed="true"]) { background: #fff6d6; }
+
+main { max-width: 1160px; margin: 0 auto; padding: 22px 20px 64px; display: grid; gap: 18px; }
+.etiqueta { justify-self: start; background: var(--verde-esc); color: #fff; font-weight: 700; font-size: 13px; padding: 6px 14px; border-radius: 6px; letter-spacing: .03em; }
+h1 { font-size: clamp(24px, 3.2vw, 30px); font-weight: 800; margin: 0; line-height: 1.2; }
+h2 { font-size: 19px; font-weight: 800; margin: 0; line-height: 1.3; }
+h3 { font-size: 16px; font-weight: 700; margin: 0; }
+p { margin: 0; }
+.enunciado { color: var(--texto-2); font-size: 13.5px; max-width: 90ch; }
+.caixa { background: var(--branco); border-radius: 14px; padding: 18px 20px; display: grid; gap: 12px; min-width: 0; }
+.duas { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .duas { grid-template-columns: minmax(0, 1fr); } }
+.simples { font-size: 17px; line-height: 1.55; }
+.simples b { font-weight: 800; }
+.linha { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--linha); font-size: 14.5px; }
+.linha b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.aneis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 600px) { .aneis { grid-template-columns: minmax(0, 1fr); } }
+.anel { background: var(--branco); border: 2px solid var(--ouro); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 14px; align-items: center; }
+.anel.verde { border-color: var(--verde); }
+.anel .pct { font-size: 34px; font-weight: 800; color: var(--ouro-esc); line-height: 1; font-variant-numeric: tabular-nums; }
+.anel.verde .pct { color: var(--verde-esc); }
+.anel .q { font-size: 13px; color: var(--texto-2); }
+.anel .nome { font-size: 16px; font-weight: 800; text-transform: uppercase; margin-top: 4px; line-height: 1.2; }
+.barras { display: grid; gap: 10px; }
+.barra { display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr) 3.4em; gap: 10px; align-items: center; font-size: 14px; }
+.barra .trilho { height: 18px; background: var(--bege); border-radius: 3px; position: relative; }
+.barra .trilho i { display: block; height: 100%; border-radius: 3px; }
+.barra .trilho .media { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 2px dashed var(--texto-2); }
+.barra b { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.nota { font-size: 13px; color: var(--texto-2); }
+.selo { justify-self: start; display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; padding: 6px 12px; border-radius: 999px; }
+.selo.sim { background: #eef4d8; color: var(--verde-esc); }
+.selo.nao { background: var(--bege); color: var(--texto); }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--texto-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.cor { width: 13px; height: 13px; border-radius: 3px; display: inline-block; flex: none; }
+
+/* mapa */
+.mapa-grade { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .mapa-grade { grid-template-columns: minmax(0, 1fr); } }
+.mapa { width: 100%; height: auto; max-height: 560px; display: block; }
+.mapa path { stroke: #fff; stroke-width: 0.6; cursor: pointer; vector-effect: non-scaling-stroke; }
+.mapa path.sel { stroke: var(--texto); stroke-width: 2.5; }
+.controles { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: flex-end; }
+.busca { border: 2px solid var(--linha); border-radius: 8px; padding: 7px 12px; min-width: 200px; max-width: 100%; }
+.rampa { display: grid; gap: 4px; max-width: 340px; font-size: 12.5px; color: var(--texto-2); }
+.rampa .faixa-cor { height: 10px; border-radius: 3px; }
+.rampa .marcas { display: flex; justify-content: space-between; }
+.detalhe { display: grid; gap: 10px; }
+.detalhe .vazio { color: var(--texto-2); }
+.empilhada { display: flex; gap: 2px; height: 24px; border-radius: 4px; overflow: hidden; }
+.empilhada span { display: grid; place-items: center; color: #fff; font-size: 11.5px; font-weight: 700; min-width: 0; overflow: hidden; }
+.eleitos { max-height: 300px; overflow-y: auto; border-top: 1px solid var(--linha); }
+.eleitos div { display: flex; justify-content: space-between; gap: 10px; padding: 6px 2px; border-bottom: 1px solid var(--linha); font-size: 13.5px; }
+.eleitos small { color: var(--texto-2); }
+
+/* "ver mais": blocos recolhidos */
+details.mais { background: var(--branco); border-radius: 14px; padding: 0; }
+details.mais > summary { list-style: none; cursor: pointer; padding: 14px 20px; font-weight: 700; display: flex; justify-content: space-between; gap: 12px; align-items: center; border: 2px solid var(--ouro); border-radius: 14px; }
+details.mais > summary::-webkit-details-marker { display: none; }
+details.mais > summary::after { content: "+"; font-size: 22px; line-height: 1; color: var(--ouro-esc); }
+details.mais[open] > summary { border-radius: 14px 14px 0 0; }
+details.mais[open] > summary::after { content: "–"; }
+details.mais > div { padding: 16px 20px 20px; display: grid; gap: 14px; border: 2px solid var(--ouro); border-top: 0; border-radius: 0 0 14px 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--linha); font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 12.5px; color: var(--texto-2); font-weight: 700; }
+.rolagem { overflow-x: auto; }
+svg text { font-family: var(--fonte); }
+.eixo { fill: var(--texto-2); font-size: 11.5px; }
+.rot { fill: var(--texto); font-size: 12.5px; }
+.grade { stroke: var(--linha); stroke-width: 1; }
+.grafico { width: 100%; height: auto; display: block; }
+.metodo ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 90ch; }
+#dica { position: fixed; z-index: 20; pointer-events: none; background: var(--texto); color: #fff; font-size: 13px; line-height: 1.45; padding: 8px 11px; border-radius: 8px; max-width: 280px; box-shadow: 0 6px 18px rgb(0 0 0 / .2); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* comum a Q3 e Q7: selo de partido na cor do espectro, números, botão para a página da cidade */
+.chip { display: inline-block; border-left: 4px solid var(--c); background: color-mix(in srgb, var(--c) 14%, #fff); padding: 1px 7px; border-radius: 4px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.numeros { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.num { border: 2px solid var(--ouro); border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; align-content: start; }
+.num b { font-size: 22px; font-weight: 800; color: var(--ouro-esc); line-height: 1.15; font-variant-numeric: tabular-nums; }
+.num span { font-size: 13px; color: var(--texto-2); }
+.mais-detalhes { justify-self: start; margin-top: 6px; border: 0; border-radius: 8px; padding: 8px 16px; background: var(--ouro); font-weight: 700; cursor: pointer; }
+.mais-detalhes:hover { background: #d9a600; }
+.detalhe h3 { margin-bottom: 2px; }
+</style>
+<div class="sub"><div class="sub-in">
+  <label class="campo">Estado<select class="local" id="f-uf"></select></label>
+  <span class="campo">Comparar<span class="tog" id="f-par"></span></span>
+  <span class="campo">Régua<span class="tog" id="f-regua"></span></span>
+</div></div>
+
+<main>
+  <span class="etiqueta">PERGUNTA 7 · VIÉS POLÍTICO</span>
+  <h1>Para que lado as cidades foram?</h1>
+  <p class="enunciado">Enunciado: viés político de um município/região na linha do tempo? [2018, 2020, 2022, 2024]</p>
+
+  <div class="duas">
+    <section class="caixa">
+      <h2>A resposta</h2>
+      <p class="simples" id="resposta"></p>
+      <div id="linhas"></div>
+    </section>
+    <div style="display:grid;gap:14px;min-width:0">
+      <div class="aneis" id="aneis"></div>
+      <section class="caixa">
+        <h2 id="tempo-titulo"></h2>
+        <svg class="grafico" id="tempo" role="img" aria-label="Nota média dos votos de 2018 a 2024"></svg>
+        <div class="legenda" id="tempo-legenda"></div>
+        <p class="nota" id="tempo-nota"></p>
+      </section>
+    </div>
+  </div>
+
+  <section class="caixa">
+    <h2 id="mapa-titulo">A mudança cidade por cidade</h2>
+    <p class="simples" id="mapa-resposta" style="font-size:16px"></p>
+    <div class="controles">
+      <label class="campo">Mapa de<select class="local" id="f-mapa-uf"></select></label>
+      <input class="busca" type="search" id="f-busca" placeholder="Buscar cidade no mapa" aria-label="Buscar cidade no mapa" autocomplete="off">
+    </div>
+    <div class="mapa-grade">
+      <div><svg class="mapa" id="mapa" role="img" aria-label="Mapa dos municípios, cor pela mudança do voto"></svg><div id="rampa"></div></div>
+      <div class="detalhe" id="detalhe"></div>
+    </div>
+  </section>
+
+  <details class="mais"><summary>As regiões que mais mudaram</summary><div>
+    <p class="nota">Regiões geográficas imediatas do IBGE: grupos de cidades em torno de um centro urbano. Votos somados da região.</p>
+    <div class="rolagem" id="regioes"></div>
+  </div></details>
+
+  <details class="mais"><summary>O que puxou: os partidos que mais ganharam e perderam votos</summary><div>
+    <p class="nota" id="partidos-nota"></p>
+    <svg class="grafico" id="partidos" style="max-width:760px" role="img" aria-label="Mudança na fatia de votos de cada partido"></svg>
+  </div></details>
+
+  <details class="mais"><summary>Os prefeitos: a cidade trocou de lado em 2024?</summary><div>
+    <p class="simples" id="prefeitos-resposta" style="font-size:15.5px"></p>
+    <div class="numeros" id="prefeitos"></div>
+    <p class="nota">Lado = posição do partido do prefeito em relação ao meio da régua, com a régua fixa (rodada de 2018), para a troca de lado não vir da reavaliação dos partidos. Fusão ou renomeação não conta como troca de partido (PSL → União, PTB → PRD, PSC → Podemos…; tabela <i>dados/referencia/partido_sucessao.csv</i>, a mesma da Q6).</p>
+  </div></details>
+
+  <details class="mais metodo"><summary>Como calculamos</summary><div>
+    <ul>
+      <li><b>Viés de um lugar:</b> média das notas dos partidos (0 = esquerda, 10 = direita), cada voto pesando a nota do partido do candidato votado. 1º turno.</li>
+      <li><b>Mesmo cargo para comparar:</b> deputado federal nas eleições gerais (2018 × 2022) e vereador nas municipais (2020 × 2024). Os dois são proporcionais: todos os partidos aparecem. Não comparamos deputado com vereador.</li>
+      <li><b>Notas dos partidos:</b> pesquisa com cientistas políticos. Rodada de 2018: Bolognesi, Ribeiro e Codato (2023), <i>Dados</i> 66(2). Rodada de 2022: Bolognesi, Ribeiro, Codato e Silva (2025), <i>Opinião Pública</i> 31. Tabelas sem alteração em <i>dados/referencia/</i>.</li>
+      <li><b>Duas réguas:</b> os especialistas reavaliaram os partidos entre as rodadas (o PL foi de 7,78 para 8,80). "Régua de cada ano" usa a rodada mais próxima da eleição (regra do grupo); "só o eleitor" usa a de 2018 nos quatro anos, então o que muda é só o voto.</li>
+      <li><b>Fusões:</b> o partido novo recebe a média dos que se fundiram (União = DEM e PSL), a mesma regra dos autores; renomeações mantêm a nota (PR → PL, PRB → Republicanos).</li>
+      <li><b>Região:</b> região geográfica imediata do IBGE (122 nos 6 estados).</li>
+      <li><b>Consulta no banco:</b> views <i>q7_vies_municipio</i>, <i>q7_vies_regiao</i>, <i>q7_prefeito</i> e <i>q7_voto_familia</i> em <i>sql/17_q7_vies.sql</i>.</li>
+    </ul>
+  </div></details>
+</main>
+<div id="dica" hidden></div>
+
+<script id="dados" type="application/json">__DADOS__</script>
+<script>
+(function () {
+  "use strict";
+  const D = JSON.parse(document.getElementById("dados").textContent);
+  const UF_NOME = { AM: "Amazonas", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", RS: "Rio Grande do Sul", SE: "Sergipe" };
+  const CATS = ["extrema esquerda", "esquerda", "centro-esquerda", "centro", "centro-direita", "direita", "extrema direita"];
+  const CAT_COR = ["#8a0f16", "#c53d33", "#e57f68", "#dcd9d1", "#73a7d4", "#2f72b4", "#0c3f7c"];
+  const CORTES = [1.5, 3, 4.49, 5.5, 7, 8.5];
+  const catDe = v => { const i = CORTES.findIndex(c => v <= c); return i < 0 ? 6 : i; };
+  // cor da mudança: vermelho = foi à esquerda, azul = à direita, cinza = quase nada
+  const PASSOS = [-0.75, -0.25, -0.05, 0.05, 0.25, 0.75], DIF_COR = ["#8a0f16", "#c53d33", "#e57f68", "#e8e5de", "#73a7d4", "#2f72b4", "#0c3f7c"];
+  const corDif = d => d == null ? "var(--sem-dado)" : DIF_COR[PASSOS.findIndex(p => d < p) < 0 ? 6 : PASSOS.findIndex(p => d < p)];
+  const NS = "http://www.w3.org/2000/svg";
+  const fmt = (x, d = 2) => (x == null || isNaN(x)) ? "–" : x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const int = x => Math.round(x).toLocaleString("pt-BR");
+  const sinal = (x, d = 2) => x == null ? "–" : (x > 0 ? "+" : x < 0 ? "−" : "") + fmt(Math.abs(x), d);
+  const semAcento = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const PART = new Set(["de", "da", "do", "das", "dos", "e"]);
+  const maiuscula = w => w.replace(/(^|[-'])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+  const nomeProprio = s => (s || "").toLowerCase().split(" ").map((w, i) => (i && PART.has(w)) ? w : (i && w.startsWith("d'")) ? "d'" + maiuscula(w.slice(2)) : maiuscula(w)).join(" ");
+  function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function txt(parent, x, y, s, cls, anchor) { const t = el("text", { x, y, class: cls || "rot", "text-anchor": anchor || "start", "dominant-baseline": "middle" }, parent); t.textContent = s; return t; }
+  const limpa = svg => { while (svg.firstChild) svg.removeChild(svg.firstChild); };
+  const dica = document.getElementById("dica");
+  function mostra(ev, html) { dica.innerHTML = html; dica.hidden = false; const w = dica.offsetWidth, h = dica.offsetHeight; let x = ev.clientX + 14, y = ev.clientY + 14; if (x + w > innerWidth - 8) x = ev.clientX - w - 14; if (y + h > innerHeight - 8) y = ev.clientY - h - 14; dica.style.left = x + "px"; dica.style.top = y + "px"; }
+  const esconde = () => { dica.hidden = true; };
+  const pc = (a, b) => b ? 100 * a / b : null;
+  const [, , MEIO] = D.regua;
+
+  // municípios: [cod, nome, uf, região, capital, notas régua de cada ano ×4, notas régua fixa ×4, prefeito [sg 2020, nota, sg 2024, nota]]
+  const M = D.municipios.map(r => ({ cod: r[0], nome: nomeProprio(r[1]), uf: D.ufs[r[2]], reg: r[3], cap: !!r[4], rodada: r[5], fixa: r[6], pref: r[7], busca: semAcento(r[1]) }));
+  const R = D.regioes.map(r => ({ cd: r[0], nome: r[1], uf: D.ufs[r[2]], n: r[3], rodada: r[4], fixa: r[5] }));
+  const PARES = { mun: [1, 3, "vereador", "2020", "2024"], ger: [0, 2, "deputado federal", "2018", "2022"] };
+  const st = { uf: "TODAS", par: "mun", regua: "fixa", mapaUf: "MA", sel: null };
+  try { Object.assign(st, JSON.parse(localStorage.getItem("q7-tse") || "{}")); } catch (e) { /* sem armazenamento */ }
+  const salvar = () => { try { localStorage.setItem("q7-tse", JSON.stringify(st)); } catch (e) { /* ignora */ } };
+  const onde = () => st.uf === "TODAS" ? "nos 6 estados" : (["AM", "MA", "MT", "RS"].includes(st.uf) ? "no " : "em ") + UF_NOME[st.uf];
+  const notas = x => x[st.regua];
+  const dif = x => { const [a, b] = PARES[st.par], n = notas(x); return n[a] == null || n[b] == null ? null : n[b] - n[a]; };
+
+  function tog(id, itens, get, set) {
+    const box = document.getElementById(id); box.innerHTML = "";
+    for (const [v, rot] of itens) { const b = document.createElement("button"); b.type = "button"; b.textContent = rot; b.setAttribute("aria-pressed", String(get() === v)); b.addEventListener("click", () => { set(v); salvar(); tudo(); }); box.appendChild(b); }
+  }
+  const selUf = document.getElementById("f-uf"), selMapa = document.getElementById("f-mapa-uf");
+  selUf.innerHTML = `<option value="TODAS">Todos os 6 estados</option>` + D.ufs.map(u => `<option value="${u}">${UF_NOME[u]}</option>`).join("");
+  selMapa.innerHTML = D.ufs.map(u => `<option value="${u}">${UF_NOME[u]}</option>`).join("");
+  selUf.addEventListener("change", () => { st.uf = selUf.value; if (st.uf !== "TODAS") st.mapaUf = st.uf; st.sel = null; salvar(); tudo(); });
+  selMapa.addEventListener("change", () => { st.mapaUf = selMapa.value; st.sel = null; salvar(); renderMapa(); });
+  function anel(classe, pct, legenda, nome, cor) {
+    const C = 2 * Math.PI * 38, v = Math.max(0, Math.min(100, pct || 0));
+    return `<div class="anel ${classe}"><svg viewBox="0 0 88 88" width="88" height="88" aria-hidden="true"><circle cx="44" cy="44" r="38" fill="none" stroke="var(--bege)" stroke-width="9"/><circle cx="44" cy="44" r="38" fill="none" stroke="${cor}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C * v / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 44 44)"/></svg><div><span class="pct">${pct == null ? "–" : fmt(pct, 0) + "%"}</span><div class="q">${legenda}</div><div class="nome">${nome}</div></div></div>`;
+  }
+
+  // ---------- 1. a resposta ----------
+  function renderResposta() {
+    const [a, b, cargo, aa, ab] = PARES[st.par], med = D.media[st.uf], mf = med[1], mr = med[0];
+    const ms = M.filter(m => (st.uf === "TODAS" || m.uf === st.uf) && dif(m) != null), dir = ms.filter(m => dif(m) > 0).length;
+    const forte = ms.filter(m => dif(m) > 0.25).length, esq = ms.filter(m => dif(m) < -0.25).length;
+    const rs = R.filter(r => (st.uf === "TODAS" || r.uf === st.uf) && dif(r) != null), rdir = rs.filter(r => dif(r) > 0).length;
+    const dFixa = mf[b] - mf[a], dRod = mr[b] - mr[a];
+    document.getElementById("resposta").innerHTML = `${dFixa > 0 ? "Foram para a direita." : "Foram para a esquerda."} ${onde()[0].toUpperCase() + onde().slice(1)}, o voto para ${cargo} foi de <b>${fmt(mf[a])}</b> em ${aa} para <b>${fmt(mf[b])}</b> em ${ab} na escala de 0 a 10, com a mesma régua nos dois anos: só o eleitor mudou. <b>${fmt(pc(dir, ms.length), 0)}%</b> das cidades votaram mais à direita. ${Math.abs(dRod - dFixa) >= 0.03 ? `Com a régua de cada ano a mudança é de ${sinal(dRod)}: ${sinal(dRod - dFixa)} ponto vem de os especialistas terem reavaliado os partidos.` : "Com a régua de cada ano o resultado é quase o mesmo."}`;
+    document.getElementById("linhas").innerHTML = [["Cidades que votaram mais à direita", `${int(dir)} de ${int(ms.length)}`], ["Mais de 0,25 ponto à direita", `${int(forte)} (${fmt(pc(forte, ms.length), 0)}%)`], ["Mais de 0,25 ponto à esquerda", `${int(esq)} (${fmt(pc(esq, ms.length), 0)}%)`]].map(([k, v]) => `<div class="linha"><span>${k}</span><b>${v}</b></div>`).join("");
+    document.getElementById("aneis").innerHTML = anel("", pc(dir, ms.length), "das cidades", "votaram mais à direita", "var(--ouro)") + anel("verde", pc(rdir, rs.length), `de ${rs.length} regiões`, "foram à direita", "var(--verde-esc)");
+  }
+
+  // ---------- 2. linha do tempo ----------
+  function renderTempo() {
+    const med = D.media[st.uf], svg = document.getElementById("tempo"); limpa(svg);
+    document.getElementById("tempo-titulo").textContent = `Para que lado votou ${st.uf === "TODAS" ? "o conjunto dos 6 estados" : UF_NOME[st.uf]}, eleição a eleição?`;
+    const W = 640, H = 270, L = 46, Rr = 100, T = 16, B = 42; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const vals = [...med[0], ...med[1]].filter(v => v != null), lo = Math.floor((Math.min(...vals) - 0.3) * 2) / 2, hi = Math.ceil((Math.max(...vals) + 0.3) * 2) / 2;
+    const X = i => L + (W - L - Rr) * i / 3, Y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+    // faixas das categorias do artigo, ao fundo
+    [[5.5, 7, 4], [7, 8.5, 5], [4.49, 5.5, 3]].forEach(([a, b, c]) => { const y0 = Y(Math.min(hi, b)), y1 = Y(Math.max(lo, a)); if (y1 > y0) { el("rect", { x: L, y: y0, width: W - L - Rr, height: y1 - y0, fill: CAT_COR[c], opacity: 0.1 }, svg); txt(svg, W - Rr + 6, (y0 + y1) / 2, CATS[c], "eixo"); } });
+    for (let v = lo; v <= hi + 1e-9; v += 0.5) { el("line", { x1: L, x2: W - Rr, y1: Y(v), y2: Y(v), class: "grade" }, svg); txt(svg, L - 6, Y(v), fmt(v, 1), "eixo", "end"); }
+    D.anos.forEach((a, i) => { txt(svg, X(i), H - B + 14, String(a), "eixo", "middle"); txt(svg, X(i), H - B + 28, i % 2 ? "vereador" : "dep. federal", "eixo", "middle"); });
+    [[0, "var(--ouro)", "régua de cada ano", "6 4"], [1, "var(--verde-esc)", "só o eleitor (régua de 2018)", ""]].forEach(([k, cor, rot, traco]) => {
+      const pts = med[k].map((v, i) => [X(i), v == null ? null : Y(v), v]).filter(p => p[1] != null);
+      el("polyline", { points: pts.map(p => `${p[0]},${p[1]}`).join(" "), fill: "none", stroke: cor, "stroke-width": 2.5, "stroke-dasharray": traco }, svg);
+      pts.forEach(([x, y, v], i) => { const c = el("circle", { cx: x, cy: y, r: 5, fill: cor, stroke: "#fff", "stroke-width": 2 }, svg); c.addEventListener("mousemove", ev => mostra(ev, `<b>${D.anos[med[k].findIndex(z => z === v)]}</b> · ${rot}<br>nota ${fmt(v)}`)); c.addEventListener("mouseleave", esconde); });
+    });
+    document.getElementById("tempo-legenda").innerHTML = `<span><i class="cor" style="background:var(--verde-esc)"></i>só o eleitor (régua de 2018)</span><span><i class="cor" style="background:var(--ouro)"></i>régua de cada ano</span>`;
+    document.getElementById("tempo-nota").textContent = "Compare só pontos do mesmo cargo: 2018 com 2022 (deputado federal) e 2020 com 2024 (vereador). Média pesada pelos votos.";
+  }
+
+  // ---------- 3. mapa ----------
+  function renderMapa() {
+    const [a, b, cargo, aa, ab] = PARES[st.par], uf = st.mapaUf, G = D.mapas[uf], svg = document.getElementById("mapa"); limpa(svg);
+    selMapa.value = uf;
+    svg.setAttribute("viewBox", `0 0 ${G.w} ${G.h}`);
+    const doUf = M.filter(m => m.uf === uf), porCod = new Map(doUf.map(m => [m.cod, m]));
+    for (const cod in G.p) {
+      const m = porCod.get(+cod), d = m ? dif(m) : null;
+      const p = el("path", { d: G.p[cod], fill: corDif(d), class: m && st.sel === m.cod ? "sel" : "" }, svg);
+      if (m) { p.addEventListener("mousemove", ev => mostra(ev, `<b>${m.nome}</b><br>${aa}: ${fmt(notas(m)[a])} · ${ab}: ${fmt(notas(m)[b])}<br>mudança: ${sinal(d)}`)); p.addEventListener("mouseleave", esconde); p.addEventListener("click", () => { st.sel = m.cod; salvar(); renderMapa(); }); }
+    }
+    const cv = doUf.filter(m => dif(m) != null), dir = cv.filter(m => dif(m) > 0).length;
+    const ord = cv.slice().sort((x, y) => dif(y) - dif(x));
+    document.getElementById("mapa-titulo").textContent = `A mudança cidade por cidade: ${UF_NOME[uf]}, ${cargo}, ${aa} → ${ab}`;
+    const no = ["AM", "MA", "MT", "RS"].includes(uf) ? "No" : "Em";
+    document.getElementById("mapa-resposta").innerHTML = cv.length ? `${no} ${UF_NOME[uf]}, ${int(dir)} das ${int(cv.length)} cidades votaram mais à direita. A que mais foi à direita: <b>${ord[0].nome}</b> (${sinal(dif(ord[0]))}); a que mais foi à esquerda: <b>${ord[ord.length - 1].nome}</b> (${sinal(dif(ord[ord.length - 1]))}). Em cidade pequena, com poucos partidos na disputa, a nota oscila muito de uma eleição para outra.` : "Sem dados para esta comparação.";
+    const rot = ["−0,75", "−0,25", "−0,05", "+0,05", "+0,25", "+0,75"];
+    document.getElementById("rampa").innerHTML = `<div class="rampa"><b style="color:var(--texto)">Mudança na nota (${aa} → ${ab})</b><div class="faixa-cor" style="background:linear-gradient(90deg,${DIF_COR.map((c, i) => `${c} ${(i / 7 * 100).toFixed(0)}%,${c} ${((i + 1) / 7 * 100).toFixed(0)}%`).join(",")})"></div><div class="marcas"><span>à esquerda</span>${rot.map(r => `<span>${r}</span>`).join("")}<span>à direita</span></div></div><p class="nota" style="margin-top:6px">Clique numa cidade para ver a linha do tempo dela.</p>`;
+    renderDetalhe();
+  }
+  function miniLinha(m) {
+    const W = 300, H = 120, L = 34, Rr = 12, T = 12, B = 24, vs = [...m.fixa, ...m.rodada].filter(v => v != null);
+    if (!vs.length) return "";
+    const lo = Math.floor(Math.min(...vs) * 2) / 2 - 0.5, hi = Math.ceil(Math.max(...vs) * 2) / 2 + 0.5, X = i => L + (W - L - Rr) * i / 3, Y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+    let s = `<svg class="grafico" viewBox="0 0 ${W} ${H}" style="max-width:340px">`;
+    for (let v = lo; v <= hi + 1e-9; v += 0.5) s += `<line x1="${L}" x2="${W - Rr}" y1="${Y(v)}" y2="${Y(v)}" class="grade"/><text x="${L - 4}" y="${Y(v)}" class="eixo" text-anchor="end" dominant-baseline="middle">${fmt(v, 1)}</text>`;
+    D.anos.forEach((a, i) => { s += `<text x="${X(i)}" y="${H - 8}" class="eixo" text-anchor="middle">${a}</text>`; });
+    [["rodada", "var(--ouro)", "6 4"], ["fixa", "var(--verde-esc)", ""]].forEach(([k, cor, tr]) => { const pts = m[k].map((v, i) => v == null ? null : `${X(i)},${Y(v)}`).filter(Boolean); s += `<polyline points="${pts.join(" ")}" fill="none" stroke="${cor}" stroke-width="2.5" stroke-dasharray="${tr}"/>` + m[k].map((v, i) => v == null ? "" : `<circle cx="${X(i)}" cy="${Y(v)}" r="4" fill="${cor}" stroke="#fff" stroke-width="1.5"/>`).join(""); });
+    return s + "</svg>";
+  }
+  const chipLado = (sg, v) => sg ? `<span class="chip" style="--c:${v == null ? "#b9b6ae" : CAT_COR[catDe(v)]}">${sg}${v == null ? "" : " · " + fmt(v)}</span>` : "–";
+  function renderDetalhe() {
+    const box = document.getElementById("detalhe"), m = M.find(x => x.cod === st.sel && x.uf === st.mapaUf);
+    if (!m) { box.innerHTML = `<p class="vazio">Clique numa cidade do mapa (ou busque pelo nome) para ver a linha do tempo dela.</p>`; return; }
+    const [a, b, cargo, aa, ab] = PARES[st.par], [s20, v20, s24, v24, mesmo] = m.pref, d = dif(m);
+    const lado = v => v == null ? "" : v < MEIO ? "esquerda" : "direita";
+    box.innerHTML = `<h3>${m.nome}${m.cap ? " · capital" : ""}</h3>
+      <p>Voto para ${cargo}: <b>${fmt(notas(m)[a])}</b> em ${aa} → <b>${fmt(notas(m)[b])}</b> em ${ab} (${sinal(d)}, ${d > 0 ? "mais à direita" : d < 0 ? "mais à esquerda" : "igual"}).</p>
+      ${miniLinha(m)}
+      <div class="legenda"><span><i class="cor" style="background:var(--verde-esc)"></i>só o eleitor</span><span><i class="cor" style="background:var(--ouro)"></i>régua de cada ano</span></div>
+      <div class="linha"><span>Prefeito eleito em 2020</span><b>${chipLado(s20, v20)}</b></div>
+      <div class="linha"><span>Prefeito eleito em 2024</span><b>${chipLado(s24, v24)}</b></div>
+      <p class="nota">${!s20 || !s24 ? "" : s20 === s24 ? "O partido do prefeito não mudou." : mesmo ? `O partido do prefeito não mudou: o ${s20} virou ${s24}.` : lado(v20) === lado(v24) ? `Trocou de partido, mas ficou do mesmo lado (${lado(v24)}).` : `Trocou de lado: da ${lado(v20)} para a ${lado(v24)}.`} Notas dos prefeitos na régua fixa.</p>
+      <button type="button" class="mais-detalhes" id="abrir-cidade">Ver tudo sobre ${m.nome}</button>`;
+    document.getElementById("abrir-cidade").addEventListener("click", () => {
+      if (window.parent !== window) window.parent.postMessage({ tipo: "abrir-municipio", cod: m.cod }, "*");
+      else location.href = `../municipios-painel/index.html#cod=${m.cod}`;
+    });
+  }
+  const busca = document.getElementById("f-busca");
+  busca.addEventListener("change", () => { const q = semAcento(busca.value.trim()); const m = q && M.find(x => x.uf === st.mapaUf && x.busca.includes(q)); if (m) { st.sel = m.cod; salvar(); renderMapa(); busca.value = ""; } });
+
+  // ---------- 4. ver mais ----------
+  function renderRegioes() {
+    const [a, b, cargo, aa, ab] = PARES[st.par], rs = R.filter(r => (st.uf === "TODAS" || r.uf === st.uf) && dif(r) != null).sort((x, y) => dif(y) - dif(x));
+    const linha = r => `<tr><td><b>${r.nome}</b> <small>(${r.uf})</small></td><td>${r.n}</td><td>${fmt(notas(r)[a])}</td><td>${fmt(notas(r)[b])}</td><td><span class="chip" style="--c:${corDif(dif(r))}">${sinal(dif(r))}</span></td></tr>`;
+    const cab = `<thead><tr><th>Região imediata</th><th>Cidades</th><th>${aa}</th><th>${ab}</th><th>Mudança</th></tr></thead>`;
+    document.getElementById("regioes").innerHTML = `<h3>Mais à direita</h3><table>${cab}<tbody>${rs.slice(0, 8).map(linha).join("")}</tbody></table><h3 style="margin-top:12px">Mais à esquerda</h3><table>${cab}<tbody>${rs.slice(-5).reverse().map(linha).join("")}</tbody></table><p class="nota">${rs.filter(r => dif(r) > 0).length} de ${rs.length} regiões foram à direita (${cargo}, ${aa} → ${ab}).</p>`;
+  }
+  function renderPartidos() {
+    const [a, b, cargo, aa, ab] = PARES[st.par], F = D.familias[st.uf], tot = i => Object.values(F).reduce((s, v) => s + v[i], 0), ta = tot(a), tb = tot(b);
+    const xs = Object.entries(F).map(([f, v]) => ({ f, pa: pc(v[a], ta), pb: pc(v[b], tb) })).map(x => ({ ...x, d: x.pb - x.pa })).sort((x, y) => Math.abs(y.d) - Math.abs(x.d)).slice(0, 10).sort((x, y) => y.d - x.d);
+    document.getElementById("partidos-nota").textContent = `Fatia dos votos para ${cargo} ${onde()}, ${aa} → ${ab}, em pontos percentuais. Partidos que se fundiram ou mudaram de nome aparecem juntos.`;
+    const svg = document.getElementById("partidos"); limpa(svg);
+    const W = 760, LH = 30, L = 210, Rr = 120, H = xs.length * LH + 30; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const mx = Math.max(...xs.map(x => Math.abs(x.d)), 1), X0 = L + (W - L - Rr) / 2, K = (W - L - Rr) / 2 / mx;
+    el("line", { x1: X0, x2: X0, y1: 4, y2: H - 20, stroke: "var(--texto-2)" }, svg);
+    xs.forEach((x, i) => {
+      const y = 10 + i * LH; txt(svg, L - 10, y + 10, x.f, "rot", "end");
+      el("rect", { x: x.d >= 0 ? X0 : X0 + x.d * K, y, width: Math.max(1, Math.abs(x.d) * K), height: 20, rx: 3, fill: x.d >= 0 ? "var(--verde-esc)" : "var(--ouro)" }, svg);
+      // o número fica sempre do lado direito: depois da barra que ganhou, logo depois do zero na que perdeu
+      txt(svg, x.d >= 0 ? X0 + x.d * K + 6 : X0 + 6, y + 10, `${sinal(x.d, 1)} (${fmt(x.pa, 1)}% → ${fmt(x.pb, 1)}%)`, "eixo", "start");
+    });
+    txt(svg, X0, H - 8, "perdeu fatia ◂  ▸ ganhou fatia", "eixo", "middle");
+  }
+  function renderPrefeitos() {
+    const ms = M.filter(m => (st.uf === "TODAS" || m.uf === st.uf) && m.pref[0] && m.pref[2] && m.pref[1] != null && m.pref[3] != null);
+    const lado = v => v < MEIO ? "e" : "d";
+    const igual = ms.filter(m => m.pref[4]).length, troca = ms.filter(m => !m.pref[4]), ed = troca.filter(m => lado(m.pref[1]) === "e" && lado(m.pref[3]) === "d").length, de = troca.filter(m => lado(m.pref[1]) === "d" && lado(m.pref[3]) === "e").length;
+    const mesmoLado = ms.length - igual - ed - de;
+    document.getElementById("prefeitos-resposta").innerHTML = `${onde()[0].toUpperCase() + onde().slice(1)}, em ${int(ms.length - igual)} das ${int(ms.length)} cidades o partido do prefeito mudou de 2020 para 2024. <b>${int(ed)}</b> passaram de um partido à esquerda do meio da régua para um à direita; <b>${int(de)}</b>, o contrário.`;
+    document.getElementById("prefeitos").innerHTML = [[int(igual), "mesmo partido"], [int(mesmoLado), "outro partido, mesmo lado"], [int(ed), "da esquerda para a direita"], [int(de), "da direita para a esquerda"]].map(([v, r]) => `<div class="num"><b>${v}</b><span>${r}</span></div>`).join("");
+  }
+
+  function tudo() {
+    selUf.value = st.uf;
+    tog("f-par", [["mun", "Vereador: 2020 → 2024"], ["ger", "Dep. federal: 2018 → 2022"]], () => st.par, v => { st.par = v; });
+    tog("f-regua", [["fixa", "Só o eleitor"], ["rodada", "Régua de cada ano"]], () => st.regua, v => { st.regua = v; });
+    renderResposta(); renderTempo(); renderMapa(); renderRegioes(); renderPartidos(); renderPrefeitos();
+  }
+  tudo();
+})();
+</script>

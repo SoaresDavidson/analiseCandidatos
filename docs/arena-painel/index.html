@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Arena</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap">
+<style>
+/* Visual inspirado no site de resultados do TSE: fundo cinza-claro, cartões brancos,
+   destaque amarelo-ouro e verde-oliva. Cada pergunta abre com a resposta em linguagem
+   simples, dois números e um gráfico; o detalhe técnico fica nos blocos "Ver mais". */
+:root {
+  color-scheme: light;
+  --fundo: #f4f4f4; --branco: #ffffff; --texto: #333333; --texto-2: #6b6b6b; --linha: #e6e4df; --bege: #eae8e4;
+  --ouro: #ebb400; --ouro-esc: #8f6c00; --verde: #9eb735; --verde-esc: #5e7a12;
+  /* 4 níveis de escolaridade: um tom de verde, do claro ao escuro (validado, ordinal) */
+  --n1: #a5bd4e; --n2: #7e9a2e; --n3: #576f14; --n4: #32440a;
+  --sem-dado: #d9d6cf; --capital: #c0392b;
+  --fonte: "Open Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fundo); color: var(--texto); font: 15px/1.55 var(--fonte); }
+button, select, input { font: inherit; color: inherit; }
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+
+/* barra de filtros (como "Brasil / Turno" do TSE) */
+.sub { background: var(--branco); border-radius: 0 0 18px 18px; box-shadow: 0 4px 10px rgb(0 0 0 / .06); position: sticky; top: 0; z-index: 5; }
+.sub-in { max-width: 1160px; margin: 0 auto; padding: 10px 20px 14px; display: flex; gap: 14px 24px; align-items: flex-end; flex-wrap: wrap; }
+.campo { display: grid; gap: 3px; font-weight: 700; font-size: 13px; }
+.local { appearance: none; border: 2px solid var(--ouro); border-radius: 8px; padding: 7px 34px 7px 14px; font-weight: 700; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23333' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center; cursor: pointer; }
+.tog { display: inline-flex; border: 2px solid var(--ouro); border-radius: 7px; overflow: hidden; background: #fff; flex-wrap: wrap; }
+.tog button { border: 0; background: transparent; padding: 6px 13px; font-weight: 700; cursor: pointer; }
+.tog button[aria-pressed="true"] { background: var(--ouro); }
+.tog button:hover:not([aria-pressed="true"]) { background: #fff6d6; }
+
+main { max-width: 1160px; margin: 0 auto; padding: 22px 20px 64px; display: grid; gap: 18px; }
+.etiqueta { justify-self: start; background: var(--verde-esc); color: #fff; font-weight: 700; font-size: 13px; padding: 6px 14px; border-radius: 6px; letter-spacing: .03em; }
+h1 { font-size: clamp(24px, 3.2vw, 30px); font-weight: 800; margin: 0; line-height: 1.2; }
+h2 { font-size: 19px; font-weight: 800; margin: 0; line-height: 1.3; }
+h3 { font-size: 16px; font-weight: 700; margin: 0; }
+p { margin: 0; }
+.enunciado { color: var(--texto-2); font-size: 13.5px; max-width: 90ch; }
+.caixa { background: var(--branco); border-radius: 14px; padding: 18px 20px; display: grid; gap: 12px; min-width: 0; }
+.duas { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .duas { grid-template-columns: minmax(0, 1fr); } }
+.simples { font-size: 17px; line-height: 1.55; }
+.simples b { font-weight: 800; }
+.linha { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--linha); font-size: 14.5px; }
+.linha b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.aneis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 600px) { .aneis { grid-template-columns: minmax(0, 1fr); } }
+.anel { background: var(--branco); border: 2px solid var(--ouro); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 14px; align-items: center; }
+.anel.verde { border-color: var(--verde); }
+.anel .pct { font-size: 34px; font-weight: 800; color: var(--ouro-esc); line-height: 1; font-variant-numeric: tabular-nums; }
+.anel.verde .pct { color: var(--verde-esc); }
+.anel .q { font-size: 13px; color: var(--texto-2); }
+.anel .nome { font-size: 16px; font-weight: 800; text-transform: uppercase; margin-top: 4px; line-height: 1.2; }
+.barras { display: grid; gap: 10px; }
+.barra { display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr) 3.4em; gap: 10px; align-items: center; font-size: 14px; }
+.barra .trilho { height: 18px; background: var(--bege); border-radius: 3px; position: relative; }
+.barra .trilho i { display: block; height: 100%; border-radius: 3px; }
+.barra .trilho .media { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 2px dashed var(--texto-2); }
+.barra b { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.nota { font-size: 13px; color: var(--texto-2); }
+.selo { justify-self: start; display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; padding: 6px 12px; border-radius: 999px; }
+.selo.sim { background: #eef4d8; color: var(--verde-esc); }
+.selo.nao { background: var(--bege); color: var(--texto); }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--texto-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.cor { width: 13px; height: 13px; border-radius: 3px; display: inline-block; flex: none; }
+
+/* mapa */
+.mapa-grade { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .mapa-grade { grid-template-columns: minmax(0, 1fr); } }
+.mapa { width: 100%; height: auto; max-height: 560px; display: block; }
+.mapa path { stroke: #fff; stroke-width: 0.6; cursor: pointer; vector-effect: non-scaling-stroke; }
+.mapa path.sel { stroke: var(--texto); stroke-width: 2.5; }
+.controles { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: flex-end; }
+.busca { border: 2px solid var(--linha); border-radius: 8px; padding: 7px 12px; min-width: 200px; max-width: 100%; }
+.rampa { display: grid; gap: 4px; max-width: 340px; font-size: 12.5px; color: var(--texto-2); }
+.rampa .faixa-cor { height: 10px; border-radius: 3px; }
+.rampa .marcas { display: flex; justify-content: space-between; }
+.detalhe { display: grid; gap: 10px; }
+.detalhe .vazio { color: var(--texto-2); }
+.empilhada { display: flex; gap: 2px; height: 24px; border-radius: 4px; overflow: hidden; }
+.empilhada span { display: grid; place-items: center; color: #fff; font-size: 11.5px; font-weight: 700; min-width: 0; overflow: hidden; }
+.eleitos { max-height: 300px; overflow-y: auto; border-top: 1px solid var(--linha); }
+.eleitos div { display: flex; justify-content: space-between; gap: 10px; padding: 6px 2px; border-bottom: 1px solid var(--linha); font-size: 13.5px; }
+.eleitos small { color: var(--texto-2); }
+
+/* "ver mais": blocos recolhidos */
+details.mais { background: var(--branco); border-radius: 14px; padding: 0; }
+details.mais > summary { list-style: none; cursor: pointer; padding: 14px 20px; font-weight: 700; display: flex; justify-content: space-between; gap: 12px; align-items: center; border: 2px solid var(--ouro); border-radius: 14px; }
+details.mais > summary::-webkit-details-marker { display: none; }
+details.mais > summary::after { content: "+"; font-size: 22px; line-height: 1; color: var(--ouro-esc); }
+details.mais[open] > summary { border-radius: 14px 14px 0 0; }
+details.mais[open] > summary::after { content: "–"; }
+details.mais > div { padding: 16px 20px 20px; display: grid; gap: 14px; border: 2px solid var(--ouro); border-top: 0; border-radius: 0 0 14px 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--linha); font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 12.5px; color: var(--texto-2); font-weight: 700; }
+.rolagem { overflow-x: auto; }
+svg text { font-family: var(--fonte); }
+.eixo { fill: var(--texto-2); font-size: 11.5px; }
+.rot { fill: var(--texto); font-size: 12.5px; }
+.grade { stroke: var(--linha); stroke-width: 1; }
+.grafico { width: 100%; height: auto; display: block; }
+.metodo ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 90ch; }
+#dica { position: fixed; z-index: 20; pointer-events: none; background: var(--texto); color: #fff; font-size: 13px; line-height: 1.45; padding: 8px 11px; border-radius: 8px; max-width: 280px; box-shadow: 0 6px 18px rgb(0 0 0 / .2); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* Arena: cartas no estilo de Magic, com os eleitos como criaturas */
+.aviso-carga { background: var(--branco); border: 2px solid var(--ouro); border-radius: 12px; padding: 14px 18px; font-weight: 600; }
+.aviso-carga code { background: var(--bege); padding: 1px 6px; border-radius: 4px; }
+.montar { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: start; }
+@media (max-width: 760px) { .montar { grid-template-columns: minmax(0, 1fr); } }
+.lado-sel { display: grid; gap: 8px; }
+.vs-grande { align-self: center; font-size: 34px; font-weight: 800; color: var(--ouro-esc); }
+.procura { position: relative; }
+.procura .busca { width: 100%; }
+.achados { position: absolute; z-index: 6; left: 0; right: 0; top: calc(100% + 4px); background: #fff; border: 2px solid var(--ouro); border-radius: 8px; max-height: 300px; overflow-y: auto; box-shadow: 0 8px 20px rgb(0 0 0 / .12); }
+.achados button { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--linha); background: #fff; padding: 8px 12px; cursor: pointer; }
+.achados button:hover { background: #fff6d6; }
+.achados small { color: var(--texto-2); }
+.botao-sec { justify-self: start; border: 2px solid var(--ouro); background: #fff; border-radius: 8px; padding: 6px 14px; font-weight: 700; cursor: pointer; }
+.botao-sec:hover { background: #fff6d6; }
+.arena { position: relative; border-radius: 18px; padding: 22px 18px; background: radial-gradient(ellipse at 50% 30%, #3d4a57 0%, #1b222b 70%); overflow: hidden; }
+.arena.clarao::after { content: ""; position: absolute; inset: 0; background: #fff; opacity: .55; animation: clarao .26s ease-out forwards; pointer-events: none; }
+@keyframes clarao { to { opacity: 0; } }
+.ringue { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 300px) minmax(0, 1fr); gap: 18px; align-items: center; }
+@media (max-width: 900px) { .ringue { grid-template-columns: minmax(0, 1fr); } }
+.lutador { display: grid; gap: 8px; justify-items: center; }
+.barra-vida { width: 260px; max-width: 100%; height: 18px; border-radius: 9px; background: #0d1116; border: 2px solid #c9a400; position: relative; overflow: hidden; }
+.barra-vida i { position: absolute; inset: 0 auto 0 0; background: var(--verde-esc); transition: width .6s ease, background .6s; }
+.barra-vida span { position: relative; display: block; text-align: center; color: #fff; font-size: 11.5px; font-weight: 800; line-height: 14px; }
+.ver-ficha { border: 0; background: transparent; color: #f2d36b; font-weight: 700; cursor: pointer; text-decoration: underline; }
+.centro { display: grid; gap: 10px; justify-items: center; text-align: center; color: #f4f1ea; }
+.placar-rodada { font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: #c9c3b4; }
+.anuncio { display: grid; gap: 4px; justify-items: center; font-size: 14px; min-height: 92px; align-content: center; }
+.anuncio b { font-size: 21px; color: #ffd86b; }
+.anuncio .r-ico { font-size: 38px; line-height: 1; }
+.anuncio.pula { animation: pula .5s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes pula { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+.apostas { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; font-size: 13px; }
+.apostas button { border: 2px solid #ffd86b; background: #2a333d; color: #fff; border-radius: 8px; padding: 6px 12px; font-weight: 700; cursor: pointer; }
+.apostas button:hover { background: #ffd86b; color: #1b222b; }
+.botao-lutar { border: 0; border-radius: 10px; padding: 10px 26px; font-weight: 800; font-size: 17px; background: linear-gradient(#ffd86b, #e3a400); color: #1b222b; cursor: pointer; box-shadow: 0 4px 0 #8f6c00; }
+.botao-lutar:active { transform: translateY(3px); box-shadow: 0 1px 0 #8f6c00; }
+.registro { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 210px; overflow-y: auto; text-align: left; font-size: 12.5px; color: #d8d3c6; }
+.registro li { background: rgb(255 255 255 / .06); border-radius: 8px; padding: 6px 8px; }
+.registro b { color: #fff; }
+
+/* a carta */
+.carta { --cor: #888; width: 260px; max-width: 100%; border-radius: 14px; padding: 9px; background: #15181c; box-shadow: 0 10px 24px rgb(0 0 0 / .45); display: grid; gap: 6px; transform-style: preserve-3d; }
+.carta > * { background: linear-gradient(160deg, color-mix(in srgb, var(--cor) 55%, #f6efdc), color-mix(in srgb, var(--cor) 30%, #e9dfc4)); }
+.c-titulo { display: flex; justify-content: space-between; align-items: center; gap: 6px; border-radius: 8px 8px 4px 4px; padding: 5px 9px; border: 2px solid color-mix(in srgb, var(--cor) 70%, #000); }
+.c-titulo b { font-size: 14px; color: #1b1b1b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mana { color: var(--cor); text-shadow: 0 0 1px #000; font-size: 13px; letter-spacing: 1px; white-space: nowrap; }
+.c-arte { position: relative; height: 150px; border-radius: 3px; overflow: hidden; border: 2px solid color-mix(in srgb, var(--cor) 70%, #000); background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--cor) 25%, #fff), color-mix(in srgb, var(--cor) 60%, #222)); }
+.c-arte img { height: 100%; display: block; margin: 0 auto; object-fit: cover; }
+.c-el { position: absolute; right: 6px; bottom: 6px; font-size: 22px; filter: drop-shadow(0 0 4px #fff); }
+.c-tipo { font-size: 11.5px; font-weight: 700; border-radius: 4px; padding: 4px 8px; border: 2px solid color-mix(in srgb, var(--cor) 70%, #000); color: #1b1b1b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.c-texto { list-style: none; margin: 0; padding: 6px 8px; border-radius: 4px; background: #f6f0e1 !important; display: grid; gap: 3px; font-size: 11.5px; color: #222; }
+.c-texto li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 4px; align-items: center; }
+.c-texto li.destaque { background: #ffe9a6; border-radius: 4px; }
+.c-sabor { margin: 0; font-size: 11px; font-style: italic; padding: 3px 8px; border-radius: 4px; color: #333; }
+.c-pt { justify-self: end; display: flex; gap: 10px; font-weight: 800; font-size: 14px; padding: 3px 10px; border-radius: 6px; border: 2px solid color-mix(in srgb, var(--cor) 70%, #000); color: #1b1b1b; }
+.carta.entra { animation: entra .7s cubic-bezier(.2, .9, .3, 1.2) both; }
+.lutador:last-child .carta.entra { animation-delay: .15s; }
+@keyframes entra { from { transform: translateY(60px) rotateY(100deg) scale(.7); opacity: 0; } to { transform: none; opacity: 1; } }
+.carta.ataca { animation: ataca .5s ease; }
+@keyframes ataca { 30% { transform: translateY(-14px) scale(1.06); } }
+.carta.apanha { animation: apanha .45s ease; }
+@keyframes apanha { 0%, 100% { transform: none; filter: none; } 20% { transform: translateX(-12px) rotate(-3deg); filter: brightness(1.8) saturate(2); } 40% { transform: translateX(10px) rotate(2deg); } 60% { transform: translateX(-6px); } 80% { transform: translateX(4px); } }
+.carta.brilha { animation: brilha .9s ease; }
+@keyframes brilha { 40% { box-shadow: 0 0 0 4px #ffe58a, 0 0 40px 12px #ffd86b; } }
+.carta.campea { box-shadow: 0 0 0 4px #ffd86b, 0 0 50px 14px rgb(255 216 107 / .55); animation: flutua 2.4s ease-in-out infinite; }
+@keyframes flutua { 50% { transform: translateY(-8px); } }
+
+/* partículas dos golpes */
+.efeitos { position: absolute; inset: 0; pointer-events: none; }
+.part { position: absolute; font-size: 26px; transform: translate(-50%, -50%); animation-timing-function: ease-out; animation-fill-mode: forwards; }
+.part.voa { animation-name: voa; font-size: 30px; }
+@keyframes voa { to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.3); } }
+.part.estoura { animation-name: estoura; font-size: 22px; }
+@keyframes estoura { from { opacity: 1; } to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.4); opacity: 0; } }
+.part.sobe { animation-name: sobe; }
+@keyframes sobe { to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))); opacity: 0; } }
+.part.dano { font-size: 34px; font-weight: 800; color: #ff5a4f; text-shadow: 0 2px 0 #000, 0 0 12px #000; animation-name: sobe; }
+.part.dano.cura { color: #8fe36a; font-size: 26px; }
+.part.confete { animation-name: confete; font-size: 24px; }
+@keyframes confete { to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(540deg); opacity: 0; } }
+.part.onda { width: 40px; height: 40px; border-radius: 50%; border: 4px solid #6fb6ff; animation-name: onda; }
+@keyframes onda { to { transform: translate(-50%, -50%) scale(5); opacity: 0; } }
+.relampago { position: absolute; width: 80px; height: 180px; background: linear-gradient(#fff, #ffe14d); clip-path: polygon(55% 0, 20% 52%, 46% 52%, 30% 100%, 82% 40%, 55% 40%, 75% 0); filter: drop-shadow(0 0 14px #ffe14d); animation: relampago .6s steps(2) forwards; }
+@keyframes relampago { 0%, 40% { opacity: 1; } 50% { opacity: .2; } 60% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .carta, .anuncio, .part { animation: none !important; } }
+</style>
+<div class="sub"><div class="sub-in">
+  <label class="campo">Cartas de<select class="local" id="f-baralho"></select></label>
+  <label class="campo">Estado<select class="local" id="f-uf"></select></label>
+</div></div>
+
+<main>
+  <p class="aviso-carga" id="carregando" role="status">Embaralhando as cartas…</p>
+  <span class="etiqueta">ARENA · MODO SECRETO</span>
+  <h1>Duelo Eleitoral</h1>
+  <p class="enunciado">Dois eleitos, cinco rodadas, só dados reais do TSE. Em cada rodada, aposte em quem vence: acertar dá +1 de vida para a sua carta. Quem terminar com mais vida ganha. É um jogo: os poderes medem números de campanha, não caráter.</p>
+
+  <section class="caixa montar" id="montar">
+    <div class="lado-sel">
+      <h2>Sua carta</h2>
+      <div class="procura"><input class="busca" type="search" id="busca-a" placeholder="Buscar eleito pelo nome" autocomplete="off"><div class="achados" id="achados-a" hidden></div></div>
+      <button type="button" class="botao-sec" data-sortear="a">🎲 Sortear</button>
+    </div>
+    <div class="vs-grande" aria-hidden="true">VS</div>
+    <div class="lado-sel">
+      <h2>Adversário</h2>
+      <div class="procura"><input class="busca" type="search" id="busca-b" placeholder="Buscar eleito pelo nome" autocomplete="off"><div class="achados" id="achados-b" hidden></div></div>
+      <button type="button" class="botao-sec" data-sortear="b">🎲 Sortear</button>
+    </div>
+  </section>
+
+  <section class="arena" id="arena">
+    <div class="ringue">
+      <div class="lutador" id="lutador-a"></div>
+      <div class="centro">
+        <div class="placar-rodada" id="rodada"></div>
+        <div class="anuncio" id="anuncio"></div>
+        <div class="apostas" id="apostas"></div>
+        <button type="button" class="botao-lutar" id="lutar">⚔ Lutar!</button>
+        <ol class="registro" id="registro"></ol>
+      </div>
+      <div class="lutador" id="lutador-b"></div>
+    </div>
+    <div class="efeitos" id="efeitos" aria-hidden="true"></div>
+  </section>
+
+  <details class="mais metodo"><summary>Regras e de onde vêm os poderes</summary><div>
+    <ul>
+      <li><b>Vida:</b> as duas cartas começam com 20.</li>
+      <li><b>⚡ Voto de confiança:</b> quem teve mais votos, comparado com os eleitos do mesmo cargo (posição de 1 a 10), ataca: 3 de dano mais a diferença de posição dividida por 3.</li>
+      <li><b>🔥 Fogo da campanha:</b> quem arrecadou mais se queima: 3 de dano. Sem prestação de contas, a rodada empata.</li>
+      <li><b>💧 Onda da economia:</b> quem gastou menos por voto (arrecadado ÷ votos) ataca: 4 de dano.</li>
+      <li><b>🌿 Raízes:</b> quem tem mais vitórias na carreira (desde 2002) ataca: 2 de dano mais 1 por vitória de diferença (até 6).</li>
+      <li><b>✨ Luz do saber:</b> quem estudou mais se cura em 3 de vida; empate, os dois em 1.</li>
+      <li><b>Aposta:</b> acertou quem vence a rodada, sua carta (a da esquerda) ganha +1 de vida.</li>
+      <li><b>Dados:</b> as fichas da aba "Quem são os eleitos" (TSE: votos, prestação de contas, cadastro e carreira). A carta compara eleitos do mesmo cargo e eleição.</li>
+    </ul>
+  </div></details>
+</main>
+<div id="dica" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+  const UF_NOME = { AM: "Amazonas", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", RS: "Rio Grande do Sul", SE: "Sergipe" };
+  const CARGO = { 3: "Governador", 5: "Senador", 6: "Deputado federal", 7: "Deputado estadual", 11: "Prefeito", 13: "Vereador" };
+  const BARALHOS = [["24-11", "Prefeitos de 2024"], ["24-13", "Vereadores de 2024"], ["22-7", "Deputados estaduais de 2022"], ["22-6", "Deputados federais de 2022"], ["22-3", "Governadores e senadores de 2022"]];
+  const GRAU = ["LÊ E ESCREVE", "ENSINO FUNDAMENTAL INCOMPLETO", "ENSINO FUNDAMENTAL COMPLETO", "ENSINO MÉDIO INCOMPLETO", "ENSINO MÉDIO COMPLETO", "SUPERIOR INCOMPLETO", "SUPERIOR COMPLETO"];
+  const GRAU_CURTO = ["Lê e escreve", "Fund. incompleto", "Fund. completo", "Médio incompleto", "Médio completo", "Superior incompleto", "Superior completo"];
+  // os cinco elementos (cor da moldura e efeito do golpe)
+  const EL = {
+    raio: { ico: "⚡", nome: "Raio", cor: "#7b5cc9" },
+    fogo: { ico: "🔥", nome: "Fogo", cor: "#c4441d" },
+    agua: { ico: "💧", nome: "Água", cor: "#2c6fb5" },
+    terra: { ico: "🌿", nome: "Natureza", cor: "#4b7a22" },
+    luz: { ico: "✨", nome: "Luz", cor: "#b58a2c" },
+  };
+  const RODADAS = [
+    { id: "voto", el: "raio", nome: "Voto de confiança", pergunta: "Quem teve mais votos (comparado com o próprio cargo)?" },
+    { id: "fogo", el: "fogo", nome: "Fogo da campanha", pergunta: "Quem arrecadou MENOS? (quem arrecadou mais se queima)" },
+    { id: "agua", el: "agua", nome: "Onda da economia", pergunta: "Quem gastou menos por voto?" },
+    { id: "terra", el: "terra", nome: "Raízes", pergunta: "Quem tem mais vitórias na carreira?" },
+    { id: "luz", el: "luz", nome: "Luz do saber", pergunta: "Quem estudou mais?" },
+  ];
+  const PART = new Set(["de", "da", "do", "das", "dos", "e"]);
+  const nomeProprio = s => (s || "").toLowerCase().split(" ").map((w, i) => (i && PART.has(w)) ? w : w.replace(/(^|[-'])(\p{L})/gu, (m, a, b) => a + b.toUpperCase())).join(" ");
+  const semAcento = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const fmt = (x, d = 0) => (x == null || isNaN(x)) ? "–" : x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const brl = v => v == null ? "sem dado" : v >= 1e6 ? `R$ ${fmt(v / 1e6, 1)} mi` : v >= 1e3 ? `R$ ${fmt(v / 1e3, 0)} mil` : `R$ ${fmt(v)}`;
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const MOVE = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const espera = ms => new Promise(r => setTimeout(r, MOVE ? ms : Math.min(ms, 150)));
+
+  fetch("../candidatos-painel/dados.json").then(r => { if (!r.ok) throw 0; return r.json(); }).then(iniciar)
+    .catch(() => { document.getElementById("carregando").innerHTML = "Não deu para carregar as cartas. Abra o painel pelo servidor local: na pasta do projeto, rode <code>uv run python -m scripts.servir_painel</code>."; });
+
+  function iniciar(C) {
+  document.getElementById("carregando").hidden = true;
+  // cada eleito vira uma carta; os poderes são a posição (1 a 10) dentro do mesmo cargo e eleição
+  const T = C.eleitos.map((r, i) => {
+    let vit = 0; for (let k = 0; k < r[26].length; k += 5) if (r[26][k + 4] === 0) vit++;
+    const receita = r[17], votos = r[13];
+    return { i, sq: C.sq[i], ano: 2000 + r[0], uf: C.ufs[r[1]], cargo: r[2], partido: C.partidos[r[4]], nome: nomeProprio(r[5]), local: (C.ues[r[3]] || "").split("|")[0], votos, receita, porVoto: receita > 0 && votos ? receita / votos : null, vit, grau: GRAU.indexOf(C.graus[r[10]]), busca: semAcento(r[5] + " " + (r[6] || "")) };
+  }).filter(t => t.cargo in CARGO);
+  const grupo = t => `${t.ano % 100}-${t.cargo === 5 ? 3 : t.cargo}`;   // governadores e senadores no mesmo baralho
+  const posicao = (lista, campo, menorMelhor) => {
+    const v = lista.filter(t => t[campo] != null).sort((a, b) => a[campo] - b[campo]);
+    v.forEach((t, k) => { const p = 1 + Math.floor(10 * k / v.length); t["p_" + campo] = menorMelhor ? 11 - p : p; });
+  };
+  const porGrupo = {}; T.forEach(t => (porGrupo[grupo(t)] = porGrupo[grupo(t)] || []).push(t));
+  Object.values(porGrupo).forEach(g => { posicao(g, "votos"); posicao(g, "receita"); posicao(g, "porVoto", true); });
+  T.forEach(t => {
+    const p = { raio: t.p_votos || 1, fogo: t.p_receita || 0, agua: t.p_porVoto || 0, terra: Math.min(10, 2 * t.vit), luz: Math.max(1, Math.round((t.grau + 1) * 10 / 7)) };
+    t.poder = p;
+    // o elemento da carta é o poder mais forte entre raio, fogo, água e natureza (a escolaridade daria Luz a quase todos)
+    t.el = ["raio", "fogo", "agua", "terra"].sort((a, b) => p[b] - p[a])[0];
+    t.atq = Math.max(1, Math.round((p.raio + p.terra) / 2));
+    t.mana = Math.max(1, Math.min(5, Math.round((t.p_receita || 1) / 2)));
+  });
+
+  const st = { baralho: "24-11", uf: "TODAS", a: null, b: null };
+  const selB = document.getElementById("f-baralho"), selU = document.getElementById("f-uf");
+  selB.innerHTML = BARALHOS.map(([v, r]) => `<option value="${v}">${r}</option>`).join("");
+  selU.innerHTML = `<option value="TODAS">Todos os 6 estados</option>` + C.ufs.map(u => `<option value="${u}">${UF_NOME[u]}</option>`).join("");
+  const baralho = () => T.filter(t => grupo(t) === st.baralho && (st.uf === "TODAS" || t.uf === st.uf));
+  const sortear = (evitar) => { const b = baralho().filter(t => t !== evitar); return b[Math.floor(Math.random() * b.length)]; };
+  selB.addEventListener("change", () => { st.baralho = selB.value; novoDuelo(); });
+  selU.addEventListener("change", () => { st.uf = selU.value; novoDuelo(); });
+
+  // ---------- a carta ----------
+  function carta(t, lado) {
+    const e = EL[t.el], linha = (k, rot, val) => `<li><span class="ico">${EL[k].ico}</span><span>${rot}</span><b>${val}</b></li>`;
+    return `<article class="carta el-${t.el}" style="--cor:${e.cor}" data-lado="${lado}">
+      <header class="c-titulo"><b>${esc(t.nome)}</b><span class="mana">${"●".repeat(t.mana)}</span></header>
+      <div class="c-arte"><img src="../candidatos-painel/fotos/${t.ano}/${t.sq}.jpg" alt="Foto de ${esc(t.nome)}" onerror="this.remove()"><span class="c-el" title="Elemento: ${e.nome}">${e.ico}</span></div>
+      <div class="c-tipo">Criatura Política — ${CARGO[t.cargo]} · ${esc(t.partido)}</div>
+      <ul class="c-texto">
+        ${linha("raio", "Voto de confiança", `${fmt(t.votos)} votos`)}
+        ${linha("fogo", "Fogo da campanha", brl(t.receita))}
+        ${linha("agua", "Custo do voto", t.porVoto == null ? "sem dado" : `R$ ${fmt(t.porVoto, 2)}`)}
+        ${linha("terra", "Raízes", `${t.vit} vitória${t.vit === 1 ? "" : "s"}`)}
+        ${linha("luz", "Luz do saber", t.grau >= 0 ? GRAU_CURTO[t.grau] : "–")}
+      </ul>
+      <p class="c-sabor">${esc(t.local)} (${t.uf}), ${t.ano}</p>
+      <footer class="c-pt"><span>⚔ ${t.atq}</span><span>❤ <b class="vida">20</b></span></footer>
+    </article>`;
+  }
+
+  // ---------- montar o duelo ----------
+  function mostrarLutador(lado) {
+    const t = st[lado], box = document.getElementById("lutador-" + lado);
+    box.innerHTML = `<div class="barra-vida"><i style="width:100%"></i><span>20 de vida</span></div>${carta(t, lado)}<button type="button" class="ver-ficha" data-sq="${t.sq}" data-ano="${t.ano}">Ver a ficha</button>`;
+    const c = box.querySelector(".carta"); if (MOVE) { c.classList.remove("entra"); void c.offsetWidth; c.classList.add("entra"); }
+  }
+  function novoDuelo(manter) {
+    if (!manter || !st.a) st.a = sortear(); if (!manter || !st.b || st.b === st.a) st.b = sortear(st.a);
+    // baralho pequeno demais no estado (ex.: 2 governadores): o adversário vem dos 6 estados
+    if (!st.a || !st.b) { const g = T.filter(t => grupo(t) === st.baralho); st.a = st.a || g[0]; st.b = st.b || g.find(t => t !== st.a); }
+    st.vida = { a: 20, b: 20 }; st.r = 0; st.acertos = 0; st.ordem = RODADAS.slice().sort(() => Math.random() - 0.5);
+    mostrarLutador("a"); mostrarLutador("b");
+    document.getElementById("rodada").textContent = "Pronto para o duelo";
+    document.getElementById("anuncio").innerHTML = `<b>${esc(st.a.nome)}</b> × <b>${esc(st.b.nome)}</b>`;
+    document.getElementById("apostas").innerHTML = "";
+    document.getElementById("registro").innerHTML = "";
+    const lutar = document.getElementById("lutar"); lutar.hidden = false; lutar.textContent = "⚔ Lutar!";
+  }
+  document.querySelectorAll("[data-sortear]").forEach(b => b.addEventListener("click", () => { const l = b.dataset.sortear; st[l] = sortear(st[l === "a" ? "b" : "a"]); novoDuelo(true); }));
+  ["a", "b"].forEach(l => {
+    const inp = document.getElementById("busca-" + l), ach = document.getElementById("achados-" + l);
+    inp.addEventListener("input", () => {
+      const q = semAcento(inp.value.trim()); if (q.length < 3) { ach.hidden = true; return; }
+      const res = T.filter(t => q.split(/\s+/).every(p => t.busca.includes(p))).sort((x, y) => (y.votos || 0) - (x.votos || 0)).slice(0, 8);
+      ach.innerHTML = res.map(t => `<button type="button" data-i="${t.i}"><b>${esc(t.nome)}</b> <small>${CARGO[t.cargo]} · ${esc(t.partido)} · ${t.uf} · ${t.ano}</small></button>`).join("") || `<p style="padding:8px;margin:0">Ninguém com esse nome entre os eleitos.</p>`;
+      ach.hidden = false;
+    });
+    ach.addEventListener("click", ev => {
+      const b = ev.target.closest("button[data-i]"); if (!b) return;
+      const t = T.find(x => x.i === +b.dataset.i); st[l] = t; inp.value = ""; ach.hidden = true;
+      // a carta escolhida define o baralho: o adversário vem do mesmo cargo e eleição
+      st.baralho = grupo(t); selB.value = st.baralho;
+      const outro = l === "a" ? "b" : "a"; if (!st[outro] || grupo(st[outro]) !== st.baralho) st[outro] = sortear(t);
+      novoDuelo(true);
+    });
+  });
+  document.addEventListener("click", ev => { if (!ev.target.closest(".procura")) document.querySelectorAll(".achados").forEach(a => a.hidden = true); });
+  document.getElementById("arena").addEventListener("click", ev => {
+    const b = ev.target.closest(".ver-ficha"); if (!b) return;
+    if (window.parent !== window) window.parent.postMessage({ tipo: "abrir-candidato", ano: +b.dataset.ano, sq: +b.dataset.sq }, "*");
+  });
+
+  // ---------- efeitos ----------
+  const efeitos = document.getElementById("efeitos"), arena = document.getElementById("arena");
+  const centroDe = lado => { const r = document.querySelector(`#lutador-${lado} .carta`).getBoundingClientRect(), a = arena.getBoundingClientRect(); return [r.left - a.left + r.width / 2, r.top - a.top + r.height / 2]; };
+  function particula(x, y, txt, cls, dx, dy, dur) {
+    const p = document.createElement("span"); p.className = "part " + (cls || ""); p.textContent = txt;
+    p.style.left = x + "px"; p.style.top = y + "px"; p.style.setProperty("--dx", dx + "px"); p.style.setProperty("--dy", dy + "px"); p.style.animationDuration = dur + "ms";
+    efeitos.appendChild(p); setTimeout(() => p.remove(), dur + 50);
+  }
+  async function golpe(de, para, el, dano) {
+    const [x0, y0] = centroDe(de), [x1, y1] = centroDe(para), ico = EL[el].ico;
+    const atac = document.querySelector(`#lutador-${de} .carta`), alvo = document.querySelector(`#lutador-${para} .carta`);
+    atac.classList.add("ataca"); setTimeout(() => atac.classList.remove("ataca"), 500);
+    if (MOVE) {
+      // o projétil atravessa a arena
+      const n = el === "fogo" ? 7 : el === "agua" ? 6 : 4;
+      for (let k = 0; k < n; k++) setTimeout(() => particula(x0, y0 + (k - n / 2) * 8, ico, "voa", x1 - x0, y1 - y0 + (k - n / 2) * 6, 520), k * 45);
+      await espera(520);
+      if (el === "raio") { arena.classList.add("clarao"); setTimeout(() => arena.classList.remove("clarao"), 260); const r = document.createElement("div"); r.className = "relampago"; r.style.left = x1 - 40 + "px"; r.style.top = y1 - 160 + "px"; efeitos.appendChild(r); setTimeout(() => r.remove(), 600); }
+      if (el === "agua") { for (let k = 0; k < 3; k++) setTimeout(() => particula(x1, y1, "", "onda", 0, 0, 700), k * 140); }
+      // a explosão no alvo
+      for (let k = 0; k < 12; k++) { const a = (k / 12) * Math.PI * 2; particula(x1, y1, el === "terra" ? "🍃" : ico, "estoura", Math.cos(a) * 90, Math.sin(a) * 90, 650); }
+    }
+    alvo.classList.add("apanha"); setTimeout(() => alvo.classList.remove("apanha"), 450);
+    particula(x1, y1 - 60, `−${dano}`, "dano", 0, -70, 1100);
+    mudaVida(para, -dano);
+    await espera(700);
+  }
+  async function cura(lado, valor) {
+    const [x, y] = centroDe(lado), c = document.querySelector(`#lutador-${lado} .carta`);
+    c.classList.add("brilha"); setTimeout(() => c.classList.remove("brilha"), 900);
+    if (MOVE) for (let k = 0; k < 10; k++) particula(x + (Math.random() - 0.5) * 140, y + 60, "✨", "sobe", (Math.random() - 0.5) * 30, -160, 900);
+    particula(x, y - 60, `+${valor}`, "dano cura", 0, -70, 1100);
+    mudaVida(lado, valor);
+    await espera(700);
+  }
+  function mudaVida(lado, d) {
+    st.vida[lado] = Math.max(0, Math.min(30, st.vida[lado] + d));
+    const box = document.getElementById("lutador-" + lado), v = st.vida[lado];
+    box.querySelector(".barra-vida i").style.width = Math.min(100, 100 * v / 20) + "%";
+    box.querySelector(".barra-vida i").style.background = v > 12 ? "var(--verde-esc)" : v > 6 ? "var(--ouro)" : "#c53d33";
+    box.querySelector(".barra-vida span").textContent = `${v} de vida`;
+    box.querySelector(".vida").textContent = v;
+  }
+  const log = (html) => { const li = document.createElement("li"); li.innerHTML = html; document.getElementById("registro").prepend(li); };
+
+  // ---------- as rodadas ----------
+  function vencedor(r) {
+    const a = st.a, b = st.b;
+    const cmp = (x, y, maior) => x == null || y == null ? null : x === y ? 0 : (maior ? x > y : x < y) ? 1 : -1;
+    const c = r.id === "voto" ? cmp(a.p_votos, b.p_votos, true) : r.id === "fogo" ? cmp(a.receita, b.receita, false) : r.id === "agua" ? cmp(a.porVoto, b.porVoto, false) : r.id === "terra" ? cmp(a.vit, b.vit, true) : cmp(a.grau, b.grau, true);
+    return c == null ? null : c === 0 ? "empate" : c > 0 ? "a" : "b";
+  }
+  const valor = (t, r) => r.id === "voto" ? `${fmt(t.votos)} votos (posição ${t.p_votos}/10)` : r.id === "fogo" ? brl(t.receita) : r.id === "agua" ? (t.porVoto == null ? "sem dado" : `R$ ${fmt(t.porVoto, 2)} por voto`) : r.id === "terra" ? `${t.vit} vitória${t.vit === 1 ? "" : "s"}` : (t.grau >= 0 ? GRAU_CURTO[t.grau] : "sem dado");
+  async function rodada() {
+    const lutar = document.getElementById("lutar"); lutar.hidden = true;
+    if (st.r >= st.ordem.length || st.vida.a <= 0 || st.vida.b <= 0) return fim();
+    const r = st.ordem[st.r];
+    document.getElementById("rodada").textContent = `Rodada ${st.r + 1} de ${st.ordem.length}`;
+    const an = document.getElementById("anuncio");
+    an.innerHTML = `<span class="r-ico">${EL[r.el].ico}</span><b>${r.nome}</b><span>${r.pergunta}</span>`;
+    if (MOVE) { an.classList.remove("pula"); void an.offsetWidth; an.classList.add("pula"); }
+    const ap = document.getElementById("apostas");
+    ap.innerHTML = `<span>Sua aposta:</span><button type="button" data-aposta="a">${esc(st.a.nome)}</button><button type="button" data-aposta="b">${esc(st.b.nome)}</button>`;
+    const aposta = await new Promise(res => ap.querySelectorAll("button").forEach(b => b.addEventListener("click", () => res(b.dataset.aposta), { once: true })));
+    ap.innerHTML = "";
+    const v = vencedor(r), acertou = v === aposta || (v === "empate");
+    if (acertou && v !== "empate" && v != null) st.acertos++;
+    log(`${EL[r.el].ico} <b>${r.nome}</b>: ${esc(st.a.nome)} ${valor(st.a, r)} × ${esc(st.b.nome)} ${valor(st.b, r)}. ${v == null ? "Sem dado: empate." : v === "empate" ? "Empate." : r.id === "fogo" ? `<b>${esc(st[v === "a" ? "b" : "a"].nome)}</b> arrecadou mais e se queimou.` : `Venceu <b>${esc(st[v].nome)}</b>.`} ${v && v !== "empate" ? (v === aposta ? "Você acertou! +1" : "Você errou.") : ""}`);
+    const bonus = 0;
+    const outro = l => l === "a" ? "b" : "a";
+    if (v && v !== "empate") {
+      if (r.id === "voto") await golpe(v, outro(v), "raio", 3 + Math.round(Math.abs(st.a.p_votos - st.b.p_votos) / 3) + bonus);
+      if (r.id === "fogo") await golpe(v, outro(v), "fogo", 3 + bonus);   // v = quem arrecadou menos; o outro se queima
+      if (r.id === "agua") await golpe(v, outro(v), "agua", 4 + bonus);
+      if (r.id === "terra") await golpe(v, outro(v), "terra", Math.min(6, 2 + Math.abs(st.a.vit - st.b.vit)) + bonus);
+      if (r.id === "luz") await cura(v, 3 + bonus);
+    } else if (v === "empate" && r.id === "luz") { await Promise.all([cura("a", 1), cura("b", 1)]); }
+    if (v && v !== "empate" && v === aposta) { const [x, y] = centroDe("a"); particula(x, y + 40, "+1 aposta", "dano cura", 0, -60, 1100); mudaVida("a", 1); await espera(400); }
+    st.r++;
+    if (st.r >= st.ordem.length || st.vida.a <= 0 || st.vida.b <= 0) return fim();
+    lutar.hidden = false; lutar.textContent = "Próxima rodada ›";
+  }
+  function fim() {
+    const { a, b } = st.vida, ganhou = a === b ? null : a > b ? "a" : "b";
+    document.getElementById("rodada").textContent = "Fim do duelo";
+    document.getElementById("anuncio").innerHTML = ganhou ? `<span class="r-ico">🏆</span><b>${esc(st[ganhou].nome)} venceu!</b><span>${a} × ${b} de vida · você acertou ${st.acertos} de ${st.ordem.length} apostas</span>` : `<span class="r-ico">🤝</span><b>Empate técnico</b><span>${a} × ${b} de vida</span>`;
+    if (ganhou) {
+      document.querySelector(`#lutador-${ganhou} .carta`).classList.add("campea");
+      if (MOVE) { const [x, y] = centroDe(ganhou); for (let k = 0; k < 28; k++) particula(x, y - 120, ["🎉", "⭐", "✨", "🎊"][k % 4], "confete", (Math.random() - 0.5) * 420, 160 + Math.random() * 200, 1600); }
+    }
+    const lutar = document.getElementById("lutar"); lutar.hidden = false; lutar.textContent = "↻ Revanche";
+    st.r = 99;
+  }
+  document.getElementById("lutar").addEventListener("click", () => { if (st.r === 99) { novoDuelo(true); return; } rodada(); });
+  novoDuelo();
+  }
+})();
+</script>
+
+</body>
+</html>

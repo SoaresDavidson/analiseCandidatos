@@ -40,6 +40,13 @@ export default function App() {
   const [aviso, setAviso] = useState(false);
   const progresso = useRef(0);
   const cliques = useRef<number[]>([]);
+  // quem tinha o foco antes da ficha abrir: volta para ele ao fechar
+  const focoAntes = useRef<HTMLElement | null>(null);
+
+  const fecharFicha = useCallback(() => {
+    setFicha(null);
+    focoAntes.current?.focus();
+  }, []);
 
   const desbloquear = useCallback(() => {
     setAviso(true);
@@ -81,18 +88,26 @@ export default function App() {
 
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
-      if (digitando(e) || ficha) return;
+      // com a ficha aberta, só o Esc vale (fecha mesmo se o foco saiu do diálogo)
+      if (ficha) {
+        if (e.key === "Escape") fecharFicha();
+        return;
+      }
+      if (digitando(e)) return;
       if (konami(e.key)) return;
       if (e.key === "ArrowRight") passo(1);
       if (e.key === "ArrowLeft") passo(-1);
     };
     document.addEventListener("keydown", tecla);
     return () => document.removeEventListener("keydown", tecla);
-  }, [passo, ficha, konami]);
+  }, [passo, ficha, konami, fecharFicha]);
 
   const nav = useMemo<Navegacao>(
     () => ({
-      abrirCandidato: (ano, sq) => setFicha({ ano, sq }),
+      abrirCandidato: (ano, sq) => {
+        if (document.activeElement instanceof HTMLElement) focoAntes.current = document.activeElement;
+        setFicha({ ano, sq });
+      },
       abrirMunicipio: cod => {
         setFicha(null);
         irPara(`municipios/${cod}`);
@@ -212,15 +227,9 @@ export default function App() {
             role="dialog"
             aria-modal="true"
             aria-label="Ficha do eleito"
-            onKeyDown={e => e.key === "Escape" && setFicha(null)}
           >
             <Suspense fallback={<Carregando />}>
-              <FichaEleito
-                key={`${ficha.ano}-${ficha.sq}`}
-                ano={ficha.ano}
-                sq={ficha.sq}
-                aoFechar={() => setFicha(null)}
-              />
+              <FichaEleito key={`${ficha.ano}-${ficha.sq}`} ano={ficha.ano} sq={ficha.sq} aoFechar={fecharFicha} />
             </Suspense>
           </div>
         )}

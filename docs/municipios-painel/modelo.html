@@ -152,7 +152,9 @@ select.linha { appearance: auto; cursor: pointer; }
 .cidade-topo h1 { margin-top: 6px; }
 .duas-c { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
 @media (max-width: 900px) { .duas-c { grid-template-columns: minmax(0, 1fr); } }
-#hemiciclo { max-width: 460px; justify-self: center; }
+#hemiciclo { max-width: 1000px; justify-self: center; }
+#hemiciclo .cadeira { cursor: pointer; }
+#hemiciclo .cadeira:hover circle:first-child { stroke: var(--ouro); stroke-width: 4; }
 .num-centro { font-size: 30px; font-weight: 800; fill: var(--texto); }
 .partidos { display: flex; flex-wrap: wrap; gap: 6px 10px; }
 .numeros { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
@@ -235,18 +237,16 @@ table.clicavel tbody tr:hover { background: #fff6d6; }
       <div class="rolagem"><svg class="grafico" id="regua" role="img" aria-label="Régua do espectro com a posição da cidade"></svg></div>
       <div class="legenda" id="regua-legenda"></div>
     </section>
-    <div class="duas-c">
-      <section class="caixa">
-        <h2 id="camara-titulo">A câmara eleita em 2024</h2>
-        <svg class="grafico" id="hemiciclo" role="img" aria-label="Cadeiras da câmara de vereadores, da esquerda para a direita"></svg>
-        <div id="camara-lista"></div>
-      </section>
-      <section class="caixa">
-        <h2>O dinheiro das campanhas de 2024</h2>
-        <div class="numeros" id="dinheiro"></div>
-        <p class="nota">Prefeito e vereador, pela prestação de contas. Dinheiro público = Fundo Especial + Fundo Partidário, a mesma regra da Pergunta 8. "Por voto": arrecadado ÷ votos para vereador.</p>
-      </section>
-    </div>
+    <section class="caixa">
+      <h2 id="camara-titulo">A câmara eleita em 2024</h2>
+      <svg class="grafico" id="hemiciclo" role="img" aria-label="Plenário da câmara de vereadores visto de cima, com a foto de cada eleito na sua cadeira"></svg>
+      <div id="camara-lista"></div>
+    </section>
+    <section class="caixa">
+      <h2>O dinheiro das campanhas de 2024</h2>
+      <div class="numeros" id="dinheiro"></div>
+      <p class="nota">Prefeito e vereador, pela prestação de contas. Dinheiro público = Fundo Especial + Fundo Partidário, a mesma regra da Pergunta 8. "Por voto": arrecadado ÷ votos para vereador.</p>
+    </section>
     <section class="caixa">
       <h2>Quem foi eleito</h2>
       <p class="nota">Clique em um eleito para ver a ficha. Ao fechar, você volta para esta cidade.</p>
@@ -267,6 +267,7 @@ table.clicavel tbody tr:hover { background: #fff6d6; }
 </main>
 <div id="dica" hidden></div>
 
+<script src="../assets/plenario.js"></script>
 <script>
 (function () {
   "use strict";
@@ -458,6 +459,12 @@ table.clicavel tbody tr:hover { background: #fff6d6; }
       if (st.cod !== m.cod) return;
       const idx = []; C.eleitos.forEach((r, i) => { if (r[27] === m.cod && r[0] === 24) idx.push(i); });
       idx.sort((a, b) => (C.eleitos[a][2] - C.eleitos[b][2]) || ((C.eleitos[b][13] || 0) - (C.eleitos[a][13] || 0)));
+      // o plenário da câmara com a foto de cada vereador (o semicírculo de pontos fica se faltar o Plenario)
+      const ver = idx.filter(i => C.eleitos[i][2] === 13);
+      if (window.Plenario && ver.length) {
+        Plenario.desenhar(document.getElementById("hemiciclo"), ver.map(i => { const r = C.eleitos[i], sg = C.partidos[r[4]], nota = (C.espectro[`2024|${sg}`] || [null])[0]; return { sq: C.sq[i], nome: nomeProprio(r[5]), partido: sg, nota, cor: corDe(nota), foto: `../candidatos-painel/fotos/2024/${C.sq[i]}.jpg`, rotulo: `${nota == null ? "sem nota" : fmt(nota, 2) + " · " + catNome(nota)} · ${int(r[13])} votos` }; }),
+          { aoClicar: a => { if (window.parent !== window) window.parent.postMessage({ tipo: "abrir-candidato", ano: 2024, sq: a.sq }, "*"); else location.href = `../candidatos-painel/index.html#c=2024-${a.sq}`; }, dica: (ev, html) => ev ? mostra(ev, html) : esconde() });
+      }
       box.innerHTML = idx.map(i => { const r = C.eleitos[i], sg = C.partidos[r[4]], e = (C.espectro[`2024|${sg}`] || [null])[0], nome = nomeProprio(r[5]); return `<button type="button" class="cand" data-sq="${C.sq[i]}"><div class="foto" data-inicial="${esc(nome[0] || "?")}"><img src="../candidatos-painel/fotos/2024/${C.sq[i]}.jpg" alt="" loading="lazy" onerror="this.parentNode.classList.add('sem');this.replaceWith(this.parentNode.dataset.inicial)"></div><span class="cand-txt"><b>${esc(nome)}</b><small>${r[2] === 11 ? "Prefeito · " : ""}${chip(sg, e)}</small><span class="cand-num">${int(r[13])} votos</span></span></button>`; }).join("") || `<p class="nota">Sem eleitos de 2024 nas fichas.</p>`;
     });
   }

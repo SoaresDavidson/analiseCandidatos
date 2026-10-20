@@ -190,7 +190,7 @@ antiga (Q10 e Q11 viraram Q8 e Q9) e medidos no PI.
 
 ## Painel do grupo
 
-`docs/painel.html` junta as perguntas numa página com uma aba por pergunta, mais a aba Candidatos (a ficha de cada eleito, com foto). Abra como site local:
+`docs/painel.html` junta as perguntas por tema, para o topo não virar uma fileira de abas: **Cidades** (Q7, Q3, Q4 e o explorador de municípios), **Dinheiro** (Q8, Q9) e **Políticos** (Q10, a ficha de cada eleito com foto e os plenários: Assembleia e bancada federal de cada estado). Dentro de cada tema, as perguntas são botões. Abra como site local:
 
 ```bash
 uv run python -m scripts.servir_painel      # http://localhost:8000/painel.html
@@ -202,11 +202,15 @@ Cada aba mostra a página como ela está no disco:
 
 | Aba | Página | Gerada por | Precisa no banco |
 |---|---|---|---|
+| Q3 Índices do município | `docs/q3-painel/index.html` | `python -m scripts.gerar_painel_q3_q7` (gera as duas) | `16_indicadores`, `17_q7`, `21_q3` (coleta: `coleta_ibge pib indicadores`, `recorte_remoto`) |
+| Q7 Viés político | `docs/q7-painel/index.html` | `python -m scripts.gerar_painel_q3_q7` (gera as duas) | `15_espectro`, `16_indicadores`, `17_q7` + malhas do IBGE |
 | Q4 Escolaridade | `docs/q4-painel/index.html` | `scripts/gerar_painel_q4.py` | `00_limpeza`, `00_modelo`, `06_carga_nucleo`, `10_q4` + malhas do IBGE |
 | Q8 Dinheiro público | `docs/q8-painel/index.html` | `scripts/gerar_painel_q8_q9.py` (gera as duas) | `01`–`05` + `11_q8`, `12_q9` |
 | Q9 Propaganda | `docs/q9-painel/index.html` | `scripts/gerar_painel_q8_q9.py` (gera as duas) | `01`–`05` + `11_q8`, `12_q9` |
 | Q10 Carreira | `docs/q10-painel/index.html` + `financas/` | `scripts/gerar_painel_q10.py` | `00_limpeza`, `04_politico`, `07_q10`; patrimônio e campanha: `13_ficha`, `14_q10` (coleta: `recorte_remoto --uf ...` e `coleta_ibge ipca`) |
 | Municípios | `docs/municipios-painel/index.html` + `dados.json` | `python -m scripts.gerar_painel_municipios` | `13_ficha`, `15_espectro` (espectro: `dados/referencia/`) |
+| Plenários | `docs/plenarios-painel/index.html` (página fixa, sem gerador) | lê `docs/candidatos-painel/dados.json`; o desenho do plenário é `docs/assets/plenario.js`, usado também na página de cada cidade | o mesmo da aba Candidatos |
+| Arena (escondida) | `docs/arena-painel/index.html` (página fixa, sem gerador) | lê `docs/candidatos-painel/dados.json`; duelo de cartas com os eleitos, poderes calculados de votos, receita, R$ por voto, vitórias e escolaridade. Abre com o código Konami (↑↑↓↓←→←→BA), 5 cliques no logo ou `painel.html#arena` | o mesmo da aba Candidatos |
 | Candidatos | `docs/candidatos-painel/index.html` + `dados.json` | `python -m scripts.gerar_painel_candidatos` | `01`–`07` + `13_ficha`, `15_espectro` (coleta: `recorte_remoto --uf ...`) |
 
 Para atualizar uma aba, regere a página da pergunta com o script dela; o painel mostra a versão nova sem mudar mais nada.
@@ -214,7 +218,7 @@ Para atualizar uma aba, regere a página da pergunta com o script dela; o painel
 Para colocar uma pergunta nova:
 
 1. Gere a página em `docs/<pasta>/index.html` com um script `scripts/gerar_painel_<pergunta>.py`. O ponto de partida mais simples é copiar o `modelo.html` de uma pergunta pronta: tem o estilo, os filtros e o quadro de método.
-2. Acrescente uma linha na lista `ABAS` e um cartão em `CARTOES`, no topo do script de `docs/painel.html`.
+2. No topo do script de `docs/painel.html`, acrescente a página em `paginas` do tema certo (`TEMAS`) e marque `aba` no cartão dela em `CARTOES`, com a frase da resposta.
 
 ## Notebooks
 

@@ -126,6 +126,22 @@ svg text { font-family: var(--fonte); }
 .quadro.fraco { opacity: .45; }
 .quadro.atual { outline: 3px solid var(--texto); outline-offset: 1px; }
 .quadro:hover:not(.vazio) { box-shadow: 0 0 0 2px var(--ouro); }
+.explica-grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 760px) { .explica-grade { grid-template-columns: minmax(0, 1fr); } }
+.explica-grade div { display: grid; gap: 4px; background: var(--fundo); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.explica-grade b { color: var(--verde-esc); }
+.bonecos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 600px) { .bonecos { grid-template-columns: minmax(0, 1fr); } }
+.bonecos-grupo { display: grid; gap: 8px; }
+.bonecos-cab { display: flex; gap: 10px; align-items: center; }
+.bonecos-cab b { font-size: 40px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.bonecos-cab span { font-size: 13px; color: var(--texto-2); line-height: 1.3; }
+.bonecos-cab strong { color: var(--texto); font-size: 14px; }
+.fig-grade { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 3px 2px; max-width: 360px; }
+.fig { width: 100%; height: auto; display: block; }
+.bonecos-grupo small { color: var(--texto-2); }
+.ponto-l { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.haltere:hover rect { fill: #fff6d6; }
 .corte { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
 .corte output { font-weight: 800; font-size: 20px; color: var(--ouro-esc); min-width: 3em; }
 .corte input[type=range] { accent-color: var(--ouro); width: min(320px, 100%); }
@@ -141,6 +157,16 @@ svg text { font-family: var(--fonte); }
   <h1>Depender do fundo público ajuda a vencer?</h1>
   <p class="enunciado">Enunciado: qual a diferença de sucesso entre candidatos que dependem mais de repasses públicos em relação àqueles que são financiados por outras fontes? [2018, 2020, 2022, 2024]</p>
 
+  <section class="caixa explica">
+    <h2>O que é o fundo público?</h2>
+    <div class="explica-grade">
+      <div><b>Fundo Eleitoral</b><span>Dinheiro do orçamento da União dividido entre os partidos só para as campanhas. Os partidos escolhem quais candidatos recebem.</span></div>
+      <div><b>Fundo Partidário</b><span>Dinheiro público que os partidos recebem todo mês e que também pode ir para as campanhas.</span></div>
+      <div><b>Outras fontes</b><span>Doações de pessoas, dinheiro do próprio candidato e vaquinhas pela internet.</span></div>
+    </div>
+    <p class="simples" style="font-size:15.5px">Aqui, <b>depende do fundo público</b> quem teve <b>metade ou mais</b> da campanha paga com os dois fundos. <span id="explica-pc"></span></p>
+  </section>
+
   <div class="duas">
     <section class="caixa">
       <h2>A resposta</h2>
@@ -148,11 +174,14 @@ svg text { font-family: var(--fonte); }
       <div id="linhas"></div>
     </section>
     <div style="display:grid;gap:14px;min-width:0">
-      <div class="aneis" id="aneis"></div>
+      <section class="caixa">
+        <h2 id="bonecos-titulo"></h2>
+        <div class="bonecos" id="bonecos"></div>
+        <span class="selo" id="selo"></span>
+      </section>
       <section class="caixa">
         <h2 id="chance-titulo"></h2>
         <div class="barras" id="chance"></div>
-        <span class="selo" id="selo"></span>
         <p class="nota" id="chance-nota"></p>
       </section>
     </div>
@@ -161,9 +190,9 @@ svg text { font-family: var(--fonte); }
   <section class="caixa">
     <h2>Em todos os cargos e eleições, o padrão se repete?</h2>
     <p class="simples" id="pan-resposta" style="font-size:16px"></p>
-    <div class="legenda"><span><i class="cor" style="background:var(--div-neg)"></i>dependentes se elegem menos</span><span><i class="cor" style="background:var(--div-mid);border:1px solid var(--linha)"></i>quase igual</span><span><i class="cor" style="background:var(--div-pos)"></i>dependentes se elegem mais</span></div>
-    <div class="rolagem"><div class="calor" id="calor"></div></div>
-    <p class="nota">Cada quadro: a diferença na chance de se eleger (em pontos) entre quem teve metade ou mais da campanha paga pelo fundo público e quem teve menos. Quadro apagado: sem diferença real no teste estatístico ou poucos candidatos. Clique num quadro para ver aquele cargo e ano acima.</p>
+    <div class="legenda"><span><i class="ponto-l" style="background:var(--ouro)"></i>dependem do fundo público</span><span><i class="ponto-l" style="background:var(--verde-esc)"></i>outras fontes</span><span>Linha apagada: sem diferença real no teste estatístico, ou poucos candidatos.</span></div>
+    <div class="rolagem"><svg class="grafico" id="halteres" style="min-width:640px" role="img" aria-label="Chance de se eleger de quem depende do fundo público e de quem não depende, por cargo e eleição"></svg></div>
+    <p class="nota">Cada linha: de cada 100 candidatos daquele cargo e eleição, quantos se elegeram em cada grupo. "Menos chance": quem depende do fundo se elegeu menos que os outros, com diferença real no teste estatístico. Clique numa linha para ver aquele cargo e ano no alto da página.</p>
   </section>
 
   <details class="mais"><summary>Mudar o que conta como "depender" do fundo público</summary><div>
@@ -285,7 +314,9 @@ svg text { font-family: var(--fonte); }
       [`Dependem do fundo (metade ou mais)`, `${fmt(pc(c.g.pub.n, N), 0)}%`],
       [`Chance média de se eleger`, `${fmt(geral, 0)} em 100`],
     ].map(([k, v]) => `<div class="linha"><span>${k}</span><b>${v}</b></div>`).join("");
-    document.getElementById("aneis").innerHTML = anel("", c.tp, "se elegeram", "Dependem do fundo público", "var(--ouro)") + anel("verde", c.to, "se elegeram", "Outras fontes", "var(--verde-esc)");
+    document.getElementById("explica-pc").innerHTML = N ? `Para ${SING[st.cargo]} em ${st.ano} ${onde()}, <b>${fmt(pc(c.g.pub.n, N), 0)}%</b> dos candidatos estavam nessa situação.` : "";
+    document.getElementById("bonecos-titulo").textContent = `De cada 100 candidatos a ${SING[st.cargo]}, quantos se elegeram?`;
+    document.getElementById("bonecos").innerHTML = bonecos(c.tp, "var(--ouro)", "Dependem do fundo público", c.g.pub) + bonecos(c.to, "var(--verde-esc)", "Outras fontes", c.g.out);
 
     // gráfico: 4 faixas fáceis de ler
     const grupo = (fs) => fs.reduce((s, f) => ({ n: s.n + r[f].n, e: s.e + r[f].e }), { n: 0, e: 0 });
@@ -300,26 +331,51 @@ svg text { font-family: var(--fonte); }
     renderTabela(r, N, E);
   }
 
-  // ---------- 2. panorama ----------
+  // ---------- bonecos: 100 figuras, os eleitos pintados ----------
+  const FIGURA = `<path d="M5 3.2a2.2 2.2 0 1 1 0.01 0zM1.6 13.5v-4.2a3.4 3.4 0 0 1 6.8 0v4.2z"/>`;
+  function bonecos(t, cor, nome, g) {
+    const k = t == null ? 0 : Math.round(t);
+    let fig = "";
+    for (let i = 0; i < 100; i++) fig += `<svg viewBox="0 0 10 14" class="fig" style="fill:${i < k ? cor : "var(--bege)"}" aria-hidden="true">${FIGURA}</svg>`;
+    return `<div class="bonecos-grupo"><div class="bonecos-cab"><b style="color:${cor}">${t == null ? "–" : fmt(t, 0)}</b><span>de cada 100 se elegeram<br><strong>${nome}</strong></span></div><div class="fig-grade" role="img" aria-label="${k} de 100 figuras pintadas">${fig}</div><small>${int(g.e)} eleitos de ${int(g.n)} candidatos</small></div>`;
+  }
+
+  // ---------- 2. todos os cargos e eleições: halteres ----------
   function renderPanorama() {
-    const us = ufIdx(), linhas = [0, 1, 2, 3, 4, 5], anos = [2018, 2020, 2022, 2024];
+    const us = ufIdx(), linhas = [];
+    for (const a of [2024, 2022, 2020, 2018]) for (const c of CARGOS_ANO(a)) linhas.push({ a, c, k: comparar(faixas(a, c, us), 50) });
     let menos = 0, mais = 0, igual = 0;
-    let h = `<span></span>${anos.map(a => `<span class="cab-ano">${a}<br><small>${a % 4 === 0 ? "municipal" : "estadual e federal"}</small></span>`).join("")}`;
-    for (const c of linhas) {
-      h += `<span class="cab-cargo">${CARGO[c]}</span>`;
-      for (const a of anos) {
-        if (!CARGOS_ANO(a).includes(c)) { h += `<span class="quadro vazio" aria-hidden="true"></span>`; continue; }
-        const k = comparar(faixas(a, c, us), 50);
-        if (k.real) { if (k.dif < 0) menos++; else mais++; } else if (k.ok) igual++;
-        const inten = k.dif == null ? 0 : Math.min(100, Math.round(100 * Math.abs(k.dif) / 15));
-        const cor = k.dif == null ? "var(--div-mid)" : `color-mix(in srgb, ${k.dif > 0 ? "var(--div-pos)" : "var(--div-neg)"} ${inten}%, var(--div-mid))`;
-        const atual = a === st.ano && c === st.cargo;
-        h += `<button type="button" class="quadro${k.real ? "" : " fraco"}${atual ? " atual" : ""}" data-a="${a}" data-c="${c}" style="background:${cor};${inten > 55 && k.dif > 0 ? "color:#fff" : ""}">${k.dif == null ? "–" : (Math.round(Math.abs(k.dif)) === 0 ? "" : k.dif > 0 ? "+" : "−") + fmt(Math.abs(k.dif), 0)}<small>${k.ok ? `${fmt(k.tp, 0)} × ${fmt(k.to, 0)} em 100` : "poucos dados"}</small></button>`;
+    linhas.forEach(({ k }) => { if (k.real) { if (k.dif < 0) menos++; else mais++; } else if (k.ok) igual++; });
+    document.getElementById("pan-resposta").innerHTML = `${onde()[0].toUpperCase() + onde().slice(1)}, nos cargos e anos com diferença real, quem depende do fundo público se elege <b>menos em ${menos}</b> e <b>mais em ${mais}</b>${igual ? `; em ${igual}, não há diferença` : ""}.`;
+    const svg = document.getElementById("halteres"); limpa(svg);
+    const W = 900, L = 170, R = 230, T = 30, LH = 34, GAP = 22;
+    let y = T; const pos = [];
+    let ultimoAno = null;
+    linhas.forEach(l => { if (l.a !== ultimoAno) { if (ultimoAno !== null) y += GAP; ultimoAno = l.a; l.cab = y; y += 22; } pos.push(y); y += LH; });
+    const H = y + 24; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const mx = Math.min(100, Math.max(25, ...linhas.flatMap(l => [l.k.tp || 0, l.k.to || 0])) * 1.1), X = v => L + (W - L - R) * v / mx;
+    const passo = mx > 60 ? 20 : mx > 30 ? 10 : 5;
+    for (let v = 0; v <= mx; v += passo) { el("line", { x1: X(v), x2: X(v), y1: T, y2: H - 22, class: "grade" }, svg); txt(svg, X(v), H - 8, v + " em 100", "eixo", "middle"); }
+    linhas.forEach((l, i) => {
+      const { a, c, k } = l, yy = pos[i] + LH / 2, apagada = !k.real, atual = a === st.ano && c === st.cargo;
+      if (l.cab != null) { const t = txt(svg, 0, l.cab + 8, `${a} · ${a % 4 === 0 ? "eleição municipal" : "eleição estadual e federal"}`, "rot"); t.style.fontWeight = 800; }
+      const g = el("g", { class: "haltere" + (atual ? " atual" : ""), opacity: apagada ? 0.4 : 1 }, svg);
+      el("rect", { x: 0, y: pos[i], width: W, height: LH, fill: atual ? "#fff6d6" : "transparent", rx: 6 }, g);
+      txt(g, 12, yy, CARGO[c], "rot");
+      if (k.tp == null || k.to == null) { txt(g, L, yy, "sem candidatos suficientes", "eixo"); }
+      else {
+        el("line", { x1: X(k.tp), x2: X(k.to), y1: yy, y2: yy, stroke: "var(--texto-2)", "stroke-width": 3 }, g);
+        el("circle", { cx: X(k.to), cy: yy, r: 8, fill: "var(--verde-esc)", stroke: "#fff", "stroke-width": 2 }, g);
+        el("circle", { cx: X(k.tp), cy: yy, r: 8, fill: "var(--ouro)", stroke: "#fff", "stroke-width": 2 }, g);
+        const zero = Math.round(Math.abs(k.dif)) === 0;
+        const rot = !k.ok ? "poucos candidatos" : `${zero ? "" : k.dif > 0 ? "+" : "−"}${fmt(Math.abs(k.dif), 0)} ${zero ? "ponto" : "pontos"} · ${k.real ? (k.dif < 0 ? "menos chance" : "mais chance") : "sem diferença real"}`;
+        const t = txt(g, W - R + 14, yy, rot, "rot"); if (k.real) t.style.fontWeight = 700;
       }
-    }
-    const box = document.getElementById("calor"); box.innerHTML = h;
-    box.querySelectorAll("button.quadro").forEach(b => b.addEventListener("click", () => { st.ano = +b.dataset.a; st.cargo = +b.dataset.c; salvar(); tudo(); window.scrollTo({ top: 0, behavior: "smooth" }); }));
-    document.getElementById("pan-resposta").innerHTML = `${onde()[0].toUpperCase() + onde().slice(1)}, entre os cargos e anos com diferença real, quem depende do fundo público se elege <b>menos em ${menos}</b> e <b>mais em ${mais}</b>${igual ? `; em ${igual}, não há diferença` : ""}.`;
+      g.style.cursor = "pointer";
+      g.addEventListener("mousemove", ev => mostra(ev, `<b>${CARGO[c]} · ${a}</b><br>Dependem do fundo: ${fmt(k.tp, 0)} em 100 (${int(k.g.pub.e)} de ${int(k.g.pub.n)})<br>Outras fontes: ${fmt(k.to, 0)} em 100 (${int(k.g.out.e)} de ${int(k.g.out.n)})`));
+      g.addEventListener("mouseleave", esconde);
+      g.addEventListener("click", () => { st.ano = a; st.cargo = c; salvar(); tudo(); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    });
   }
 
   // ---------- 3. ver mais ----------

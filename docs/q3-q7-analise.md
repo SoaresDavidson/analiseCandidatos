@@ -2,8 +2,8 @@
 
 Análise para as duas perguntas novas da apresentação, nos 6 estados (AM, GO, MA, MT,
 RS, SE). Os números saem do banco (`dados/processed/tse.duckdb`) pelas views de
-`sql/16_indicadores_municipio.sql` e `sql/17_q7_vies.sql`; a página do site ainda
-não foi feita (proposta no fim).
+`sql/16_indicadores_municipio.sql`, `sql/17_q7_vies.sql` e `sql/21_q3_indices.sql`. As páginas estão
+no painel, no tema Cidades (`docs/q7-painel/`, `docs/q3-painel/`).
 
 | | Pergunta do professor | Período usado |
 |---|---|---|
@@ -45,7 +45,11 @@ do TSE (renomeações e fusões) está ao lado, com a regra de cada linha.
   - *régua de cada ano* (regra do grupo): 2018 e 2020 com a rodada de 2018; 2022 e 2024 com a de 2022;
   - *régua fixa*: a rodada de 2018 para os quatro anos. O que muda nela é só o voto do eleitor.
 - **Região** = região geográfica imediata do IBGE (122 nos 6 estados), votos somados.
-- Cobertura: 100% dos votos têm nota, menos o UP em 2020 (fundado em 2019, fora da rodada).
+- Cobertura: 100% dos votos têm nota, menos o UP (fundado em 2019, fora da rodada de 2018):
+  2020 nas duas réguas e, na régua fixa, também 2022 e 2024 — de 0,01% a 0,03% dos votos.
+- Checagens em `sql/validacao/q7_vies.sql`: a soma dos votos por estado e ano bate exatamente
+  com o `votacao_candidato_munzona` do TSE, cada cidade e ano está numa linha só, e as fusões
+  levam a média dos partidos de origem.
 
 ### Resultados
 
@@ -66,14 +70,18 @@ De 2018 a 2022 a média subiu 0,32 ponto: 0,15 com a régua fixa (o eleitor mudo
 | 2018 → 2022 | 1.238 | 66,8% | 41,5% | 14,4% |
 | 2020 → 2024 | 1.221 | 66,1% | 47,4% | 18,8% |
 
+Em 2024 faltam 17 cidades (8 de GO, 8 do MA e 1 de SE): o TSE não publicou os votos de
+vereador delas (eleição proporcional anulada ou em retotalização; lista na V3 da validação).
+
 **Por estado** (régua de cada ano): todos à direita do meio, entre centro-direita e
 direita. MA e SE tiveram o maior salto de 2018 a 2022 (MA 6,30 → 6,89; SE 6,20 → 6,97);
 RS é o mais à esquerda em todos os anos (6,06 em 2018). De 2020 a 2024 os maiores
 saltos foram do MA (6,22 → 6,62) e do RS (6,21 → 6,55).
 
-**Regiões:** 94 das 122 regiões imediatas foram à direita de 2020 a 2024 (86 de 2018 a
-2022). As maiores guinadas estão no Maranhão (São João dos Patos +1,45; Barreirinhas
-+1,02; de 2018 a 2022, Codó +1,53 e Presidente Dutra +1,37). As poucas que foram à
+**Regiões** (régua fixa): 94 das 122 regiões imediatas foram à direita de 2020 a 2024 (86 de
+2018 a 2022; com a régua de cada ano, 98 e 101). As maiores guinadas estão no Maranhão (São
+João dos Patos +1,45; Barreirinhas +1,02; de 2018 a 2022, Codó +1,53 e Presidente Dutra
++1,37). As poucas que foram à
 esquerda estão no AM (Tefé −0,38, Eirunepé −0,35) e, de 2018 a 2022, no RS (São Borja
 −0,65).
 
@@ -81,7 +89,10 @@ esquerda estão no AM (Tefé −0,38, Eirunepé −0,35) e, de 2018 a 2022, no R
 2022) e de 5,2% para 9,4% dos votos para vereador (2020 → 2024); o Republicanos, de 4,3%
 para 9,1% (deputado federal).
 
-**Prefeitos:** em 813 das 1.221 cidades o partido do prefeito mudou de 2020 para 2024;
+**Prefeitos:** em 733 das 1.221 cidades (60%) o partido do prefeito mudou de 2020 para 2024,
+sem contar como troca as fusões e renomeações (DEM e PSL → União, PTB e Patriota → PRD, PSC →
+Podemos…; comparando só a sigla, seriam 813). Sai de `q6_municipio.fl_troca_partido_2024`
+(ver [Q6](q6-idade.md)). Pela nota do partido,
 158 passaram de um partido à esquerda do meio da régua para um à direita, e 71 o
 contrário (régua fixa). A nota média do partido do prefeito foi de 6,81 para 7,20.
 
@@ -134,14 +145,39 @@ de 13% a 14% das prefeituras nos quatro primeiros quintos de renda e 10,5% no ma
 Nas cidades em que o setor público é a maior atividade (as mais pobres), o União lidera;
 nas do agronegócio, PP e MDB.
 
-**Isentos andam com o tamanho da cidade, não com a riqueza:** correlação de 0,54 entre
-o número de eleitores e a taxa de isentos; nas 20% de cidades com menos isentos (até
+**Isentos andam com o tamanho da cidade, não com a riqueza:** correlação de postos
+(Spearman) de 0,54 entre o número de eleitores e a taxa de isentos (a de Pearson é 0,22
+porque a relação não é linear: sem as 13 cidades com mais de 200 mil eleitores, sobe
+para 0,37); nas 20% de cidades com menos isentos (até
 13,6%) a mediana é de 3,2 mil eleitores; nas 20% com mais (25,5% a 59,4%), 16,8 mil.
 
 **Eleitores por habitante:** em 230 cidades (2024) há mais eleitores aptos que
-habitantes estimados, quase todas pequenas de Goiás (Davinópolis: 4.405 eleitores para
-1.901 habitantes). Pode ser cadastro desatualizado (gente que mudou e continua votando
-lá) ou estimativa baixa de população: é um achado para mostrar com cautela.
+habitantes estimados: GO 99, RS 89, SE 16, MA 15, MT 11 (nenhuma no AM). São cidades
+pequenas: mediana de 3 mil habitantes, contra 10 mil no conjunto. O caso extremo é
+Davinópolis (GO): 4.405 eleitores para 1.901 habitantes.
+
+**É o cadastro eleitoral, não a estimativa de população.** Três testes:
+
+- 227 das 230 têm mais eleitores que a população **contada** no Censo 2022 (SIDRA
+  9606), não só que a estimativa. A estimativa de 2024 é quase igual ao Censo
+  (Davinópolis: 1.901 estimados, 1.902 contados).
+- Todas as 230 têm mais eleitores que **moradores de 15 anos ou mais** no Censo 2022
+  (Davinópolis: 1.566). O excesso é grande demais para ser erro de estimativa.
+- 121 delas já tinham mais eleitores que habitantes em 2020, antes do Censo.
+
+O fenômeno é mais largo que as 230: em 835 das 1.238 cidades dos 6 estados (67%) há
+mais eleitores aptos que moradores de 15 anos ou mais. A explicação compatível com os
+dados é o **domicílio eleitoral**: a lei deixa votar onde a pessoa tem vínculo
+residencial, familiar, profissional ou comunitário, não só onde mora
+([Res. TSE 23.659/2021, art. 23](https://www.tse.jus.br/legislacao/compilada/res/2021/resolucao-no-23-659-de-26-de-outubro-de-2021);
+[TSE, Temas Selecionados](https://temasselecionados.tse.jus.br/temas-selecionados/eleitor-do-alistamento-ao-voto/domicilio-eleitoral)).
+Quem migra para a cidade grande pode manter o título na cidade de origem. O que os
+dados **não** permitem afirmar: quantos desses eleitores moram fora, ou se há
+irregularidade. A abstenção também não é maior nelas: 11,9% (mediana) nas 230, e entre
+as cidades de menos de 5 mil habitantes, 11,3% nas que têm mais eleitores que
+habitantes e 11,2% nas outras. A
+consequência para a Q3: nas cidades pequenas, "eleitores por habitante" mede o vínculo
+eleitoral com a cidade, não a participação dos moradores.
 
 ---
 

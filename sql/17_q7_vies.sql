@@ -137,3 +137,30 @@ INNER JOIN modelo.partido AS p ON c.ano = p.ano AND c.nr_partido = p.nr_partido
 LEFT JOIN modelo.espectro_partido AS e ON c.ano = e.ano AND c.nr_partido = e.nr_partido
 LEFT JOIN q7_nota_rodada2018 AS f ON p.sg_partido = f.sg_partido_tse
 WHERE c.ano IN (2020, 2024) AND c.cd_cargo = 11 AND c.fl_eleito;
+
+-- Família do partido, para comparar votos entre anos apesar de renomeações e fusões
+-- (registro de partidos do TSE): PR → PL e PRB → Republicanos e PPS → Cidadania (2019);
+-- PHS → Podemos, PRP → Patriota, PPL → PCdoB (incorporações de 2019); DEM + PSL → União
+-- e PTC → Agir (2022); PSC → Podemos, PROS → Solidariedade, PTB + Patriota → PRD e
+-- PMN → Mobiliza (2023).
+CREATE OR REPLACE VIEW q7_voto_familia AS
+SELECT
+    v.cod_ibge,
+    v.ano,
+    v.cd_cargo,
+    CASE
+        WHEN v.sg_partido IN ('PR', 'PL') THEN 'PL'
+        WHEN v.sg_partido IN ('PRB', 'REPUBLICANOS') THEN 'REPUBLICANOS'
+        WHEN v.sg_partido IN ('PPS', 'CIDADANIA') THEN 'CIDADANIA'
+        WHEN v.sg_partido IN ('DEM', 'PSL', 'UNIÃO') THEN 'UNIÃO (DEM + PSL)'
+        WHEN v.sg_partido IN ('PTB', 'PATRIOTA', 'PRP', 'PRD') THEN 'PRD (PTB + PATRIOTA)'
+        WHEN v.sg_partido IN ('PHS', 'PODE', 'PSC') THEN 'PODEMOS'
+        WHEN v.sg_partido IN ('PPL', 'PC do B') THEN 'PC do B'
+        WHEN v.sg_partido IN ('PTC', 'AGIR') THEN 'AGIR'
+        WHEN v.sg_partido IN ('PMN', 'MOBILIZA') THEN 'MOBILIZA (PMN)'
+        WHEN v.sg_partido IN ('PROS', 'SOLIDARIEDADE') THEN 'SOLIDARIEDADE'
+        ELSE v.sg_partido
+    END AS ds_familia,
+    sum(v.qt_votos) AS qt_votos
+FROM q7_voto_partido AS v
+GROUP BY ALL;

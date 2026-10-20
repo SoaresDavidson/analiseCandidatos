@@ -120,6 +120,22 @@ RECORTE_REMOTO = [
         [2018, 2020, 2022, 2024],
         ("perfil_comparecimento_abstencao_",),
     ),
+    # vagas por cargo e UE: o divisor do custo da cadeira (Q1) e da distribuição das cadeiras (Q5)
+    (
+        "candidatos",
+        "vagas",
+        CANDIDATOS["vagas"],
+        [2018, 2020, 2022, 2024],
+        ("consulta_vagas_",),
+    ),
+    # votos de legenda por partido e município: VOTACAO_LEGENDA_MUNICIPIO (Q5)
+    (
+        "resultados",
+        "votacao_partido_munzona",
+        RESULTADOS["votacao_partido_munzona"],
+        [2018, 2020, 2022, 2024],
+        ("votacao_partido_munzona_",),
+    ),
 ]
 
 
@@ -171,7 +187,7 @@ def coletar_prestacao_contas(force: bool, ufs: Ufs) -> None:
 def coletar_recorte_remoto(force: bool, ufs: Ufs) -> None:
     """Extrai arquivos de dentro dos zips do TSE sem baixar os zips (precisa de --uf).
 
-    Só o que a Q3, a Q6, a Q7, a Q8, a Q9 e as fichas dos candidatos usam. Grava nas mesmas pastas
+    Só o que a Q1, a Q3, a Q5, a Q6, a Q7, a Q8, a Q9 e as fichas dos candidatos usam. Grava nas mesmas pastas
     dos outros coletores, então os .sql leem sem mudança nenhuma. Para os 6
     estados, poupa ~3 GB de zips no disco.
     """

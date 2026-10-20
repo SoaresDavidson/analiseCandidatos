@@ -24,5 +24,20 @@ describe("espectro", () => {
     for (let i = 0; i < CATEGORIAS.length; i++) expect(CORES_ESPECTRO[i]).toMatch(/^#[0-9a-f]{6}$/);
   });
 
-  // TODO(human): casos nos cortes [1.5, 3, 4.49, 5.5, 7, 8.5]
+  // a nota igual ao corte fica na categoria da esquerda (nota <= corte); um centésimo acima já muda
+  it.each([
+    [1.5, "extrema esquerda"],
+    [1.51, "esquerda"],
+    [3, "esquerda"],
+    [3.01, "centro-esquerda"],
+    [4.49, "centro-esquerda"],
+    // o corte é 4.49, não 4.5: uma nota 4,50 já conta como centro
+    [4.5, "centro"],
+    [5.5, "centro"],
+    [5.51, "centro-direita"],
+    [7, "centro-direita"],
+    [7.01, "direita"],
+    [8.5, "direita"],
+    [8.51, "extrema direita"],
+  ])("nota %d -> %s", (nota, nome) => expect(nomeCategoria(nota)).toBe(nome));
 });

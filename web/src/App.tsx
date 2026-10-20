@@ -1,9 +1,9 @@
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Carregando, ProvedorDica } from "./componentes";
 import { Inicio } from "./inicio/Inicio";
 import { NavegacaoContexto, type Navegacao } from "./lib/navegacao";
 import { irPara, useHash } from "./lib/useHash";
-import { FichaEleito, PAGINAS, TEMAS, type PaginaComTema } from "./paineis/registro";
+import { ESCONDIDAS, FichaEleito, PAGINAS, TEMAS, type PaginaComTema } from "./paineis/registro";
 
 // Navegação por tema: poucas abas no topo; dentro de cada tema, as perguntas viram
 // botões (como "PRESIDENTE | GOVERNADOR | ..." no site do TSE). Cada pergunta é um painel.
@@ -16,12 +16,39 @@ function resolver(id: string): PaginaComTema | null {
   return tema ? { ...tema.paginas[0], tema } : PAGINAS.find(p => p.id === id) ?? null;
 }
 
+// o segredo: código Konami (↑↑↓↓←→←→BA) ou 5 cliques no logo em 3 s abrem a Arena
+const KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+
 const digitando = (e: KeyboardEvent) => e.target instanceof Element && !!e.target.closest("input, select, textarea");
 
 export default function App() {
   const [id, extra] = useHash();
   const pagina = resolver(id);
+  const escondida = pagina ? null : ESCONDIDAS.find(x => x.id === id) ?? null;
   const [ficha, setFicha] = useState<{ ano: number; sq: number } | null>(null);
+  const [aviso, setAviso] = useState(false);
+  const progresso = useRef(0);
+  const cliques = useRef<number[]>([]);
+
+  const desbloquear = useCallback(() => {
+    setAviso(true);
+    setTimeout(() => setAviso(false), 1800);
+    setTimeout(() => irPara("arena"), 500);
+  }, []);
+
+  /** Avança o código Konami; true enquanto ele está no meio (as setas não trocam de página). */
+  const konami = useCallback((tecla: string) => {
+    const k = tecla.length === 1 ? tecla.toLowerCase() : tecla;
+    progresso.current = k === KONAMI[progresso.current] ? progresso.current + 1 : k === KONAMI[0] ? 1 : 0;
+    if (progresso.current === KONAMI.length) { progresso.current = 0; desbloquear(); return true; }
+    return progresso.current > 4;
+  }, [desbloquear]);
+
+  const cliqueNoLogo = () => {
+    const t = Date.now();
+    cliques.current = cliques.current.filter(x => t - x < 3000).concat(t);
+    if (cliques.current.length >= 5) { cliques.current = []; desbloquear(); }
+  };
 
   const passo = useCallback((d: number) => {
     const i = ORDEM.indexOf(pagina ? pagina.id : "inicio");
@@ -31,12 +58,13 @@ export default function App() {
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
       if (digitando(e) || ficha) return;
+      if (konami(e.key)) return;
       if (e.key === "ArrowRight") passo(1);
       if (e.key === "ArrowLeft") passo(-1);
     };
     document.addEventListener("keydown", tecla);
     return () => document.removeEventListener("keydown", tecla);
-  }, [passo, ficha]);
+  }, [passo, ficha, konami]);
 
   const nav = useMemo<Navegacao>(() => ({
     abrirCandidato: (ano, sq) => setFicha({ ano, sq }),
@@ -49,7 +77,7 @@ export default function App() {
     else document.documentElement.requestFullscreen().catch(() => { /* o navegador não deixa */ });
   };
 
-  const temaAtual = pagina ? pagina.tema.id : "inicio";
+  const temaAtual = pagina ? pagina.tema.id : escondida ? null : "inicio";
   const BOTAO_FAIXA = "cursor-pointer border-0 bg-transparent px-1 py-0.5 text-[12.5px] font-bold text-white hover:underline";
 
   return (
@@ -68,7 +96,7 @@ export default function App() {
 
           <header className="relative z-[2] flex-none bg-branco shadow-[0_2px_8px_rgb(0_0_0/.06)] motion-safe:animate-desce motion-safe:[animation-delay:.08s]">
             <div className="mx-auto flex min-h-[62px] max-w-pagina flex-wrap items-center gap-x-7 gap-y-2.5 px-5">
-              <a className="grid leading-none no-underline" href="#inicio">
+              <a className="grid leading-none no-underline" href="#inicio" onClick={cliqueNoLogo}>
                 <b className="text-[11.5px] font-extrabold tracking-[.02em]">ELEIÇÕES</b>
                 <span className="text-[21px] font-extrabold text-ouro">POLITICAGEM</span>
                 <small className="mt-0.5 text-[9px] font-bold text-texto-2">AM · GO · MA · MT · RS · SE</small>
@@ -99,16 +127,22 @@ export default function App() {
           )}
 
           {/* a chave reinicia a rolagem e a animação de entrada a cada página */}
-          <main key={pagina?.id ?? "inicio"} className="min-h-0 flex-1 overflow-y-auto">
-            {pagina ? (
+          <main key={pagina?.id ?? escondida?.id ?? "inicio"} className="min-h-0 flex-1 overflow-y-auto">
+            {pagina || escondida ? (
               <Suspense fallback={<Carregando />}>
-                <pagina.Componente extra={extra} />
+                {pagina ? <pagina.Componente extra={extra} /> : escondida && <escondida.Componente extra={extra} />}
               </Suspense>
             ) : (
               <Inicio />
             )}
           </main>
         </div>
+
+        {aviso && (
+          <div role="status" className="fixed top-[40%] left-1/2 z-[60] flex -translate-1/2 items-center gap-3 rounded-2xl bg-[#1b222b] px-[30px] py-[18px] text-[26px] font-extrabold text-[#ffd86b] shadow-[0_0_0_4px_#ffd86b,0_20px_60px_rgb(0_0_0/.5)] animate-segredo">
+            <span aria-hidden="true" className="text-[38px]">⚡</span>Arena desbloqueada!
+          </div>
+        )}
 
         {/* a ficha de um eleito abre por cima da página atual; ao fechar, a página continua onde estava */}
         {ficha && (

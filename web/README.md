@@ -42,9 +42,10 @@ public/bandeiras/  bandeiras dos 6 estados
 
 ## Fotos
 
-As fotos dos eleitos não vão para o git. Ficam em `docs/candidatos-painel/fotos/`
-(baixadas pelo `scripts/servir_painel.py`); no `npm run dev` e no `npm run preview`
-o caminho `/fotos/<ano>/<sq>.jpg` é servido de lá. Sem a foto, aparece a inicial.
+As fotos dos eleitos não vão para o git. `npm run fotos` baixa do TSE as que faltam
+para `public/fotos/<ano>/<sq>.jpg` (~14 mil, uns 3 minutos na primeira vez; reaproveita
+as de `docs/candidatos-painel/fotos/` se existirem). Daí em diante o `npm run dev` as
+serve e o `npm run build` as copia para `dist/`. Sem a foto, aparece a inicial do nome.
 
 ## Dados
 

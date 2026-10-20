@@ -117,12 +117,13 @@ function Cadeira({ id, assento: s, x, y, raio, aoClicar, aoPassar, aoSair }: {
 }) {
   const [semFoto, setSemFoto] = useState(false);
   return (
-    <g role="button" tabIndex={0} aria-label={`${s.nome}, ${s.partido}`} className="cursor-pointer"
+    <g role="button" tabIndex={0} aria-label={`${s.nome}, ${s.partido}`} className="group cursor-pointer outline-none"
       onClick={aoClicar}
       onKeyDown={ev => { if (aoClicar && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); aoClicar(); } }}
       onMouseMove={aoPassar} onMouseLeave={aoSair}>
       <clipPath id={id}><circle cx={x} cy={y} r={raio} /></clipPath>
-      <circle cx={x} cy={y} r={raio + 3.5} fill={s.cor || "#b9b6ae"} />
+      {/* anel na cor do espectro; contorno ouro ao passar o mouse ou focar pelo teclado */}
+      <circle cx={x} cy={y} r={raio + 3.5} fill={s.cor || "#b9b6ae"} className="group-hover:stroke-ouro group-hover:stroke-4 group-focus-visible:stroke-ouro group-focus-visible:stroke-4" />
       <circle cx={x} cy={y} r={raio} fill="#e8e5de" />
       <text x={x} y={y + raio * 0.35} textAnchor="middle" fontSize={raio} fontWeight={800} fill="#8a8578">{(s.nome || "?")[0]}</text>
       {s.foto && !semFoto && (

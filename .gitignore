@@ -14,3 +14,6 @@ __pycache__/
 # checkpoints automáticos do Jupyter
 .ipynb_checkpoints/
 
+
+# fotos dos eleitos no app React: o scripts/baixar_fotos_web.py baixa do TSE
+/web/public/fotos/

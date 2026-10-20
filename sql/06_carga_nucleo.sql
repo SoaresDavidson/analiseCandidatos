@@ -58,6 +58,13 @@ DELETE FROM modelo.candidatura;
 DELETE FROM modelo.politico;
 -- filha de PARTIDO carregada pelo 15_espectro (rodar o 15 de novo depois)
 DELETE FROM modelo.espectro_partido;
+-- filhas de MUNICIPIO, CARGO e ELEICAO carregadas pelo 16_indicadores e pelo 19_faixa_etaria
+-- (rodar os dois de novo depois)
+DELETE FROM modelo.municipio_ano;
+DELETE FROM modelo.municipio_censo;
+DELETE FROM modelo.comparecimento_municipio;
+DELETE FROM modelo.censo_faixa_etaria;
+DELETE FROM modelo.comparecimento_perfil;
 DELETE FROM modelo.partido;
 DELETE FROM modelo.cargo;
 DELETE FROM modelo.eleicao;

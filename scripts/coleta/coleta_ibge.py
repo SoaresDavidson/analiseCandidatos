@@ -3,6 +3,7 @@
 Uso:
     uv run python -m scripts.coleta.coleta_ibge               # tudo
     uv run python -m scripts.coleta.coleta_ibge sidra pib malha
+    uv run python -m scripts.coleta.coleta_ibge idade          # só a 9606 (Q6)
     uv run python -m scripts.coleta.coleta_ibge --force
 """
 
@@ -92,8 +93,19 @@ def coletar_sidra(force: bool, _ufs: Ufs) -> None:
         force,
     )
 
-    # população por faixa etária, por município. 21 faixas x 5570 municípios
-    # estoura o limite de 50k valores, então vai em lotes de faixas.
+    coletar_idade(force, _ufs)
+
+
+def coletar_idade(force: bool, _ufs: Ufs) -> None:
+    """População por faixa etária e município, Censo 2022 (SIDRA 9606), para a Q6.
+
+    Fica fora de `sidra` pelo mesmo motivo do IPCA (metadados podem falhar no
+    certificado). 21 faixas x 5570 municípios estoura o limite de 50k valores,
+    então vai em lotes de faixas.
+    """
+    log("[ibge/idade]")
+    pasta = RAW / "ibge" / "sidra"
+    pasta.mkdir(parents=True, exist_ok=True)
     destino = pasta / "9606_populacao_idade_municipios.json"
     if destino.exists() and not force:
         log(f"  ok      {destino.relative_to(ROOT)}")
@@ -189,6 +201,7 @@ COLETORES = {
     "sidra": coletar_sidra,
     "ipca": coletar_ipca,
     "indicadores": coletar_indicadores,
+    "idade": coletar_idade,
     "pib": coletar_pib,
     "malha": coletar_malha,
 }

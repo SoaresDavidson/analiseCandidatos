@@ -73,6 +73,10 @@ RESULTADOS = {
     "detalhe_votacao_munzona": "detalhe_votacao_munzona/detalhe_votacao_munzona_{ano}.zip",
 }
 
+ABSTENCAO = {
+    "comparecimento_abstencao": "perfil_comparecimento_abstencao/perfil_comparecimento_abstencao_{ano}.zip",
+}
+
 # recorte_remoto: (tema, nome local, caminho no CDN, anos, prefixos dos arquivos)
 RECORTE_REMOTO = [
     # Q8, Q9 e campanha na ficha: recibos e despesas contratadas, leiaute de 2018+
@@ -108,11 +112,15 @@ RECORTE_REMOTO = [
         [2018, 2020, 2022, 2024],
         ("detalhe_votacao_munzona_",),
     ),
+    # aptos, comparecimento e abstenção por faixa etária e município (Q6: idade do eleitorado)
+    (
+        "abstencao",
+        "comparecimento_abstencao",
+        ABSTENCAO["comparecimento_abstencao"],
+        [2018, 2020, 2022, 2024],
+        ("perfil_comparecimento_abstencao_",),
+    ),
 ]
-
-ABSTENCAO = {
-    "comparecimento_abstencao": "perfil_comparecimento_abstencao/perfil_comparecimento_abstencao_{ano}.zip",
-}
 
 
 def _coletar_tema(
@@ -163,7 +171,7 @@ def coletar_prestacao_contas(force: bool, ufs: Ufs) -> None:
 def coletar_recorte_remoto(force: bool, ufs: Ufs) -> None:
     """Extrai arquivos de dentro dos zips do TSE sem baixar os zips (precisa de --uf).
 
-    Só o que a Q8, a Q9 e as fichas dos candidatos usam. Grava nas mesmas pastas
+    Só o que a Q3, a Q6, a Q7, a Q8, a Q9 e as fichas dos candidatos usam. Grava nas mesmas pastas
     dos outros coletores, então os .sql leem sem mudança nenhuma. Para os 6
     estados, poupa ~3 GB de zips no disco.
     """

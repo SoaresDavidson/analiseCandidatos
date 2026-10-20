@@ -45,7 +45,11 @@ do TSE (renomeações e fusões) está ao lado, com a regra de cada linha.
   - *régua de cada ano* (regra do grupo): 2018 e 2020 com a rodada de 2018; 2022 e 2024 com a de 2022;
   - *régua fixa*: a rodada de 2018 para os quatro anos. O que muda nela é só o voto do eleitor.
 - **Região** = região geográfica imediata do IBGE (122 nos 6 estados), votos somados.
-- Cobertura: 100% dos votos têm nota, menos o UP em 2020 (fundado em 2019, fora da rodada).
+- Cobertura: 100% dos votos têm nota, menos o UP (fundado em 2019, fora da rodada de 2018):
+  2020 nas duas réguas e, na régua fixa, também 2022 e 2024 — de 0,01% a 0,03% dos votos.
+- Checagens em `sql/validacao/q7_vies.sql`: a soma dos votos por estado e ano bate exatamente
+  com o `votacao_candidato_munzona` do TSE, cada cidade e ano está numa linha só, e as fusões
+  levam a média dos partidos de origem.
 
 ### Resultados
 
@@ -66,14 +70,18 @@ De 2018 a 2022 a média subiu 0,32 ponto: 0,15 com a régua fixa (o eleitor mudo
 | 2018 → 2022 | 1.238 | 66,8% | 41,5% | 14,4% |
 | 2020 → 2024 | 1.221 | 66,1% | 47,4% | 18,8% |
 
+Em 2024 faltam 17 cidades (8 de GO, 8 do MA e 1 de SE): o TSE não publicou os votos de
+vereador delas (eleição proporcional anulada ou em retotalização; lista na V3 da validação).
+
 **Por estado** (régua de cada ano): todos à direita do meio, entre centro-direita e
 direita. MA e SE tiveram o maior salto de 2018 a 2022 (MA 6,30 → 6,89; SE 6,20 → 6,97);
 RS é o mais à esquerda em todos os anos (6,06 em 2018). De 2020 a 2024 os maiores
 saltos foram do MA (6,22 → 6,62) e do RS (6,21 → 6,55).
 
-**Regiões:** 94 das 122 regiões imediatas foram à direita de 2020 a 2024 (86 de 2018 a
-2022). As maiores guinadas estão no Maranhão (São João dos Patos +1,45; Barreirinhas
-+1,02; de 2018 a 2022, Codó +1,53 e Presidente Dutra +1,37). As poucas que foram à
+**Regiões** (régua fixa): 94 das 122 regiões imediatas foram à direita de 2020 a 2024 (86 de
+2018 a 2022; com a régua de cada ano, 98 e 101). As maiores guinadas estão no Maranhão (São
+João dos Patos +1,45; Barreirinhas +1,02; de 2018 a 2022, Codó +1,53 e Presidente Dutra
++1,37). As poucas que foram à
 esquerda estão no AM (Tefé −0,38, Eirunepé −0,35) e, de 2018 a 2022, no RS (São Borja
 −0,65).
 
@@ -81,7 +89,10 @@ esquerda estão no AM (Tefé −0,38, Eirunepé −0,35) e, de 2018 a 2022, no R
 2022) e de 5,2% para 9,4% dos votos para vereador (2020 → 2024); o Republicanos, de 4,3%
 para 9,1% (deputado federal).
 
-**Prefeitos:** em 813 das 1.221 cidades o partido do prefeito mudou de 2020 para 2024;
+**Prefeitos:** em 733 das 1.221 cidades (60%) o partido do prefeito mudou de 2020 para 2024,
+sem contar como troca as fusões e renomeações (DEM e PSL → União, PTB e Patriota → PRD, PSC →
+Podemos…; comparando só a sigla, seriam 813). Sai de `q6_municipio.fl_troca_partido_2024`
+(ver [Q6](q6-idade.md)). Pela nota do partido,
 158 passaram de um partido à esquerda do meio da régua para um à direita, e 71 o
 contrário (régua fixa). A nota média do partido do prefeito foi de 6,81 para 7,20.
 

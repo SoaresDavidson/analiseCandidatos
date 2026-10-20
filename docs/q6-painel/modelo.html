@@ -1,0 +1,430 @@
+<title>Idade e Alternância</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap">
+<style>
+/* Visual inspirado no site de resultados do TSE: fundo cinza-claro, cartões brancos,
+   destaque amarelo-ouro e verde-oliva. Cada pergunta abre com a resposta em linguagem
+   simples, dois números e um gráfico; o detalhe técnico fica nos blocos "Ver mais". */
+:root {
+  color-scheme: light;
+  --fundo: #f4f4f4; --branco: #ffffff; --texto: #333333; --texto-2: #6b6b6b; --linha: #e6e4df; --bege: #eae8e4;
+  --ouro: #ebb400; --ouro-esc: #8f6c00; --verde: #9eb735; --verde-esc: #5e7a12;
+  /* 4 níveis de escolaridade: um tom de verde, do claro ao escuro (validado, ordinal) */
+  --n1: #a5bd4e; --n2: #7e9a2e; --n3: #576f14; --n4: #32440a;
+  --sem-dado: #d9d6cf; --capital: #c0392b;
+  --fonte: "Open Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fundo); color: var(--texto); font: 15px/1.55 var(--fonte); }
+button, select, input { font: inherit; color: inherit; }
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+
+/* barra de filtros (como "Brasil / Turno" do TSE) */
+.sub { background: var(--branco); border-radius: 0 0 18px 18px; box-shadow: 0 4px 10px rgb(0 0 0 / .06); position: sticky; top: 0; z-index: 5; }
+.sub-in { max-width: 1160px; margin: 0 auto; padding: 10px 20px 14px; display: flex; gap: 14px 24px; align-items: flex-end; flex-wrap: wrap; }
+.campo { display: grid; gap: 3px; font-weight: 700; font-size: 13px; }
+.local { appearance: none; border: 2px solid var(--ouro); border-radius: 8px; padding: 7px 34px 7px 14px; font-weight: 700; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23333' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center; cursor: pointer; }
+.tog { display: inline-flex; border: 2px solid var(--ouro); border-radius: 7px; overflow: hidden; background: #fff; flex-wrap: wrap; }
+.tog button { border: 0; background: transparent; padding: 6px 13px; font-weight: 700; cursor: pointer; }
+.tog button[aria-pressed="true"] { background: var(--ouro); }
+.tog button:hover:not([aria-pressed="true"]) { background: #fff6d6; }
+
+main { max-width: 1160px; margin: 0 auto; padding: 22px 20px 64px; display: grid; gap: 18px; }
+.etiqueta { justify-self: start; background: var(--verde-esc); color: #fff; font-weight: 700; font-size: 13px; padding: 6px 14px; border-radius: 6px; letter-spacing: .03em; }
+h1 { font-size: clamp(24px, 3.2vw, 30px); font-weight: 800; margin: 0; line-height: 1.2; }
+h2 { font-size: 19px; font-weight: 800; margin: 0; line-height: 1.3; }
+h3 { font-size: 16px; font-weight: 700; margin: 0; }
+p { margin: 0; }
+.enunciado { color: var(--texto-2); font-size: 13.5px; max-width: 90ch; }
+.caixa { background: var(--branco); border-radius: 14px; padding: 18px 20px; display: grid; gap: 12px; min-width: 0; }
+.duas { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .duas { grid-template-columns: minmax(0, 1fr); } }
+.simples { font-size: 17px; line-height: 1.55; }
+.simples b { font-weight: 800; }
+.linha { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--linha); font-size: 14.5px; }
+.linha b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.aneis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 600px) { .aneis { grid-template-columns: minmax(0, 1fr); } }
+.anel { background: var(--branco); border: 2px solid var(--ouro); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 14px; align-items: center; }
+.anel.verde { border-color: var(--verde); }
+.anel .pct { font-size: 34px; font-weight: 800; color: var(--ouro-esc); line-height: 1; font-variant-numeric: tabular-nums; }
+.anel.verde .pct { color: var(--verde-esc); }
+.anel .q { font-size: 13px; color: var(--texto-2); }
+.anel .nome { font-size: 16px; font-weight: 800; text-transform: uppercase; margin-top: 4px; line-height: 1.2; }
+.barras { display: grid; gap: 10px; }
+.barra { display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr) 3.4em; gap: 10px; align-items: center; font-size: 14px; }
+.barra .trilho { height: 18px; background: var(--bege); border-radius: 3px; position: relative; }
+.barra .trilho i { display: block; height: 100%; border-radius: 3px; }
+.barra .trilho .media { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 2px dashed var(--texto-2); }
+.barra b { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.nota { font-size: 13px; color: var(--texto-2); }
+.selo { justify-self: start; display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; padding: 6px 12px; border-radius: 999px; }
+.selo.sim { background: #eef4d8; color: var(--verde-esc); }
+.selo.nao { background: var(--bege); color: var(--texto); }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--texto-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.cor { width: 13px; height: 13px; border-radius: 3px; display: inline-block; flex: none; }
+
+/* mapa */
+.mapa-grade { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .mapa-grade { grid-template-columns: minmax(0, 1fr); } }
+.mapa { width: 100%; height: auto; max-height: 560px; display: block; }
+.mapa path { stroke: #fff; stroke-width: 0.6; cursor: pointer; vector-effect: non-scaling-stroke; }
+.mapa path.sel { stroke: var(--texto); stroke-width: 2.5; }
+.controles { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: flex-end; }
+.busca { border: 2px solid var(--linha); border-radius: 8px; padding: 7px 12px; min-width: 200px; max-width: 100%; }
+.rampa { display: grid; gap: 4px; max-width: 340px; font-size: 12.5px; color: var(--texto-2); }
+.rampa .faixa-cor { height: 10px; border-radius: 3px; }
+.rampa .marcas { display: flex; justify-content: space-between; }
+.detalhe { display: grid; gap: 10px; }
+.detalhe .vazio { color: var(--texto-2); }
+.empilhada { display: flex; gap: 2px; height: 24px; border-radius: 4px; overflow: hidden; }
+.empilhada span { display: grid; place-items: center; color: #fff; font-size: 11.5px; font-weight: 700; min-width: 0; overflow: hidden; }
+.eleitos { max-height: 300px; overflow-y: auto; border-top: 1px solid var(--linha); }
+.eleitos div { display: flex; justify-content: space-between; gap: 10px; padding: 6px 2px; border-bottom: 1px solid var(--linha); font-size: 13.5px; }
+.eleitos small { color: var(--texto-2); }
+
+/* "ver mais": blocos recolhidos */
+details.mais { background: var(--branco); border-radius: 14px; padding: 0; }
+details.mais > summary { list-style: none; cursor: pointer; padding: 14px 20px; font-weight: 700; display: flex; justify-content: space-between; gap: 12px; align-items: center; border: 2px solid var(--ouro); border-radius: 14px; }
+details.mais > summary::-webkit-details-marker { display: none; }
+details.mais > summary::after { content: "+"; font-size: 22px; line-height: 1; color: var(--ouro-esc); }
+details.mais[open] > summary { border-radius: 14px 14px 0 0; }
+details.mais[open] > summary::after { content: "–"; }
+details.mais > div { padding: 16px 20px 20px; display: grid; gap: 14px; border: 2px solid var(--ouro); border-top: 0; border-radius: 0 0 14px 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--linha); font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 12.5px; color: var(--texto-2); font-weight: 700; }
+.rolagem { overflow-x: auto; }
+svg text { font-family: var(--fonte); }
+.eixo { fill: var(--texto-2); font-size: 11.5px; }
+.rot { fill: var(--texto); font-size: 12.5px; }
+.grade { stroke: var(--linha); stroke-width: 1; }
+.grafico { width: 100%; height: auto; display: block; }
+.metodo ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 90ch; }
+#dica { position: fixed; z-index: 20; pointer-events: none; background: var(--texto); color: #fff; font-size: 13px; line-height: 1.45; padding: 8px 11px; border-radius: 8px; max-width: 280px; box-shadow: 0 6px 18px rgb(0 0 0 / .2); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* comum a Q3 e Q7: selo de partido na cor do espectro, números, botão para a página da cidade */
+.chip { display: inline-block; border-left: 4px solid var(--c); background: color-mix(in srgb, var(--c) 14%, #fff); padding: 1px 7px; border-radius: 4px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.numeros { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.num { border: 2px solid var(--ouro); border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; align-content: start; }
+.num b { font-size: 22px; font-weight: 800; color: var(--ouro-esc); line-height: 1.15; font-variant-numeric: tabular-nums; }
+.num span { font-size: 13px; color: var(--texto-2); }
+.mais-detalhes { justify-self: start; margin-top: 6px; border: 0; border-radius: 8px; padding: 8px 16px; background: var(--ouro); font-weight: 700; cursor: pointer; }
+.mais-detalhes:hover { background: #d9a600; }
+.detalhe h3 { margin-bottom: 2px; }
+.quinto { display: grid; grid-template-columns: minmax(0, 11em) minmax(0, 1fr) 3.2em; gap: 10px; align-items: center; padding: 4px 0; }
+.q-rot { display: grid; font-size: 13.5px; line-height: 1.25; }
+.q-rot small { color: var(--texto-2); font-size: 12px; }
+.quinto .empilhada { height: 26px; }
+.quinto .empilhada span { font-size: 11px; text-shadow: 0 0 2px rgb(0 0 0 / .45); }
+.q-voto { text-align: right; font-variant-numeric: tabular-nums; }
+.mapa-grade #disp { max-height: 520px; }
+/* Q6: idades em fila (régua de idade), dispersão do voto por idade, alternância */
+.idades { width: 100%; height: auto; display: block; }
+.grupo-alt { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 700px) { .grupo-alt { grid-template-columns: minmax(0, 1fr); } }
+.grupo-alt h3 { margin-bottom: 8px; }
+.partidos3 { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13.5px; }
+.partidos3 .seta { color: var(--texto-2); }
+.partidos3 .troca { font-size: 12px; font-weight: 700; color: var(--ouro-esc); }
+.partidos3 .fica { font-size: 12px; font-weight: 700; color: var(--verde-esc); }
+.sigla { display: inline-block; border: 1px solid var(--linha); background: var(--fundo); padding: 1px 7px; border-radius: 4px; font-weight: 700; font-size: 12.5px; }
+</style>
+<div class="sub"><div class="sub-in">
+  <label class="campo">Estado<select class="local" id="f-uf"></select></label>
+  <span class="campo">Comparar cada cidade com<span class="tog" id="f-corte"></span></span>
+  <span class="campo">Eleição municipal<span class="tog" id="f-ano"></span></span>
+</div></div>
+
+<main>
+  <span class="etiqueta">PERGUNTA 6 · IDADE E ALTERNÂNCIA DE PODER</span>
+  <h1>Cidade velha, cidade jovem: muda quem governa?</h1>
+  <p class="enunciado">Enunciado: idade média do município (mais velho × mais jovem): há alternância de poder? Qual a idade média dos eleitos? Jovem vota em jovem e velho em velho? [2018–2024]</p>
+
+  <div class="duas">
+    <section class="caixa">
+      <h2>A resposta</h2>
+      <p class="simples" id="resposta"></p>
+      <div id="linhas"></div>
+    </section>
+    <div style="display:grid;gap:14px;min-width:0">
+      <div class="aneis" id="aneis"></div>
+      <section class="caixa">
+        <h2 id="idades-titulo"></h2>
+        <svg class="idades" id="idades" role="img" aria-label="Idade média da população, do eleitorado e dos eleitos por grupo de cidades"></svg>
+        <div class="legenda" id="idades-legenda"></div>
+        <p class="nota" id="idades-nota"></p>
+      </section>
+    </div>
+  </div>
+
+  <section class="caixa">
+    <h2 id="alt-titulo"></h2>
+    <p class="simples" style="font-size:15.5px" id="alt-resposta"></p>
+    <div class="grupo-alt">
+      <div><h3>Comparando todas as cidades dos 6 estados</h3><div class="barras" id="alt-todas"></div></div>
+      <div><h3>Comparando cidades do mesmo estado</h3><div class="barras" id="alt-uf"></div></div>
+    </div>
+    <p class="nota">Partido do prefeito eleito mudou de uma eleição para a outra? Fusões e renomeações não contam como troca (PSL → União, PMDB → MDB…). Cidades com eleição anulada ficam de fora.</p>
+  </section>
+
+  <section class="caixa">
+    <h2 id="mapa-titulo"></h2>
+    <div class="controles">
+      <label class="campo">Mapa do estado<select class="local" id="f-mapa-uf"></select></label>
+      <input class="busca" type="search" id="f-busca" placeholder="Buscar cidade" aria-label="Buscar cidade" autocomplete="off" list="cidades-lista">
+      <datalist id="cidades-lista"></datalist>
+    </div>
+    <div class="mapa-grade">
+      <div><svg class="mapa" id="mapa" role="img" aria-label="Mapa das cidades pela idade média da população"></svg><div id="rampa"></div></div>
+      <div class="detalhe" id="detalhe"></div>
+    </div>
+  </section>
+
+  <section class="caixa">
+    <h2 id="disp-titulo"></h2>
+    <div class="controles"><span class="campo">Faixa de idade<span class="tog" id="f-faixa"></span></span></div>
+    <p class="simples" style="font-size:15.5px" id="disp-resposta"></p>
+    <svg class="grafico" id="disp" role="img" aria-label="Cada cidade: parcela do eleitorado na faixa × parcela dos votos para candidatos da faixa" style="max-height:520px"></svg>
+    <div class="legenda" id="disp-legenda"></div>
+    <p class="nota">Cada ponto é uma cidade, na eleição para vereador. O voto é secreto: não dá para saber em quem o jovem votou. O gráfico compara quantos jovens (ou idosos) a cidade tem com quantos votos foram para candidatos jovens (ou idosos). Se cada faixa votasse só nos seus, os pontos ficariam sobre a linha tracejada.</p>
+  </section>
+
+  <details class="mais"><summary>Idade média dos eleitos, cargo por cargo</summary><div>
+    <p class="simples" style="font-size:15.5px" id="eleitos-resposta"></p>
+    <div class="rolagem" id="eleitos"></div>
+    <p class="nota">Idade na data da eleição. Jovem = 18 a 29 anos (no candidato); idoso = 60 anos ou mais. "Chance de vencer" = eleitos ÷ candidatos da faixa.</p>
+  </div></details>
+
+  <details class="mais metodo"><summary>Como calculamos e o que os dados não dizem</summary><div>
+    <ul>
+      <li><b>Idade da cidade:</b> idade média da população no Censo 2022 (IBGE, SIDRA 9606), cada faixa de 5 anos pelo meio dela. As cidades foram divididas em <b>terços</b>: mais jovens, intermediárias e mais velhas.</li>
+      <li><b>Por que comparar dentro do estado:</b> a idade da cidade é quase o estado. Quase todas as cidades do Amazonas e do Maranhão estão no terço mais jovem, e dois terços das do Rio Grande do Sul no mais velho. "Do mesmo estado" refaz os terços dentro de cada estado.</li>
+      <li><b>Eleitorado:</b> perfil do eleitor do TSE por faixa de idade (perfil_comparecimento_abstencao), 1º turno. Jovem = 16 a 29 anos no eleitorado (Estatuto da Juventude, Lei 12.852/2013); idoso = 60 anos ou mais (Lei 10.741/2003).</li>
+      <li><b>Alternância:</b> o partido do prefeito eleito mudou de 2016 para 2020 e de 2020 para 2024. Renomeações e fusões não contam (dados/referencia/partido_sucessao.csv). A reeleição segue a pessoa pelo título de eleitor.</li>
+      <li><b>Médias dos grupos:</b> as idades (população, eleitorado, vereadores, prefeito) são a média das cidades, cada cidade contando uma vez, para a capital não puxar o grupo; a parcela de votos e de eleitores jovens é pesada pelos votos e pelos eleitores.</li>
+      <li><b>Correlação:</b> de Pearson, cidade a cidade (de −1 a 1; perto de 0, uma coisa não acompanha a outra).</li>
+      <li><b>O que não dá para dizer:</b> é medido por cidade, não por eleitor (falácia ecológica). Só 7% a 10% dos candidatos a vereador são jovens: o eleitor jovem tem pouco em quem votar. E correlação não é causa.</li>
+      <li><b>Consulta no banco:</b> views <i>q6_municipio</i>, <i>q6_voto_idade</i>, <i>q6_idade_eleitos</i> e <i>q6_voto_idade_correlacao</i> em <i>sql/20_q6_idade.sql</i>; tabelas CENSO_FAIXA_ETARIA e COMPARECIMENTO_PERFIL (<i>sql/19_faixa_etaria.sql</i>). Análise: Eduardo, <i>docs/q6-idade.md</i>.</li>
+    </ul>
+  </div></details>
+</main>
+<div id="dica" hidden></div>
+
+<script id="dados" type="application/json">__DADOS__</script>
+<script>
+(function () {
+  "use strict";
+  const D = JSON.parse(document.getElementById("dados").textContent);
+  const UF_NOME = { AM: "Amazonas", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", RS: "Rio Grande do Sul", SE: "Sergipe" };
+  const TERCO = ["Cidades mais jovens", "Intermediárias", "Cidades mais velhas"];
+  const TERCO_CURTO = ["mais jovens", "intermediárias", "mais velhas"];
+  // 3 terços: um tom de verde do claro ao escuro (o mesmo ramo validado da Q4)
+  const TERCO_COR = ["#a5bd4e", "#576f14", "#32440a"];
+  // mapa: idade média da população, 5 classes sequenciais
+  const PASSOS = [32, 35, 38, 41], MAPA_COR = ["#e4ecc6", "#bcd07a", "#8ea83a", "#5e7a12", "#32440a"];
+  const corIdade = v => v == null ? "var(--sem-dado)" : MAPA_COR[PASSOS.findIndex(p => v < p) < 0 ? 4 : PASSOS.findIndex(p => v < p)];
+  const NS = "http://www.w3.org/2000/svg";
+  const fmt = (x, d = 1) => (x == null || isNaN(x)) ? "–" : x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const int = x => x == null ? "–" : Math.round(x).toLocaleString("pt-BR");
+  const semAcento = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const PART = new Set(["de", "da", "do", "das", "dos", "e"]);
+  const maiuscula = w => w.replace(/(^|[-'])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+  const nomeProprio = s => (s || "").toLowerCase().split(" ").map((w, i) => (i && PART.has(w)) ? w : (i && w.startsWith("d'")) ? "d'" + maiuscula(w.slice(2)) : maiuscula(w)).join(" ");
+  function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function txt(parent, x, y, s, cls, anchor) { const t = el("text", { x, y, class: cls || "rot", "text-anchor": anchor || "start", "dominant-baseline": "middle" }, parent); t.textContent = s; return t; }
+  const limpa = svg => { while (svg.firstChild) svg.removeChild(svg.firstChild); };
+  const dica = document.getElementById("dica");
+  function mostra(ev, html) { dica.innerHTML = html; dica.hidden = false; const w = dica.offsetWidth, h = dica.offsetHeight; let x = ev.clientX + 14, y = ev.clientY + 14; if (x + w > innerWidth - 8) x = ev.clientX - w - 14; if (y + h > innerHeight - 8) y = ev.clientY - h - 14; dica.style.left = x + "px"; dica.style.top = y + "px"; }
+  const esconde = () => { dica.hidden = true; };
+  const pc = (a, b) => b ? 100 * a / b : null;
+  const media = xs => { const v = xs.filter(x => x != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+  const pesada = (xs, ws) => { let s = 0, w = 0; xs.forEach((x, i) => { if (x != null && ws[i]) { s += x * ws[i]; w += ws[i]; } }); return w ? s / w : null; };
+  function pearson(a, b) { const n = a.length; if (n < 3) return null; const ma = a.reduce((s, x) => s + x, 0) / n, mb = b.reduce((s, x) => s + x, 0) / n; let sab = 0, saa = 0, sbb = 0; for (let i = 0; i < n; i++) { sab += (a[i] - ma) * (b[i] - mb); saa += (a[i] - ma) ** 2; sbb += (b[i] - mb) ** 2; } return sab / Math.sqrt(saa * sbb); }
+
+  // municípios: [cod, nome, uf, capital, população, idade média, % jovem, % 60+, terço, terço no estado,
+  //   aptos 2024, idade do eleitorado, % eleitorado jovem, abstenção jovem, não jovem, idade dos vereadores,
+  //   % vereadores jovens, idade do prefeito, [partido 2016, 2020, 2024], [troca 2020, 2024],
+  //   [prefeito concorreu 2020, 2024], [reeleito 2020, 2024], [voto vereador 2020, 2024]]
+  // voto: [aptos, % aptos jovem, % aptos 60+, votos, % votos jovem, % votos 60+, % candidatos jovens]
+  const M = D.municipios.map(r => ({ cod: r[0], nome: nomeProprio(r[1]), uf: D.ufs[r[2]], cap: !!r[3], pop: r[4], idade: r[5], pj: r[6], pi: r[7], terco: r[8], tercoUf: r[9], aptos: r[10], idEl: r[11], pjEl: r[12], absJ: r[13], absNJ: r[14], idVer: r[15], pjVer: r[16], idPref: r[17], sg: r[18], troca: r[19], conc: r[20], reel: r[21], voto: r[22], busca: semAcento(r[1]) }));
+  const porCod = new Map(M.map(m => [m.cod, m]));
+  const st = { uf: "TODAS", corte: "uf", ano: 2024, faixa: "jovem", mapaUf: "MA", sel: null };
+  try { Object.assign(st, JSON.parse(localStorage.getItem("q6-tse") || "{}")); } catch (e) { /* sem armazenamento */ }
+  const salvar = () => { try { localStorage.setItem("q6-tse", JSON.stringify(st)); } catch (e) { /* ignora */ } };
+  const onde = () => st.uf === "TODAS" ? "nos 6 estados" : (["AM", "MA", "MT", "RS"].includes(st.uf) ? "no " : "em ") + UF_NOME[st.uf];
+  const Onde = () => onde()[0].toUpperCase() + onde().slice(1);
+  const doFiltro = () => M.filter(m => st.uf === "TODAS" || m.uf === st.uf);
+  const tercoDe = (m, corte) => (corte || st.corte) === "uf" ? m.tercoUf : m.terco;
+  const ia = () => st.ano === 2020 ? 0 : 1;
+  const anterior = () => st.ano === 2020 ? 2016 : 2020;
+
+  function grupos(xs, corte) { const g = [[], [], []]; xs.forEach(m => { const t = tercoDe(m, corte); if (t >= 1 && t <= 3) g[t - 1].push(m); }); return g; }
+  const troca = ms => { const v = ms.map(m => m.troca[ia()]).filter(x => x != null); return { n: v.length, t: v.filter(Boolean).length, pc: pc(v.filter(Boolean).length, v.length) }; };
+  function votoGrupo(ms) {
+    const vs = ms.map(m => m.voto[ia()]).filter(Boolean);
+    // cidade sem candidato da faixa: a view deixa a parcela vazia; nos votos ela conta como 0% (como em q6_resumo)
+    return { aj: pesada(vs.map(v => v[1]), vs.map(v => v[0])), ai: pesada(vs.map(v => v[2]), vs.map(v => v[0])), vj: pesada(vs.map(v => v[4] ?? 0), vs.map(v => v[3])), vi: pesada(vs.map(v => v[5] ?? 0), vs.map(v => v[3])) };
+  }
+  function anel(classe, pct, legenda, nome, cor) {
+    const C = 2 * Math.PI * 38, v = Math.max(0, Math.min(100, pct || 0));
+    return `<div class="anel ${classe}"><svg viewBox="0 0 88 88" width="88" height="88" aria-hidden="true"><circle cx="44" cy="44" r="38" fill="none" stroke="var(--bege)" stroke-width="9"/><circle cx="44" cy="44" r="38" fill="none" stroke="${cor}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C * v / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 44 44)"/></svg><div><span class="pct">${pct == null ? "–" : fmt(pct, 0) + "%"}</span><div class="q">${legenda}</div><div class="nome">${nome}</div></div></div>`;
+  }
+
+  // ---------- 1. a resposta e as idades lado a lado ----------
+  function renderResposta() {
+    const xs = doFiltro(), tr = troca(xs), vg = votoGrupo(xs), g = grupos(xs);
+    const ver = media(xs.map(m => m.idVer)), pjv = media(xs.map(m => m.pjVer));
+    const compara = (v, e) => v == null || e == null ? "têm idade parecida com" : Math.abs(v - e) < 0.5 ? "têm a mesma idade que" : v > e ? "são mais velhos que" : "são mais novos que";
+    const elJ = media(g[0].map(m => m.idEl)), vJ = media(g[0].map(m => m.idVer)), elV = media(g[2].map(m => m.idEl)), vV = media(g[2].map(m => m.idVer));
+    const tj = troca(g[0]).pc, tv = troca(g[2]).pc, dif = tj != null && tv != null ? tj - tv : null;
+    const corte = st.corte === "uf" ? "do mesmo estado" : "dos 6 estados";
+    document.getElementById("resposta").innerHTML = `Os eleitos ficam no meio da vida: ${onde()}, os vereadores eleitos em 2024 têm em média <b>${fmt(ver)} anos</b>, e só ${fmt(pjv, 0)}% têm até 29. A idade deles muda pouco de uma cidade para outra: na cidade mais jovem ${compara(vJ, elJ)} o eleitorado (${fmt(vJ)} × ${fmt(elJ)} anos); na mais velha, ${compara(vV, elV)} ele (${fmt(vV)} × ${fmt(elV)}). <b>Jovem não vota em jovem:</b> em ${st.ano}, só ${fmt(vg.vj)}% dos votos para vereador foram para candidatos de até 29 anos, e os jovens são ${fmt(vg.aj)}% do eleitorado. <b>Alternância há, e muita:</b> o partido do prefeito mudou em ${fmt(tr.pc, 0)}% das cidades de ${anterior()} para ${st.ano}. ${dif == null ? "" : Math.abs(dif) < 5 ? `Comparando cidades ${corte}, a cidade jovem e a velha trocam na mesma medida (${fmt(tj, 0)}% × ${fmt(tv, 0)}%).` : `Comparando cidades ${corte}, a jovem troca ${dif > 0 ? "mais" : "menos"} (${fmt(tj, 0)}% × ${fmt(tv, 0)}%).`}`;
+    const conc = xs.map(m => m.conc[ia()]).filter(x => x != null), re = xs.filter(m => m.conc[ia()] && m.reel[ia()] != null);
+    document.getElementById("linhas").innerHTML = [["Cidades", int(xs.length)], [`Prefeito tentou a reeleição (${st.ano})`, `${fmt(pc(conc.filter(Boolean).length, conc.length), 0)}%`], ["Dos que tentaram, se reelegeram", `${fmt(pc(re.filter(m => m.reel[ia()]).length, re.length), 0)}%`], [`Votos em candidato de 60+ (${st.ano})`, `${fmt(vg.vi)}% (são ${fmt(vg.ai)}% do eleitorado)`]].map(([k, v]) => `<div class="linha"><span>${k}</span><b>${v}</b></div>`).join("");
+    document.getElementById("aneis").innerHTML = anel("", tr.pc, `das cidades, de ${anterior()} para ${st.ano}`, "trocaram o partido do prefeito", "var(--ouro)") + anel("verde", vg.vj, `dos votos para vereador (${st.ano}); jovens são ${fmt(vg.aj, 0)}% do eleitorado`, "foram para jovens", "var(--verde-esc)");
+  }
+  function renderIdades() {
+    const xs = doFiltro(), g = grupos(xs), svg = document.getElementById("idades"); limpa(svg);
+    const SER = [["População (Censo 2022)", "#cfc8b8", m => m.idade], ["Eleitorado (2024)", "var(--verde)", m => m.idEl], ["Vereadores eleitos (2024)", "var(--ouro)", m => m.idVer], ["Prefeitos eleitos (2024)", "var(--texto)", m => m.idPref]];
+    const vals = g.map(ms => SER.map(([, , f]) => media(ms.map(f))));
+    const W = 680, LH = 58, L = 150, Rr = 20, T = 18, H = T + 3 * LH + 34, lo = 25, hi = 55, X = v => L + (W - L - Rr) * (v - lo) / (hi - lo);
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    for (let v = lo; v <= hi; v += 5) { el("line", { x1: X(v), x2: X(v), y1: T - 6, y2: T + 3 * LH - 10, class: "grade" }, svg); txt(svg, X(v), T + 3 * LH + 4, `${v} anos`, "eixo", "middle"); }
+    vals.forEach((vs, i) => {
+      const y = T + i * LH + LH / 2 - 8, ok = vs.filter(v => v != null);
+      txt(svg, L - 12, y - 7, TERCO[i], "rot", "end").setAttribute("font-weight", "700");
+      txt(svg, L - 12, y + 10, `${int(g[i].length)} cidades`, "eixo", "end");
+      if (ok.length) el("line", { x1: X(Math.min(...ok)), x2: X(Math.max(...ok)), y1: y, y2: y, stroke: "var(--linha)", "stroke-width": 6, "stroke-linecap": "round" }, svg);
+      vs.forEach((v, k) => {
+        if (v == null) return;
+        const c = el("circle", { cx: X(v), cy: y, r: 9, fill: SER[k][1], stroke: "#fff", "stroke-width": 2 }, svg);
+        c.addEventListener("mousemove", ev => mostra(ev, `<b>${TERCO[i]}</b><br>${SER[k][0]}: <b>${fmt(v)} anos</b>`)); c.addEventListener("mouseleave", esconde);
+        if (k === 0 || k === 2) txt(svg, X(v), y + (k === 0 ? -17 : 19), fmt(v), "eixo", "middle");
+      });
+    });
+    document.getElementById("idades-titulo").textContent = "Quem mora, quem vota e quem é eleito: a idade média";
+    document.getElementById("idades-legenda").innerHTML = SER.map(([r, c]) => `<span><i class="cor" style="background:${c};border-radius:50%"></i>${r}</span>`).join("");
+    const pv = vals.map(v => v[0]), vv = vals.map(v => v[2]);
+    document.getElementById("idades-nota").textContent = pv[0] != null && pv[2] != null && vv[0] != null && vv[2] != null ? `Da cidade mais jovem para a mais velha, a idade da população sobe ${fmt(pv[2] - pv[0])} anos; a dos vereadores eleitos, só ${fmt(vv[2] - vv[0])}. Terços ${st.corte === "uf" ? "dentro de cada estado" : "entre todas as cidades dos 6 estados"}.` : "";
+  }
+
+  // ---------- 2. alternância ----------
+  function renderAlternancia() {
+    const xs = doFiltro();
+    const barras = corte => { const g = grupos(xs, corte), r = g.map(troca); return r.map((x, i) => `<div class="barra"><span>${TERCO[i]} <small>(${int(x.n)})</small></span><span class="trilho"><i style="width:${(x.pc || 0).toFixed(1)}%;background:${TERCO_COR[i]}"></i></span><b>${x.n ? fmt(x.pc, 0) + "%" : "–"}</b></div>`).join("") + (r.some(x => !x.n) ? `<p class="nota">“–”: nenhuma cidade ${onde().replace(/^nos 6 estados$/, "")} neste grupo.</p>` : ""); };
+    document.getElementById("alt-todas").innerHTML = barras("todas");
+    document.getElementById("alt-uf").innerHTML = barras("uf");
+    const a = grupos(xs, "todas").map(troca), b = grupos(xs, "uf").map(troca);
+    document.getElementById("alt-titulo").textContent = `Há alternância? O partido do prefeito mudou de ${anterior()} para ${st.ano}`;
+    document.getElementById("alt-resposta").innerHTML = st.uf === "TODAS" ? `Nos 6 estados juntos, a cidade jovem troca mais de partido que a velha (${fmt(a[0].pc, 0)}% × ${fmt(a[2].pc, 0)}%). Mas, comparando cidades do <b>mesmo estado</b>, a diferença ${Math.abs(b[0].pc - b[2].pc) < 5 ? "some" : "diminui"} (${fmt(b[0].pc, 0)}% × ${fmt(b[2].pc, 0)}%): quem troca mais são os estados jovens, Maranhão e Amazonas, não a cidade jovem.` : `${Onde()}, comparando as cidades do estado entre si (à direita), ${fmt(b[0].pc, 0)}% das mais jovens e ${fmt(b[2].pc, 0)}% das mais velhas trocaram o partido do prefeito. À esquerda, os terços são os dos 6 estados juntos, por isso os grupos têm tamanhos diferentes.`;
+  }
+
+  // ---------- 3. mapa ----------
+  const selMapa = document.getElementById("f-mapa-uf");
+  function renderMapa() {
+    const uf = st.mapaUf, G = D.mapas[uf], svg = document.getElementById("mapa"); limpa(svg);
+    selMapa.value = uf; svg.setAttribute("viewBox", `0 0 ${G.w} ${G.h}`);
+    for (const cod in G.p) {
+      const m = porCod.get(+cod);
+      const p = el("path", { d: G.p[cod], fill: corIdade(m ? m.idade : null), class: m && st.sel === m.cod ? "sel" : "" }, svg);
+      if (m) { p.addEventListener("mousemove", ev => mostra(ev, `<b>${m.nome}</b><br>idade média: ${fmt(m.idade)} anos<br>${TERCO_CURTO[tercoDe(m) - 1] || ""}${st.corte === "uf" ? " do estado" : " dos 6 estados"}`)); p.addEventListener("mouseleave", esconde); p.addEventListener("click", () => { st.sel = m.cod; salvar(); renderMapa(); }); }
+    }
+    const ms = M.filter(m => m.uf === uf && m.idade != null).sort((a, b) => a.idade - b.idade);
+    document.getElementById("mapa-titulo").textContent = `Cidade por cidade: ${UF_NOME[uf]}`;
+    const rot = ["", "32", "35", "38", "41", ""];
+    document.getElementById("rampa").innerHTML = `<div class="rampa" style="margin-top:8px"><b style="color:var(--texto)">Idade média da população (anos)</b><div class="faixa-cor" style="background:linear-gradient(90deg,${MAPA_COR.map((c, i) => `${c} ${(i / 5 * 100).toFixed(0)}%,${c} ${((i + 1) / 5 * 100).toFixed(0)}%`).join(",")})"></div><div class="marcas">${rot.map(r => `<span>${r}</span>`).join("")}</div></div><p class="nota" style="margin-top:6px">${ms.length ? `A mais jovem: ${ms[0].nome} (${fmt(ms[0].idade)}); a mais velha: ${ms[ms.length - 1].nome} (${fmt(ms[ms.length - 1].idade)}). ` : ""}Clique numa cidade.</p>`;
+    renderDetalhe();
+  }
+  function renderDetalhe() {
+    const box = document.getElementById("detalhe"), m = st.sel ? porCod.get(st.sel) : null;
+    if (!m || m.uf !== st.mapaUf) { box.innerHTML = `<p class="vazio">Clique numa cidade do mapa ou busque pelo nome para ver a idade de quem mora, de quem vota e de quem foi eleito, e os partidos dos prefeitos.</p>`; return; }
+    const v = m.voto[1], linha = (k, x) => `<div class="linha"><span>${k}</span><b>${x}</b></div>`;
+    const pas = (a, b, t) => t == null ? "" : t ? `<span class="troca">trocou</span>` : `<span class="fica">${a === b ? "manteve" : "manteve (fusão ou novo nome)"}</span>`;
+    const pref = m.conc[1] == null ? "" : m.conc[1] ? (m.reel[1] ? "O prefeito de 2020 tentou a reeleição em 2024 e venceu." : "O prefeito de 2020 tentou a reeleição em 2024 e perdeu.") : "O prefeito de 2020 não concorreu em 2024.";
+    box.innerHTML = `<h3>${m.nome}${m.cap ? " · capital" : ""}</h3>
+      <p class="nota">${int(m.pop)} habitantes · ${TERCO_CURTO[m.terco - 1] || "–"} dos 6 estados · ${TERCO_CURTO[m.tercoUf - 1] || "–"} do estado</p>
+      ${linha("Idade média da população", `${fmt(m.idade)} anos`)}
+      ${linha("do eleitorado (2024)", `${fmt(m.idEl)} anos`)}
+      ${linha("dos vereadores eleitos (2024)", `${fmt(m.idVer)} anos`)}
+      ${linha("do prefeito eleito (2024)", m.idPref == null ? "–" : `${m.idPref} anos`)}
+      ${linha("Eleitorado jovem (16–29)", `${fmt(m.pjEl)}%`)}
+      ${v ? linha("Votos em vereador jovem (2024)", `${fmt(v[4])}%`) : ""}
+      ${v ? linha("Candidatos jovens a vereador", `${fmt(v[6])}%`) : ""}
+      ${linha("Abstenção: jovens × demais", `${fmt(m.absJ)}% × ${fmt(m.absNJ)}%`)}
+      <h3 style="margin-top:6px">Partido do prefeito</h3>
+      <div class="partidos3"><span class="sigla">2016 · ${m.sg[0] || "–"}</span><span class="seta">→</span>${pas(m.sg[0], m.sg[1], m.troca[0])}<span class="seta">→</span><span class="sigla">2020 · ${m.sg[1] || "–"}</span><span class="seta">→</span>${pas(m.sg[1], m.sg[2], m.troca[1])}<span class="seta">→</span><span class="sigla">2024 · ${m.sg[2] || "–"}</span></div>
+      <p class="nota">${pref}${m.troca[1] && m.reel[1] ? " Mesma pessoa, outro partido." : ""}</p>`;
+  }
+
+  // ---------- 4. jovem vota em jovem? ----------
+  function renderDisp() {
+    const jov = st.faixa === "jovem", k = jov ? [1, 4] : [2, 5], todos = doFiltro().filter(m => m.voto[ia()]).map(m => ({ m, x: m.voto[ia()][k[0]], y: m.voto[ia()][k[1]] })), xs = todos.filter(p => p.x != null && p.y != null), semCand = todos.length - xs.length;
+    const svg = document.getElementById("disp"); limpa(svg);
+    const W = 760, H = 430, L = 54, Rr = 20, T = 14, B = 46, mx = Math.ceil(Math.max(...xs.map(p => Math.max(p.x, p.y)), 10) / 5) * 5;
+    const X = v => L + (W - L - Rr) * v / mx, Y = v => T + (H - T - B) * (1 - v / mx);
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    for (let v = 0; v <= mx; v += 5) { el("line", { x1: L, x2: W - Rr, y1: Y(v), y2: Y(v), class: "grade" }, svg); txt(svg, L - 8, Y(v), `${v}%`, "eixo", "end"); txt(svg, X(v), H - B + 14, `${v}%`, "eixo", "middle"); }
+    el("line", { x1: X(0), y1: Y(0), x2: X(mx), y2: Y(mx), stroke: "var(--texto-2)", "stroke-dasharray": "5 4" }, svg);
+    txt(svg, X(mx * 0.62), Y(mx * 0.62) - 12, "votariam na proporção do eleitorado", "eixo", "middle").setAttribute("transform", `rotate(${-Math.atan2(Y(0) - Y(mx), X(mx) - X(0)) * 180 / Math.PI} ${X(mx * 0.62)} ${Y(mx * 0.62) - 12})`);
+    const faixa = jov ? "jovens (16 a 29 anos)" : "de 60 anos ou mais", cand = jov ? "jovens (18 a 29)" : "de 60 anos ou mais";
+    txt(svg, (L + W - Rr) / 2, H - 10, `Eleitores ${faixa} na cidade`, "rot", "middle");
+    const ty = txt(svg, 14, (T + H - B) / 2, `Votos para candidatos ${cand}`, "rot", "middle"); ty.setAttribute("transform", `rotate(-90 14 ${(T + H - B) / 2})`);
+    xs.forEach(p => {
+      const t = tercoDe(p.m), c = el("circle", { cx: X(p.x), cy: Y(p.y), r: p.m.cap ? 6 : 3.5, fill: TERCO_COR[(t || 2) - 1], "fill-opacity": 0.75, stroke: p.m.cod === st.sel ? "var(--texto)" : "none", "stroke-width": 2 }, svg);
+      c.addEventListener("mousemove", ev => mostra(ev, `<b>${p.m.nome}</b> (${p.m.uf})<br>eleitores ${faixa}: ${fmt(p.x)}%<br>votos em candidatos ${cand}: ${fmt(p.y)}%`)); c.addEventListener("mouseleave", esconde);
+      c.addEventListener("click", () => { st.sel = p.m.cod; st.mapaUf = p.m.uf; salvar(); renderMapa(); renderDisp(); document.getElementById("mapa").scrollIntoView({ behavior: "smooth", block: "center" }); });
+    });
+    const r = pearson(xs.map(p => p.x), xs.map(p => p.y)), vg = votoGrupo(doFiltro());
+    const forca = r == null ? "" : Math.abs(r) < 0.1 ? "nada" : Math.abs(r) < 0.3 ? "pouco" : Math.abs(r) < 0.5 ? "moderadamente" : "bastante";
+    document.getElementById("disp-titulo").textContent = jov ? `Jovem vota em jovem? Vereador, ${st.ano}` : `Velho vota em velho? Vereador, ${st.ano}`;
+    document.getElementById("disp-resposta").innerHTML = jov
+      ? `<b>Não.</b> ${Onde()}, os jovens são ${fmt(vg.aj)}% do eleitorado, mas só ${fmt(vg.vj)}% dos votos para vereador foram para candidatos jovens. Ter mais jovens na cidade não aumenta o voto em jovem: a correlação é de ${fmt(r, 2)} (${forca}).${semCand ? ` Em ${int(semCand)} cidades não havia nenhum candidato jovem: elas ficam fora do gráfico, e na conta dos votos contam como 0%.` : ""}`
+      : `<b>Um pouco.</b> ${Onde()}, quem tem 60 anos ou mais é ${fmt(vg.ai)}% do eleitorado e recebeu ${fmt(vg.vi)}% dos votos para vereador. Onde há mais idosos, o candidato idoso recebe mais votos: a correlação é de ${fmt(r, 2)} (${forca}).${semCand ? ` Em ${int(semCand)} cidades não havia nenhum candidato de 60 anos ou mais: elas ficam fora do gráfico.` : ""}`;
+    document.getElementById("disp-legenda").innerHTML = TERCO.map((t, i) => `<span><i class="cor" style="background:${TERCO_COR[i]};border-radius:50%"></i>${t}${st.corte === "uf" ? " do estado" : ""}</span>`).join("") + `<span>ponto maior = capital</span>`;
+  }
+
+  // ---------- 5. idade dos eleitos ----------
+  function renderEleitos() {
+    const iu = st.uf === "TODAS" ? -1 : D.ufs.indexOf(st.uf), CARGO = ["Vereador", "Prefeito", "Dep. estadual", "Dep. federal"];
+    const linhas = [];
+    for (const [c, anos] of [[0, [2020, 2024]], [1, [2020, 2024]], [2, [2018, 2022]], [3, [2018, 2022]]]) for (const a of anos) {
+      const rs = D.eleitos.filter(r => r[0] === a && r[2] === c && (iu < 0 || r[1] === iu)); if (!rs.length) continue;
+      const qc = rs.map(r => r[3]), qe = rs.map(r => r[4]);
+      const idC = pesada(rs.map(r => r[5]), qc), idE = pesada(rs.map(r => r[6]), qe), pjE = pesada(rs.map(r => r[8]), qe), piE = pesada(rs.map(r => r[10]), qe);
+      // chance de vencer por faixa: eleitos da faixa ÷ candidatos da faixa, somados nos estados
+      const cj = rs.map(r => r[3] * (r[7] || 0) / 100), ci = rs.map(r => r[3] * (r[9] || 0) / 100), ej = rs.map((r, i) => cj[i] * (r[11] || 0) / 100), ei = rs.map((r, i) => ci[i] * (r[13] || 0) / 100), cm = rs.map((r, i) => r[3] - cj[i] - ci[i]), em = rs.map((r, i) => cm[i] * (r[12] || 0) / 100);
+      const soma = v => v.reduce((s, x) => s + x, 0);
+      linhas.push([c, a, idC, idE, pjE, piE, pc(soma(ej), soma(cj)), pc(soma(em), soma(cm)), pc(soma(ei), soma(ci)), soma(qe)]);
+    }
+    document.getElementById("eleitos").innerHTML = `<table><thead><tr><th>Cargo</th><th>Idade dos candidatos</th><th>dos eleitos</th><th>Eleitos jovens</th><th>Eleitos de 60+</th><th>Chance de vencer: jovem</th><th>30–59</th><th>60+</th></tr></thead><tbody>${linhas.map(l => `<tr><td><b>${CARGO[l[0]]}</b> ${l[1]}</td><td>${fmt(l[2])}</td><td>${fmt(l[3])}</td><td>${fmt(l[4])}%</td><td>${fmt(l[5])}%</td><td>${fmt(l[6])}%</td><td>${fmt(l[7])}%</td><td>${fmt(l[8])}%</td></tr>`).join("")}</tbody></table>`;
+    const v24 = linhas.find(l => l[0] === 0 && l[1] === 2024);
+    document.getElementById("eleitos-resposta").innerHTML = v24 ? `${Onde()}, a idade média dos vereadores eleitos em 2024 é de <b>${fmt(v24[3])} anos</b>; só ${fmt(v24[4])}% têm até 29 anos. Quem tem de 30 a 59 anos tem mais chance de vencer (${fmt(v24[7])}% dos candidatos dessa faixa se elegeram, contra ${fmt(v24[6])}% dos jovens e ${fmt(v24[8])}% dos de 60+).` : "";
+  }
+
+  function tog(id, itens, get, set) {
+    const box = document.getElementById(id); box.innerHTML = "";
+    for (const [v, rot] of itens) { const b = document.createElement("button"); b.type = "button"; b.textContent = rot; b.setAttribute("aria-pressed", String(get() === v)); b.addEventListener("click", () => { set(v); salvar(); tudo(); }); box.appendChild(b); }
+  }
+  const selUf = document.getElementById("f-uf");
+  selUf.innerHTML = `<option value="TODAS">Todos os 6 estados</option>` + D.ufs.map(u => `<option value="${u}">${UF_NOME[u]}</option>`).join("");
+  selMapa.innerHTML = D.ufs.map(u => `<option value="${u}">${UF_NOME[u]}</option>`).join("");
+  selUf.addEventListener("change", () => { st.uf = selUf.value; if (st.uf !== "TODAS") st.mapaUf = st.uf; st.sel = null; salvar(); tudo(); });
+  selMapa.addEventListener("change", () => { st.mapaUf = selMapa.value; st.sel = null; salvar(); renderMapa(); });
+  document.getElementById("cidades-lista").innerHTML = M.map(m => `<option value="${m.nome} (${m.uf})">`).join("");
+  const busca = document.getElementById("f-busca");
+  busca.addEventListener("change", () => { const q = semAcento(busca.value.replace(/\s*\([A-Z]{2}\)\s*$/, "").trim()), uf = (busca.value.match(/\(([A-Z]{2})\)\s*$/) || [])[1]; const m = M.find(x => x.busca === q && (!uf || x.uf === uf)) || M.find(x => x.busca.startsWith(q)); if (m) { st.sel = m.cod; st.mapaUf = m.uf; salvar(); renderMapa(); renderDisp(); } });
+
+  function tudo() {
+    selUf.value = st.uf;
+    tog("f-corte", [["uf", "cidades do mesmo estado"], ["todas", "todas as cidades"]], () => st.corte, v => { st.corte = v; });
+    tog("f-ano", [[2020, "2016 → 2020"], [2024, "2020 → 2024"]], () => st.ano, v => { st.ano = v; });
+    tog("f-faixa", [["jovem", "Jovens"], ["idoso", "60 anos ou mais"]], () => st.faixa, v => { st.faixa = v; });
+    renderResposta(); renderIdades(); renderAlternancia(); renderMapa(); renderDisp(); renderEleitos();
+  }
+  tudo();
+})();
+</script>

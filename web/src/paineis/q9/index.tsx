@@ -5,7 +5,6 @@ import {
 import { useDados } from "../../lib/dados";
 import { fmt, int, pc } from "../../lib/formato";
 import { usePersistente } from "../../lib/usePersistente";
-import type { PainelProps } from "../tipos";
 import {
   ANOS, CANAL, CARGO, PLUR, TODOS_CANAIS, UF_NOME, cargosDoAno, grupoT, maiuscula, onde, participacoes, reais, totalT,
 } from "./dominio";
@@ -17,7 +16,7 @@ const ELEITO_OPCOES = [[2, "Todos"], [1, "Eleitos"], [0, "Não eleitos"]] as con
 const CANAL_OPCOES = [[8, "Todos"], [0, "Impresso"], [1, "Rua"], [4, "Internet"], [2, "Rádio e TV"], [3, "Adesivos"]] as const;
 const FILTROS_PADRAO: Filtros = { ano: 2024, uf: "TODAS", cargo: 0, eleito: 2 };
 
-export default function Painel(_: PainelProps) {
+export default function Painel() {
   const { dados, erro } = useDados<DadosQ9>("q9.json");
   if (!dados) return <Carregando erro={erro} />;
   return <Q9 d={dados} />;
@@ -49,8 +48,8 @@ function Q9({ d }: { d: DadosQ9 }) {
           {d.ufs.map(u => <option key={u} value={u}>{UF_NOME[u]}</option>)}
         </Seletor>
       </Campo>
-      <Campo rotulo="Eleição"><Alternador rotulo="Eleição" opcoes={ANOS} valor={f.ano} aoMudar={mudarAno} /></Campo>
-      <Campo rotulo="Cargo">
+      <Campo rotulo="Eleição" grupo><Alternador rotulo="Eleição" opcoes={ANOS} valor={f.ano} aoMudar={mudarAno} /></Campo>
+      <Campo rotulo="Cargo" grupo>
         <Alternador rotulo="Cargo" opcoes={cargosDoAno(f.ano).map(c => [c, CARGO[c]] as const)} valor={f.cargo} aoMudar={mudarCargo} />
       </Campo>
     </>
@@ -121,9 +120,7 @@ function Resposta({ d, f }: { d: DadosQ9; f: Filtros }) {
           <h2>Para onde vai cada R$ 100 gastos com propaganda</h2>
           <Barras>
             {ordem.map(([k, x]) => (
-              <div key={k} title={reais(tot[k])}>
-                <Barra rotulo={CANAL[k]} pct={(100 * x) / mx} valor={`R$ ${fmt(x, 0)}`} cor={k === ordem[0][0] ? "var(--color-verde-esc)" : "var(--color-verde)"} />
-              </div>
+              <Barra key={k} titulo={reais(tot[k])} rotulo={CANAL[k]} pct={(100 * x) / mx} valor={`R$ ${fmt(x, 0)}`} cor={k === ordem[0][0] ? "var(--color-verde-esc)" : "var(--color-verde)"} />
             ))}
           </Barras>
           <p className="texto-nota">{maiuscula(PLUR[f.cargo])} em {f.ano} {onde(f.uf)}, todos os candidatos. Passe o mouse para ver o valor em reais.</p>
@@ -154,8 +151,8 @@ function SecaoNuvem({ d, f, canal, termo, aoEleito, aoCanal, aoTermo }: {
         ) : "Sem despesas com descrição neste recorte."}
       </p>
       <div className="flex flex-wrap items-end gap-x-[18px] gap-y-2.5">
-        <Campo rotulo="Quem"><Alternador rotulo="Quem" opcoes={ELEITO_OPCOES} valor={f.eleito} aoMudar={aoEleito} /></Campo>
-        <Campo rotulo="Só um tipo de gasto"><Alternador rotulo="Só um tipo de gasto" opcoes={CANAL_OPCOES} valor={canal} aoMudar={aoCanal} /></Campo>
+        <Campo rotulo="Quem" grupo><Alternador rotulo="Quem" opcoes={ELEITO_OPCOES} valor={f.eleito} aoMudar={aoEleito} /></Campo>
+        <Campo rotulo="Só um tipo de gasto" grupo><Alternador rotulo="Só um tipo de gasto" opcoes={CANAL_OPCOES} valor={canal} aoMudar={aoCanal} /></Campo>
       </div>
       <div className="grade-mapa">
         <Nuvem palavras={ws} total={tot} termo={termo} aoEscolher={aoTermo} />

@@ -1,7 +1,9 @@
 /* Tokens do visual (inspirado no site de resultados do TSE): faixa amarela, cartões
    brancos, destaque amarelo-ouro e verde-oliva. Cada token vira utilitário do Tailwind:
    --color-ouro -> bg-ouro, text-ouro, border-ouro, fill-ouro, stroke-ouro... */
-@theme {
+/* static: emite todas as variáveis no :root mesmo sem classe que as use, porque os
+   painéis também as leem em style={} e em SVG (var(--color-verde-esc)) */
+@theme static {
   --font-sans: "Open Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
 
   --color-fundo: #f4f4f4;

@@ -1,4 +1,5 @@
-import { fmt, int } from "../../lib/formato";
+export { maiusculaInicial, nomeLugar } from "../../lib/formato";
+import { fmt, int, nomeLugar } from "../../lib/formato";
 import type { ChaveIndice, DadosQ3, Indice, Municipio } from "./tipos";
 
 export const UF_NOME: Record<string, string> = { AM: "Amazonas", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", RS: "Rio Grande do Sul", SE: "Sergipe" };
@@ -10,13 +11,7 @@ export const brl = (v: number | null | undefined): string =>
 const reais = (v: number | null): string => (v == null ? "–" : `R$ ${int(v)}`);
 
 export const semAcento = (s: string): string => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-const PARTICULAS = new Set(["de", "da", "do", "das", "dos", "e"]);
-const maiuscula = (w: string) => w.replace(/(^|[-'])(\p{L})/gu, (_, a: string, b: string) => a + b.toUpperCase());
 /** Como o do kit, mas trata "d'Oeste" (apóstrofo no começo da palavra). */
-export const nomeProprio = (s: string | null | undefined): string =>
-  (s || "").toLowerCase().split(" ")
-    .map((w, i) => (i && PARTICULAS.has(w) ? w : i && w.startsWith("d'") ? "d'" + maiuscula(w.slice(2)) : maiuscula(w)))
-    .join(" ");
 
 export const INDICES: Record<ChaveIndice, Indice> = {
   pib: { rot: "PIB per capita", curto: "PIB per capita", v: m => m.pib, f: brl, log: true, frase: "riqueza (PIB per capita)" },
@@ -25,12 +20,11 @@ export const INDICES: Record<ChaveIndice, Indice> = {
   eleitores: { rot: "eleitores por habitante", curto: "eleitores por habitante", v: m => m.eleitHab, f: v => fmt(v, 2), log: false, frase: "proporção de eleitores por habitante" },
 };
 
-export const maiusculaInicial = (s: string): string => s[0].toUpperCase() + s.slice(1);
 
 export function montarMunicipios(D: DadosQ3): Municipio[] {
   // eleitores por habitante pelos números inteiros (aptos ÷ população): arredondada, 1,0003 virava 1,000
   return D.municipios.map(r => ({
-    cod: r[0], nome: nomeProprio(r[1]), uf: D.ufs[r[2]], cap: !!r[3], pib: r[4], perfil: r[5], pop: r[6], aptos: r[7],
+    cod: r[0], nome: nomeLugar(r[1]), uf: D.ufs[r[2]], cap: !!r[3], pib: r[4], perfil: r[5], pop: r[6], aptos: r[7],
     renda: r[8], estudo: r[9], pref: r[10], banc: r[11], qtBanc: r[12], empate: !!r[13], voto: r[14],
     eleitHab: r[6] && r[7] ? r[7] / r[6] : r[15], isentos: r[16], busca: semAcento(r[1]),
   }));

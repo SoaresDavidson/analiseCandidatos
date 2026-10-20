@@ -3,7 +3,6 @@ import { Alternador, Barra, Barras, Caixa, Campo, Carregando, Etiqueta, Linha, P
 import { useDados } from "../../lib/dados";
 import { fmt, int, pc } from "../../lib/formato";
 import { usePersistente } from "../../lib/usePersistente";
-import type { PainelProps } from "../tipos";
 import { Bonecos } from "./Bonecos";
 import { GraficoHalteres, calcularHalteres } from "./Halteres";
 import { GraficoSensibilidade } from "./Sensibilidade";
@@ -12,7 +11,7 @@ import type { DadosQ8, Filtros } from "./tipos";
 
 const PADRAO: Filtros = { ano: 2024, uf: "TODAS", cargo: 0, corte: 50 };
 
-export default function Painel(_: PainelProps) {
+export default function Painel() {
   const { dados } = useDados<DadosQ8>("q8.json");
   return dados ? <Conteudo D={dados} /> : <Carregando />;
 }
@@ -116,15 +115,15 @@ function Conteudo({ D }: { D: DadosQ8 }) {
             <h2>De cada 100 candidatos a {SING[cargo]}, quantos se elegem, conforme a parte da campanha paga pelo fundo público?</h2>
             <Barras>
               {FX.map(x => x.n ? (
-                <div key={x.rot} title={`${int(x.e)} eleitos de ${int(x.n)} candidatos`}>
-                  <Barra
+                <Barra
+                    key={x.rot}
+                    titulo={`${int(x.e)} eleitos de ${int(x.n)} candidatos`}
                     rotulo={x.rot}
                     pct={100 * Math.min(x.t ?? 0, mx) / mx}
                     valor={fmt(x.t, (x.t ?? 0) < 10 ? 1 : 0)}
                     cor={x.n < N_MIN ? "var(--color-sem-dado)" : x.t === melhor ? "var(--color-verde-esc)" : "var(--color-verde)"}
                     media={geral != null ? 100 * geral / mx : undefined}
                   />
-                </div>
               ) : (
                 <div key={x.rot} className="grid grid-cols-[minmax(0,13em)_minmax(0,1fr)_3.4em] items-center gap-2.5 text-sm">
                   <span>{x.rot}</span><span className="texto-nota">sem candidatos</span><b />

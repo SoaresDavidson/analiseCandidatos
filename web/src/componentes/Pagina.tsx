@@ -14,12 +14,14 @@ export function Pagina({ filtros, children }: { filtros?: ReactNode; children: R
   );
 }
 
-/** Rótulo em negrito acima de um controle de filtro. */
-export function Campo({ rotulo, children }: { rotulo: string; children: ReactNode }) {
+/** Rótulo em negrito acima de um controle de filtro. Para um grupo de botões
+ *  (Alternador), passe `grupo`: vira <span>, porque <label> só pode rotular um controle. */
+export function Campo({ rotulo, grupo, children }: { rotulo: string; grupo?: boolean; children: ReactNode }) {
+  const Tag = grupo ? "span" : "label";
   return (
-    <label className="grid gap-[3px] text-[13px] font-bold">
+    <Tag className="grid gap-[3px] text-[13px] font-bold">
       {rotulo}
       {children}
-    </label>
+    </Tag>
   );
 }

@@ -1,7 +1,7 @@
 import { Barra, Barras, VerMais } from "../../componentes";
 import { fmt, int, pc } from "../../lib/formato";
 import { brl, contarPref, maiusculaInicial, mediana, PERFIL, spearman } from "./calculo";
-import { Chip } from "./Chip";
+import { Chip } from "../../componentes";
 import type { Municipio } from "./tipos";
 
 interface Props {

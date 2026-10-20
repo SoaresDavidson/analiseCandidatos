@@ -3,7 +3,7 @@ import { Caixa, Linha, useDica } from "../../componentes";
 import { fmt, int } from "../../lib/formato";
 import { useNavegacao } from "../../lib/navegacao";
 import { brl, mediana, PERFIL, semAcento } from "./calculo";
-import { Chip } from "./Chip";
+import { Chip } from "../../componentes";
 import type { Indice, Municipio } from "./tipos";
 
 const W = 640, H = 420, L = 46, R = 16, T = 12, B = 40;

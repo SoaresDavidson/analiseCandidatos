@@ -8,3 +8,4 @@ export { ProvedorDica, useDica } from "./Dica";
 export { FotoEleito } from "./FotoEleito";
 export { Plenario, type Assento } from "./Plenario";
 export { Carregando } from "./Carregando";
+export { Chip } from "./Chip";

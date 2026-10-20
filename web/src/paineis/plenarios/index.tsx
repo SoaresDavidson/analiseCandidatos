@@ -5,7 +5,6 @@ import { urlFoto, useDados } from "../../lib/dados";
 import { fmt, int, nomeProprio } from "../../lib/formato";
 import { useNavegacao } from "../../lib/navegacao";
 import { usePersistente } from "../../lib/usePersistente";
-import type { PainelProps } from "../tipos";
 import type { DadosEleitos, Eleito } from "./tipos";
 
 const UF_NOME: Record<string, string> = { AM: "Amazonas", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", RS: "Rio Grande do Sul", SE: "Sergipe" };
@@ -20,7 +19,7 @@ const CASAS: Record<Casa, [number, string, string, string]> = {
 };
 const OPCOES_CASA = (Object.entries(CASAS) as [Casa, (typeof CASAS)[Casa]][]).map(([k, c]) => [k, c[1]] as const);
 
-export default function Painel(_: PainelProps) {
+export default function Painel() {
   const { dados, erro } = useDados<DadosEleitos>("candidatos-eleitos.json");
   if (!dados) return <Carregando erro={erro} />;
   return <Conteudo C={dados} />;

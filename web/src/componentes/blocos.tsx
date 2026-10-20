@@ -45,12 +45,12 @@ export function VerMais({ titulo, children, aberto }: { titulo: ReactNode; child
 }
 
 /** Legenda horizontal de cores. */
-export function Legenda({ itens }: { itens: readonly { cor: string; rotulo: ReactNode }[] }) {
+export function Legenda({ itens, redonda }: { itens: readonly { cor: string; rotulo: ReactNode }[]; redonda?: boolean }) {
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[13px] text-texto-2">
       {itens.map((it, i) => (
         <span key={i} className="inline-flex items-center gap-1.5">
-          <Cor cor={it.cor} />
+          <Cor cor={it.cor} redonda={redonda} />
           {it.rotulo}
         </span>
       ))}
@@ -58,9 +58,9 @@ export function Legenda({ itens }: { itens: readonly { cor: string; rotulo: Reac
   );
 }
 
-/** Quadradinho de cor (legendas, listas). */
-export function Cor({ cor }: { cor: string }) {
-  return <i aria-hidden="true" className="inline-block size-[13px] flex-none rounded-[3px]" style={{ background: cor }} />;
+/** Quadradinho (ou bolinha) de cor, para legendas e listas. */
+export function Cor({ cor, redonda }: { cor: string; redonda?: boolean }) {
+  return <i aria-hidden="true" className={`inline-block size-[13px] flex-none ${redonda ? "rounded-full" : "rounded-[3px]"}`} style={{ background: cor }} />;
 }
 
 /** Faixa de gradiente com marcas embaixo (legenda de mapa contínuo). */

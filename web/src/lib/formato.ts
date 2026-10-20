@@ -26,3 +26,16 @@ export const nomeProprio = (s: string | null | undefined): string =>
     .split(" ")
     .map((w, i) => (i && PARTICULAS.has(w) ? w : w.replace(/(^|[-'])(\p{L})/gu, (_, a: string, b: string) => a + b.toUpperCase())))
     .join(" ");
+
+const PARTICULAS_LUGAR = new Set(["de", "da", "do", "das", "dos", "e"]);
+const maiusculas = (w: string) => w.replace(/(^|[-'])(\p{L})/gu, (_, a: string, b: string) => a + b.toUpperCase());
+/** Nome de município do IBGE: "SAO JOSE D'OESTE" -> "Sao Jose d'Oeste" (o "d'" fica minúsculo). */
+export const nomeLugar = (s: string | null | undefined): string =>
+  (s || "")
+    .toLowerCase()
+    .split(" ")
+    .map((w, i) => (i && PARTICULAS_LUGAR.has(w) ? w : i && w.startsWith("d'") ? "d'" + maiusculas(w.slice(2)) : maiusculas(w)))
+    .join(" ");
+
+/** "direita" -> "Direita". */
+export const maiusculaInicial = (s: string): string => s[0].toUpperCase() + s.slice(1);

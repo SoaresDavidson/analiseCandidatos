@@ -3,7 +3,6 @@ import { Alternador, Campo, Carregando, Etiqueta, Pagina, Seletor } from "../../
 import { COR_SEM_NOTA, corEspectro } from "../../lib/espectro";
 import { useDados } from "../../lib/dados";
 import { usePersistente } from "../../lib/usePersistente";
-import type { PainelProps } from "../tipos";
 import { INDICES, montarMunicipios, UF_NOME } from "./calculo";
 import { Dispersao } from "./Dispersao";
 import { Resposta } from "./Resposta";
@@ -14,7 +13,7 @@ const OPCOES_INDICE: readonly (readonly [ChaveIndice, string])[] = [
   ["pib", "PIB per capita"], ["renda", "Renda (Censo)"], ["isentos", "Isentos"], ["eleitores", "Eleitores por habitante"],
 ];
 
-export default function Painel(_: PainelProps) {
+export default function Painel() {
   const { dados } = useDados<DadosQ3>("q3.json");
   if (!dados) return <Carregando />;
   return <Q3 D={dados} />;

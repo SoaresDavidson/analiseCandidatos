@@ -15,7 +15,7 @@ export function Anel({ pct, legenda, nome, variante = "ouro" }: { pct: number | 
           strokeDasharray={`${((CIRC * v) / 100).toFixed(1)} ${CIRC.toFixed(1)}`} transform="rotate(-90 44 44)" />
       </svg>
       <div>
-        <span className={`text-[34px] leading-none font-extrabold tabular-nums ${verde ? "text-verde-esc" : "text-ouro-esc"}`}>{fmt(pct, 0)}%</span>
+        <span className={`text-[34px] leading-none font-extrabold tabular-nums ${verde ? "text-verde-esc" : "text-ouro-esc"}`}>{pct == null ? "–" : `${fmt(pct, 0)}%`}</span>
         <div className="text-[13px] text-texto-2">{legenda}</div>
         <div className="mt-1 text-base leading-tight font-extrabold uppercase">{nome}</div>
       </div>
@@ -29,12 +29,14 @@ export function Aneis({ children }: { children: ReactNode }) {
 }
 
 /** Barra horizontal: rótulo, trilho com preenchimento (0-100%) e valor. `media` desenha a linha tracejada de referência. */
-export function Barra({ rotulo, pct, valor, cor = "var(--color-ouro)", media, aoPassar, aoSair }: {
+export function Barra({ rotulo, pct, valor, cor = "var(--color-ouro)", media, titulo, aoPassar, aoSair }: {
   rotulo: ReactNode; pct: number; valor: ReactNode; cor?: string; media?: number;
+  /** balão nativo do navegador (ex.: o valor exato em reais) */
+  titulo?: string;
   aoPassar?: (ev: React.MouseEvent) => void; aoSair?: () => void;
 }) {
   return (
-    <div className="grid grid-cols-[minmax(0,13em)_minmax(0,1fr)_3.4em] items-center gap-2.5 text-sm" onMouseMove={aoPassar} onMouseLeave={aoSair}>
+    <div className="grid grid-cols-[minmax(0,13em)_minmax(0,1fr)_3.4em] items-center gap-2.5 text-sm" title={titulo} onMouseMove={aoPassar} onMouseLeave={aoSair}>
       <span>{rotulo}</span>
       <span className="relative h-[18px] rounded-[3px] bg-bege">
         <i className="block h-full rounded-[3px]" style={{ width: `${Math.max(0, Math.min(100, pct))}%`, background: cor }} />

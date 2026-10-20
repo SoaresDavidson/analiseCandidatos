@@ -9,15 +9,16 @@ import {
   Etiqueta,
   Linha,
   Pagina,
-  Seletor,
+  SeletorUf,
   Selo,
   VerMais,
 } from "../../componentes";
 import { useDados } from "../../lib/dados";
 import { fmt, int, pc } from "../../lib/formato";
+import { noEstado } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
 import { Bonecos } from "./Bonecos";
-import { ANOS, CARGO, cargosDoAno, comparar, faixas, N_MIN, onde, rotFaixa, SING, UF_NOME, ufIdx } from "./estatistica";
+import { ANOS, CARGO, cargosDoAno, comparar, faixas, N_MIN, rotFaixa, SING, ufIdx } from "./estatistica";
 import { calcularHalteres, GraficoHalteres } from "./Halteres";
 import { GraficoSensibilidade } from "./Sensibilidade";
 import type { DadosQ8, Filtros } from "./tipos";
@@ -35,7 +36,7 @@ function Conteudo({ D }: { D: DadosQ8 }) {
   const cargo = cargosDoAno(f.ano).includes(f.cargo) ? f.cargo : cargosDoAno(f.ano)[0];
   const { ano, uf, corte } = f;
   const us = useMemo(() => ufIdx(D.ufs, uf), [D, uf]);
-  const lugar = onde(uf);
+  const lugar = noEstado(uf);
 
   const r = useMemo(() => faixas(D, ano, cargo, us), [D, ano, cargo, us]);
   const c = useMemo(() => comparar(r, 50), [r]);
@@ -79,14 +80,7 @@ function Conteudo({ D }: { D: DadosQ8 }) {
       filtros={
         <>
           <Campo rotulo="Estado">
-            <Seletor value={uf} onChange={e => setF(s => ({ ...s, uf: e.target.value }))}>
-              <option value="TODAS">Todos os 6 estados</option>
-              {D.ufs.map(u => (
-                <option key={u} value={u}>
-                  {UF_NOME[u]}
-                </option>
-              ))}
-            </Seletor>
+            <SeletorUf value={uf} onChange={e => setF(s => ({ ...s, uf: e.target.value }))} />
           </Campo>
           <span className="grid gap-[3px] text-[13px] font-bold">
             Eleição

@@ -1,4 +1,5 @@
-import type { SelectHTMLAttributes } from "react";
+import type { ButtonHTMLAttributes, SelectHTMLAttributes } from "react";
+import { UF_NOME, UFS } from "../lib/uf";
 
 const SETA = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23333' stroke-width='2' fill='none'/%3E%3C/svg%3E")`;
 
@@ -43,5 +44,30 @@ export function Alternador<T extends string | number>({
         </button>
       ))}
     </span>
+  );
+}
+
+/** Seletor de estado: "Todos os 6 estados" (valor TODAS) e os 6 pelo nome. */
+export function SeletorUf(props: Omit<SelectHTMLAttributes<HTMLSelectElement>, "children">) {
+  return (
+    <Seletor {...props}>
+      <option value="TODAS">Todos os {UFS.length} estados</option>
+      {UFS.map(u => (
+        <option key={u} value={u}>
+          {UF_NOME[u]}
+        </option>
+      ))}
+    </Seletor>
+  );
+}
+
+/** Botão de ação em ouro ("Ver tudo sobre…", "Mais detalhes"). */
+export function Botao({ className = "", type = "button", ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      {...props}
+      type={type}
+      className={`cursor-pointer rounded-lg border-0 bg-ouro px-4 py-2 font-bold hover:bg-ouro-hover ${className}`}
+    />
   );
 }

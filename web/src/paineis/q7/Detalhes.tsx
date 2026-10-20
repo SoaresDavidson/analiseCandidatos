@@ -1,7 +1,8 @@
 import { Chip, VerMais } from "../../componentes";
 import { int, pc } from "../../lib/formato";
+import { noEstado } from "../../lib/uf";
 import type { Ctx, Regiao } from "./tipos";
-import { corDif, f2, maiusculaInicial, mudanca, notasDe, ondeUf, PARES, sinal } from "./util";
+import { corDif, f2, maiusculaInicial, mudanca, notasDe, PARES, sinal } from "./util";
 
 /** Bloco "As regiões que mais mudaram": duas tabelas, as 8 mais à direita e as 5 mais à esquerda. */
 export function Regioes({ R, f }: Ctx) {
@@ -83,7 +84,7 @@ export function Partidos({ D, f }: Ctx) {
   return (
     <VerMais titulo="O que puxou: os partidos que mais ganharam e perderam votos">
       <p className="texto-nota">
-        Fatia dos votos para {cargo} {ondeUf(f.uf)}, {aa} → {ab}, em pontos percentuais. Partidos que se fundiram ou
+        Fatia dos votos para {cargo} {noEstado(f.uf)}, {aa} → {ab}, em pontos percentuais. Partidos que se fundiram ou
         mudaram de nome aparecem juntos.
       </p>
       <svg
@@ -144,9 +145,9 @@ export function Prefeitos({ D, M, f }: Ctx) {
   return (
     <VerMais titulo="Os prefeitos: a cidade trocou de lado em 2024?">
       <p className="texto-simples text-[15.5px]!">
-        {maiusculaInicial(ondeUf(f.uf))}, em {int(ms.length - igual)} das {int(ms.length)} cidades o partido do prefeito
-        mudou de 2020 para 2024. <b>{int(ed)}</b> passaram de um partido à esquerda do meio da régua para um à direita;{" "}
-        <b>{int(de)}</b>, o contrário.
+        {maiusculaInicial(noEstado(f.uf))}, em {int(ms.length - igual)} das {int(ms.length)} cidades o partido do
+        prefeito mudou de 2020 para 2024. <b>{int(ed)}</b> passaram de um partido à esquerda do meio da régua para um à
+        direita; <b>{int(de)}</b>, o contrário.
       </p>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2.5">
         {numeros.map(([v, r]) => (

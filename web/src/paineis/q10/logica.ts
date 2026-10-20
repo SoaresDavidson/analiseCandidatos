@@ -1,15 +1,7 @@
 import { fmt, int, nomeProprio, pc } from "../../lib/formato";
+import { semAcento, UF_NOME, UFS } from "../../lib/uf";
 import type { DadosQ10, LinhaFin } from "./tipos";
 
-export const UFS = ["AM", "GO", "MA", "MT", "RS", "SE"] as const;
-export const UF_NOME: Record<string, string> = {
-  AM: "Amazonas",
-  GO: "Goiás",
-  MA: "Maranhão",
-  MT: "Mato Grosso",
-  RS: "Rio Grande do Sul",
-  SE: "Sergipe",
-};
 export const ANOS = [2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022, 2024];
 export const RES = ["Eleito", "Não eleito", "Sem resultado"];
 export const ABREV: Record<number, string> = {
@@ -59,8 +51,6 @@ export const GRUPO_NOME = [
   "Sem tipo (o TSE não separava)",
 ];
 export const GRUPO_COR = ["#5e7a12", "#c58a00", "#2a78d6", "#eb6834", "#4a3aa7", "#b9b6ae", "#d9d6cf"];
-
-export const semAcento = (s: string): string => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** Valor curto para eixos e rótulos: "1,2 mi", "35 mil". */
 export function brlCurto(v: number): string {
@@ -184,6 +174,3 @@ export function anosFin(D: DadosQ10, linhas: LinhaFin[]): AnoFin[] {
 }
 
 export const ufsSel = (uf: string): readonly string[] => (uf === "TODAS" ? UFS : [uf]);
-/** "nos 6 estados", "no Maranhão", "em Goiás". */
-export const onde = (uf: string): string =>
-  uf === "TODAS" ? "nos 6 estados" : `${["AM", "MA", "MT", "RS"].includes(uf) ? "no" : "em"} ${UF_NOME[uf]}`;

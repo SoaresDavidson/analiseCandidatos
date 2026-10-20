@@ -1,11 +1,12 @@
-import { Caixa, Empilhada, Etiqueta, Linha } from "../../componentes";
+import { Botao, Caixa, Empilhada, Etiqueta, Linha } from "../../componentes";
 import { urlBandeira } from "../../lib/dados";
 import { CORES_ESPECTRO, categoria } from "../../lib/espectro";
 import { brl, fmt, int, pc } from "../../lib/formato";
+import { UF_NOME } from "../../lib/uf";
 import { ChipCat } from "./Chip";
 import { Distribuicao } from "./Reguas";
 import type { Municipio, Regua } from "./tipos";
-import { ladoDe, mediaPonderada, somar, UF_NOME } from "./util";
+import { ladoDe, mediaPonderada, somar } from "./util";
 
 /** Barra esquerda × direita; o número só aparece se couber. */
 export function EsquerdaDireita({ esq, dir }: { esq: number; dir: number }) {
@@ -115,13 +116,9 @@ export function Estados({
               />
               <Linha rotulo="Arrecadado nas campanhas" valor={brl(rec)} />
               <Linha rotulo="Do fundo público" valor={`${fmt(pc(pub, rec), 0)}%`} />
-              <button
-                type="button"
-                onClick={() => aoAbrirUf(uf)}
-                className="mt-1.5 cursor-pointer rounded-lg border-0 bg-ouro p-2 font-bold hover:bg-[#d9a600]"
-              >
+              <Botao onClick={() => aoAbrirUf(uf)} className="mt-1.5">
                 Mais Detalhes
-              </button>
+              </Botao>
             </article>
           );
         })}

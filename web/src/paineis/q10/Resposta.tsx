@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { Aneis, Anel, Barra, Barras, Caixa, Linha } from "../../componentes";
 import { fmt, int, pc } from "../../lib/formato";
-import { COR_SEM_DADO, COR_VERDE_ESC, curva, onde, type Pessoa, TURMAS, ufsSel } from "./logica";
+import { noEstado } from "../../lib/uf";
+import { COR_SEM_DADO, COR_VERDE_ESC, curva, type Pessoa, TURMAS, ufsSel } from "./logica";
 import type { DadosQ10, Filtros } from "./tipos";
 
 const ROTULOS = ["Na estreia", "4 anos depois", "8 anos depois", "12 anos depois", "16 anos depois"];
@@ -11,7 +12,7 @@ export function Resposta({ D, pessoas, f }: { D: DadosQ10; pessoas: Pessoa[]; f:
   const t = TURMAS.find(x => x[0] === f.turma) ?? TURMAS[0];
   const c = useMemo(() => curva(D, ufsSel(f.uf), f.turma, "mandato"), [D, f.uf, f.turma]);
   const quatro = useMemo(() => pessoas.filter(p => p.vit >= 4).length, [pessoas]);
-  const lugar = onde(f.uf);
+  const lugar = noEstado(f.uf);
   const lugarMaiusculo = lugar[0].toUpperCase() + lugar.slice(1);
 
   return (

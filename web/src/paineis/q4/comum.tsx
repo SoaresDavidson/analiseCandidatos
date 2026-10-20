@@ -2,13 +2,8 @@ import type { ReactNode, SVGProps } from "react";
 import { fmt } from "../../lib/formato";
 import { useNavegacao } from "../../lib/navegacao";
 import type { Eleito, Municipio } from "./tipos";
-import { UF_NOME } from "./tipos";
 
 /** "nos 6 estados", "no Maranhão", "em Goiás". */
-export function textoOnde(uf: string): string {
-  if (uf === "TODAS") return "nos 6 estados";
-  return (["AM", "MA", "MT", "RS"].includes(uf) ? "no " : "em ") + UF_NOME[uf];
-}
 
 /** Texto de SVG centrado na vertical; `cls` é uma classe de styles/utilitarios.css. */
 export function Texto({

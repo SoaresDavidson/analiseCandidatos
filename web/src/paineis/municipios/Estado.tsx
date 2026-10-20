@@ -1,11 +1,12 @@
-import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Caixa, Campo, Cor, Empilhada, Linha } from "../../componentes";
+import { type KeyboardEvent, useMemo, useState } from "react";
+import { BuscaComLista, Caixa, Campo, Cor, Empilhada, Linha } from "../../componentes";
 import { urlBandeira } from "../../lib/dados";
 import { CATEGORIAS, CORES_ESPECTRO, categoria, corEspectro, nomeCategoria } from "../../lib/espectro";
 import { brl, fmt, pc } from "../../lib/formato";
+import { semAcento, UF_NOME } from "../../lib/uf";
 import { Chip, ChipCat } from "./Chip";
 import type { Lado, Municipio, Navegou, Ordem } from "./tipos";
-import { ladoDe, mediaPonderada, ORDENS, pcPublico, semAcento, somar, UF_NOME } from "./util";
+import { ladoDe, mediaPonderada, ORDENS, pcPublico, somar } from "./util";
 
 const PASSO = 60;
 const MAIS = 120;
@@ -38,18 +39,7 @@ export function Estado({ M, uf, meio, nav, aoMudar, aoAbrirCidade }: Props) {
   const { ordem, vis, lado } = nav;
   const [texto, setTexto] = useState("");
   const [n, setN] = useState(PASSO);
-  const [achadosAbertos, setAchadosAbertos] = useState(false);
-  const procura = useRef<HTMLDivElement>(null);
   const busca = semAcento(texto.trim());
-
-  // fecha a lista de achados ao clicar fora da busca
-  useEffect(() => {
-    const fora = (ev: MouseEvent) => {
-      if (!procura.current?.contains(ev.target as Node)) setAchadosAbertos(false);
-    };
-    document.addEventListener("click", fora);
-    return () => document.removeEventListener("click", fora);
-  }, []);
 
   const ms = useMemo(() => M.filter(m => m.uf === uf), [M, uf]);
   const resumo = useMemo(() => {
@@ -154,43 +144,28 @@ export function Estado({ M, uf, meio, nav, aoMudar, aoAbrirCidade }: Props) {
           <label htmlFor="f-busca" className="grid gap-[3px] text-[13px] font-bold">
             Município(s)
           </label>
-          <div ref={procura} className="relative">
-            <input
-              id="f-busca"
-              type="search"
-              value={texto}
-              placeholder="Selecione o(s) município(s)"
-              autoComplete="off"
-              aria-label="Buscar município"
-              className={CAMPO_LINHA}
-              onChange={ev => {
-                setTexto(ev.target.value);
-                setN(PASSO);
-                setAchadosAbertos(true);
-              }}
-            />
-            {achadosAbertos && achados.length > 0 && (
-              <div className="absolute inset-x-0 top-[calc(100%+4px)] z-[6] max-h-80 overflow-y-auto rounded-lg border-2 border-ouro bg-white shadow-[0_8px_20px_rgb(0_0_0/.12)]">
-                {achados.map(m => (
-                  <button
-                    key={m.cod}
-                    type="button"
-                    onClick={() => {
-                      setTexto("");
-                      setAchadosAbertos(false);
-                      aoAbrirCidade(m.cod);
-                    }}
-                    className="block w-full cursor-pointer border-0 border-b border-linha bg-white px-3 py-2 text-left hover:bg-ouro-claro"
-                  >
-                    <b>{m.nome}</b>{" "}
-                    <small className="text-texto-2">
-                      {m.voto == null ? "" : `${fmt(m.voto, 2)} · ${nomeCategoria(m.voto)}`}
-                    </small>
-                  </button>
-                ))}
-              </div>
+          <BuscaComLista
+            id="f-busca"
+            texto={texto}
+            aoDigitar={t => {
+              setTexto(t);
+              setN(PASSO);
+            }}
+            achados={achados}
+            chave={m => m.cod}
+            rotulo={m => (
+              <>
+                <b>{m.nome}</b>{" "}
+                <small className="text-texto-2">
+                  {m.voto == null ? "" : `${fmt(m.voto, 2)} · ${nomeCategoria(m.voto)}`}
+                </small>
+              </>
             )}
-          </div>
+            aoEscolher={m => aoAbrirCidade(m.cod)}
+            placeholder="Selecione o(s) município(s)"
+            ariaLabel="Buscar município"
+            campoClassName={CAMPO_LINHA}
+          />
           <div className="flex flex-wrap items-end gap-[18px]">
             <div className="flex-1">
               <Campo rotulo="Ordenar por">

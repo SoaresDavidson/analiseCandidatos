@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { irPara, useHash } from "./useHash";
+import { irPara, useHash } from "../../src/lib/useHash";
 
 afterEach(() => {
   cleanup();

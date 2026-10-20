@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ProvedorDica } from "./Dica";
-import { type Assento, Plenario } from "./Plenario";
+import { ProvedorDica } from "../../src/componentes/Dica";
+import { type Assento, Plenario } from "../../src/componentes/Plenario";
 
 // sem globals no Vitest, a Testing Library não desmonta sozinha entre os testes
 afterEach(cleanup);

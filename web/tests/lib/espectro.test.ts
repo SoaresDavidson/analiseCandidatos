@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { CATEGORIAS, COR_SEM_NOTA, CORES_ESPECTRO, categoria, corEspectro, nomeCategoria } from "./espectro";
+import {
+  CATEGORIAS,
+  COR_SEM_NOTA,
+  CORES_ESPECTRO,
+  categoria,
+  corEspectro,
+  nomeCategoria,
+} from "../../src/lib/espectro";
 
 describe("espectro", () => {
   it("sem nota fica fora das 7 categorias", () => {

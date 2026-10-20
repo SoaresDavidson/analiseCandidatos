@@ -1,7 +1,9 @@
 import { useMemo, useRef, useState } from "react";
-import { Alternador, Campo, Carregando, Etiqueta, Pagina, Seletor, VerMais } from "../../componentes";
+import { Alternador, Campo, Carregando, Etiqueta, Pagina, SeletorUf, VerMais } from "../../componentes";
 import { useDados } from "../../lib/dados";
 import { int } from "../../lib/formato";
+import { UFS } from "../../lib/uf";
+
 import { usePersistente } from "../../lib/usePersistente";
 import { Cidades } from "./Cidades";
 import { chance, prepararEleitos, prepararMunicipios, teste, totaisPorAno } from "./calculo";
@@ -10,7 +12,7 @@ import { Mapa } from "./Mapa";
 import { Moda } from "./Moda";
 import { Perfil } from "./Perfil";
 import { Resposta } from "./Resposta";
-import { CARGO, CARGOS, type DadosQ4, type Filtros, type Metrica, UF_NOME, UFS } from "./tipos";
+import { CARGO, CARGOS, type DadosQ4, type Filtros, type Metrica } from "./tipos";
 
 const PADRAO: Filtros = { ano: 2024, uf: "TODAS", cargo: 13, mapaUf: "MA", metrica: "pop", semCap: false };
 
@@ -52,14 +54,7 @@ function Conteudo({ D }: { D: DadosQ4 }) {
   const filtros = (
     <>
       <Campo rotulo="Estado">
-        <Seletor value={f.uf} onChange={e => mudarUf(e.target.value)}>
-          <option value="TODAS">Todos os 6 estados</option>
-          {UFS.map(u => (
-            <option key={u} value={u}>
-              {UF_NOME[u]}
-            </option>
-          ))}
-        </Seletor>
+        <SeletorUf value={f.uf} onChange={e => mudarUf(e.target.value)} />
       </Campo>
       <span className="grid gap-[3px] text-[13px] font-bold">
         Eleição

@@ -12,27 +12,14 @@ import {
   Legenda,
   Linha,
   Pagina,
-  Seletor,
+  SeletorUf,
   VerMais,
 } from "../../componentes";
 import { useDados } from "../../lib/dados";
-import { fmt, int, pc } from "../../lib/formato";
+import { fmt, int, maiusculaInicial, pc } from "../../lib/formato";
+import { noEstado } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
-import {
-  ANOS,
-  CANAL,
-  CARGO,
-  cargosDoAno,
-  grupoT,
-  maiuscula,
-  onde,
-  PLUR,
-  participacoes,
-  reais,
-  TODOS_CANAIS,
-  totalT,
-  UF_NOME,
-} from "./dominio";
+import { ANOS, CANAL, CARGO, cargosDoAno, grupoT, PLUR, participacoes, reais, TODOS_CANAIS, totalT } from "./dominio";
 import { Nuvem } from "./Nuvem";
 import { DetalhePalavra } from "./Palavra";
 import type { DadosQ9, Filtros } from "./tipos";
@@ -97,14 +84,7 @@ function Q9({ d }: { d: DadosQ9 }) {
   const filtros = (
     <>
       <Campo rotulo="Estado">
-        <Seletor value={f.uf} onChange={e => mudarUf(e.target.value)}>
-          <option value="TODAS">Todos os 6 estados</option>
-          {d.ufs.map(u => (
-            <option key={u} value={u}>
-              {UF_NOME[u]}
-            </option>
-          ))}
-        </Seletor>
+        <SeletorUf value={f.uf} onChange={e => mudarUf(e.target.value)} />
       </Campo>
       <Campo rotulo="Eleição" grupo>
         <Alternador rotulo="Eleição" opcoes={ANOS} valor={f.ano} aoMudar={mudarAno} />
@@ -199,7 +179,7 @@ function Resposta({ d, f }: { d: DadosQ9; f: Filtros }) {
             "Sem despesas de propaganda neste recorte."
           ) : (
             <>
-              Os {PLUR[f.cargo]} de {f.ano} {onde(f.uf)} gastaram <b>{reais(T)}</b> com propaganda. De cada R$ 100,{" "}
+              Os {PLUR[f.cargo]} de {f.ano} {noEstado(f.uf)} gastaram <b>{reais(T)}</b> com propaganda. De cada R$ 100,{" "}
               <b>R$ {fmt(p[0], 0)}</b> foram para material impresso e <b>R$ {fmt(p[1], 0)}</b> para campanha de rua. A
               internet ficou com R$ {fmt(p[4], 0)}.
             </>
@@ -231,8 +211,8 @@ function Resposta({ d, f }: { d: DadosQ9; f: Filtros }) {
             ))}
           </Barras>
           <p className="texto-nota">
-            {maiuscula(PLUR[f.cargo])} em {f.ano} {onde(f.uf)}, todos os candidatos. Passe o mouse para ver o valor em
-            reais.
+            {maiusculaInicial(PLUR[f.cargo])} em {f.ano} {noEstado(f.uf)}, todos os candidatos. Passe o mouse para ver o
+            valor em reais.
           </p>
         </Caixa>
       </div>
@@ -389,9 +369,9 @@ function Tendencia({ d, f }: { d: DadosQ9; f: Filtros }) {
   return (
     <>
       <p className="texto-simples !text-[15.5px]">
-        {maiuscula(onde(f.uf))}, a internet foi de R$ {fmt(mun[0][4], 0)} para R$ {fmt(mun[1][4], 0)} em cada R$ 100 nas
-        municipais e de R$ {fmt(ger[0][4], 0)} para R$ {fmt(ger[1][4], 0)} nas estaduais e federais. O que mais cresceu
-        nas municipais: {cresceu(mun)}; nas estaduais e federais: {cresceu(ger)}.
+        {maiusculaInicial(noEstado(f.uf))}, a internet foi de R$ {fmt(mun[0][4], 0)} para R$ {fmt(mun[1][4], 0)} em cada
+        R$ 100 nas municipais e de R$ {fmt(ger[0][4], 0)} para R$ {fmt(ger[1][4], 0)} nas estaduais e federais. O que
+        mais cresceu nas municipais: {cresceu(mun)}; nas estaduais e federais: {cresceu(ger)}.
       </p>
       <div className="rolagem-x">
         <table>

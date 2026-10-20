@@ -1,20 +1,8 @@
 import { Aneis, Anel, Caixa, Legenda, Linha, useDica } from "../../componentes";
 import { int, pc } from "../../lib/formato";
+import { noEstado, UF_NOME } from "../../lib/uf";
 import type { Ctx } from "./tipos";
-import {
-  CAT_COR,
-  CATS,
-  degraus,
-  escalas,
-  f2,
-  maiusculaInicial,
-  mudanca,
-  ondeUf,
-  PARES,
-  pontos,
-  sinal,
-  UF_NOME,
-} from "./util";
+import { CAT_COR, CATS, degraus, escalas, f2, maiusculaInicial, mudanca, PARES, pontos, sinal } from "./util";
 
 /** Seção 1: a resposta em linguagem simples, os números e os dois anéis. */
 export function Resposta({ D, M, R, f }: Ctx) {
@@ -36,9 +24,9 @@ export function Resposta({ D, M, R, f }: Ctx) {
       <Caixa>
         <h2>A resposta</h2>
         <p className="texto-simples">
-          {dFixa > 0 ? "Foram para a direita." : "Foram para a esquerda."} {maiusculaInicial(ondeUf(f.uf))}, o voto para{" "}
-          {cargo} foi de <b>{f2(mf[a])}</b> em {aa} para <b>{f2(mf[b])}</b> em {ab} na escala de 0 a 10, com a mesma
-          régua nos dois anos: só o eleitor mudou. <b>{f2(pc(dir, ms.length), 0)}%</b> das cidades votaram mais à
+          {dFixa > 0 ? "Foram para a direita." : "Foram para a esquerda."} {maiusculaInicial(noEstado(f.uf))}, o voto
+          para {cargo} foi de <b>{f2(mf[a])}</b> em {aa} para <b>{f2(mf[b])}</b> em {ab} na escala de 0 a 10, com a
+          mesma régua nos dois anos: só o eleitor mudou. <b>{f2(pc(dir, ms.length), 0)}%</b> das cidades votaram mais à
           direita.{" "}
           {Math.abs(dRod - dFixa) >= 0.03
             ? `Com a régua de cada ano a mudança é de ${sinal(dRod)}: ${sinal(dRod - dFixa)} ponto vem de os especialistas terem reavaliado os partidos.`

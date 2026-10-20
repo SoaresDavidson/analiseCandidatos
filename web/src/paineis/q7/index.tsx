@@ -1,12 +1,13 @@
 import { useMemo } from "react";
-import { Alternador, Campo, Carregando, Etiqueta, Pagina, Seletor } from "../../componentes";
+import { Alternador, Campo, Carregando, Etiqueta, Pagina, SeletorUf } from "../../componentes";
 import { useDados } from "../../lib/dados";
+import { semAcento } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
 import { Metodo, Partidos, Prefeitos, Regioes } from "./Detalhes";
 import { Mapa } from "./Mapa";
 import { Resposta } from "./Resposta";
 import type { Ctx, DadosQ7, Filtros, Par, Regua } from "./tipos";
-import { nomeLugar, semAcento, UF_NOME } from "./util";
+import { nomeLugar } from "./util";
 
 const PADRAO: Filtros = { uf: "TODAS", par: "mun", regua: "fixa", mapaUf: "MA", sel: null };
 
@@ -45,14 +46,7 @@ function Conteudo({ D }: { D: DadosQ7 }) {
   const filtros = (
     <>
       <Campo rotulo="Estado">
-        <Seletor value={f.uf} onChange={e => mudarUf(e.target.value)}>
-          <option value="TODAS">Todos os 6 estados</option>
-          {D.ufs.map(u => (
-            <option key={u} value={u}>
-              {UF_NOME[u]}
-            </option>
-          ))}
-        </Seletor>
+        <SeletorUf value={f.uf} onChange={e => mudarUf(e.target.value)} />
       </Campo>
       <span className="grid gap-[3px] text-[13px] font-bold">
         Comparar

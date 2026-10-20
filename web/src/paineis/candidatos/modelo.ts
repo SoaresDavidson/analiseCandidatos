@@ -1,16 +1,9 @@
 import { useMemo } from "react";
 import { useDados } from "../../lib/dados";
 import { nomeProprio } from "../../lib/formato";
+import { semAcento, UF_NOME } from "../../lib/uf";
 import type { Candidatura, DadosCandidatos, Eleito, Modelo } from "./tipos";
 
-export const UF_NOME: Record<string, string> = {
-  AM: "Amazonas",
-  GO: "Goiás",
-  MA: "Maranhão",
-  MT: "Mato Grosso",
-  RS: "Rio Grande do Sul",
-  SE: "Sergipe",
-};
 export const CARGO: Record<number, string> = {
   3: "Governador",
   5: "Senador",
@@ -59,14 +52,6 @@ export const frase = (s: string | null | undefined): string => {
   const t = (s || "").toLowerCase();
   return t ? t[0].toUpperCase() + t.slice(1) : "";
 };
-export const semAcento = (s: string): string => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-
-export function mediana(xs: (number | null | undefined)[]): number | null {
-  const v = xs.filter((x): x is number => x != null).sort((a, b) => a - b);
-  if (!v.length) return null;
-  const m = v.length >> 1;
-  return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
-}
 
 /** Local e estado: nome oficial com acento (o TSE grava "GOIAS" em alguns anos). */
 function lugar(D: DadosCandidatos, i: number): [string, string] {

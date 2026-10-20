@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { usePersistente } from "./usePersistente";
+import { usePersistente } from "../../src/lib/usePersistente";
 
 // sem globals no Vitest, a Testing Library não desmonta sozinha entre os testes
 afterEach(cleanup);

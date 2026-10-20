@@ -21,13 +21,16 @@ src/
     base.css         padrões de elemento: h1-h3, tabelas, foco, texto de SVG
     utilitarios.css  classes próprias (@utility): texto-nota, grade-duas, svg-eixo, mapa...
     animacoes.css    entrada das páginas
-  componentes/     kit de interface: Pagina, Campo, Seletor, Alternador, Caixa, Etiqueta,
+  componentes/     kit de interface: Pagina, Campo, Seletor, SeletorUf, Alternador, Botao,
+                   BuscaComLista, Chip, Caixa, Etiqueta,
                    Linha, Selo, VerMais, Legenda, Rampa, Anel, Barra, Empilhada, Dica,
                    FotoEleito, Plenario, Carregando
-  lib/             formato (fmt, int, pc, brl, nomeProprio), espectro, dados (useDados),
+  lib/             formato (fmt, int, pc, brl, nomeProprio, nomeLugar), uf (UF_NOME, noEstado,
+                   semAcento), estatistica (mediana), espectro, dados (useDados),
                    navegacao (abrir ficha/município), usePersistente, useHash
   inicio/          página inicial e cartões das perguntas
   paineis/<id>/    um painel por pergunta; registro.ts lista temas e páginas
+tests/            testes de unidade (Vitest), espelhando src/
 public/dados/      JSON de cada painel (lido por fetch, fora do bundle)
 public/bandeiras/  bandeiras dos 6 estados
 ```
@@ -45,8 +48,8 @@ public/bandeiras/  bandeiras dos 6 estados
 
 ## Testes e formatação
 
-- Testes ficam ao lado do código: `formato.ts` -> `formato.test.ts`. Funções puras rodam
-  no ambiente node; teste de hook ou componente começa com `// @vitest-environment jsdom`
+- Testes ficam em `tests/`, com a mesma árvore de `src/`: `src/lib/formato.ts` ->
+  `tests/lib/formato.test.ts`. Funções puras rodam no ambiente node; teste de hook ou componente começa com `// @vitest-environment jsdom`
   e chama `afterEach(cleanup)` (o Vitest roda sem globals).
 - Cálculo de painel (estatística, faixas, agregações) vai para um módulo puro
   (`calculo.ts`, `estatistica.ts`), que é o que se testa.

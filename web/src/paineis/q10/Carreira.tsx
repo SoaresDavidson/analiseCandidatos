@@ -1,6 +1,7 @@
-import { memo, type RefObject, useEffect, useMemo, useRef, useState } from "react";
-import { Caixa, useDica } from "../../componentes";
-import { ABREV, ANOS, COR_OURO, COR_TEXTO_2, COR_VERDE, COR_VERDE_ESC, type Pessoa, RES, semAcento } from "./logica";
+import { memo, type RefObject, useMemo, useState } from "react";
+import { BuscaComLista, Caixa, useDica } from "../../componentes";
+import { semAcento } from "../../lib/uf";
+import { ABREV, ANOS, COR_OURO, COR_TEXTO_2, COR_VERDE, COR_VERDE_ESC, type Pessoa, RES } from "./logica";
 
 const RANK: Record<number, number> = {
   13: 0,
@@ -133,12 +134,9 @@ export function Carreira({
 /** Campo de busca com lista de achados (mínimo de 3 letras, até 10 resultados). */
 function Busca({ pessoas, aoEscolher }: { pessoas: Pessoa[]; aoEscolher: (id: number) => void }) {
   const [texto, setTexto] = useState("");
-  const [aberta, setAberta] = useState(false);
-  const caixa = useRef<HTMLDivElement>(null);
-
   const q = semAcento(texto.trim());
   const achados = useMemo(() => {
-    if (q.length < 3) return [];
+    if (q.length < 3) return null;
     const termos = q.split(/\s+/);
     return pessoas
       .filter(p => termos.every(t => p.busca.includes(t)))
@@ -146,62 +144,27 @@ function Busca({ pessoas, aoEscolher }: { pessoas: Pessoa[]; aoEscolher: (id: nu
       .slice(0, 10);
   }, [pessoas, q]);
 
-  // clicar fora fecha a lista
-  useEffect(() => {
-    const fora = (e: MouseEvent) => {
-      if (!caixa.current?.contains(e.target as Node)) setAberta(false);
-    };
-    document.addEventListener("click", fora);
-    return () => document.removeEventListener("click", fora);
-  }, []);
-
-  const escolher = (id: number) => {
-    aoEscolher(id);
-    setTexto("");
-    setAberta(false);
-  };
-
   return (
-    <div ref={caixa} className="relative max-w-[520px]">
-      <input
-        id="f-busca"
-        type="search"
-        autoComplete="off"
-        aria-label="Buscar político pelo nome"
-        placeholder="Digite um nome: Flávio Dino, Caiado, Eduardo Leite, o vereador da sua cidade…"
-        className="entrada w-full"
-        value={texto}
-        onChange={e => {
-          setTexto(e.target.value);
-          setAberta(semAcento(e.target.value.trim()).length >= 3);
-        }}
-        onKeyDown={e => {
-          if (e.key === "Enter" && aberta && achados[0]) escolher(achados[0].id);
-          if (e.key === "Escape") setAberta(false);
-        }}
-      />
-      {aberta && (
-        <div className="absolute inset-x-0 top-[calc(100%+4px)] z-[6] max-h-80 overflow-y-auto rounded-lg border-2 border-ouro bg-white shadow-[0_8px_20px_rgb(0_0_0/.12)]">
-          {achados.length ? (
-            achados.map(p => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => escolher(p.id)}
-                className="block w-full cursor-pointer border-0 border-b border-linha bg-white px-3 py-2 text-left hover:bg-ouro-claro focus-visible:bg-ouro-claro"
-              >
-                <b>{p.nome}</b>{" "}
-                <small className="text-texto-2">
-                  {p.ufs.join(", ")} · {ABREV[p.ult.cargo]} em {p.ult.ano} · {p.vit} vitória{p.vit > 1 ? "s" : ""}
-                </small>
-              </button>
-            ))
-          ) : (
-            <p className="p-2.5">Ninguém com esse nome entre os eleitos.</p>
-          )}
-        </div>
+    <BuscaComLista
+      id="f-busca"
+      texto={texto}
+      aoDigitar={setTexto}
+      achados={achados}
+      chave={p => p.id}
+      rotulo={p => (
+        <>
+          <b>{p.nome}</b>{" "}
+          <small className="text-texto-2">
+            {p.ufs.join(", ")} · {ABREV[p.ult.cargo]} em {p.ult.ano} · {p.vit} vitória{p.vit > 1 ? "s" : ""}
+          </small>
+        </>
       )}
-    </div>
+      aoEscolher={p => aoEscolher(p.id)}
+      vazio="Ninguém com esse nome entre os eleitos."
+      ariaLabel="Buscar político pelo nome"
+      placeholder="Digite um nome: Flávio Dino, Caiado, Eduardo Leite, o vereador da sua cidade…"
+      className="max-w-[520px]"
+    />
   );
 }
 

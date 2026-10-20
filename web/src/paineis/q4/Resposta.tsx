@@ -1,14 +1,15 @@
 import { useMemo } from "react";
 import { Aneis, Anel, Barra, Barras, Caixa, Linha, Selo } from "../../componentes";
 import { fmt, int, pc } from "../../lib/formato";
+import { noEstado } from "../../lib/uf";
 import { type Contagem, perfil, porNivel, type Teste } from "./calculo";
-import { textoOnde } from "./comum";
+
 import { type DadosQ4, type Filtros, NIVEL, PLURAL } from "./tipos";
 
 interface Props {
   D: DadosQ4;
   f: Filtros;
-  ufs: string[];
+  ufs: readonly string[];
   r: Record<number, Contagem>;
   t: Teste;
 }
@@ -42,7 +43,7 @@ export function Resposta({ D, f, ufs, r, t }: Props) {
       <Caixa>
         <h2>A resposta</h2>
         <p className="texto-simples">
-          Quem chega ao poder estudou <b>bem mais</b> que a população: {textoOnde(f.uf)}, {fmt(p[0][3], 0)}% dos adultos
+          Quem chega ao poder estudou <b>bem mais</b> que a população: {noEstado(f.uf)}, {fmt(p[0][3], 0)}% dos adultos
           têm faculdade, mas {fmt(p[2][3], 0)}% dos eleitos de {f.ano} têm.{" "}
           {varia ? (
             <>
@@ -96,7 +97,7 @@ export function Resposta({ D, f, ufs, r, t }: Props) {
           </Barras>
           <Selo tipo={varia ? "sim" : "nao"}>{rotuloSelo}</Selo>
           <p className="texto-nota">
-            Candidatos a {cargo} em {f.ano} {textoOnde(f.uf)}. A linha tracejada é a média do cargo ({fmt(geral, 0)} em
+            Candidatos a {cargo} em {f.ano} {noEstado(f.uf)}. A linha tracejada é a média do cargo ({fmt(geral, 0)} em
             cada 100).
             {varia && vezes
               ? ` Quem tem faculdade se elege ${fmt(vezes, 1)} vez${vezes >= 2 ? "es" : ""} mais que quem não terminou o fundamental.`

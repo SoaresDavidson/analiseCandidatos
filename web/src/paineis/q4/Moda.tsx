@@ -3,7 +3,7 @@ import { int } from "../../lib/formato";
 import { type Municipio, NIVEL } from "./tipos";
 
 /** Bloco "Ver o nível mais comum em cada cidade (moda)": quantas cidades em cada combinação. */
-export function Moda({ MUN, ufs }: { MUN: Municipio[]; ufs: string[] }) {
+export function Moda({ MUN, ufs }: { MUN: Municipio[]; ufs: readonly string[] }) {
   const sel = MUN.filter(m => ufs.includes(m.u) && m.ok);
   const t: Record<string, number> = {};
   for (const m of sel) {

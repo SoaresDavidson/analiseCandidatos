@@ -1,14 +1,15 @@
 import { useMemo } from "react";
 import { useDica, VerMais } from "../../componentes";
 import { fmt } from "../../lib/formato";
+import { UF_NOME } from "../../lib/uf";
 import { media, pearson, reta, spearman } from "./calculo";
 import { DicaMun, Texto } from "./comum";
-import { type Filtros, type Municipio, UF_NOME } from "./tipos";
+import { type Filtros, type Municipio } from "./tipos";
 
 interface Props {
   MUN: Municipio[];
   f: Filtros;
-  ufs: string[];
+  ufs: readonly string[];
   aoMudarSemCap: (v: boolean) => void;
   aoEscolher: (cod: number) => void;
 }
@@ -120,7 +121,7 @@ const QW = 520,
   QT = 18;
 const ROTULOS_GRUPO = ["Menos formadas", "", "", "", "Mais formadas"];
 
-function Quintis({ MUN, ufs }: { MUN: Municipio[]; ufs: string[] }) {
+function Quintis({ MUN, ufs }: { MUN: Municipio[]; ufs: readonly string[] }) {
   const vals = useMemo(() => {
     const sel = MUN.filter(m => ufs.includes(m.u) && m.ok);
     const ord = [...sel].sort((a, b) => (a.pPop as number) - (b.pPop as number));

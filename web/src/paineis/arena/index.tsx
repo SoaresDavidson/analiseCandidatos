@@ -1,7 +1,8 @@
 import { type ReactNode, useEffect, useLayoutEffect, useMemo, useReducer, useRef } from "react";
-import { Caixa, Campo, Carregando, Etiqueta, Pagina, Seletor, VerMais } from "../../componentes";
+import { Caixa, Campo, Carregando, Etiqueta, Pagina, Seletor, SeletorUf, VerMais } from "../../componentes";
 import { useDados } from "../../lib/dados";
 import { useNavegacao } from "../../lib/navegacao";
+
 import type { PainelProps } from "../tipos";
 import { Busca } from "./Busca";
 import { Carta } from "./Carta";
@@ -15,7 +16,6 @@ import {
   montarCartas,
   outroLado,
   sortearDe,
-  UF_NOME,
   VIDA_INICIAL,
   valorRodada,
   vencedor,
@@ -57,7 +57,6 @@ interface Jogo {
 }
 
 const FIM = 99;
-const TOTAL_UFS = 6;
 
 /** Escolhe as duas cartas do duelo. `manter` conserva as que o jogador já tinha. */
 function escolherCartas(
@@ -321,14 +320,7 @@ function Arena({ dados }: { dados: DadosEleitos }) {
         </Seletor>
       </Campo>
       <Campo rotulo="Estado">
-        <Seletor value={g.uf} onChange={e => novoDuelo(g.baralho, e.target.value)}>
-          <option value="TODAS">Todos os {TOTAL_UFS} estados</option>
-          {dados.ufs.map(u => (
-            <option key={u} value={u}>
-              {UF_NOME[u]}
-            </option>
-          ))}
-        </Seletor>
+        <SeletorUf value={g.uf} onChange={e => novoDuelo(g.baralho, e.target.value)} />
       </Campo>
     </>
   );

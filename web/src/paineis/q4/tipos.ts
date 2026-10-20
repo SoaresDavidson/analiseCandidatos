@@ -82,15 +82,6 @@ export interface Filtros {
   semCap: boolean;
 }
 
-export const UFS = ["AM", "GO", "MA", "MT", "RS", "SE"];
-export const UF_NOME: Record<string, string> = {
-  AM: "Amazonas",
-  GO: "Goiás",
-  MA: "Maranhão",
-  MT: "Mato Grosso",
-  RS: "Rio Grande do Sul",
-  SE: "Sergipe",
-};
 /** Nomes simples dos 4 níveis do Censo (a nota explica o que cada um inclui). */
 export const NIVEL: Record<number, string> = {
   1: "Sem fundamental completo",

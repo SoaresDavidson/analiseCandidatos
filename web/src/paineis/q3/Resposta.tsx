@@ -1,7 +1,8 @@
 import { Aneis, Anel, Caixa, Legenda, Linha } from "../../componentes";
 import { CATEGORIAS, COR_SEM_NOTA, CORES_ESPECTRO } from "../../lib/espectro";
+import { mediana } from "../../lib/estatistica";
 import { fmt, pc } from "../../lib/formato";
-import { contarPref, dividirQuintos, maiusculaInicial, mediana, spearman } from "./calculo";
+import { contarPref, dividirQuintos, maiusculaInicial, spearman } from "./calculo";
 import type { Indice, Municipio } from "./tipos";
 
 interface Props {

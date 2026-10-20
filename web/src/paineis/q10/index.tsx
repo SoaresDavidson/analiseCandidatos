@@ -1,12 +1,13 @@
 import { useCallback, useMemo, useRef } from "react";
-import { Alternador, Campo, Carregando, Etiqueta, Pagina, Seletor } from "../../componentes";
+import { Alternador, Campo, Carregando, Etiqueta, Pagina, SeletorUf } from "../../componentes";
 import { useDados } from "../../lib/dados";
+import { semAcento } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
 import type { PainelProps } from "../tipos";
 import { Carreira } from "./Carreira";
 import { Comparar, Metodo, Ranking, Reeleicao } from "./Detalhes";
 import { Financas } from "./Financas";
-import { montarPessoas, semAcento, TURMAS, UF_NOME, UFS } from "./logica";
+import { montarPessoas, TURMAS } from "./logica";
 import { Resposta } from "./Resposta";
 import type { DadosQ10, Filtros } from "./tipos";
 
@@ -51,14 +52,7 @@ function Conteudo({ D }: { D: DadosQ10 }) {
   const filtros = (
     <>
       <Campo rotulo="Estado">
-        <Seletor id="f-uf" value={f.uf} onChange={e => mudar("uf", e.target.value)}>
-          <option value="TODAS">Todos os 6 estados</option>
-          {UFS.map(u => (
-            <option key={u} value={u}>
-              {UF_NOME[u]}
-            </option>
-          ))}
-        </Seletor>
+        <SeletorUf id="f-uf" value={f.uf} onChange={e => mudar("uf", e.target.value)} />
       </Campo>
       <span className="grid gap-[3px] text-[13px] font-bold">
         Primeira vitória como

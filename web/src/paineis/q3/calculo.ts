@@ -1,25 +1,16 @@
+import { semAcento } from "../../lib/uf";
+
 export { maiusculaInicial, nomeLugar } from "../../lib/formato";
 
 import { fmt, int, nomeLugar } from "../../lib/formato";
 import type { ChaveIndice, DadosQ3, Indice, Municipio } from "./tipos";
 
-export const UF_NOME: Record<string, string> = {
-  AM: "Amazonas",
-  GO: "Goiás",
-  MA: "Maranhão",
-  MT: "Mato Grosso",
-  RS: "Rio Grande do Sul",
-  SE: "Sergipe",
-};
 export const PERFIL = ["Agropecuária", "Administração pública", "Serviços e comércio", "Indústria e outros"];
 
 // Formatador local: o brl deste painel só chega até "mil" (o do kit vai a milhões).
 export const brl = (v: number | null | undefined): string =>
   v == null ? "–" : v >= 1e3 ? `R$ ${fmt(v / 1e3, v >= 1e5 ? 0 : 1)} mil` : `R$ ${int(v)}`;
 const reais = (v: number | null): string => (v == null ? "–" : `R$ ${int(v)}`);
-
-export const semAcento = (s: string): string => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-/** Como o do kit, mas trata "d'Oeste" (apóstrofo no começo da palavra). */
 
 export const INDICES: Record<ChaveIndice, Indice> = {
   pib: {
@@ -78,13 +69,6 @@ export function montarMunicipios(D: DadosQ3): Municipio[] {
     isentos: r[16],
     busca: semAcento(r[1]),
   }));
-}
-
-export function mediana(xs: (number | null | undefined)[]): number | null {
-  const v = xs.filter((x): x is number => x != null).sort((a, b) => a - b);
-  if (!v.length) return null;
-  const k = v.length >> 1;
-  return v.length % 2 ? v[k] : (v[k - 1] + v[k]) / 2;
 }
 
 // correlação de postos (Spearman), com empates pela média dos postos

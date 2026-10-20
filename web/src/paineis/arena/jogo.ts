@@ -1,16 +1,9 @@
 import { fmt as fmtKit, nomeProprio } from "../../lib/formato";
+import { semAcento } from "../../lib/uf";
 import type { CartaEleito, DadosEleitos, ElementoId, Lado, Rodada } from "./tipos";
 
 // Regras da Arena (funções puras): cartas, posições, vencedor de cada rodada.
 
-export const UF_NOME: Record<string, string> = {
-  AM: "Amazonas",
-  GO: "Goiás",
-  MA: "Maranhão",
-  MT: "Mato Grosso",
-  RS: "Rio Grande do Sul",
-  SE: "Sergipe",
-};
 export const CARGO: Record<number, string> = {
   3: "Governador",
   5: "Senador",
@@ -85,7 +78,6 @@ export const brl = (v: number | null): string =>
         ? `R$ ${fmt(v / 1e3, 0)} mil`
         : `R$ ${fmt(v)}`;
 
-export const semAcento = (s: string): string => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 export const vitoriasTexto = (n: number): string => `${n} vitória${n === 1 ? "" : "s"}`;
 /** Governadores e senadores ficam no mesmo baralho. */
 export const grupo = (t: CartaEleito): string => `${t.ano % 100}-${t.cargo === 5 ? 3 : t.cargo}`;

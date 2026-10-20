@@ -4,11 +4,12 @@ import { urlBandeira, urlFoto } from "../../lib/dados";
 import { CATEGORIAS, CORES_ESPECTRO, corEspectro, nomeCategoria } from "../../lib/espectro";
 import { brl, fmt, int, nomeProprio } from "../../lib/formato";
 import { useNavegacao } from "../../lib/navegacao";
+import { UF_NOME } from "../../lib/uf";
 import { bancadas, ListaBancadas, Semicirculo } from "./Camara";
 import { Chip } from "./Chip";
 import { ReguaCidade } from "./Reguas";
 import type { DadosCandidatos, DadosMunicipios, Municipio } from "./tipos";
-import { CANAL, ladoDe, pcPublico, UF_NOME } from "./util";
+import { CANAL, ladoDe, pcPublico } from "./util";
 
 const ANO = 2024;
 const CARGO_PREFEITO = 11,

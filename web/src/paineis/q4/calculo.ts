@@ -66,7 +66,7 @@ export function totaisPorAno(chance: LinhaChance[]) {
 
 // ---------- recortes por ano, estado e cargo ----------
 /** Linhas: 0 população, 1 candidatos, 2 eleitos; colunas: os 4 níveis. */
-export function perfil(linhas: LinhaPerfil[], ano: number, ufs: string[]): number[][] {
+export function perfil(linhas: LinhaPerfil[], ano: number, ufs: readonly string[]): number[][] {
   const q = [
     [0, 0, 0, 0],
     [0, 0, 0, 0],
@@ -81,7 +81,12 @@ export interface Contagem {
   e: number;
 }
 /** Candidatos e eleitos por grau (índices 1 a 8). */
-export function chance(linhas: LinhaChance[], ano: number, ufs: string[], cargo: number): Record<number, Contagem> {
+export function chance(
+  linhas: LinhaChance[],
+  ano: number,
+  ufs: readonly string[],
+  cargo: number,
+): Record<number, Contagem> {
   const r: Record<number, Contagem> = {};
   for (let g = 1; g <= 8; g++) r[g] = { n: 0, e: 0 };
   for (const [a, u, c, g, n, e] of linhas) {

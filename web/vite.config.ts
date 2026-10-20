@@ -9,6 +9,6 @@ export default defineConfig({
   test: {
     // a maioria dos testes é de funções puras; os de hook/componente pedem jsdom no próprio arquivo
     environment: "node",
-    include: ["src/**/*.test.{ts,tsx}"],
+    include: ["tests/**/*.test.{ts,tsx}"],
   },
 });

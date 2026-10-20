@@ -1,9 +1,10 @@
 import { useMemo } from "react";
-import { Alternador, Campo, Carregando, Etiqueta, Pagina, Seletor } from "../../componentes";
+import { Alternador, Campo, Carregando, Etiqueta, Pagina, SeletorUf } from "../../componentes";
 import { useDados } from "../../lib/dados";
 import { COR_SEM_NOTA, corEspectro } from "../../lib/espectro";
+import { noEstado } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
-import { INDICES, montarMunicipios, UF_NOME } from "./calculo";
+import { INDICES, montarMunicipios } from "./calculo";
 import { Dispersao } from "./Dispersao";
 import { Resposta } from "./Resposta";
 import type { ChaveIndice, DadosQ3, Filtros } from "./tipos";
@@ -31,20 +32,12 @@ function Q3({ D }: { D: DadosQ3 }) {
     const p = D.partidos[sg];
     return p ? corEspectro(p[0]) : COR_SEM_NOTA;
   };
-  const onde =
-    st.uf === "TODAS" ? "nos 6 estados" : (["AM", "MA", "MT", "RS"].includes(st.uf) ? "no " : "em ") + UF_NOME[st.uf];
+  const onde = noEstado(st.uf);
 
   const filtros = (
     <>
       <Campo rotulo="Estado">
-        <Seletor value={st.uf} onChange={ev => setSt(s => ({ ...s, uf: ev.target.value, sel: null }))}>
-          <option value="TODAS">Todos os 6 estados</option>
-          {D.ufs.map(u => (
-            <option key={u} value={u}>
-              {UF_NOME[u]}
-            </option>
-          ))}
-        </Seletor>
+        <SeletorUf value={st.uf} onChange={ev => setSt(s => ({ ...s, uf: ev.target.value, sel: null }))} />
       </Campo>
       <span className="grid gap-[3px] text-[13px] font-bold">
         Índice da cidade

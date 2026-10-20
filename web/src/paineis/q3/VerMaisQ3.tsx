@@ -1,6 +1,7 @@
 import { Barra, Barras, Chip, VerMais } from "../../componentes";
+import { mediana } from "../../lib/estatistica";
 import { fmt, int, pc } from "../../lib/formato";
-import { brl, contarPref, maiusculaInicial, mediana, PERFIL, spearman } from "./calculo";
+import { brl, contarPref, maiusculaInicial, PERFIL, spearman } from "./calculo";
 import type { Municipio } from "./tipos";
 
 interface Props {

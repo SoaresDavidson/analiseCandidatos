@@ -1,13 +1,14 @@
 import { useMemo, useState } from "react";
 import { Alternador, VerMais } from "../../componentes";
 import { fmt, int, pc } from "../../lib/formato";
+import { UF_NOME } from "../../lib/uf";
 import type { Contagem, Teste } from "./calculo";
 import { LinhaEleito, NomeEleito } from "./comum";
-import { type Eleito, type Filtros, GRAU, type Municipio, PLURAIS, PLURAL, UF_NOME } from "./tipos";
+import { type Eleito, type Filtros, GRAU, type Municipio, PLURAIS, PLURAL } from "./tipos";
 
 interface Props {
   f: Filtros;
-  ufs: string[];
+  ufs: readonly string[];
   r: Record<number, Contagem>;
   t: Teste;
   ELEITOS: Eleito[];

@@ -1,14 +1,6 @@
 import { fmt, int, pc } from "../../lib/formato";
 import type { DadosQ9, Filtros, Palavra } from "./tipos";
 
-export const UF_NOME: Record<string, string> = {
-  AM: "Amazonas",
-  GO: "Goiás",
-  MA: "Maranhão",
-  MT: "Mato Grosso",
-  RS: "Rio Grande do Sul",
-  SE: "Sergipe",
-};
 export const CARGO = ["Vereador", "Prefeito", "Dep. estadual", "Dep. federal", "Senador", "Governador"];
 export const PLUR = [
   "vereadores",
@@ -43,13 +35,8 @@ export const cargosDoAno = (a: number): number[] => (a === 2020 || a === 2024 ? 
 export const reais = (v: number): string =>
   v >= 1e6 ? `R$ ${fmt(v / 1e6, 1)} milhões` : v >= 1e3 ? `R$ ${fmt(v / 1e3, 0)} mil` : `R$ ${int(v)}`;
 
-export const maiuscula = (s: string): string => s[0].toUpperCase() + s.slice(1);
-
 export const indicesUf = (d: DadosQ9, uf: string): number[] =>
   uf === "TODAS" ? [0, 1, 2, 3, 4, 5] : [d.ufs.indexOf(uf)];
-
-export const onde = (uf: string): string =>
-  uf === "TODAS" ? "nos 6 estados" : (["AM", "MA", "MT", "RS"].includes(uf) ? "no " : "em ") + UF_NOME[uf];
 
 /** Valor e nº de despesas por canal: [não eleitos / eleitos][canal]. */
 export function somarCanais(d: DadosQ9, uf: string, anos: number[], cargos: number[]) {

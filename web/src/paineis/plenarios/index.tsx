@@ -15,25 +15,10 @@ import { urlFoto, useDados } from "../../lib/dados";
 import { CATEGORIAS, COR_SEM_NOTA, CORES_ESPECTRO, corEspectro, nomeCategoria } from "../../lib/espectro";
 import { fmt, int, nomeProprio } from "../../lib/formato";
 import { useNavegacao } from "../../lib/navegacao";
+import { doEstado, UF_NOME } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
 import type { DadosEleitos, Eleito } from "./tipos";
 
-const UF_NOME: Record<string, string> = {
-  AM: "Amazonas",
-  GO: "Goiás",
-  MA: "Maranhão",
-  MT: "Mato Grosso",
-  RS: "Rio Grande do Sul",
-  SE: "Sergipe",
-};
-const DO: Record<string, string> = {
-  AM: "do Amazonas",
-  GO: "de Goiás",
-  MA: "do Maranhão",
-  MT: "de Mato Grosso",
-  RS: "do Rio Grande do Sul",
-  SE: "de Sergipe",
-};
 const ARTIGO: Record<string, string> = {
   AM: "o Amazonas",
   GO: "Goiás",
@@ -137,7 +122,7 @@ function Conteudo({ C }: { C: DadosEleitos }) {
       <Etiqueta>PLENÁRIOS · ELEIÇÃO DE 2022</Etiqueta>
       <h1>
         {casa === "al"
-          ? `Quem senta na Assembleia Legislativa ${DO[uf]}?`
+          ? `Quem senta na Assembleia Legislativa ${doEstado(uf)}?`
           : `Quem ${ARTIGO[uf]} mandou para a Câmara dos Deputados?`}
       </h1>
       <p className="texto-enunciado">
@@ -149,8 +134,8 @@ function Conteudo({ C }: { C: DadosEleitos }) {
         <Caixa>
           <h2>A resposta</h2>
           <p className="texto-simples">
-            Dos <b>{xs.length}</b> {plural} eleitos em 2022 {DO[uf]}, <b>{dir}</b> são de partidos à direita do meio da
-            régua e <b>{esq}</b> à esquerda.{" "}
+            Dos <b>{xs.length}</b> {plural} eleitos em 2022 {doEstado(uf)}, <b>{dir}</b> são de partidos à direita do
+            meio da régua e <b>{esq}</b> à esquerda.{" "}
             {maior &&
               (empate.length > 1 ? (
                 `As maiores bancadas, empatadas com ${maior[1]} cadeiras: ${empate.join(", ")}.`
@@ -199,7 +184,7 @@ function Conteudo({ C }: { C: DadosEleitos }) {
 
       <Caixa>
         <h2>
-          Plenário {da} {DO[uf]}: {xs.length} cadeiras
+          Plenário {da} {doEstado(uf)}: {xs.length} cadeiras
         </h2>
         <div className="w-full max-w-[1000px] justify-self-center">
           <Plenario

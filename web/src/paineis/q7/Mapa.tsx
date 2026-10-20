@@ -1,24 +1,10 @@
 import { useMemo, useRef } from "react";
-import { Caixa, Campo, Chip, Legenda, Linha, Rampa, Seletor, useDica } from "../../componentes";
+import { Botao, Caixa, Campo, Chip, Legenda, Linha, Rampa, Seletor, useDica } from "../../componentes";
 import { int } from "../../lib/formato";
 import { useNavegacao } from "../../lib/navegacao";
+import { semAcento, UF_NOME } from "../../lib/uf";
 import type { Ctx, Municipio } from "./tipos";
-import {
-  CAT_COR,
-  catDe,
-  corDif,
-  DIF_COR,
-  degraus,
-  escalas,
-  f2,
-  mudanca,
-  notasDe,
-  PARES,
-  pontos,
-  semAcento,
-  sinal,
-  UF_NOME,
-} from "./util";
+import { CAT_COR, catDe, corDif, DIF_COR, degraus, escalas, f2, mudanca, notasDe, PARES, pontos, sinal } from "./util";
 
 interface Props extends Ctx {
   /** Troca o estado do mapa (limpa a seleção). */
@@ -207,13 +193,9 @@ function Detalhe({ D, f, m }: { D: Ctx["D"]; f: Ctx["f"]; m: Municipio }) {
       <Linha rotulo="Prefeito eleito em 2020" valor={<ChipLado sg={s20} v={v20} />} />
       <Linha rotulo="Prefeito eleito em 2024" valor={<ChipLado sg={s24} v={v24} />} />
       <p className="texto-nota">{aviso} Notas dos prefeitos na régua fixa.</p>
-      <button
-        type="button"
-        onClick={() => nav.abrirMunicipio(m.cod)}
-        className="mt-1.5 cursor-pointer justify-self-start rounded-lg border-0 bg-ouro px-4 py-2 font-bold hover:bg-[#d9a600]"
-      >
+      <Botao onClick={() => nav.abrirMunicipio(m.cod)} className="mt-1.5 justify-self-start">
         Ver tudo sobre {m.nome}
-      </button>
+      </Botao>
     </>
   );
 }

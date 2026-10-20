@@ -14,7 +14,7 @@ const W = 900,
 const x = (v: number) => L + (W - L - 10) * (v / 100);
 
 /** Bloco "Ver o perfil completo": três barras 100% empilhadas (população, candidatos, eleitos). */
-export function Perfil({ D, f, ufs }: { D: DadosQ4; f: Filtros; ufs: string[] }) {
+export function Perfil({ D, f, ufs }: { D: DadosQ4; f: Filtros; ufs: readonly string[] }) {
   const q = useMemo(() => perfil(D.perfil, f.ano, ufs), [D, f.ano, ufs]);
   const tot = q.map(r => r.reduce((a, b) => a + b));
   const rotulos = ["População adulta", `Candidatos ${f.ano}`, `Eleitos ${f.ano}`];

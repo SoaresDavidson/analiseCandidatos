@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { comparar, grupos, inicioFaixa, rotFaixa } from "./estatistica";
-import type { Grupo } from "./tipos";
+import { comparar, grupos, inicioFaixa, rotFaixa } from "../../../src/paineis/q8/estatistica";
+import type { Grupo } from "../../../src/paineis/q8/tipos";
 
 // 22 faixas: 0 = nada do fundo, 1..20 = de 5 em 5 pontos, 21 = tudo
 const vazias = (): Grupo[] => Array.from({ length: 22 }, () => ({ n: 0, e: 0 }));

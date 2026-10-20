@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { Alternador, Caixa, Campo, Carregando, Etiqueta, Pagina, Seletor, VerMais } from "../../componentes";
+import { Alternador, Caixa, Campo, Carregando, Etiqueta, Pagina, SeletorUf, VerMais } from "../../componentes";
+import { mediana } from "../../lib/estatistica";
 import { brl, fmt, int } from "../../lib/formato";
+import { noEstado, semAcento } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
 import type { PainelProps } from "../tipos";
 import Ficha, { Numero, Numeros } from "./Ficha";
 import Lista, { ORDENS, type Ordem } from "./Lista";
-import { CARGO, CARGOS_ANO, lerExtra, mediana, PLURAL, semAcento, UF_NOME, useEleitos } from "./modelo";
+import { CARGO, CARGOS_ANO, lerExtra, PLURAL, useEleitos } from "./modelo";
 import type { Eleito } from "./tipos";
 
 const PASSO_INICIAL = 48;
@@ -64,8 +66,7 @@ export default function Painel({ extra }: PainelProps) {
 
   if (!modelo) return <Carregando erro={erro} />;
 
-  const onde =
-    f.uf === "TODAS" ? "nos 6 estados" : `${["AM", "MA", "MT", "RS"].includes(f.uf) ? "no " : "em "}${UF_NOME[f.uf]}`;
+  const onde = noEstado(f.uf);
   const [, vE, , vD] = modelo.dados.regua;
 
   // ---------- 1. o perfil de quem está no filtro ----------
@@ -97,14 +98,7 @@ export default function Painel({ extra }: PainelProps) {
       filtros={
         <>
           <Campo rotulo="Estado">
-            <Seletor value={f.uf} onChange={ev => mudar({ uf: ev.target.value })}>
-              <option value="TODAS">Todos os 6 estados</option>
-              {modelo.dados.ufs.map(u => (
-                <option key={u} value={u}>
-                  {UF_NOME[u]}
-                </option>
-              ))}
-            </Seletor>
+            <SeletorUf value={f.uf} onChange={ev => mudar({ uf: ev.target.value })} />
           </Campo>
           <span className="grid gap-[3px] text-[13px] font-bold">
             Eleição

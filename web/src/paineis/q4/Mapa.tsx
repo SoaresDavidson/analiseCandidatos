@@ -1,8 +1,9 @@
 import { type RefObject, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Alternador, Caixa, Campo, Cor, Empilhada, Legenda, Rampa, useDica } from "../../componentes";
 import { fmt } from "../../lib/formato";
+import { noEstado, UF_NOME, UFS } from "../../lib/uf";
 import { GRADIENTE, METRICA, media, pearson, rampa } from "./calculo";
-import { DicaMun, LinhaEleito, NomeEleito, textoOnde } from "./comum";
+import { DicaMun, LinhaEleito, NomeEleito } from "./comum";
 import {
   COR_NIVEL,
   type DadosQ4,
@@ -13,8 +14,6 @@ import {
   type Metrica,
   type Municipio,
   NIVEL,
-  UF_NOME,
-  UFS,
 } from "./tipos";
 
 interface Props {
@@ -23,7 +22,7 @@ interface Props {
   MUN_BY: Record<number, Municipio>;
   ELEITOS: Eleito[];
   f: Filtros;
-  ufs: string[];
+  ufs: readonly string[];
   sel: number | null;
   svgRef: RefObject<SVGSVGElement | null>;
   aoSelecionar: (cod: number | null) => void;
@@ -145,7 +144,7 @@ function Detalhe({ f, MUN, MUN_BY, ELEITOS, sel }: Pick<Props, "f" | "MUN" | "MU
 }
 
 /** Frase de abertura do mapa: compara as cidades menos e mais formadas. */
-function respostaMapa(MUN: Municipio[], ufs: string[], uf: string) {
+function respostaMapa(MUN: Municipio[], ufs: readonly string[], uf: string) {
   const sel = MUN.filter(m => ufs.includes(m.u) && m.ok);
   const ord = [...sel].sort((a, b) => (a.pPop as number) - (b.pPop as number));
   const k = Math.floor(ord.length / 5);
@@ -160,7 +159,7 @@ function respostaMapa(MUN: Municipio[], ufs: string[], uf: string) {
     resto.map(m => m.pPop as number),
     resto.map(m => m.pEl as number),
   );
-  const onde = textoOnde(uf);
+  const onde = noEstado(uf);
   const abre =
     r == null
       ? "Poucas cidades para medir."

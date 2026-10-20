@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { carregarDados, urlDados, urlFoto } from "./dados";
+import { carregarDados, urlDados, urlFoto } from "../../src/lib/dados";
 
 afterEach(() => vi.unstubAllGlobals());
 

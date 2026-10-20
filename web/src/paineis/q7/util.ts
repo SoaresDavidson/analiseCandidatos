@@ -3,14 +3,6 @@ export { maiusculaInicial, nomeLugar } from "../../lib/formato";
 import { fmt } from "../../lib/formato";
 import type { Filtros, Notas, Par } from "./tipos";
 
-export const UF_NOME: Record<string, string> = {
-  AM: "Amazonas",
-  GO: "Goiás",
-  MA: "Maranhão",
-  MT: "Mato Grosso",
-  RS: "Rio Grande do Sul",
-  SE: "Sergipe",
-};
 export const CATS = [
   "extrema esquerda",
   "esquerda",
@@ -46,12 +38,6 @@ export const PARES: Record<Par, [number, number, string, string, string]> = {
 export const f2 = (x: number | null | undefined, d = 2): string => fmt(x, d);
 export const sinal = (x: number | null | undefined, d = 2): string =>
   x == null ? "–" : (x > 0 ? "+" : x < 0 ? "−" : "") + fmt(Math.abs(x), d);
-export const semAcento = (s: string): string => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-
-/** Nome próprio como no painel original (trata "d'Oeste"). */
-
-export const ondeUf = (uf: string): string =>
-  uf === "TODAS" ? "nos 6 estados" : (["AM", "MA", "MT", "RS"].includes(uf) ? "no " : "em ") + UF_NOME[uf];
 
 type ComNotas = { rodada: Notas; fixa: Notas };
 type Visao = Pick<Filtros, "par" | "regua">;

@@ -1,14 +1,6 @@
 import { pc } from "../../lib/formato";
 import type { Comparacao, DadosQ8, Grupo } from "./tipos";
 
-export const UF_NOME: Record<string, string> = {
-  AM: "Amazonas",
-  GO: "Goiás",
-  MA: "Maranhão",
-  MT: "Mato Grosso",
-  RS: "Rio Grande do Sul",
-  SE: "Sergipe",
-};
 export const CARGO = ["Vereador", "Prefeito", "Dep. estadual", "Dep. federal", "Senador", "Governador"];
 export const SING = ["vereador", "prefeito", "deputado estadual", "deputado federal", "senador", "governador"];
 export const ANOS: readonly (readonly [number, string])[] = [
@@ -22,8 +14,6 @@ export const cargosDoAno = (a: number): number[] => (a === 2020 || a === 2024 ? 
 export const N_MIN = 30;
 
 export const ufIdx = (ufs: string[], uf: string): number[] => (uf === "TODAS" ? [0, 1, 2, 3, 4, 5] : [ufs.indexOf(uf)]);
-export const onde = (uf: string): string =>
-  uf === "TODAS" ? "nos 6 estados" : (["AM", "MA", "MT", "RS"].includes(uf) ? "no " : "em ") + UF_NOME[uf];
 
 // qui-quadrado 2×2 (mesma função das outras perguntas)
 function lgamma(z: number): number {

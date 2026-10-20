@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
-import { Caixa, Chip, Linha, useDica } from "../../componentes";
+import { Botao, Caixa, Chip, Linha, useDica } from "../../componentes";
+import { mediana } from "../../lib/estatistica";
 import { fmt, int } from "../../lib/formato";
 import { useNavegacao } from "../../lib/navegacao";
-import { brl, mediana, PERFIL, semAcento } from "./calculo";
+import { semAcento } from "../../lib/uf";
+import { brl, PERFIL } from "./calculo";
 import type { Indice, Municipio } from "./tipos";
 
 const W = 640,
@@ -225,13 +227,9 @@ function Detalhe({
         }
       />
       <Linha rotulo="Nota do voto para vereador" valor={fmt(m.voto, 2)} />
-      <button
-        type="button"
-        onClick={() => nav.abrirMunicipio(m.cod)}
-        className="mt-1.5 cursor-pointer justify-self-start rounded-lg border-0 bg-ouro px-4 py-2 font-bold hover:bg-[#d9a600]"
-      >
+      <Botao onClick={() => nav.abrirMunicipio(m.cod)} className="mt-1.5 justify-self-start">
         Ver tudo sobre {m.nome}
-      </button>
+      </Botao>
     </div>
   );
 }

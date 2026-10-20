@@ -1,14 +1,7 @@
 import { nomeLugar, pc } from "../../lib/formato";
+import { semAcento } from "../../lib/uf";
 import type { Lado, LinhaMunicipio, Municipio, Ordem } from "./tipos";
 
-export const UF_NOME: Record<string, string> = {
-  AM: "Amazonas",
-  GO: "Goiás",
-  MA: "Maranhão",
-  MT: "Mato Grosso",
-  RS: "Rio Grande do Sul",
-  SE: "Sergipe",
-};
 export const CANAL = [
   "material impresso",
   "campanha de rua",
@@ -19,10 +12,6 @@ export const CANAL = [
   "carro de som",
   "jornal e revista",
 ];
-
-export const semAcento = (s: string): string => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-
-/** Como o IBGE escreve: "São João d'Aliança", "Glória d'Oeste", "Itatiba do Sul". */
 
 export function lerMunicipios(linhas: LinhaMunicipio[], ufs: string[]): Municipio[] {
   return linhas.map(r => ({

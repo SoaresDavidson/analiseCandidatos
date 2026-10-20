@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { brl, fmt, int, maiusculaInicial, nomeLugar, nomeProprio, pc } from "./formato";
+import { brl, fmt, int, maiusculaInicial, nomeLugar, nomeProprio, pc } from "../../src/lib/formato";
 
 describe("fmt", () => {
   it("usa vírgula decimal e o número de casas pedido", () => {

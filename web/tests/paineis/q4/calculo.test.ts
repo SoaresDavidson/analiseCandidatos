@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pearson, reta, spearman } from "./calculo";
+import { pearson, reta, spearman } from "../../../src/paineis/q4/calculo";
 
 describe("pearson", () => {
   it("relação linear perfeita", () => {

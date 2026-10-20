@@ -7,6 +7,9 @@ gerados em `docs/*-painel/`.
 npm install
 npm run dev      # http://localhost:5173
 npm run build    # tsc + vite build -> dist/
+npm test         # testes de unidade (Vitest)
+npm run format   # formata com o Biome (format:check só confere)
+npm run lint     # oxlint
 ```
 
 ## Estrutura
@@ -39,6 +42,15 @@ public/bandeiras/  bandeiras dos 6 estados
 - Filtros que o usuário escolhe: `usePersistente("q8-filtros", padrao)`.
 - Abrir a ficha de um eleito ou um município: `useNavegacao()`.
 - Endereço: `#q7`, `#municipios/2111300`, `#municipios/MA`, `#candidatos/2024-123`.
+
+## Testes e formatação
+
+- Testes ficam ao lado do código: `formato.ts` -> `formato.test.ts`. Funções puras rodam
+  no ambiente node; teste de hook ou componente começa com `// @vitest-environment jsdom`
+  e chama `afterEach(cleanup)` (o Vitest roda sem globals).
+- Cálculo de painel (estatística, faixas, agregações) vai para um módulo puro
+  (`calculo.ts`, `estatistica.ts`), que é o que se testa.
+- Biome formata (2 espaços, 120 colunas, aspas duplas) e organiza imports; o lint é do oxlint.
 
 ## Fotos
 

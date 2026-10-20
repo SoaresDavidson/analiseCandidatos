@@ -1,9 +1,7 @@
-"""Gera docs/q3-painel/index.html e docs/q7-painel/index.html, as páginas das perguntas
-Q3 (índices do município × quem vence, 2024) e Q7 (viés político na linha do tempo).
+"""Gera os dados das perguntas Q3 (índices do município × quem vence, 2024) e Q7 (viés
+político na linha do tempo) para o app React: web/public/dados/q3.json e q7.json.
 
-Lê as views de sql/17_q7_vies.sql e sql/21_q3_indices.sql e embute os dados no
-modelo.html de cada pergunta no lugar de __DADOS__ (abre direto no navegador). As
-duas perguntas são sobre o município, por isso saem do mesmo script; o mapa da Q7
+Lê as views de sql/17_q7_vies.sql e sql/21_q3_indices.sql. As duas perguntas são sobre o município, por isso saem do mesmo script; o mapa da Q7
 reaproveita as malhas da Q4.
 
 Pré-requisitos (da raiz do repositório):
@@ -16,7 +14,6 @@ Uso:
 from __future__ import annotations
 
 import csv
-import json
 import os
 from functools import cache
 from pathlib import Path
@@ -24,10 +21,10 @@ from pathlib import Path
 import duckdb
 
 from scripts.gerar_painel_q4 import CAPITAIS, mapa
+from scripts.painel_web import gravar
 
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
-DOCS = RAIZ / "docs"
 
 UFS = ["AM", "GO", "MA", "MT", "RS", "SE"]
 ANOS = [2018, 2020, 2022, 2024]
@@ -164,26 +161,13 @@ def dados_q3(con: duckdb.DuckDBPyConnection) -> dict:
     }
 
 
-def gerar(pasta: str, dados: dict) -> None:
-    texto = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
-    assert "</script" not in texto
-    corpo = (DOCS / pasta / "modelo.html").read_text(encoding="utf-8").replace("__DADOS__", texto)
-    html = (
-        '<!doctype html>\n<html lang="pt-BR">\n<head>\n<meta charset="utf-8">\n'
-        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-        "</head>\n<body>\n" + corpo + "\n</body>\n</html>\n"
-    )
-    (DOCS / pasta / "index.html").write_text(html, encoding="utf-8")
-    print(f"docs/{pasta}/index.html: {len(html) >> 10} KB")
-
-
 def main() -> None:
     os.chdir(RAIZ)
     con = duckdb.connect(str(BANCO), read_only=True)
     q7, q3 = dados_q7(con), dados_q3(con)
     con.close()
-    gerar("q7-painel", q7)
-    gerar("q3-painel", q3)
+    gravar("q7.json", q7)
+    gravar("q3.json", q3)
 
 
 if __name__ == "__main__":

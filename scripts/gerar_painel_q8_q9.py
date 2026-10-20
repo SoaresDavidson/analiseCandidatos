@@ -1,30 +1,29 @@
-"""Gera docs/q8-painel/index.html e docs/q9-painel/index.html, as páginas das
-perguntas Q8 (dinheiro público) e Q9 (propaganda).
+"""Gera os dados das perguntas Q8 (dinheiro público) e Q9 (propaganda) para o app
+React: web/public/dados/q8.json e q9.json.
 
 Lê só o banco (dados/processed/tse.duckdb): as views q8_* e q9_* de
 sql/11_q8_publico.sql e sql/12_q9_propaganda.sql. As duas perguntas vêm da
 prestação de contas, por isso saem do mesmo script; cada página recebe só os
-dados dela, embutidos no seu modelo.html no lugar de __DADOS__. O resultado
-são HTMLs únicos que abrem direto no navegador, sem servidor.
+dados dela.
 
 Pré-requisitos (da raiz do repositório):
     uv run scripts/carregar_staging.py            # 00 a 05, 11_q8 e 12_q9
 
 Uso:
-    uv run python scripts/gerar_painel_q8_q9.py
+    uv run python -m scripts.gerar_painel_q8_q9
 """
 
 from __future__ import annotations
 
-import json
 import os
 from pathlib import Path
 
 import duckdb
 
+from scripts.painel_web import gravar
+
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
-DOCS = RAIZ / "docs"
 
 UFS = ["AM", "GO", "MA", "MT", "RS", "SE"]
 CARGOS = ["VEREADOR", "PREFEITO", "DEPUTADO ESTADUAL", "DEPUTADO FEDERAL", "SENADOR", "GOVERNADOR"]
@@ -132,9 +131,9 @@ def main() -> None:
     }
     con.close()
 
-    gerar("q8-painel", {"ufs": UFS, "cargos": CARGOS, "q8": q8})
-    gerar(
-        "q9-painel",
+    gravar("q8.json", {"ufs": UFS, "cargos": CARGOS, "q8": q8})
+    gravar(
+        "q9.json",
         {
             "ufs": UFS,
             "cargos": CARGOS,
@@ -147,22 +146,6 @@ def main() -> None:
         },
     )
     print(f"nuvem: {len(termos)} termos, {len(q9t)} grupos")
-
-
-def gerar(pasta: str, dados: dict) -> None:
-    """Embute os dados no modelo da página e escreve o index.html ao lado."""
-    texto = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
-    assert "</script" not in texto
-    corpo = (DOCS / pasta / "modelo.html").read_text(encoding="utf-8").replace("__DADOS__", texto)
-    # o modelo é o corpo da página; aqui ganha o esqueleto completo
-    html = (
-        '<!doctype html>\n<html lang="pt-BR">\n<head>\n<meta charset="utf-8">\n'
-        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-        "</head>\n<body>\n" + corpo + "\n</body>\n</html>\n"
-    )
-    saida = DOCS / pasta / "index.html"
-    saida.write_text(html, encoding="utf-8")
-    print(f"{saida.relative_to(RAIZ)}: {len(html) // 1024} KB")
 
 
 if __name__ == "__main__":

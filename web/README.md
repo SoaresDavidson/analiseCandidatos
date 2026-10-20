@@ -61,4 +61,14 @@ serve e o `npm run build` as copia para `dist/`. Sem a foto, aparece a inicial d
 
 ## Dados
 
-`scripts/extrair_dados.py` tirou os dados embutidos dos HTML antigos para `public/dados/`.
+Os geradores Python (`scripts/gerar_painel_*.py`, da raiz do repositório) leem o banco
+e gravam cada arquivo de `public/dados/` por `scripts/painel_web.py`:
+
+| arquivo | gerador |
+| --- | --- |
+| `q3.json`, `q7.json` | `uv run python -m scripts.gerar_painel_q3_q7` |
+| `q4.json` | `uv run python -m scripts.gerar_painel_q4` |
+| `q8.json`, `q9.json` | `uv run python -m scripts.gerar_painel_q8_q9` |
+| `q10.json`, `q10-financas/NN.json` | `uv run python -m scripts.gerar_painel_q10` |
+| `candidatos-eleitos.json` (+ fotos) | `uv run python -m scripts.gerar_painel_candidatos` |
+| `municipios-cidades.json` | `uv run python -m scripts.gerar_painel_municipios` |

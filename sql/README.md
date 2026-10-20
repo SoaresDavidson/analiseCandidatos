@@ -15,7 +15,7 @@ depende e qual comando o carrega.
 ## Dois schemas
 
 - `modelo`: as tabelas do DER do dossiê (`00_modelo.sql`), com PK e FK. Quem carrega é
-  `06_carga_nucleo.sql`, depois `13`, `16` e `19`.
+  `06_carga_nucleo.sql`, depois `13`, `16`, `19` e `23`.
 - `main`: tabelas e views de trabalho (`stg_*`, `mart_*`, `q8_*`...). Alguns nomes se repetem
   nos dois schemas: `main.candidatura` vem do `04_politico.sql` e não é a
   `modelo.candidatura`.
@@ -49,6 +49,8 @@ falha com `Table with name candidatura does not exist!` quando o `04` ainda não
 | `19_faixa_etaria.sql` | Carrega a população e o eleitorado por faixa de idade | 06 |
 | `20_q6_idade.sql` | Q6: idade do município e dos eleitos, e alternância de poder | 13, 17, 19 |
 | `21_q3_indices.sql` | Q3: índices do município × quem venceu em 2024 | 16, 17 |
+| `22_q1_custo_cadeira.sql` | Q1: custo da cadeira (gasto ÷ vagas) e parte paga com dinheiro público | 01, 02, 06, 14 |
+| `23_q5_voto_legenda.sql` | Carrega os votos de legenda no `modelo` e refaz a distribuição das cadeiras com e sem eles (Q5) | 06, 13 |
 
 ## Subpastas
 

@@ -109,7 +109,10 @@ function Arena({ dados }: { dados: DadosEleitos }) {
     if (efeitos.current) particula(efeitos.current, x, y, txt, tipo, dx, dy, dur);
   };
 
-  async function golpe(de: Lado, para: Lado, el: ElementoId, dano: number, n: number) {
+  /** Mudança de vida durante uma rodada: atualiza o estado e a conta que a rodada acompanha. */
+  type MudaVida = (l: Lado, d: number) => void;
+
+  async function golpe(de: Lado, para: Lado, el: ElementoId, dano: number, n: number, mudaVida: MudaVida) {
     const [x0, y0] = centroDe(de),
       [x1, y1] = centroDe(para),
       ico = EL[el].ico;
@@ -134,18 +137,18 @@ function Arena({ dados }: { dados: DadosEleitos }) {
     }
     animarCarta(carta(para), "apanha");
     solta(x1, y1 - 60, `−${dano}`, "dano", 0, -70, 1100);
-    despachar({ tipo: "vida", l: para, d: -dano });
+    mudaVida(para, -dano);
     await espera(700);
   }
 
-  async function cura(l: Lado, valor: number) {
+  async function cura(l: Lado, valor: number, mudaVida: MudaVida) {
     const [x, y] = centroDe(l);
     animarCarta(carta(l), "brilha");
     if (movimento())
       for (let k = 0; k < 10; k++)
         solta(x + (Math.random() - 0.5) * 140, y + 60, "✨", "sobe", (Math.random() - 0.5) * 30, -160, 900);
     solta(x, y - 60, `+${valor}`, "cura", 0, -70, 1100);
-    despachar({ tipo: "vida", l, d: valor });
+    mudaVida(l, valor);
     await espera(700);
   }
 
@@ -171,10 +174,12 @@ function Arena({ dados }: { dados: DadosEleitos }) {
   async function rodada(jg: Jogo) {
     const n = jg.n,
       { a, b } = jg;
-    // a vida muda ao longo da rodada; esta cópia acompanha as ações para decidir o fim
+    // o estado só muda no próximo render; esta cópia da vida decide o fim da rodada.
+    // Toda mudança passa por mudaVida, que atualiza as duas juntas.
     let vida = jg.vida;
-    const muda = (l: Lado, d: number) => {
+    const mudaVida: MudaVida = (l, d) => {
       vida = somarVida(vida, l, d);
+      despachar({ tipo: "vida", l, d });
     };
     if (jg.r >= jg.ordem.length || vida.a <= 0 || vida.b <= 0) return fim(vida);
     const r = jg.ordem[jg.r];
@@ -187,25 +192,16 @@ function Arena({ dados }: { dados: DadosEleitos }) {
     const v = vencedor(r, a, b);
     despachar({ tipo: "apostou", e: { r, a, b, v, aposta } });
     if (v && v !== "empate") {
-      const dano = r.id === "luz" ? 0 : danoRodada(r, a, b);
-      if (r.id === "luz") {
-        await cura(v, 3);
-        muda(v, 3);
-      } else {
-        await golpe(v, outroLado(v), r.el, dano, n); // no fogo, v é quem arrecadou menos: o outro se queima
-        muda(outroLado(v), -dano);
-      }
+      if (r.id === "luz") await cura(v, 3, mudaVida);
+      else await golpe(v, outroLado(v), r.el, danoRodada(r, a, b), n, mudaVida); // no fogo, v é quem arrecadou menos: o outro se queima
     } else if (v === "empate" && r.id === "luz") {
-      await Promise.all([cura("a", 1), cura("b", 1)]);
-      muda("a", 1);
-      muda("b", 1);
+      await Promise.all([cura("a", 1, mudaVida), cura("b", 1, mudaVida)]);
     }
     if (dueloAtual.current !== n) return;
     if (v && v !== "empate" && v === aposta) {
       const [x, y] = centroDe("a");
       solta(x, y + 40, "+1 aposta", "cura", 0, -60, 1100);
-      despachar({ tipo: "vida", l: "a", d: 1 });
-      muda("a", 1);
+      mudaVida("a", 1);
       await espera(400);
       if (dueloAtual.current !== n) return;
     }

@@ -226,17 +226,15 @@ export function Mapa(props: Props) {
         é "semelhante".
       </p>
       <div className="flex flex-wrap items-end gap-x-[18px] gap-y-2.5">
-        <span className="grid gap-[3px] text-[13px] font-bold">
-          Estado do mapa
+        <Campo rotulo="Estado do mapa" grupo>
           <Alternador
             rotulo="Estado do mapa"
             opcoes={UFS.map(u => [u, u] as const)}
             valor={f.mapaUf}
             aoMudar={aoMudarMapaUf}
           />
-        </span>
-        <span className="grid gap-[3px] text-[13px] font-bold">
-          O mapa mostra
+        </Campo>
+        <Campo rotulo="O mapa mostra" grupo>
           <Alternador
             rotulo="O mapa mostra"
             opcoes={
@@ -249,7 +247,7 @@ export function Mapa(props: Props) {
             valor={f.metrica}
             aoMudar={aoMudarMetrica}
           />
-        </span>
+        </Campo>
         <Campo rotulo="Buscar cidade">
           <input ref={busca} className="entrada" type="search" list="lista-mun" placeholder="Digite o nome" />
         </Campo>

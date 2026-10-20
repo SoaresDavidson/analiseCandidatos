@@ -56,8 +56,7 @@ function Conteudo({ D }: { D: DadosQ4 }) {
       <Campo rotulo="Estado">
         <SeletorUf value={f.uf} onChange={e => mudarUf(e.target.value)} />
       </Campo>
-      <span className="grid gap-[3px] text-[13px] font-bold">
-        Eleição
+      <Campo rotulo="Eleição" grupo>
         <Alternador
           rotulo="Eleição"
           opcoes={
@@ -69,16 +68,15 @@ function Conteudo({ D }: { D: DadosQ4 }) {
           valor={f.ano}
           aoMudar={mudarAno}
         />
-      </span>
-      <span className="grid gap-[3px] text-[13px] font-bold">
-        Cargo
+      </Campo>
+      <Campo rotulo="Cargo" grupo>
         <Alternador
           rotulo="Cargo"
           opcoes={CARGOS[f.ano].map(c => [c, CARGO[c]] as const)}
           valor={f.cargo}
           aoMudar={cargo => mudar({ cargo })}
         />
-      </span>
+      </Campo>
     </>
   );
 

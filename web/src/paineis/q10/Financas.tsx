@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react";
-import { Alternador, Caixa, Legenda, useDica } from "../../componentes";
+import { Alternador, Caixa, Campo, Legenda, useDica } from "../../componentes";
 import { carregarDados } from "../../lib/dados";
 import { brl, fmt } from "../../lib/formato";
 import { ABREV, type AnoFin, anosFin, brlCurto, GRUPO_COR, GRUPO_NOME, type Pessoa } from "./logica";
@@ -144,8 +144,7 @@ export function Financas({
         )}
       </p>
       <div className="flex flex-wrap items-end gap-x-[18px] gap-y-2.5">
-        <span className="grid gap-[3px] text-[13px] font-bold">
-          Valores
+        <Campo rotulo="Valores" grupo>
           <Alternador
             rotulo="Valores"
             opcoes={[
@@ -155,7 +154,7 @@ export function Financas({
             valor={f.valor}
             aoMudar={aoMudarValor}
           />
-        </span>
+        </Campo>
       </div>
       {analise && anos && (
         <>

@@ -48,8 +48,7 @@ function Conteudo({ D }: { D: DadosQ7 }) {
       <Campo rotulo="Estado">
         <SeletorUf value={f.uf} onChange={e => mudarUf(e.target.value)} />
       </Campo>
-      <span className="grid gap-[3px] text-[13px] font-bold">
-        Comparar
+      <Campo rotulo="Comparar" grupo>
         <Alternador<Par>
           rotulo="Comparar"
           valor={f.par}
@@ -59,9 +58,8 @@ function Conteudo({ D }: { D: DadosQ7 }) {
             ["ger", "Dep. federal: 2018 → 2022"],
           ]}
         />
-      </span>
-      <span className="grid gap-[3px] text-[13px] font-bold">
-        Régua
+      </Campo>
+      <Campo rotulo="Régua" grupo>
         <Alternador<Regua>
           rotulo="Régua"
           valor={f.regua}
@@ -71,7 +69,7 @@ function Conteudo({ D }: { D: DadosQ7 }) {
             ["rodada", "Régua de cada ano"],
           ]}
         />
-      </span>
+      </Campo>
     </>
   );
 

@@ -100,8 +100,7 @@ export default function Painel({ extra }: PainelProps) {
           <Campo rotulo="Estado">
             <SeletorUf value={f.uf} onChange={ev => mudar({ uf: ev.target.value })} />
           </Campo>
-          <span className="grid gap-[3px] text-[13px] font-bold">
-            Eleição
+          <Campo rotulo="Eleição" grupo>
             <Alternador
               rotulo="Eleição"
               opcoes={[
@@ -111,16 +110,15 @@ export default function Painel({ extra }: PainelProps) {
               valor={f.ano}
               aoMudar={ano => mudar({ ano, cargo: CARGOS_ANO[ano][0] })}
             />
-          </span>
-          <span className="grid gap-[3px] text-[13px] font-bold">
-            Cargo
+          </Campo>
+          <Campo rotulo="Cargo" grupo>
             <Alternador
               rotulo="Cargo"
               opcoes={cargosAno.map(c => [c, CARGO[c]] as const)}
               valor={f.cargo}
               aoMudar={cargo => mudar({ cargo })}
             />
-          </span>
+          </Campo>
         </>
       }
     >
@@ -158,8 +156,7 @@ export default function Painel({ extra }: PainelProps) {
               setN(PASSO_INICIAL);
             }}
           />
-          <span className="grid gap-[3px] text-[13px] font-bold">
-            Ordenar por
+          <Campo rotulo="Ordenar por" grupo>
             <Alternador
               rotulo="Ordenar por"
               opcoes={
@@ -173,7 +170,7 @@ export default function Painel({ extra }: PainelProps) {
               valor={f.ordem}
               aoMudar={ordem => mudar({ ordem })}
             />
-          </span>
+          </Campo>
         </div>
         <p className="texto-nota" aria-live="polite">
           {achados.length

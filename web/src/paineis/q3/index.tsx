@@ -39,15 +39,14 @@ function Q3({ D }: { D: DadosQ3 }) {
       <Campo rotulo="Estado">
         <SeletorUf value={st.uf} onChange={ev => setSt(s => ({ ...s, uf: ev.target.value, sel: null }))} />
       </Campo>
-      <span className="grid gap-[3px] text-[13px] font-bold">
-        Índice da cidade
+      <Campo rotulo="Índice da cidade" grupo>
         <Alternador
           rotulo="Índice da cidade"
           opcoes={OPCOES_INDICE}
           valor={st.indice}
           aoMudar={v => setSt(s => ({ ...s, indice: v }))}
         />
-      </span>
+      </Campo>
     </>
   );
 

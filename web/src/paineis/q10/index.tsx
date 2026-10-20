@@ -54,15 +54,14 @@ function Conteudo({ D }: { D: DadosQ10 }) {
       <Campo rotulo="Estado">
         <SeletorUf id="f-uf" value={f.uf} onChange={e => mudar("uf", e.target.value)} />
       </Campo>
-      <span className="grid gap-[3px] text-[13px] font-bold">
-        Primeira vitória como
+      <Campo rotulo="Primeira vitória como" grupo>
         <Alternador
           rotulo="Primeira vitória como"
           opcoes={TURMAS.map(([c, n]) => [c, n] as const)}
           valor={f.turma}
           aoMudar={v => mudar("turma", v)}
         />
-      </span>
+      </Campo>
     </>
   );
 

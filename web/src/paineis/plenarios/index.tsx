@@ -110,10 +110,9 @@ function Conteudo({ C }: { C: DadosEleitos }) {
           ))}
         </Seletor>
       </Campo>
-      <span className="grid gap-[3px] text-[13px] font-bold">
-        Casa
+      <Campo rotulo="Casa" grupo>
         <Alternador rotulo="Casa" opcoes={OPCOES_CASA} valor={casa} aoMudar={v => setF(s => ({ ...s, casa: v }))} />
-      </span>
+      </Campo>
     </>
   );
 

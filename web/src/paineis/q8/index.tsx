@@ -82,19 +82,17 @@ function Conteudo({ D }: { D: DadosQ8 }) {
           <Campo rotulo="Estado">
             <SeletorUf value={uf} onChange={e => setF(s => ({ ...s, uf: e.target.value }))} />
           </Campo>
-          <span className="grid gap-[3px] text-[13px] font-bold">
-            Eleição
+          <Campo rotulo="Eleição" grupo>
             <Alternador rotulo="Eleição" opcoes={ANOS} valor={ano} aoMudar={mudarAno} />
-          </span>
-          <span className="grid gap-[3px] text-[13px] font-bold">
-            Cargo
+          </Campo>
+          <Campo rotulo="Cargo" grupo>
             <Alternador
               rotulo="Cargo"
               opcoes={cargosDoAno(ano).map(x => [x, CARGO[x]] as const)}
               valor={cargo}
               aoMudar={x => setF(s => ({ ...s, cargo: x }))}
             />
-          </span>
+          </Campo>
         </>
       }
     >

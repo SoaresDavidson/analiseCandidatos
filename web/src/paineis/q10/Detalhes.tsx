@@ -1,5 +1,5 @@
-import { type ReactNode, useMemo } from "react";
-import { Alternador, Legenda, VerMais } from "../../componentes";
+import { useMemo } from "react";
+import { Alternador, Campo, Legenda, VerMais } from "../../componentes";
 import { fmt, int, pc } from "../../lib/formato";
 import {
   ABREV,
@@ -14,16 +14,6 @@ import {
   ufsSel,
 } from "./logica";
 import type { DadosQ10, Filtros } from "./tipos";
-
-/** Rótulo em negrito acima de um grupo de botões. */
-function Grupo({ rotulo, children }: { rotulo: string; children: ReactNode }) {
-  return (
-    <span className="grid gap-[3px] text-[13px] font-bold">
-      {rotulo}
-      {children}
-    </span>
-  );
-}
 
 type Mudar = <K extends keyof Filtros>(k: K, v: Filtros[K]) => void;
 
@@ -59,7 +49,7 @@ export function Comparar({ D, f, mudar }: { D: DadosQ10; f: Filtros; mudar: Muda
 
   return (
     <VerMais titulo="Comparar os cargos de estreia">
-      <Grupo rotulo="Mostrar">
+      <Campo grupo rotulo="Mostrar">
         <Alternador
           rotulo="Mostrar"
           opcoes={[
@@ -69,7 +59,7 @@ export function Comparar({ D, f, mudar }: { D: DadosQ10; f: Filtros; mudar: Muda
           valor={f.medida}
           aoMudar={v => mudar("medida", v)}
         />
-      </Grupo>
+      </Campo>
       <Legenda itens={TURMAS.map(([, n], i) => ({ cor: CORES[i], rotulo: n }))} />
       <svg
         viewBox={`0 0 ${W} ${H}`}
@@ -147,9 +137,9 @@ export function Reeleicao({ D, f, mudar }: { D: DadosQ10; f: Filtros; mudar: Mud
 
   return (
     <VerMais titulo="Quem se elege tenta de novo? E consegue?">
-      <Grupo rotulo="Cargo">
+      <Campo grupo rotulo="Cargo">
         <Alternador rotulo="Cargo" opcoes={CARGOS_RE} valor={f.cargoRe} aoMudar={v => mudar("cargoRe", v)} />
-      </Grupo>
+      </Campo>
       <p className="texto-simples text-[15.5px]">
         {tot.e ? (
           <>
@@ -224,7 +214,7 @@ export function Ranking({
 
   return (
     <VerMais titulo="Ver as carreiras mais longas">
-      <Grupo rotulo="Ordenar por">
+      <Campo grupo rotulo="Ordenar por">
         <Alternador
           rotulo="Ordenar por"
           opcoes={[
@@ -235,7 +225,7 @@ export function Ranking({
           valor={f.ordem}
           aoMudar={v => mudar("ordem", v)}
         />
-      </Grupo>
+      </Campo>
       <div className="rolagem-x">
         <table>
           <thead>

@@ -185,8 +185,7 @@ export function Estado({ M, uf, meio, nav, aoMudar, aoAbrirCidade }: Props) {
                 </select>
               </Campo>
             </div>
-            <span className="grid gap-[3px] text-[13px] font-bold">
-              Visualização
+            <Campo rotulo="Visualização" grupo>
               <span className="inline-flex gap-1.5">
                 {(
                   [
@@ -206,7 +205,7 @@ export function Estado({ M, uf, meio, nav, aoMudar, aoAbrirCidade }: Props) {
                   </button>
                 ))}
               </span>
-            </span>
+            </Campo>
           </div>
           <div className="flex gap-1 border-b border-linha">
             {LADOS.map(([v, r]) => (

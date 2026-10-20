@@ -3,60 +3,12 @@ import { Caixa, Campo, Carregando, Etiqueta, Pagina, Seletor, SeletorUf, VerMais
 import { useDados } from "../../lib/dados";
 import { useNavegacao } from "../../lib/navegacao";
 
-import type { PainelProps } from "../tipos";
 import { Busca } from "./Busca";
 import { Carta } from "./Carta";
+import { type Entrada, FIM, ganhador, type Jogo, novoJogo, reduzir, somarVida } from "./duelo";
 import { animarCarta, clarao, espera, flutuar, movimento, particula, relampago } from "./efeitos";
-import {
-  BARALHOS,
-  danoRodada,
-  EL,
-  embaralhar,
-  grupo,
-  montarCartas,
-  outroLado,
-  sortearDe,
-  VIDA_INICIAL,
-  valorRodada,
-  vencedor,
-} from "./jogo";
-import type { CartaEleito, DadosEleitos, ElementoId, Lado, Rodada } from "./tipos";
-
-type Anuncio =
-  | { tipo: "duelo" }
-  | { tipo: "rodada"; r: Rodada }
-  | { tipo: "fim"; ganhou: Lado | null; a: number; b: number; acertos: number; total: number };
-
-interface Entrada {
-  r: Rodada;
-  a: CartaEleito;
-  b: CartaEleito;
-  v: Lado | "empate" | null;
-  aposta: Lado;
-}
-
-/** Estado do duelo. Fica numa ref porque as rodadas são assíncronas (esperam a aposta e as animações). */
-interface Jogo {
-  n: number; // número do duelo; quem espera uma animação confere se ainda é o mesmo
-  baralho: string;
-  uf: string;
-  a: CartaEleito;
-  b: CartaEleito;
-  vida: Record<Lado, number>;
-  r: number; // rodada atual (99 = duelo acabou)
-  ordem: Rodada[];
-  acertos: number;
-  rodadaTxt: string;
-  anuncio: Anuncio;
-  pula: number; // contador que dispara a animação do anúncio
-  apostando: boolean;
-  registro: Entrada[];
-  botao: string | null; // texto do botão principal; null = escondido
-  campea: Lado | null;
-  apostar: ((l: Lado) => void) | null;
-}
-
-const FIM = 99;
+import { BARALHOS, danoRodada, EL, grupo, montarCartas, outroLado, sortearDe, valorRodada, vencedor } from "./jogo";
+import type { CartaEleito, DadosEleitos, ElementoId, Lado } from "./tipos";
 
 /** Escolhe as duas cartas do duelo. `manter` conserva as que o jogador já tinha. */
 function escolherCartas(
@@ -77,29 +29,7 @@ function escolherCartas(
   return a && b ? { a, b } : null;
 }
 
-function novoJogo(n: number, baralho: string, uf: string, a: CartaEleito, b: CartaEleito): Jogo {
-  return {
-    n,
-    baralho,
-    uf,
-    a,
-    b,
-    vida: { a: VIDA_INICIAL, b: VIDA_INICIAL },
-    r: 0,
-    ordem: embaralhar(),
-    acertos: 0,
-    rodadaTxt: "Pronto para o duelo",
-    anuncio: { tipo: "duelo" },
-    pula: 0,
-    apostando: false,
-    registro: [],
-    botao: "⚔ Lutar!",
-    campea: null,
-    apostar: null,
-  };
-}
-
-export default function Painel(_: PainelProps) {
+export default function Painel() {
   const { dados, erro } = useDados<DadosEleitos>("candidatos-eleitos.json");
   if (!dados) return <Carregando erro={erro} />;
   return <Arena dados={dados} />;
@@ -108,32 +38,26 @@ export default function Painel(_: PainelProps) {
 function Arena({ dados }: { dados: DadosEleitos }) {
   const { abrirCandidato } = useNavegacao();
   const T = useMemo(() => montarCartas(dados), [dados]);
-  const [, redesenhar] = useReducer((x: number) => x + 1, 0);
-  const jogo = useRef<Jogo | null>(null);
+  const [g, despachar] = useReducer(reduzir, null, () => {
+    const c = escolherCartas(T, "24-11", "TODAS");
+    return c ? novoJogo(0, "24-11", "TODAS", c.a, c.b) : null;
+  });
+  // as rodadas são assíncronas (esperam a aposta e as animações): estas refs dizem a elas
+  // qual duelo está valendo e como entregar a aposta, sem ler o estado no meio do caminho
+  const dueloAtual = useRef(0);
+  const apostar = useRef<((l: Lado) => void) | null>(null);
   const arena = useRef<HTMLElement>(null);
   const efeitos = useRef<HTMLDivElement>(null);
   const flash = useRef<HTMLDivElement>(null);
   const anuncioEl = useRef<HTMLDivElement>(null);
 
-  if (jogo.current === null) {
-    const c = escolherCartas(T, "24-11", "TODAS");
-    if (c) jogo.current = novoJogo(0, "24-11", "TODAS", c.a, c.b);
-  }
-  const g = jogo.current;
-
-  const atualizar = (p: Partial<Jogo>) => {
-    if (jogo.current) {
-      Object.assign(jogo.current, p);
-      redesenhar();
-    }
-  };
-
   /** Recomeça o duelo; `manter` conserva as cartas que o jogador escolheu. */
   function novoDuelo(baralho: string, uf: string, manter?: { a?: CartaEleito | null; b?: CartaEleito | null }) {
     const c = escolherCartas(T, baralho, uf, manter);
     if (!c) return;
-    jogo.current = novoJogo((jogo.current?.n ?? 0) + 1, baralho, uf, c.a, c.b);
-    redesenhar();
+    dueloAtual.current += 1;
+    apostar.current = null;
+    despachar({ tipo: "novo", jogo: novoJogo(dueloAtual.current, baralho, uf, c.a, c.b) });
   }
 
   // a entrada das cartas a cada duelo novo (a da direita chega um pouco depois)
@@ -184,10 +108,6 @@ function Arena({ dados }: { dados: DadosEleitos }) {
   ) => {
     if (efeitos.current) particula(efeitos.current, x, y, txt, tipo, dx, dy, dur);
   };
-  const mudaVida = (l: Lado, d: number) => {
-    const jg = jogo.current!;
-    atualizar({ vida: { ...jg.vida, [l]: Math.max(0, Math.min(30, jg.vida[l] + d)) } });
-  };
 
   async function golpe(de: Lado, para: Lado, el: ElementoId, dano: number, n: number) {
     const [x0, y0] = centroDe(de),
@@ -200,7 +120,7 @@ function Arena({ dados }: { dados: DadosEleitos }) {
       for (let k = 0; k < q; k++)
         setTimeout(() => solta(x0, y0 + (k - q / 2) * 8, ico, "voa", x1 - x0, y1 - y0 + (k - q / 2) * 6, 520), k * 45);
       await espera(520);
-      if (jogo.current?.n !== n) return;
+      if (dueloAtual.current !== n) return;
       if (el === "raio") {
         clarao(flash.current);
         if (efeitos.current) relampago(efeitos.current, x1, y1);
@@ -214,7 +134,7 @@ function Arena({ dados }: { dados: DadosEleitos }) {
     }
     animarCarta(carta(para), "apanha");
     solta(x1, y1 - 60, `−${dano}`, "dano", 0, -70, 1100);
-    mudaVida(para, -dano);
+    despachar({ tipo: "vida", l: para, d: -dano });
     await espera(700);
   }
 
@@ -225,21 +145,14 @@ function Arena({ dados }: { dados: DadosEleitos }) {
       for (let k = 0; k < 10; k++)
         solta(x + (Math.random() - 0.5) * 140, y + 60, "✨", "sobe", (Math.random() - 0.5) * 30, -160, 900);
     solta(x, y - 60, `+${valor}`, "cura", 0, -70, 1100);
-    mudaVida(l, valor);
+    despachar({ tipo: "vida", l, d: valor });
     await espera(700);
   }
 
-  function fim() {
-    const jg = jogo.current!,
-      { a, b } = jg.vida,
-      ganhou: Lado | null = a === b ? null : a > b ? "a" : "b";
-    atualizar({
-      rodadaTxt: "Fim do duelo",
-      anuncio: { tipo: "fim", ganhou, a, b, acertos: jg.acertos, total: jg.ordem.length },
-      campea: ganhou,
-      botao: "↻ Revanche",
-      r: FIM,
-    });
+  /** Fecha o duelo; `vida` é a que a rodada acompanhou (o estado ainda não foi redesenhado). */
+  function fim(vida: Record<Lado, number>) {
+    despachar({ tipo: "fim" });
+    const ganhou = ganhador(vida);
     if (ganhou && movimento()) {
       const [x, y] = centroDe(ganhou);
       for (let k = 0; k < 28; k++)
@@ -255,43 +168,49 @@ function Arena({ dados }: { dados: DadosEleitos }) {
     }
   }
 
-  async function rodada() {
-    const jg = jogo.current!,
-      n = jg.n,
+  async function rodada(jg: Jogo) {
+    const n = jg.n,
       { a, b } = jg;
-    atualizar({ botao: null });
-    if (jg.r >= jg.ordem.length || jg.vida.a <= 0 || jg.vida.b <= 0) return fim();
+    // a vida muda ao longo da rodada; esta cópia acompanha as ações para decidir o fim
+    let vida = jg.vida;
+    const muda = (l: Lado, d: number) => {
+      vida = somarVida(vida, l, d);
+    };
+    if (jg.r >= jg.ordem.length || vida.a <= 0 || vida.b <= 0) return fim(vida);
     const r = jg.ordem[jg.r];
-    atualizar({
-      rodadaTxt: `Rodada ${jg.r + 1} de ${jg.ordem.length}`,
-      anuncio: { tipo: "rodada", r },
-      pula: jg.pula + 1,
-      apostando: true,
-    });
+    despachar({ tipo: "rodada", r });
     const aposta = await new Promise<Lado>(res => {
-      jg.apostar = res;
+      apostar.current = res;
     });
-    if (jogo.current?.n !== n) return; // o duelo foi recomeçado enquanto esperava
+    apostar.current = null;
+    if (dueloAtual.current !== n) return; // o duelo foi recomeçado enquanto esperava
     const v = vencedor(r, a, b);
-    if (v && v !== "empate" && v === aposta) jg.acertos++;
-    atualizar({ apostando: false, apostar: null, registro: [{ r, a, b, v, aposta }, ...jg.registro] });
+    despachar({ tipo: "apostou", e: { r, a, b, v, aposta } });
     if (v && v !== "empate") {
-      if (r.id === "luz") await cura(v, 3);
-      else await golpe(v, outroLado(v), r.el, danoRodada(r, a, b), n); // no fogo, v é quem arrecadou menos: o outro se queima
+      const dano = r.id === "luz" ? 0 : danoRodada(r, a, b);
+      if (r.id === "luz") {
+        await cura(v, 3);
+        muda(v, 3);
+      } else {
+        await golpe(v, outroLado(v), r.el, dano, n); // no fogo, v é quem arrecadou menos: o outro se queima
+        muda(outroLado(v), -dano);
+      }
     } else if (v === "empate" && r.id === "luz") {
       await Promise.all([cura("a", 1), cura("b", 1)]);
+      muda("a", 1);
+      muda("b", 1);
     }
-    if (jogo.current?.n !== n) return;
+    if (dueloAtual.current !== n) return;
     if (v && v !== "empate" && v === aposta) {
       const [x, y] = centroDe("a");
       solta(x, y + 40, "+1 aposta", "cura", 0, -60, 1100);
-      mudaVida("a", 1);
+      despachar({ tipo: "vida", l: "a", d: 1 });
+      muda("a", 1);
       await espera(400);
-      if (jogo.current?.n !== n) return;
+      if (dueloAtual.current !== n) return;
     }
-    jg.r++;
-    if (jg.r >= jg.ordem.length || jg.vida.a <= 0 || jg.vida.b <= 0) return fim();
-    atualizar({ botao: "Próxima rodada ›" });
+    if (jg.r + 1 >= jg.ordem.length || vida.a <= 0 || vida.b <= 0) return fim(vida);
+    despachar({ tipo: "proxima" });
   }
 
   const escolher = (l: Lado, t: CartaEleito) => {
@@ -415,7 +334,7 @@ function Arena({ dados }: { dados: DadosEleitos }) {
                     <button
                       key={l}
                       type="button"
-                      onClick={() => g.apostar?.(l)}
+                      onClick={() => apostar.current?.(l)}
                       className="cursor-pointer rounded-lg border-2 border-[#ffd86b] bg-[#2a333d] px-3 py-1.5 font-bold text-white hover:bg-[#ffd86b] hover:text-[#1b222b]"
                     >
                       {g[l].nome}
@@ -427,7 +346,7 @@ function Arena({ dados }: { dados: DadosEleitos }) {
             {g.botao && (
               <button
                 type="button"
-                onClick={() => (g.r === FIM ? novoDuelo(g.baralho, g.uf, { a: g.a, b: g.b }) : void rodada())}
+                onClick={() => (g.r === FIM ? novoDuelo(g.baralho, g.uf, { a: g.a, b: g.b }) : void rodada(g))}
                 className="cursor-pointer rounded-[10px] border-0 bg-linear-to-b from-[#ffd86b] to-[#e3a400] px-[26px] py-2.5 text-[17px] font-extrabold text-[#1b222b] shadow-[0_4px_0_#8f6c00] active:translate-y-[3px] active:shadow-[0_1px_0_#8f6c00]"
               >
                 {g.botao}

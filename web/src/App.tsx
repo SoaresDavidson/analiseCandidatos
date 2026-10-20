@@ -3,6 +3,7 @@ import { Carregando, ProvedorDica } from "./componentes";
 import { Inicio } from "./inicio/Inicio";
 import { type Navegacao, NavegacaoContexto } from "./lib/navegacao";
 import { irPara, useHash } from "./lib/useHash";
+import { useRecolheAoRolar } from "./lib/useRecolheAoRolar";
 import { ESCONDIDAS, FichaEleito, PAGINAS, type PaginaComTema, TEMAS } from "./paineis/registro";
 
 // Navegação por tema: poucas abas no topo; dentro de cada tema, as perguntas viram
@@ -36,8 +37,10 @@ export default function App() {
   const [id, extra] = useHash();
   const pagina = resolver(id);
   const escondida = pagina ? null : (ESCONDIDAS.find(x => x.id === id) ?? null);
+  const [recolhido, aoRolar] = useRecolheAoRolar(pagina?.id ?? escondida?.id ?? "inicio");
   const [ficha, setFicha] = useState<{ ano: number; sq: number } | null>(null);
   const [aviso, setAviso] = useState(false);
+
   const progresso = useRef(0);
   const cliques = useRef<number[]>([]);
   // quem tinha o foco antes da ficha abrir: volta para ele ao fechar
@@ -136,68 +139,81 @@ export default function App() {
     <NavegacaoContexto.Provider value={nav}>
       <ProvedorDica>
         <div className="flex h-full flex-col">
-          <div className="flex flex-none flex-wrap items-center justify-end gap-3 bg-ouro px-5 pt-[calc(4px+env(safe-area-inset-top,0px))] pb-1 text-[12.5px] font-bold text-white motion-safe:animate-desce">
-            <span>Banco de Dados Relacionais · UFPI</span>
-            <span aria-hidden="true">|</span>
-            <span>Davi, Duda, Eduardo e Enrico</span>
-            <span aria-hidden="true">|</span>
-            <button type="button" className={BOTAO_FAIXA} aria-label="Pergunta anterior" onClick={() => passo(-1)}>
-              ‹ anterior
-            </button>
-            <button type="button" className={BOTAO_FAIXA} aria-label="Próxima pergunta" onClick={() => passo(1)}>
-              próxima ›
-            </button>
-            <button type="button" className={BOTAO_FAIXA} onClick={telaCheia}>
-              Tela cheia
-            </button>
+          {/* faixa, abas e perguntas do tema: recolhem ao rolar a página para baixo e voltam ao
+              rolar para cima; a barra de filtros do painel (sticky dentro do main) continua */}
+          <div
+            inert={recolhido}
+            className={`grid flex-none transition-[grid-template-rows] duration-300 ease-out ${recolhido ? "grid-rows-[0fr]" : "grid-rows-[1fr]"}`}
+          >
+            <div className="min-h-0 overflow-hidden">
+              <div className="flex flex-none flex-wrap items-center justify-end gap-3 bg-ouro px-5 pt-[calc(4px+env(safe-area-inset-top,0px))] pb-1 text-[12.5px] font-bold text-white motion-safe:animate-desce">
+                <span>Banco de Dados Relacionais · UFPI</span>
+                <span aria-hidden="true">|</span>
+                <span>Davi, Duda, Eduardo e Enrico</span>
+                <span aria-hidden="true">|</span>
+                <button type="button" className={BOTAO_FAIXA} aria-label="Pergunta anterior" onClick={() => passo(-1)}>
+                  ‹ anterior
+                </button>
+                <button type="button" className={BOTAO_FAIXA} aria-label="Próxima pergunta" onClick={() => passo(1)}>
+                  próxima ›
+                </button>
+                <button type="button" className={BOTAO_FAIXA} onClick={telaCheia}>
+                  Tela cheia
+                </button>
+              </div>
+
+              <header className="relative z-[2] flex-none bg-branco shadow-[0_2px_8px_rgb(0_0_0/.06)] motion-safe:animate-desce motion-safe:[animation-delay:.08s]">
+                <div className="mx-auto flex min-h-[62px] max-w-pagina flex-wrap items-center gap-x-7 gap-y-2.5 px-5">
+                  <a className="grid leading-none no-underline" href="#inicio" onClick={cliqueNoLogo}>
+                    <b className="text-[11.5px] font-extrabold tracking-[.02em]">ELEIÇÕES</b>
+                    <span className="text-[21px] font-extrabold text-ouro">POLITICAGEM</span>
+                    <small className="mt-0.5 text-[9px] font-bold text-texto-2">AM · GO · MA · MT · RS · SE</small>
+                  </a>
+                  <nav className="ml-auto flex flex-wrap gap-x-6 gap-y-1" aria-label="Temas">
+                    {[{ id: "inicio", nome: "Início" }, ...TEMAS].map(a => (
+                      <a
+                        key={a.id}
+                        href={`#${a.id}`}
+                        aria-current={a.id === temaAtual ? "page" : undefined}
+                        className="border-b-4 border-transparent pt-[19px] pb-[15px] text-[14.5px] font-semibold no-underline hover:border-ouro-borda aria-[current=page]:border-ouro"
+                      >
+                        {a.nome}
+                      </a>
+                    ))}
+                  </nav>
+                </div>
+              </header>
+
+              {pagina && (
+                <nav className="flex-none border-t border-linha bg-branco" aria-label="Perguntas do tema">
+                  <div className="mx-auto flex max-w-pagina flex-wrap gap-2 px-5 py-2">
+                    {pagina.tema.paginas.map(q => (
+                      <a
+                        key={q.id}
+                        href={`#${q.id}`}
+                        aria-current={q.id === pagina.id ? "page" : undefined}
+                        className="group inline-flex items-center gap-2 rounded-md border-2 border-verde-esc px-3.5 py-[5px] text-[13.5px] font-bold text-verde-esc no-underline hover:bg-verde-claro motion-safe:animate-sobe aria-[current=page]:bg-verde-esc aria-[current=page]:text-white"
+                      >
+                        {q.n && (
+                          <small className="rounded bg-verde-esc px-1.5 text-[11.5px] text-white group-aria-[current=page]:bg-white group-aria-[current=page]:text-verde-esc">
+                            {q.n}
+                          </small>
+                        )}
+                        {q.nome}
+                      </a>
+                    ))}
+                  </div>
+                </nav>
+              )}
+            </div>
           </div>
 
-          <header className="relative z-[2] flex-none bg-branco shadow-[0_2px_8px_rgb(0_0_0/.06)] motion-safe:animate-desce motion-safe:[animation-delay:.08s]">
-            <div className="mx-auto flex min-h-[62px] max-w-pagina flex-wrap items-center gap-x-7 gap-y-2.5 px-5">
-              <a className="grid leading-none no-underline" href="#inicio" onClick={cliqueNoLogo}>
-                <b className="text-[11.5px] font-extrabold tracking-[.02em]">ELEIÇÕES</b>
-                <span className="text-[21px] font-extrabold text-ouro">POLITICAGEM</span>
-                <small className="mt-0.5 text-[9px] font-bold text-texto-2">AM · GO · MA · MT · RS · SE</small>
-              </a>
-              <nav className="ml-auto flex flex-wrap gap-x-6 gap-y-1" aria-label="Temas">
-                {[{ id: "inicio", nome: "Início" }, ...TEMAS].map(a => (
-                  <a
-                    key={a.id}
-                    href={`#${a.id}`}
-                    aria-current={a.id === temaAtual ? "page" : undefined}
-                    className="border-b-4 border-transparent pt-[19px] pb-[15px] text-[14.5px] font-semibold no-underline hover:border-ouro-borda aria-[current=page]:border-ouro"
-                  >
-                    {a.nome}
-                  </a>
-                ))}
-              </nav>
-            </div>
-          </header>
-
-          {pagina && (
-            <nav className="flex-none border-t border-linha bg-branco" aria-label="Perguntas do tema">
-              <div className="mx-auto flex max-w-pagina flex-wrap gap-2 px-5 py-2">
-                {pagina.tema.paginas.map(q => (
-                  <a
-                    key={q.id}
-                    href={`#${q.id}`}
-                    aria-current={q.id === pagina.id ? "page" : undefined}
-                    className="group inline-flex items-center gap-2 rounded-md border-2 border-verde-esc px-3.5 py-[5px] text-[13.5px] font-bold text-verde-esc no-underline hover:bg-verde-claro motion-safe:animate-sobe aria-[current=page]:bg-verde-esc aria-[current=page]:text-white"
-                  >
-                    {q.n && (
-                      <small className="rounded bg-verde-esc px-1.5 text-[11.5px] text-white group-aria-[current=page]:bg-white group-aria-[current=page]:text-verde-esc">
-                        {q.n}
-                      </small>
-                    )}
-                    {q.nome}
-                  </a>
-                ))}
-              </div>
-            </nav>
-          )}
-
           {/* a chave reinicia a rolagem e a animação de entrada a cada página */}
-          <main key={pagina?.id ?? escondida?.id ?? "inicio"} className="min-h-0 flex-1 overflow-y-auto">
+          <main
+            key={pagina?.id ?? escondida?.id ?? "inicio"}
+            onScroll={aoRolar}
+            className="min-h-0 flex-1 overflow-y-auto"
+          >
             {pagina || escondida ? (
               <Suspense fallback={<Carregando />}>
                 {pagina ? <pagina.Componente extra={extra} /> : escondida && <escondida.Componente extra={extra} />}

@@ -1,0 +1,15 @@
+/* Cada página entra suave e os blocos de <main> sobem em sequência (até o 12º). */
+@media (prefers-reduced-motion: no-preference) {
+  .pagina > main > * { @apply animate-sobe; }
+  .pagina > main > :nth-child(2) { animation-delay: .06s; }
+  .pagina > main > :nth-child(3) { animation-delay: .12s; }
+  .pagina > main > :nth-child(4) { animation-delay: .18s; }
+  .pagina > main > :nth-child(5) { animation-delay: .24s; }
+  .pagina > main > :nth-child(6) { animation-delay: .30s; }
+  .pagina > main > :nth-child(7) { animation-delay: .36s; }
+  .pagina > main > :nth-child(8) { animation-delay: .42s; }
+  .pagina > main > :nth-child(9) { animation-delay: .48s; }
+  .pagina > main > :nth-child(10) { animation-delay: .54s; }
+  .pagina > main > :nth-child(11) { animation-delay: .60s; }
+  .pagina > main > :nth-child(n + 12) { animation-delay: .66s; }
+}

@@ -13,3 +13,4 @@ __pycache__/
 
 # checkpoints automáticos do Jupyter
 .ipynb_checkpoints/
+

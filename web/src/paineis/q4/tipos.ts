@@ -5,7 +5,17 @@ export type LinhaPerfil = [ano: number, uf: string, grupo: number, nivel: number
 /** [ano, uf, cargo, grau 1-8, candidatos, eleitos] */
 export type LinhaChance = [ano: number, uf: string, cargo: number, grau: number, candidatos: number, eleitos: number];
 /** [ano, uf, código IBGE (0 = cargo estadual), cargo, grau, nome de urna, partido, nome civil, sq] */
-export type LinhaEleito = [ano: number, uf: string, cod: number, cargo: number, grau: number, urna: string, partido: string, civil: string, sq: number];
+export type LinhaEleito = [
+  ano: number,
+  uf: string,
+  cod: number,
+  cargo: number,
+  grau: number,
+  urna: string,
+  partido: string,
+  civil: string,
+  sq: number,
+];
 
 export interface MunicipioBruto {
   n: string;
@@ -22,7 +32,11 @@ export interface MunicipioBruto {
   cap?: boolean;
 }
 
-export interface MapaUf { w: number; h: number; p: Record<string, string> }
+export interface MapaUf {
+  w: number;
+  h: number;
+  p: Record<string, string>;
+}
 
 export interface DadosQ4 {
   eleitos: LinhaEleito[];
@@ -69,14 +83,56 @@ export interface Filtros {
 }
 
 export const UFS = ["AM", "GO", "MA", "MT", "RS", "SE"];
-export const UF_NOME: Record<string, string> = { AM: "Amazonas", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", RS: "Rio Grande do Sul", SE: "Sergipe" };
+export const UF_NOME: Record<string, string> = {
+  AM: "Amazonas",
+  GO: "Goiás",
+  MA: "Maranhão",
+  MT: "Mato Grosso",
+  RS: "Rio Grande do Sul",
+  SE: "Sergipe",
+};
 /** Nomes simples dos 4 níveis do Censo (a nota explica o que cada um inclui). */
-export const NIVEL: Record<number, string> = { 1: "Sem fundamental completo", 2: "Fundamental completo", 3: "Médio completo", 4: "Faculdade completa" };
-export const GRAU: Record<number, string> = { 1: "Analfabeto", 2: "Lê e escreve", 3: "Fundamental incompleto", 4: "Fundamental completo", 5: "Médio incompleto", 6: "Médio completo", 7: "Superior incompleto", 8: "Superior completo" };
+export const NIVEL: Record<number, string> = {
+  1: "Sem fundamental completo",
+  2: "Fundamental completo",
+  3: "Médio completo",
+  4: "Faculdade completa",
+};
+export const GRAU: Record<number, string> = {
+  1: "Analfabeto",
+  2: "Lê e escreve",
+  3: "Fundamental incompleto",
+  4: "Fundamental completo",
+  5: "Médio incompleto",
+  6: "Médio completo",
+  7: "Superior incompleto",
+  8: "Superior completo",
+};
 export const GRAU_NIVEL: Record<number, number> = { 1: 1, 2: 1, 3: 1, 4: 2, 5: 2, 6: 3, 7: 3, 8: 4 };
 export const CARGOS: Record<number, number[]> = { 2022: [7, 6, 5, 3], 2024: [13, 11] };
-export const CARGO: Record<number, string> = { 3: "Governador", 5: "Senador", 6: "Dep. federal", 7: "Dep. estadual", 11: "Prefeito", 13: "Vereador" };
-export const PLURAL: Record<number, string> = { 3: "governador", 5: "senador", 6: "deputado federal", 7: "deputado estadual", 11: "prefeito", 13: "vereador" };
-export const PLURAIS: Record<number, string> = { 3: "governadores", 5: "senadores", 6: "deputados federais", 7: "deputados estaduais", 11: "prefeitos", 13: "vereadores" };
+export const CARGO: Record<number, string> = {
+  3: "Governador",
+  5: "Senador",
+  6: "Dep. federal",
+  7: "Dep. estadual",
+  11: "Prefeito",
+  13: "Vereador",
+};
+export const PLURAL: Record<number, string> = {
+  3: "governador",
+  5: "senador",
+  6: "deputado federal",
+  7: "deputado estadual",
+  11: "prefeito",
+  13: "vereador",
+};
+export const PLURAIS: Record<number, string> = {
+  3: "governadores",
+  5: "senadores",
+  6: "deputados federais",
+  7: "deputados estaduais",
+  11: "prefeitos",
+  13: "vereadores",
+};
 /** Cor de cada nível (tokens de styles/tema.css). */
 export const COR_NIVEL = (n: number): string => `var(--color-nivel-${n})`;

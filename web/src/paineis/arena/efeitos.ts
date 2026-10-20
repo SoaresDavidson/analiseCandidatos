@@ -2,7 +2,8 @@
 // element.animate). Com "reduzir movimento" ligado, nada anima e as esperas encurtam.
 
 export const movimento = (): boolean => !matchMedia("(prefers-reduced-motion: reduce)").matches;
-export const espera = (ms: number): Promise<void> => new Promise(r => setTimeout(r, movimento() ? ms : Math.min(ms, 150)));
+export const espera = (ms: number): Promise<void> =>
+  new Promise(r => setTimeout(r, movimento() ? ms : Math.min(ms, 150)));
 
 export type TipoParticula = "voa" | "estoura" | "sobe" | "dano" | "cura" | "confete" | "onda";
 
@@ -18,7 +19,16 @@ const CLASSE: Record<TipoParticula, string> = {
 const BASE = "translate(-50%, -50%)";
 
 /** Solta um emoji/texto em (x, y) que se desloca (dx, dy) durante `dur` ms e some. */
-export function particula(caixa: HTMLElement, x: number, y: number, txt: string, tipo: TipoParticula, dx: number, dy: number, dur: number): void {
+export function particula(
+  caixa: HTMLElement,
+  x: number,
+  y: number,
+  txt: string,
+  tipo: TipoParticula,
+  dx: number,
+  dy: number,
+  dur: number,
+): void {
   const p = document.createElement("span");
   p.textContent = txt;
   p.className = `absolute ${CLASSE[tipo]}`;
@@ -29,11 +39,27 @@ export function particula(caixa: HTMLElement, x: number, y: number, txt: string,
   if (movimento()) {
     const alvo = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
     const quadros: Keyframe[] =
-      tipo === "voa" ? [{ transform: BASE }, { transform: `${alvo} scale(1.3)` }]
-      : tipo === "estoura" ? [{ opacity: 1, transform: BASE }, { opacity: 0, transform: `${alvo} scale(.4)` }]
-      : tipo === "confete" ? [{ opacity: 1, transform: BASE }, { opacity: 0, transform: `${alvo} rotate(540deg)` }]
-      : tipo === "onda" ? [{ opacity: 1, transform: `${BASE} scale(1)` }, { opacity: 0, transform: `${BASE} scale(5)` }]
-      : [{ opacity: 1, transform: BASE }, { opacity: 0, transform: alvo }];
+      tipo === "voa"
+        ? [{ transform: BASE }, { transform: `${alvo} scale(1.3)` }]
+        : tipo === "estoura"
+          ? [
+              { opacity: 1, transform: BASE },
+              { opacity: 0, transform: `${alvo} scale(.4)` },
+            ]
+          : tipo === "confete"
+            ? [
+                { opacity: 1, transform: BASE },
+                { opacity: 0, transform: `${alvo} rotate(540deg)` },
+              ]
+            : tipo === "onda"
+              ? [
+                  { opacity: 1, transform: `${BASE} scale(1)` },
+                  { opacity: 0, transform: `${BASE} scale(5)` },
+                ]
+              : [
+                  { opacity: 1, transform: BASE },
+                  { opacity: 0, transform: alvo },
+                ];
     p.animate(quadros, { duration: dur, easing: "ease-out", fill: "forwards" });
   }
   setTimeout(() => p.remove(), dur + 50);
@@ -42,12 +68,19 @@ export function particula(caixa: HTMLElement, x: number, y: number, txt: string,
 /** O raio que cai sobre o alvo (80x180, recortado em zigue-zague). */
 export function relampago(caixa: HTMLElement, x: number, y: number): void {
   const r = document.createElement("div");
-  r.className = "absolute h-[180px] w-[80px] bg-linear-to-b from-white to-[#ffe14d] [clip-path:polygon(55%_0,20%_52%,46%_52%,30%_100%,82%_40%,55%_40%,75%_0)] [filter:drop-shadow(0_0_14px_#ffe14d)]";
+  r.className =
+    "absolute h-[180px] w-[80px] bg-linear-to-b from-white to-[#ffe14d] [clip-path:polygon(55%_0,20%_52%,46%_52%,30%_100%,82%_40%,55%_40%,75%_0)] [filter:drop-shadow(0_0_14px_#ffe14d)]";
   r.style.left = `${x - 40}px`;
   r.style.top = `${y - 160}px`;
   caixa.appendChild(r);
   r.animate(
-    [{ opacity: 1, offset: 0 }, { opacity: 1, offset: 0.4 }, { opacity: 0.2, offset: 0.5 }, { opacity: 1, offset: 0.6 }, { opacity: 0, offset: 1 }],
+    [
+      { opacity: 1, offset: 0 },
+      { opacity: 1, offset: 0.4 },
+      { opacity: 0.2, offset: 0.5 },
+      { opacity: 1, offset: 0.6 },
+      { opacity: 0, offset: 1 },
+    ],
     { duration: 600, easing: "steps(2)", fill: "forwards" },
   );
   setTimeout(() => r.remove(), 600);
@@ -66,11 +99,17 @@ export function animarCarta(el: Element | null, tipo: AnimacaoCarta, atraso = 0)
   const n = "none";
   if (tipo === "entra") {
     el.animate(
-      [{ transform: "translateY(60px) rotateY(100deg) scale(.7)", opacity: 0 }, { transform: n, opacity: 1 }],
+      [
+        { transform: "translateY(60px) rotateY(100deg) scale(.7)", opacity: 0 },
+        { transform: n, opacity: 1 },
+      ],
       { duration: 700, delay: atraso, easing: "cubic-bezier(.2, .9, .3, 1.2)", fill: "both" },
     );
   } else if (tipo === "ataca") {
-    el.animate([{ transform: n }, { transform: "translateY(-14px) scale(1.06)", offset: 0.3 }, { transform: n }], { duration: 500, easing: "ease" });
+    el.animate([{ transform: n }, { transform: "translateY(-14px) scale(1.06)", offset: 0.3 }, { transform: n }], {
+      duration: 500,
+      easing: "ease",
+    });
   } else if (tipo === "apanha") {
     el.animate(
       [
@@ -84,13 +123,20 @@ export function animarCarta(el: Element | null, tipo: AnimacaoCarta, atraso = 0)
       { duration: 450, easing: "ease" },
     );
   } else {
-    el.animate([{}, { boxShadow: "0 0 0 4px #ffe58a, 0 0 40px 12px #ffd86b", offset: 0.4 }, {}], { duration: 900, easing: "ease" });
+    el.animate([{}, { boxShadow: "0 0 0 4px #ffe58a, 0 0 40px 12px #ffd86b", offset: 0.4 }, {}], {
+      duration: 900,
+      easing: "ease",
+    });
   }
 }
 
 /** A carta campeã flutua sem parar; devolve a função que para a animação. */
 export function flutuar(el: Element | null): () => void {
   if (!el || !movimento()) return () => {};
-  const a = el.animate([{ transform: "none" }, { transform: "translateY(-8px)" }, { transform: "none" }], { duration: 2400, easing: "ease-in-out", iterations: Infinity });
+  const a = el.animate([{ transform: "none" }, { transform: "translateY(-8px)" }, { transform: "none" }], {
+    duration: 2400,
+    easing: "ease-in-out",
+    iterations: Infinity,
+  });
   return () => a.cancel();
 }

@@ -6,7 +6,9 @@ export function Pagina({ filtros, children }: { filtros?: ReactNode; children: R
     <div className="pagina">
       {filtros && (
         <div className="sticky top-0 z-[5] rounded-b-[18px] bg-branco shadow-barra">
-          <div className="mx-auto flex max-w-pagina flex-wrap items-end gap-x-6 gap-y-3.5 px-5 pt-2.5 pb-3.5">{filtros}</div>
+          <div className="mx-auto flex max-w-pagina flex-wrap items-end gap-x-6 gap-y-3.5 px-5 pt-2.5 pb-3.5">
+            {filtros}
+          </div>
         </div>
       )}
       <main className="mx-auto grid max-w-pagina gap-[18px] px-5 pt-[22px] pb-16">{children}</main>

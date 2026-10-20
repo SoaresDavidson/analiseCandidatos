@@ -9,10 +9,24 @@ export interface Regua {
 
 /** Linha bruta de um município: posições fixas, para o arquivo ficar pequeno. */
 export type LinhaMunicipio = [
-  cod: number, nome: string, uf: number, capital: number, voto: number | null, pcNota: number | null,
-  votos: number, qtVer: number, camara: number | null, sgPref: string | null, vlPref: number | null,
-  voto22: number | null, qtCand: number, receita: number | null, publico: number | null,
-  propaganda: number | null, canal: number, cadeiras: (string | number)[],
+  cod: number,
+  nome: string,
+  uf: number,
+  capital: number,
+  voto: number | null,
+  pcNota: number | null,
+  votos: number,
+  qtVer: number,
+  camara: number | null,
+  sgPref: string | null,
+  vlPref: number | null,
+  voto22: number | null,
+  qtCand: number,
+  receita: number | null,
+  publico: number | null,
+  propaganda: number | null,
+  canal: number,
+  cadeiras: (string | number)[],
 ];
 
 /** Partido: [nota, categoria, observação (nota estimada ou herdada)]. */

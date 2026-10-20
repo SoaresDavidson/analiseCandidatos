@@ -10,13 +10,26 @@ export default function FichaEleito({ ano, sq, aoFechar }: { ano: number; sq: nu
 
   return (
     // clicar fora do cartão fecha
-    <div className="flex min-h-full items-center justify-center p-3" onClick={ev => { if (ev.target === ev.currentTarget) aoFechar(); }}>
+    <div
+      className="flex min-h-full items-center justify-center p-3"
+      onClick={ev => {
+        if (ev.target === ev.currentTarget) aoFechar();
+      }}
+    >
       <div className="w-full max-w-[760px]">
         {eleito && modelo ? (
           <Ficha e={eleito} regua={modelo.dados.regua} aoFechar={aoFechar} />
         ) : (
           <div className="relative rounded-2xl border-t-[6px] border-ouro bg-branco p-[22px]">
-            <button type="button" autoFocus aria-label="Fechar a ficha" onClick={aoFechar} className="absolute top-2.5 right-3 cursor-pointer border-0 bg-transparent text-[30px] leading-none text-texto-2">×</button>
+            <button
+              type="button"
+              autoFocus
+              aria-label="Fechar a ficha"
+              onClick={aoFechar}
+              className="absolute top-2.5 right-3 cursor-pointer border-0 bg-transparent text-[30px] leading-none text-texto-2"
+            >
+              ×
+            </button>
             {modelo ? <p className="font-semibold">Não achamos esse eleito nas fichas.</p> : <Carregando erro={erro} />}
           </div>
         )}

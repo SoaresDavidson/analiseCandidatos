@@ -2,31 +2,60 @@
    Os blocos maiores (Caixa, Etiqueta, Alternador, VerMais...) estão em src/componentes. */
 
 /* texto de apoio: enunciado oficial, notas de rodapé, legendas */
-@utility texto-enunciado { @apply max-w-[90ch] text-[13.5px] text-texto-2; }
-@utility texto-nota { @apply text-[13px] text-texto-2; }
+@utility texto-enunciado {
+  @apply max-w-[90ch] text-[13.5px] text-texto-2;
+}
+@utility texto-nota {
+  @apply text-[13px] text-texto-2;
+}
 /* a resposta em linguagem simples: o parágrafo grande do topo */
 @utility texto-simples {
   @apply text-[17px] leading-[1.55];
-  & b { @apply font-extrabold; }
+  & b {
+    @apply font-extrabold;
+  }
 }
 
 /* layout recorrente: coluna estreita de resposta + coluna larga de gráfico */
-@utility grade-duas { @apply grid items-start gap-[18px] min-[901px]:grid-cols-[330px_minmax(0,1fr)]; }
-@utility grade-mapa { @apply grid items-start gap-[18px] min-[901px]:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]; }
-@utility rolagem-x { @apply overflow-x-auto; }
+@utility grade-duas {
+  @apply grid items-start gap-[18px] min-[901px]:grid-cols-[330px_minmax(0,1fr)];
+}
+@utility grade-mapa {
+  @apply grid items-start gap-[18px] min-[901px]:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)];
+}
+@utility rolagem-x {
+  @apply overflow-x-auto;
+}
 
 /* campo de busca e lista rolável de eleitos */
-@utility entrada { @apply max-w-full min-w-[200px] rounded-lg border-2 border-linha px-3 py-[7px]; }
-@utility lista-rolavel { @apply max-h-[300px] overflow-y-auto border-t border-linha; }
+@utility entrada {
+  @apply max-w-full min-w-[200px] rounded-lg border-2 border-linha px-3 py-[7px];
+}
+@utility lista-rolavel {
+  @apply max-h-[300px] overflow-y-auto border-t border-linha;
+}
 
 /* SVG: textos e grades dos gráficos */
-@utility grafico { @apply block h-auto w-full; }
-@utility svg-eixo { @apply fill-texto-2 text-[11.5px]; }
-@utility svg-rotulo { @apply fill-texto text-[12.5px]; }
-@utility svg-grade { @apply stroke-linha stroke-1; }
+@utility grafico {
+  @apply block h-auto w-full;
+}
+@utility svg-eixo {
+  @apply fill-texto-2 text-[11.5px];
+}
+@utility svg-rotulo {
+  @apply fill-texto text-[12.5px];
+}
+@utility svg-grade {
+  @apply stroke-linha stroke-1;
+}
 /* mapa coroplético: contornos brancos finos, o selecionado em destaque */
 @utility mapa {
   @apply block h-auto max-h-[560px] w-full;
-  & path { @apply cursor-pointer stroke-white stroke-[0.6]; vector-effect: non-scaling-stroke; }
-  & path.sel { @apply stroke-texto stroke-[2.5]; }
+  & path {
+    @apply cursor-pointer stroke-white stroke-[0.6];
+    vector-effect: non-scaling-stroke;
+  }
+  & path.sel {
+    @apply stroke-texto stroke-[2.5];
+  }
 }

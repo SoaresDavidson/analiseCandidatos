@@ -14,14 +14,23 @@ export function Seletor({ className = "", style, ...props }: SelectHTMLAttribute
 }
 
 /** Grupo de botões em que só um fica marcado (aria-pressed), como "1º turno | 2º turno". */
-export function Alternador<T extends string | number>({ opcoes, valor, aoMudar, rotulo }: {
+export function Alternador<T extends string | number>({
+  opcoes,
+  valor,
+  aoMudar,
+  rotulo,
+}: {
   opcoes: readonly (readonly [T, string])[];
   valor: T;
   aoMudar: (v: T) => void;
   rotulo?: string;
 }) {
   return (
-    <span role="group" aria-label={rotulo} className="inline-flex flex-wrap overflow-hidden rounded-[7px] border-2 border-ouro bg-white">
+    <span
+      role="group"
+      aria-label={rotulo}
+      className="inline-flex flex-wrap overflow-hidden rounded-[7px] border-2 border-ouro bg-white"
+    >
       {opcoes.map(([v, texto]) => (
         <button
           key={String(v)}

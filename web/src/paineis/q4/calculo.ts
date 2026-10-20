@@ -1,6 +1,14 @@
 // Contas do painel de escolaridade: agregações dos dados, qui-quadrado, correlações e a rampa do mapa.
 import { nomeProprio, pc } from "../../lib/formato";
-import { GRAU_NIVEL, type DadosQ4, type Eleito, type LinhaChance, type LinhaPerfil, type Metrica, type Municipio } from "./tipos";
+import {
+  type DadosQ4,
+  type Eleito,
+  GRAU_NIVEL,
+  type LinhaChance,
+  type LinhaPerfil,
+  type Metrica,
+  type Municipio,
+} from "./tipos";
 
 const soma = (v: number[]): number => v.reduce((a, b) => a + b, 0);
 export const media = (v: number[]): number => soma(v) / v.length;
@@ -26,7 +34,13 @@ export function prepararMunicipios(D: DadosQ4): Municipio[] {
 
 export function prepararEleitos(D: DadosQ4): Eleito[] {
   return D.eleitos.map(([ano, uf, cod, cargo, grau, urna, partido, civil, sq]) => ({
-    ano, uf, cod, cargo, grau, partido, sq,
+    ano,
+    uf,
+    cod,
+    cargo,
+    grau,
+    partido,
+    sq,
     urna: nomeProprio(urna),
     civil: civil && civil !== urna ? nomeProprio(civil) : "",
   }));
@@ -34,9 +48,18 @@ export function prepararEleitos(D: DadosQ4): Eleito[] {
 
 /** Candidaturas e eleitos de cada ano, para a nota "Como calculamos". */
 export function totaisPorAno(chance: LinhaChance[]) {
-  let n22 = 0, e22 = 0, n24 = 0, e24 = 0;
+  let n22 = 0,
+    e22 = 0,
+    n24 = 0,
+    e24 = 0;
   for (const [a, , , , n, e] of chance) {
-    if (a === 2022) { n22 += n; e22 += e; } else { n24 += n; e24 += e; }
+    if (a === 2022) {
+      n22 += n;
+      e22 += e;
+    } else {
+      n24 += n;
+      e24 += e;
+    }
   }
   return { n22, e22, n24, e24 };
 }
@@ -44,18 +67,28 @@ export function totaisPorAno(chance: LinhaChance[]) {
 // ---------- recortes por ano, estado e cargo ----------
 /** Linhas: 0 população, 1 candidatos, 2 eleitos; colunas: os 4 níveis. */
 export function perfil(linhas: LinhaPerfil[], ano: number, ufs: string[]): number[][] {
-  const q = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+  const q = [
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+  ];
   for (const [a, u, g, n, v] of linhas) if (a === ano && ufs.includes(u)) q[g][n - 1] += v;
   return q;
 }
 
-export interface Contagem { n: number; e: number }
+export interface Contagem {
+  n: number;
+  e: number;
+}
 /** Candidatos e eleitos por grau (índices 1 a 8). */
 export function chance(linhas: LinhaChance[], ano: number, ufs: string[], cargo: number): Record<number, Contagem> {
   const r: Record<number, Contagem> = {};
   for (let g = 1; g <= 8; g++) r[g] = { n: 0, e: 0 };
   for (const [a, u, c, g, n, e] of linhas) {
-    if (a === ano && ufs.includes(u) && c === cargo) { r[g].n += n; r[g].e += e; }
+    if (a === ano && ufs.includes(u) && c === cargo) {
+      r[g].n += n;
+      r[g].e += e;
+    }
   }
   return r;
 }
@@ -73,7 +106,10 @@ export function porNivel(r: Record<number, Contagem>) {
 // ---------- qui-quadrado (série + fração contínua; conferido contra a tabela) ----------
 function lgamma(z: number): number {
   const g = 7;
-  const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  const c = [
+    0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059,
+    12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7,
+  ];
   if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lgamma(1 - z);
   z -= 1;
   let x = c[0];
@@ -83,21 +119,32 @@ function lgamma(z: number): number {
 }
 
 function pQui2(q: number, gl: number): number {
-  const a = gl / 2, x = q / 2;
+  const a = gl / 2,
+    x = q / 2;
   if (x <= 0) return 1;
   const f = Math.exp(-x + a * Math.log(x) - lgamma(a));
   if (x < a + 1) {
-    let t = 1 / a, s = t;
-    for (let k = 1; k < 1000; k++) { t *= x / (a + k); s += t; if (Math.abs(t) < Math.abs(s) * 1e-15) break; }
+    let t = 1 / a,
+      s = t;
+    for (let k = 1; k < 1000; k++) {
+      t *= x / (a + k);
+      s += t;
+      if (Math.abs(t) < Math.abs(s) * 1e-15) break;
+    }
     return 1 - f * s;
   }
   const tiny = 1e-300;
-  let b = x + 1 - a, c = 1 / tiny, d = 1 / b, h = d;
+  let b = x + 1 - a,
+    c = 1 / tiny,
+    d = 1 / b,
+    h = d;
   for (let i = 1; i < 500; i++) {
     const an = -i * (i - a);
     b += 2;
-    d = an * d + b; if (Math.abs(d) < tiny) d = tiny;
-    c = b + an / c; if (Math.abs(c) < tiny) c = tiny;
+    d = an * d + b;
+    if (Math.abs(d) < tiny) d = tiny;
+    c = b + an / c;
+    if (Math.abs(c) < tiny) c = tiny;
     d = 1 / d;
     const del = d * c;
     h *= del;
@@ -106,17 +153,30 @@ function pQui2(q: number, gl: number): number {
   return f * h;
 }
 
-export interface Teste { N: number; E: number; p: number | null; conf: boolean }
+export interface Teste {
+  N: number;
+  E: number;
+  p: number | null;
+  conf: boolean;
+}
 /** Teste de que a chance de se eleger é a mesma em todos os graus (graus 1 a 3 juntos). */
 export function teste(r: Record<number, Contagem>): Teste {
-  let N = 0, E = 0;
-  for (let g = 1; g <= 8; g++) { N += r[g].n; E += r[g].e; }
+  let N = 0,
+    E = 0;
+  for (let g = 1; g <= 8; g++) {
+    N += r[g].n;
+    E += r[g].e;
+  }
   const fx = [[1, 2, 3], [4], [5], [6], [7], [8]]
     .map(gs => gs.reduce((s, g) => ({ n: s.n + r[g].n, e: s.e + r[g].e }), { n: 0, e: 0 }))
     .filter(f => f.n > 0);
-  let q = 0, minEsp = Infinity;
+  let q = 0,
+    minEsp = Infinity;
   for (const f of fx) {
-    for (const [obs, col] of [[f.e, E], [f.n - f.e, N - E]]) {
+    for (const [obs, col] of [
+      [f.e, E],
+      [f.n - f.e, N - E],
+    ]) {
       const esp = (f.n * col) / N;
       minEsp = Math.min(minEsp, esp);
       q += esp > 0 ? (obs - esp) ** 2 / esp : 0;
@@ -130,11 +190,17 @@ export function teste(r: Record<number, Contagem>): Teste {
 export function pearson(xs: number[], ys: number[]): number | null {
   const n = xs.length;
   if (n < 3) return null;
-  const mx = media(xs), my = media(ys);
-  let sxy = 0, sxx = 0, syy = 0;
+  const mx = media(xs),
+    my = media(ys);
+  let sxy = 0,
+    sxx = 0,
+    syy = 0;
   for (let i = 0; i < n; i++) {
-    const dx = xs[i] - mx, dy = ys[i] - my;
-    sxy += dx * dy; sxx += dx * dx; syy += dy * dy;
+    const dx = xs[i] - mx,
+      dy = ys[i] - my;
+    sxy += dx * dy;
+    sxx += dx * dx;
+    syy += dy * dy;
   }
   return sxx && syy ? sxy / Math.sqrt(sxx * syy) : null;
 }
@@ -156,9 +222,15 @@ export const spearman = (xs: number[], ys: number[]): number | null => pearson(p
 
 /** Reta de mínimos quadrados y = a·x + b. */
 export function reta(xs: number[], ys: number[]) {
-  const n = xs.length, mx = media(xs), my = media(ys);
-  let sxy = 0, sxx = 0;
-  for (let i = 0; i < n; i++) { sxy += (xs[i] - mx) * (ys[i] - my); sxx += (xs[i] - mx) ** 2; }
+  const n = xs.length,
+    mx = media(xs),
+    my = media(ys);
+  let sxy = 0,
+    sxx = 0;
+  for (let i = 0; i < n; i++) {
+    sxy += (xs[i] - mx) * (ys[i] - my);
+    sxx += (xs[i] - mx) ** 2;
+  }
   const a = sxy / sxx;
   return { a, b: my - a * mx };
 }
@@ -169,13 +241,19 @@ const hex = (h: string): number[] => [1, 3, 5].map(i => parseInt(h.slice(i, i + 
 /** Cor da rampa verde para t entre 0 e 1. */
 export function rampa(t: number): string {
   t = Math.max(0, Math.min(1, t));
-  const p = t * (RAMPA.length - 1), i = Math.min(RAMPA.length - 2, Math.floor(p)), f = p - i;
-  const a = hex(RAMPA[i]), b = hex(RAMPA[i + 1]);
+  const p = t * (RAMPA.length - 1),
+    i = Math.min(RAMPA.length - 2, Math.floor(p)),
+    f = p - i;
+  const a = hex(RAMPA[i]),
+    b = hex(RAMPA[i + 1]);
   return `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(",")})`;
 }
 export const GRADIENTE = `linear-gradient(90deg,${Array.from({ length: 11 }, (_, i) => rampa(i / 10)).join(",")})`;
 
-export const METRICA: Record<Metrica, { rot: string; v: (m: Municipio) => number; dom: [number, number]; un?: boolean }> = {
+export const METRICA: Record<
+  Metrica,
+  { rot: string; v: (m: Municipio) => number; dom: [number, number]; un?: boolean }
+> = {
   pop: { rot: "População com faculdade", v: m => m.pPop as number, dom: [0, 30] },
   el: { rot: "Eleitos com faculdade", v: m => m.pEl as number, dom: [0, 100] },
   dist: { rot: "Diferença", v: m => (m.pEl as number) - (m.pPop as number), dom: [0, 80], un: true },

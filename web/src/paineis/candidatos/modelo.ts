@@ -3,12 +3,56 @@ import { useDados } from "../../lib/dados";
 import { nomeProprio } from "../../lib/formato";
 import type { Candidatura, DadosCandidatos, Eleito, Modelo } from "./tipos";
 
-export const UF_NOME: Record<string, string> = { AM: "Amazonas", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", RS: "Rio Grande do Sul", SE: "Sergipe" };
-export const CARGO: Record<number, string> = { 3: "Governador", 5: "Senador", 6: "Deputado federal", 7: "Deputado estadual", 11: "Prefeito", 13: "Vereador" };
-export const CARGO_CURTO: Record<number, string> = { 1: "Presidente", 2: "Vice-presidente", 3: "Governador", 4: "Vice-governador", 5: "Senador", 6: "Dep. federal", 7: "Dep. estadual", 8: "Dep. distrital", 9: "1º suplente", 10: "2º suplente", 11: "Prefeito", 12: "Vice-prefeito", 13: "Vereador" };
-export const PLURAL: Record<number, string> = { 3: "governadores", 5: "senadores", 6: "deputados federais", 7: "deputados estaduais", 11: "prefeitos", 13: "vereadores" };
+export const UF_NOME: Record<string, string> = {
+  AM: "Amazonas",
+  GO: "Goiás",
+  MA: "Maranhão",
+  MT: "Mato Grosso",
+  RS: "Rio Grande do Sul",
+  SE: "Sergipe",
+};
+export const CARGO: Record<number, string> = {
+  3: "Governador",
+  5: "Senador",
+  6: "Deputado federal",
+  7: "Deputado estadual",
+  11: "Prefeito",
+  13: "Vereador",
+};
+export const CARGO_CURTO: Record<number, string> = {
+  1: "Presidente",
+  2: "Vice-presidente",
+  3: "Governador",
+  4: "Vice-governador",
+  5: "Senador",
+  6: "Dep. federal",
+  7: "Dep. estadual",
+  8: "Dep. distrital",
+  9: "1º suplente",
+  10: "2º suplente",
+  11: "Prefeito",
+  12: "Vice-prefeito",
+  13: "Vereador",
+};
+export const PLURAL: Record<number, string> = {
+  3: "governadores",
+  5: "senadores",
+  6: "deputados federais",
+  7: "deputados estaduais",
+  11: "prefeitos",
+  13: "vereadores",
+};
 export const CARGOS_ANO: Record<number, number[]> = { 2022: [3, 5, 6, 7], 2024: [11, 13] };
-export const CANAL = ["Material impresso", "Campanha de rua", "Rádio e TV", "Adesivos", "Internet", "Jingle", "Carro de som", "Jornal e revista"];
+export const CANAL = [
+  "Material impresso",
+  "Campanha de rua",
+  "Rádio e TV",
+  "Adesivos",
+  "Internet",
+  "Jingle",
+  "Carro de som",
+  "Jornal e revista",
+];
 export const RESULTADO = ["Eleito", "Não eleito", "Sem resultado"];
 
 export const frase = (s: string | null | undefined): string => {
@@ -46,11 +90,36 @@ function preparar(D: DadosCandidatos): Modelo {
     const nome = nomeProprio(r[5]);
     const civil = nomeProprio(r[6]);
     return {
-      id, sq: D.sq[id], ano, uf, cargo: r[2], local, partido, nome, civil, idade: r[7],
-      genero: D.generos[r[8]], cor: D.cores[r[9]], grau: D.graus[r[10]], ocupacao: D.ocupacoes[r[11]],
-      situacao: r[12], votos: r[13], munVotos: lugar(D, r[14])[0], patrimonio: r[15], bens: r[16],
-      receita: r[17], publico: r[18], privado: r[19], proprio: r[20], partidario: r[21], transf: r[22],
-      doadores: r[23], propaganda: r[24], canal: r[25], carreira, cod: r[27],
+      id,
+      sq: D.sq[id],
+      ano,
+      uf,
+      cargo: r[2],
+      local,
+      partido,
+      nome,
+      civil,
+      idade: r[7],
+      genero: D.generos[r[8]],
+      cor: D.cores[r[9]],
+      grau: D.graus[r[10]],
+      ocupacao: D.ocupacoes[r[11]],
+      situacao: r[12],
+      votos: r[13],
+      munVotos: lugar(D, r[14])[0],
+      patrimonio: r[15],
+      bens: r[16],
+      receita: r[17],
+      publico: r[18],
+      privado: r[19],
+      proprio: r[20],
+      partidario: r[21],
+      transf: r[22],
+      doadores: r[23],
+      propaganda: r[24],
+      canal: r[25],
+      carreira,
+      cod: r[27],
       espectro: D.espectro[`${ano}|${partido}`] || null,
       busca: semAcento([nome, civil, local, partido, UF_NOME[uf] || ""].join(" ")),
     };
@@ -67,7 +136,10 @@ export function useEleitos() {
   const modelo = useMemo(() => {
     if (!dados) return null;
     let m = montados.get(dados);
-    if (!m) { m = preparar(dados); montados.set(dados, m); }
+    if (!m) {
+      m = preparar(dados);
+      montados.set(dados, m);
+    }
     return m;
   }, [dados]);
   return { modelo, erro };

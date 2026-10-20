@@ -18,10 +18,25 @@ export default function Painel() {
 
 function Conteudo({ D }: { D: DadosQ7 }) {
   const [f, setF] = usePersistente<Filtros>("q7-tse", PADRAO);
-  const M = useMemo<Ctx["M"]>(() => D.municipios.map(r => ({
-    cod: r[0], nome: nomeLugar(r[1]), uf: D.ufs[r[2]], reg: r[3], cap: !!r[4], rodada: r[5], fixa: r[6], pref: r[7], busca: semAcento(r[1]),
-  })), [D]);
-  const R = useMemo<Ctx["R"]>(() => D.regioes.map(r => ({ cd: r[0], nome: r[1], uf: D.ufs[r[2]], n: r[3], rodada: r[4], fixa: r[5] })), [D]);
+  const M = useMemo<Ctx["M"]>(
+    () =>
+      D.municipios.map(r => ({
+        cod: r[0],
+        nome: nomeLugar(r[1]),
+        uf: D.ufs[r[2]],
+        reg: r[3],
+        cap: !!r[4],
+        rodada: r[5],
+        fixa: r[6],
+        pref: r[7],
+        busca: semAcento(r[1]),
+      })),
+    [D],
+  );
+  const R = useMemo<Ctx["R"]>(
+    () => D.regioes.map(r => ({ cd: r[0], nome: r[1], uf: D.ufs[r[2]], n: r[3], rodada: r[4], fixa: r[5] })),
+    [D],
+  );
   const ctx: Ctx = { D, M, R, f };
 
   // trocar de estado no filtro leva o mapa junto e limpa a cidade escolhida
@@ -32,18 +47,36 @@ function Conteudo({ D }: { D: DadosQ7 }) {
       <Campo rotulo="Estado">
         <Seletor value={f.uf} onChange={e => mudarUf(e.target.value)}>
           <option value="TODAS">Todos os 6 estados</option>
-          {D.ufs.map(u => <option key={u} value={u}>{UF_NOME[u]}</option>)}
+          {D.ufs.map(u => (
+            <option key={u} value={u}>
+              {UF_NOME[u]}
+            </option>
+          ))}
         </Seletor>
       </Campo>
       <span className="grid gap-[3px] text-[13px] font-bold">
         Comparar
-        <Alternador<Par> rotulo="Comparar" valor={f.par} aoMudar={par => setF(s => ({ ...s, par }))}
-          opcoes={[["mun", "Vereador: 2020 → 2024"], ["ger", "Dep. federal: 2018 → 2022"]]} />
+        <Alternador<Par>
+          rotulo="Comparar"
+          valor={f.par}
+          aoMudar={par => setF(s => ({ ...s, par }))}
+          opcoes={[
+            ["mun", "Vereador: 2020 → 2024"],
+            ["ger", "Dep. federal: 2018 → 2022"],
+          ]}
+        />
       </span>
       <span className="grid gap-[3px] text-[13px] font-bold">
         Régua
-        <Alternador<Regua> rotulo="Régua" valor={f.regua} aoMudar={regua => setF(s => ({ ...s, regua }))}
-          opcoes={[["fixa", "Só o eleitor"], ["rodada", "Régua de cada ano"]]} />
+        <Alternador<Regua>
+          rotulo="Régua"
+          valor={f.regua}
+          aoMudar={regua => setF(s => ({ ...s, regua }))}
+          opcoes={[
+            ["fixa", "Só o eleitor"],
+            ["rodada", "Régua de cada ano"],
+          ]}
+        />
       </span>
     </>
   );
@@ -52,11 +85,17 @@ function Conteudo({ D }: { D: DadosQ7 }) {
     <Pagina filtros={filtros}>
       <Etiqueta>PERGUNTA 7 · VIÉS POLÍTICO</Etiqueta>
       <h1>Para que lado as cidades foram?</h1>
-      <p className="texto-enunciado">Enunciado: viés político de um município/região na linha do tempo? [2018, 2020, 2022, 2024]</p>
-      <div className="grade-duas"><Resposta {...ctx} /></div>
-      <Mapa {...ctx}
+      <p className="texto-enunciado">
+        Enunciado: viés político de um município/região na linha do tempo? [2018, 2020, 2022, 2024]
+      </p>
+      <div className="grade-duas">
+        <Resposta {...ctx} />
+      </div>
+      <Mapa
+        {...ctx}
         aoMudarUf={mapaUf => setF(s => ({ ...s, mapaUf, sel: null }))}
-        aoSelecionar={sel => setF(s => ({ ...s, sel }))} />
+        aoSelecionar={sel => setF(s => ({ ...s, sel }))}
+      />
       <Regioes {...ctx} />
       <Partidos {...ctx} />
       <Prefeitos {...ctx} />

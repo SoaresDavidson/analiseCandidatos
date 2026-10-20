@@ -3,7 +3,7 @@ import { Alternador, VerMais } from "../../componentes";
 import { fmt, int, pc } from "../../lib/formato";
 import type { Contagem, Teste } from "./calculo";
 import { LinhaEleito, NomeEleito } from "./comum";
-import { GRAU, PLURAIS, PLURAL, UF_NOME, type Eleito, type Filtros, type Municipio } from "./tipos";
+import { type Eleito, type Filtros, GRAU, type Municipio, PLURAIS, PLURAL, UF_NOME } from "./tipos";
 
 interface Props {
   f: Filtros;
@@ -39,7 +39,12 @@ export function Graus({ f, ufs, r, t, ELEITOS, MUN_BY }: Props) {
       <div className="rolagem-x">
         <table>
           <thead>
-            <tr><th>Grau declarado ao TSE</th><th>Candidatos</th><th>Eleitos</th><th>Eleitos em cada 100</th></tr>
+            <tr>
+              <th>Grau declarado ao TSE</th>
+              <th>Candidatos</th>
+              <th>Eleitos</th>
+              <th>Eleitos em cada 100</th>
+            </tr>
           </thead>
           <tbody>
             {graus.map(g => (
@@ -51,30 +56,55 @@ export function Graus({ f, ufs, r, t, ELEITOS, MUN_BY }: Props) {
               </tr>
             ))}
             <tr>
-              <td><b>Total</b></td>
-              <td><b>{int(t.N)}</b></td>
-              <td><b>{int(t.E)}</b></td>
-              <td><b>{fmt(geral)}</b></td>
+              <td>
+                <b>Total</b>
+              </td>
+              <td>
+                <b>{int(t.N)}</b>
+              </td>
+              <td>
+                <b>{int(t.E)}</b>
+              </td>
+              <td>
+                <b>{fmt(geral)}</b>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
       <p className="texto-nota">
-        Teste qui-quadrado (graus 1 a 3 juntos): p = {ptxt}. Abaixo de 0,05, a chance de se eleger não é a mesma em todos os graus.
+        Teste qui-quadrado (graus 1 a 3 juntos): p = {ptxt}. Abaixo de 0,05, a chance de se eleger não é a mesma em
+        todos os graus.
         {t.conf ? "" : " Atenção: poucos candidatos em alguns graus, o teste não é confiável."}
       </p>
       <h3>
-        {grau ? `Quem são: ${int(lista.length)} ${plural ? PLURAIS[f.cargo] : PLURAL[f.cargo]} eleito${plural ? "s" : ""} que declararam "${GRAU[grau].toLowerCase()}"` : "Quem são"}
+        {grau
+          ? `Quem são: ${int(lista.length)} ${plural ? PLURAIS[f.cargo] : PLURAL[f.cargo]} eleito${plural ? "s" : ""} que declararam "${GRAU[grau].toLowerCase()}"`
+          : "Quem são"}
       </h3>
-      {grau != null && <Alternador rotulo="Grau de escolaridade" opcoes={com.map(g => [g, GRAU[g]] as const)} valor={grau} aoMudar={setGrau} />}
+      {grau != null && (
+        <Alternador
+          rotulo="Grau de escolaridade"
+          opcoes={com.map(g => [g, GRAU[g]] as const)}
+          valor={grau}
+          aoMudar={setGrau}
+        />
+      )}
       <div className="lista-rolavel">
         {lista.slice(0, 40).map(e => (
           <LinhaEleito
             key={e.sq}
-            esq={<span><NomeEleito e={e} /><br /><small className="text-texto-2">{e.civil || ""}</small></span>}
+            esq={
+              <span>
+                <NomeEleito e={e} />
+                <br />
+                <small className="text-texto-2">{e.civil || ""}</small>
+              </span>
+            }
             dir={
               <span className="text-right">
-                {e.partido}<br />
+                {e.partido}
+                <br />
                 <small className="text-texto-2">{e.cod ? `${MUN_BY[e.cod]?.n ?? ""} (${e.uf})` : UF_NOME[e.uf]}</small>
               </span>
             }
@@ -82,7 +112,9 @@ export function Graus({ f, ufs, r, t, ELEITOS, MUN_BY }: Props) {
         ))}
         {lista.length > 40 && (
           <div className="border-b border-linha px-0.5 py-1.5 text-[13.5px]">
-            <small className="text-texto-2">Mostrando 40 de {int(lista.length)}, das cidades maiores para as menores.</small>
+            <small className="text-texto-2">
+              Mostrando 40 de {int(lista.length)}, das cidades maiores para as menores.
+            </small>
           </div>
         )}
       </div>

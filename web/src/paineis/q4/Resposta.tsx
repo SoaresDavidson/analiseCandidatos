@@ -1,9 +1,9 @@
 import { useMemo } from "react";
-import { Anel, Aneis, Barra, Barras, Caixa, Linha, Selo } from "../../componentes";
+import { Aneis, Anel, Barra, Barras, Caixa, Linha, Selo } from "../../componentes";
 import { fmt, int, pc } from "../../lib/formato";
-import { perfil, porNivel, type Contagem, type Teste } from "./calculo";
+import { type Contagem, perfil, porNivel, type Teste } from "./calculo";
 import { textoOnde } from "./comum";
-import { NIVEL, PLURAL, type DadosQ4, type Filtros } from "./tipos";
+import { type DadosQ4, type Filtros, NIVEL, PLURAL } from "./tipos";
 
 interface Props {
   D: DadosQ4;
@@ -29,21 +29,29 @@ export function Resposta({ D, f, ufs, r, t }: Props) {
   const melhor = Math.max(...niv.map(x => x.t || 0));
 
   const rotuloSelo =
-    t.p == null ? "Sem dados suficientes para o teste"
-    : !t.conf ? "Poucos candidatos: o teste não é confiável"
-    : varia ? "Diferença real (teste estatístico, p < 0,05)"
-    : "Sem diferença real (teste estatístico)";
+    t.p == null
+      ? "Sem dados suficientes para o teste"
+      : !t.conf
+        ? "Poucos candidatos: o teste não é confiável"
+        : varia
+          ? "Diferença real (teste estatístico, p < 0,05)"
+          : "Sem diferença real (teste estatístico)";
 
   return (
     <div className="grade-duas">
       <Caixa>
         <h2>A resposta</h2>
         <p className="texto-simples">
-          Quem chega ao poder estudou <b>bem mais</b> que a população: {textoOnde(f.uf)}, {fmt(p[0][3], 0)}% dos adultos têm faculdade, mas {fmt(p[2][3], 0)}% dos eleitos de {f.ano} têm.{" "}
+          Quem chega ao poder estudou <b>bem mais</b> que a população: {textoOnde(f.uf)}, {fmt(p[0][3], 0)}% dos adultos
+          têm faculdade, mas {fmt(p[2][3], 0)}% dos eleitos de {f.ano} têm.{" "}
           {varia ? (
-            <>Para {cargo}, <b>quanto mais estudo, maior a chance de se eleger</b>.</>
+            <>
+              Para {cargo}, <b>quanto mais estudo, maior a chance de se eleger</b>.
+            </>
           ) : t.p != null && t.conf ? (
-            <>Para {cargo}, porém, <b>a escolaridade não muda a chance</b> de se eleger.</>
+            <>
+              Para {cargo}, porém, <b>a escolaridade não muda a chance</b> de se eleger.
+            </>
           ) : (
             <>Para {cargo} há poucos candidatos para medir a chance com segurança.</>
           )}
@@ -75,7 +83,10 @@ export function Resposta({ D, f, ufs, r, t }: Props) {
                   />
                 </div>
               ) : (
-                <div key={i} className="grid grid-cols-[minmax(0,13em)_minmax(0,1fr)_3.4em] items-center gap-2.5 text-sm">
+                <div
+                  key={i}
+                  className="grid grid-cols-[minmax(0,13em)_minmax(0,1fr)_3.4em] items-center gap-2.5 text-sm"
+                >
                   <span>{NIVEL[i + 1]}</span>
                   <span className="texto-nota">sem candidatos</span>
                   <b />
@@ -85,8 +96,11 @@ export function Resposta({ D, f, ufs, r, t }: Props) {
           </Barras>
           <Selo tipo={varia ? "sim" : "nao"}>{rotuloSelo}</Selo>
           <p className="texto-nota">
-            Candidatos a {cargo} em {f.ano} {textoOnde(f.uf)}. A linha tracejada é a média do cargo ({fmt(geral, 0)} em cada 100).
-            {varia && vezes ? ` Quem tem faculdade se elege ${fmt(vezes, 1)} vez${vezes >= 2 ? "es" : ""} mais que quem não terminou o fundamental.` : ""}
+            Candidatos a {cargo} em {f.ano} {textoOnde(f.uf)}. A linha tracejada é a média do cargo ({fmt(geral, 0)} em
+            cada 100).
+            {varia && vezes
+              ? ` Quem tem faculdade se elege ${fmt(vezes, 1)} vez${vezes >= 2 ? "es" : ""} mais que quem não terminou o fundamental.`
+              : ""}
           </p>
         </Caixa>
       </div>

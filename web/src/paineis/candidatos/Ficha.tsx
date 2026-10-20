@@ -52,22 +52,40 @@ function Espectro({ e, regua }: { e: Eleito; regua: [string, number, string, num
     <section className="grid gap-1.5">
       <h3>Espectro do partido</h3>
       <p>
-        <b>{e.partido}: {fmt(v, 2)}</b> na escala de 0 (esquerda) a 10 (direita), <b>{cat.toLowerCase()}</b>; {v < meio ? "à esquerda" : "à direita"} do meio da régua.
+        <b>
+          {e.partido}: {fmt(v, 2)}
+        </b>{" "}
+        na escala de 0 (esquerda) a 10 (direita), <b>{cat.toLowerCase()}</b>; {v < meio ? "à esquerda" : "à direita"} do
+        meio da régua.
       </p>
       <div
         className="relative mt-2.5 mb-0.5 h-2.5 rounded-[5px]"
-        style={{ background: "linear-gradient(90deg, #8a0f16, #c53d33 22%, #e57f68 38%, #dcd9d1 50%, #73a7d4 62%, #2f72b4 78%, #0c3f7c)" }}
+        style={{
+          background:
+            "linear-gradient(90deg, #8a0f16, #c53d33 22%, #e57f68 38%, #dcd9d1 50%, #73a7d4 62%, #2f72b4 78%, #0c3f7c)",
+        }}
       >
-        <i className="absolute -top-[5px] -ml-2.5 size-5 rounded-full border-[3px] border-white shadow-[0_0_0_1px_var(--color-texto)]" style={{ left: `${v * 10}%`, background: corCategoria(cat) }} />
-        <em className="absolute -top-1 -bottom-1 border-l-2 border-dashed border-texto" style={{ left: `${meio * 10}%` }} />
+        <i
+          className="absolute -top-[5px] -ml-2.5 size-5 rounded-full border-[3px] border-white shadow-[0_0_0_1px_var(--color-texto)]"
+          style={{ left: `${v * 10}%`, background: corCategoria(cat) }}
+        />
+        <em
+          className="absolute -top-1 -bottom-1 border-l-2 border-dashed border-texto"
+          style={{ left: `${meio * 10}%` }}
+        />
       </div>
       <div className="flex justify-between text-xs text-texto-2">
-        <span>◂ {sgE} {fmt(vE, 2)}</span>
+        <span>
+          ◂ {sgE} {fmt(vE, 2)}
+        </span>
         <span>meio {fmt(meio, 2)}</span>
-        <span>{sgD} {fmt(vD, 2)} ▸</span>
+        <span>
+          {sgD} {fmt(vD, 2)} ▸
+        </span>
       </div>
       <p className="texto-nota">
-        Nota dada por cientistas políticos (Bolognesi, Ribeiro, Codato e Silva, 2025, rodada 2022).{obs ? ` ${obs[0].toUpperCase() + obs.slice(1)}.` : ""}
+        Nota dada por cientistas políticos (Bolognesi, Ribeiro, Codato e Silva, 2025, rodada 2022).
+        {obs ? ` ${obs[0].toUpperCase() + obs.slice(1)}.` : ""}
       </p>
     </section>
   );
@@ -85,12 +103,19 @@ function Campanha({ e }: { e: Eleito }) {
   ];
   return (
     <>
-      <p className="texto-nota">De cada R$ 100 arrecadados{e.doadores ? ` (${int(e.doadores)} doador${e.doadores > 1 ? "es" : ""})` : ""}:</p>
+      <p className="texto-nota">
+        De cada R$ 100 arrecadados{e.doadores ? ` (${int(e.doadores)} doador${e.doadores > 1 ? "es" : ""})` : ""}:
+      </p>
       <div className="grid gap-2.5">
-        {fontes.map(([k, v]) => <BarraFonte key={k} rotulo={k} pct={(100 * (v || 0)) / R} />)}
+        {fontes.map(([k, v]) => (
+          <BarraFonte key={k} rotulo={k} pct={(100 * (v || 0)) / R} />
+        ))}
       </div>
       {e.propaganda ? (
-        <Linha rotulo="Gasto com propaganda" valor={`${brl(e.propaganda)}${e.canal >= 0 ? `, mais em ${CANAL[e.canal][0].toLowerCase() + CANAL[e.canal].slice(1)}` : ""}`} />
+        <Linha
+          rotulo="Gasto com propaganda"
+          valor={`${brl(e.propaganda)}${e.canal >= 0 ? `, mais em ${CANAL[e.canal][0].toLowerCase() + CANAL[e.canal].slice(1)}` : ""}`}
+        />
       ) : null}
     </>
   );
@@ -103,7 +128,9 @@ function Carreira({ e }: { e: Eleito }) {
     <section>
       <h3>Carreira</h3>
       <p className="texto-nota">
-        {c.length ? `${c.length} candidatura${c.length > 1 ? "s" : ""} de ${c[0].ano} a ${c[c.length - 1].ano}, ${vit} vitória${vit > 1 ? "s" : ""}.` : ""}
+        {c.length
+          ? `${c.length} candidatura${c.length > 1 ? "s" : ""} de ${c[0].ano} a ${c[c.length - 1].ano}, ${vit} vitória${vit > 1 ? "s" : ""}.`
+          : ""}
       </p>
       <div className="rolagem-x">
         <ol className="m-0 ml-2.5 grid list-none gap-2 border-l-[3px] border-linha py-0.5 pr-0 pl-[18px]">
@@ -119,8 +146,12 @@ function Carreira({ e }: { e: Eleito }) {
               }`}
             >
               <b>{x.ano}</b>
-              <span>{CARGO_CURTO[x.cargo] || ""} · {x.local} ({x.uf}) · {x.partido}</span>
-              <em className={`text-[12.5px] font-bold not-italic ${x.res === 0 ? "text-verde-esc" : "text-texto-2"}`}>{RESULTADO[x.res]}</em>
+              <span>
+                {CARGO_CURTO[x.cargo] || ""} · {x.local} ({x.uf}) · {x.partido}
+              </span>
+              <em className={`text-[12.5px] font-bold not-italic ${x.res === 0 ? "text-verde-esc" : "text-texto-2"}`}>
+                {RESULTADO[x.res]}
+              </em>
             </li>
           ))}
         </ol>
@@ -130,8 +161,18 @@ function Carreira({ e }: { e: Eleito }) {
 }
 
 /** O cartão da ficha de um eleito: usado na página e na janela aberta por cima de qualquer painel. */
-export default function Ficha({ e, regua, aoFechar }: { e: Eleito; regua: [string, number, string, number]; aoFechar: () => void }) {
-  const situacao = frase(e.situacao).replace(/ por qp$/, " por quociente partidário").replace(/ por media$/, " por média");
+export default function Ficha({
+  e,
+  regua,
+  aoFechar,
+}: {
+  e: Eleito;
+  regua: [string, number, string, number];
+  aoFechar: () => void;
+}) {
+  const situacao = frase(e.situacao)
+    .replace(/ por qp$/, " por quociente partidário")
+    .replace(/ por media$/, " por média");
   const perfil: [string, string][] = [
     ["Idade na eleição", e.idade == null ? "–" : `${e.idade} anos`],
     ["Gênero", frase(e.genero)],
@@ -140,31 +181,64 @@ export default function Ficha({ e, regua, aoFechar }: { e: Eleito; regua: [strin
     ["Ocupação declarada", frase(e.ocupacao)],
   ];
   return (
-    <article aria-labelledby="ficha-nome" className="relative grid gap-4 rounded-2xl border-t-[6px] border-ouro bg-branco p-[22px] text-texto shadow-[0_20px_50px_rgb(0_0_0/.3)] [&_h3]:mb-1.5">
-      <button type="button" autoFocus aria-label="Fechar a ficha" onClick={aoFechar} className="absolute top-2.5 right-3 cursor-pointer border-0 bg-transparent text-[30px] leading-none text-texto-2">×</button>
+    <article
+      aria-labelledby="ficha-nome"
+      className="relative grid gap-4 rounded-2xl border-t-[6px] border-ouro bg-branco p-[22px] text-texto shadow-[0_20px_50px_rgb(0_0_0/.3)] [&_h3]:mb-1.5"
+    >
+      <button
+        type="button"
+        autoFocus
+        aria-label="Fechar a ficha"
+        onClick={aoFechar}
+        className="absolute top-2.5 right-3 cursor-pointer border-0 bg-transparent text-[30px] leading-none text-texto-2"
+      >
+        ×
+      </button>
       <div className="grid grid-cols-[84px_minmax(0,1fr)] items-center gap-4 min-[641px]:grid-cols-[110px_minmax(0,1fr)]">
-        <FotoEleito ano={e.ano} sq={e.sq} nome={e.nome} className="w-[84px] min-[641px]:w-[110px] aspect-[81/113] rounded-xl! text-[26px]" />
+        <FotoEleito
+          ano={e.ano}
+          sq={e.sq}
+          nome={e.nome}
+          className="w-[84px] min-[641px]:w-[110px] aspect-[81/113] rounded-xl! text-[26px]"
+        />
         <div>
           <Selo tipo="sim">{situacao}</Selo>
-          <h2 id="ficha-nome" className="mt-1.5 text-2xl">{e.nome}</h2>
+          <h2 id="ficha-nome" className="mt-1.5 text-2xl">
+            {e.nome}
+          </h2>
           <p className="texto-nota">{e.civil ? `Nome civil: ${e.civil}` : ""}</p>
-          <p className="font-bold">{CARGO[e.cargo]} · {e.local}{e.cargo >= 11 ? ` (${e.uf})` : ""} · {e.partido} · {e.ano}</p>
+          <p className="font-bold">
+            {CARGO[e.cargo]} · {e.local}
+            {e.cargo >= 11 ? ` (${e.uf})` : ""} · {e.partido} · {e.ano}
+          </p>
         </div>
       </div>
       <Numeros>
-        <Numero valor={e.votos == null ? "–" : int(e.votos)} rotulo={`votos${e.cargo < 11 && e.munVotos ? `, mais em ${e.munVotos}` : ""}`} />
-        <Numero valor={brl(e.patrimonio || 0)} rotulo={`em bens declarados${e.bens ? ` (${e.bens} ${e.bens > 1 ? "itens" : "item"})` : ""}`} />
+        <Numero
+          valor={e.votos == null ? "–" : int(e.votos)}
+          rotulo={`votos${e.cargo < 11 && e.munVotos ? `, mais em ${e.munVotos}` : ""}`}
+        />
+        <Numero
+          valor={brl(e.patrimonio || 0)}
+          rotulo={`em bens declarados${e.bens ? ` (${e.bens} ${e.bens > 1 ? "itens" : "item"})` : ""}`}
+        />
         <Numero valor={brl(e.receita)} rotulo="arrecadados na campanha" />
       </Numeros>
       <Espectro e={e} regua={regua} />
       <div className="grid gap-[18px] min-[641px]:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <section>
           <h3>Perfil</h3>
-          <div>{perfil.map(([k, v]) => <Linha key={k} rotulo={k} valor={v || "–"} />)}</div>
+          <div>
+            {perfil.map(([k, v]) => (
+              <Linha key={k} rotulo={k} valor={v || "–"} />
+            ))}
+          </div>
         </section>
         <section>
           <h3>Campanha</h3>
-          <div className="grid gap-3"><Campanha e={e} /></div>
+          <div className="grid gap-3">
+            <Campanha e={e} />
+          </div>
         </section>
       </div>
       <Carreira e={e} />

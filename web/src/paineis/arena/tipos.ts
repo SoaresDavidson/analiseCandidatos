@@ -1,12 +1,12 @@
 /** Uma linha de `eleitos` em candidatos-eleitos.json. Só os campos que a Arena lê têm nome. */
 export type Eleito = [
-  ano: number,            // 0: ano da eleição menos 2000
-  uf: number,             // 1: índice em `ufs`
-  cargo: number,          // 2: código do cargo do TSE
-  ue: number,             // 3: índice em `ues` ("NOME|UF")
-  partido: number,        // 4: índice em `partidos`
-  nome: string,           // 5: nome de urna
-  nomeCompleto: string,   // 6
+  ano: number, // 0: ano da eleição menos 2000
+  uf: number, // 1: índice em `ufs`
+  cargo: number, // 2: código do cargo do TSE
+  ue: number, // 3: índice em `ues` ("NOME|UF")
+  partido: number, // 4: índice em `partidos`
+  nome: string, // 5: nome de urna
+  nomeCompleto: string, // 6
   ...resto: unknown[],
 ];
 // Posições lidas por índice (a tupla acima não as nomeia): 10 = grau (índice em `graus`),

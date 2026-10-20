@@ -25,9 +25,34 @@ export interface DadosCandidatos {
 }
 
 export type LinhaEleito = [
-  number, number, number, number, number, string, string, number | null, number, number, number, number,
-  string, number | null, number, number | null, number | null, number | null, number | null, number | null,
-  number | null, number | null, number | null, number | null, number | null, number, number[], number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  string,
+  string,
+  number | null,
+  number,
+  number,
+  number,
+  number,
+  string,
+  number | null,
+  number,
+  number | null,
+  number | null,
+  number | null,
+  number | null,
+  number | null,
+  number | null,
+  number | null,
+  number | null,
+  number | null,
+  number | null,
+  number,
+  number[],
+  number,
 ];
 
 export interface Candidatura {

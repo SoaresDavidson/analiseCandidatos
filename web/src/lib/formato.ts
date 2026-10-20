@@ -1,7 +1,9 @@
 // Formatação de números em pt-BR, igual em todos os painéis. "–" marca ausência de dado.
 
 export const fmt = (x: number | null | undefined, casas = 1): string =>
-  x == null || Number.isNaN(x) ? "–" : x.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
+  x == null || Number.isNaN(x)
+    ? "–"
+    : x.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
 
 export const int = (x: number): string => Math.round(x).toLocaleString("pt-BR");
 
@@ -24,7 +26,9 @@ export const nomeProprio = (s: string | null | undefined): string =>
   (s || "")
     .toLowerCase()
     .split(" ")
-    .map((w, i) => (i && PARTICULAS.has(w) ? w : w.replace(/(^|[-'])(\p{L})/gu, (_, a: string, b: string) => a + b.toUpperCase())))
+    .map((w, i) =>
+      i && PARTICULAS.has(w) ? w : w.replace(/(^|[-'])(\p{L})/gu, (_, a: string, b: string) => a + b.toUpperCase()),
+    )
     .join(" ");
 
 const PARTICULAS_LUGAR = new Set(["de", "da", "do", "das", "dos", "e"]);
@@ -34,7 +38,9 @@ export const nomeLugar = (s: string | null | undefined): string =>
   (s || "")
     .toLowerCase()
     .split(" ")
-    .map((w, i) => (i && PARTICULAS_LUGAR.has(w) ? w : i && w.startsWith("d'") ? "d'" + maiusculas(w.slice(2)) : maiusculas(w)))
+    .map((w, i) =>
+      i && PARTICULAS_LUGAR.has(w) ? w : i && w.startsWith("d'") ? "d'" + maiusculas(w.slice(2)) : maiusculas(w),
+    )
     .join(" ");
 
 /** "direita" -> "Direita". */

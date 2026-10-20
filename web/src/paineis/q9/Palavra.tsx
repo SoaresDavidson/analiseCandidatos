@@ -1,6 +1,6 @@
 import { Linha } from "../../componentes";
 import { fmt, int, pc } from "../../lib/formato";
-import { CANAL, TODOS_CANAIS, grupoT, reais, totalT } from "./dominio";
+import { CANAL, grupoT, reais, TODOS_CANAIS, totalT } from "./dominio";
 import type { DadosQ9, Filtros } from "./tipos";
 
 /** Barra fina com rótulo e valor, usada no detalhe da palavra. */
@@ -17,15 +17,37 @@ function BarraFina({ rotulo, pct, cor, valor }: { rotulo: string; pct: number; c
 }
 
 /** Painel ao lado da nuvem: o dinheiro por trás da palavra escolhida. */
-export function DetalhePalavra({ d, f, termo, eleito, canal }: { d: DadosQ9; f: Filtros; termo: number | null; eleito: number; canal: number }) {
+export function DetalhePalavra({
+  d,
+  f,
+  termo,
+  eleito,
+  canal,
+}: {
+  d: DadosQ9;
+  f: Filtros;
+  termo: number | null;
+  eleito: number;
+  canal: number;
+}) {
   if (termo == null) {
-    return <p className="text-texto-2">Clique numa palavra para ver quanto dinheiro há por trás dela, em que tipo de gasto aparece e se os eleitos a usam mais.</p>;
+    return (
+      <p className="text-texto-2">
+        Clique numa palavra para ver quanto dinheiro há por trás dela, em que tipo de gasto aparece e se os eleitos a
+        usam mais.
+      </p>
+    );
   }
   const nome = d.termos[termo];
   const acha = (e: number, c: number) => grupoT(d, f, e, c).find(w => w.t === termo);
   const w = acha(eleito, canal);
   const tot = totalT(d, f, eleito, canal);
-  if (!w) return <p className="text-texto-2">"{nome}" não está entre as {d.top} palavras deste recorte.</p>;
+  if (!w)
+    return (
+      <p className="text-texto-2">
+        "{nome}" não está entre as {d.top} palavras deste recorte.
+      </p>
+    );
 
   const uso = (e: number) => {
     const x = acha(e, canal);
@@ -34,7 +56,10 @@ export function DetalhePalavra({ d, f, termo, eleito, canal }: { d: DadosQ9; f: 
   };
   const por: [number, number][] = [];
   if (canal === TODOS_CANAIS) {
-    for (let c = 0; c < 8; c++) { const x = acha(eleito, c); if (x) por.push([c, x.n]); }
+    for (let c = 0; c < 8; c++) {
+      const x = acha(eleito, c);
+      if (x) por.push([c, x.n]);
+    }
   }
   por.sort((a, b) => b[1] - a[1]);
   const mx = por.length ? por[0][1] : 1;
@@ -49,7 +74,9 @@ export function DetalhePalavra({ d, f, termo, eleito, canal }: { d: DadosQ9; f: 
       <Linha rotulo="Entre os não eleitos" valor={uso(0)} />
       {por.length > 0 && (
         <div className="mt-1.5 grid gap-2.5">
-          {por.map(([c, n]) => <BarraFina key={c} rotulo={CANAL[c]} pct={(100 * n) / mx} cor="var(--color-verde)" valor={int(n)} />)}
+          {por.map(([c, n]) => (
+            <BarraFina key={c} rotulo={CANAL[c]} pct={(100 * n) / mx} cor="var(--color-verde)" valor={int(n)} />
+          ))}
         </div>
       )}
     </div>

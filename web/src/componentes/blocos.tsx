@@ -7,7 +7,11 @@ export function Caixa({ className = "", ...props }: HTMLAttributes<HTMLElement>)
 
 /** Selo verde do topo: "PERGUNTA 4 · ESCOLARIDADE". */
 export function Etiqueta({ children }: { children: ReactNode }) {
-  return <span className="justify-self-start rounded-md bg-verde-esc px-3.5 py-1.5 text-[13px] font-bold tracking-[.03em] text-white">{children}</span>;
+  return (
+    <span className="justify-self-start rounded-md bg-verde-esc px-3.5 py-1.5 text-[13px] font-bold tracking-[.03em] text-white">
+      {children}
+    </span>
+  );
 }
 
 /** Linha "rótulo .......... valor" com o valor em negrito. */
@@ -23,7 +27,13 @@ export function Linha({ rotulo, valor }: { rotulo: ReactNode; valor: ReactNode }
 /** Pílula de conclusão: "sim" verde, "não" bege. */
 export function Selo({ tipo, children }: { tipo: "sim" | "nao"; children: ReactNode }) {
   const cor = tipo === "sim" ? "bg-verde-claro text-verde-esc" : "bg-bege text-texto";
-  return <span className={`inline-flex items-center gap-2 justify-self-start rounded-full px-3 py-1.5 text-[13.5px] font-bold ${cor}`}>{children}</span>;
+  return (
+    <span
+      className={`inline-flex items-center gap-2 justify-self-start rounded-full px-3 py-1.5 text-[13.5px] font-bold ${cor}`}
+    >
+      {children}
+    </span>
+  );
 }
 
 /** Bloco recolhível "Ver mais" para o detalhe técnico (método, tabelas). */
@@ -45,7 +55,13 @@ export function VerMais({ titulo, children, aberto }: { titulo: ReactNode; child
 }
 
 /** Legenda horizontal de cores. */
-export function Legenda({ itens, redonda }: { itens: readonly { cor: string; rotulo: ReactNode }[]; redonda?: boolean }) {
+export function Legenda({
+  itens,
+  redonda,
+}: {
+  itens: readonly { cor: string; rotulo: ReactNode }[];
+  redonda?: boolean;
+}) {
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[13px] text-texto-2">
       {itens.map((it, i) => (
@@ -60,7 +76,13 @@ export function Legenda({ itens, redonda }: { itens: readonly { cor: string; rot
 
 /** Quadradinho (ou bolinha) de cor, para legendas e listas. */
 export function Cor({ cor, redonda }: { cor: string; redonda?: boolean }) {
-  return <i aria-hidden="true" className={`inline-block size-[13px] flex-none ${redonda ? "rounded-full" : "rounded-[3px]"}`} style={{ background: cor }} />;
+  return (
+    <i
+      aria-hidden="true"
+      className={`inline-block size-[13px] flex-none ${redonda ? "rounded-full" : "rounded-[3px]"}`}
+      style={{ background: cor }}
+    />
+  );
 }
 
 /** Faixa de gradiente com marcas embaixo (legenda de mapa contínuo). */
@@ -68,7 +90,11 @@ export function Rampa({ gradiente, marcas }: { gradiente: string; marcas: readon
   return (
     <div className="grid max-w-[340px] gap-1 text-[12.5px] text-texto-2">
       <div className="h-2.5 rounded-[3px]" style={{ background: gradiente }} />
-      <div className="flex justify-between">{marcas.map((m, i) => <span key={i}>{m}</span>)}</div>
+      <div className="flex justify-between">
+        {marcas.map((m, i) => (
+          <span key={i}>{m}</span>
+        ))}
+      </div>
     </div>
   );
 }

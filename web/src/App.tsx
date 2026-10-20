@@ -1,9 +1,9 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Carregando, ProvedorDica } from "./componentes";
 import { Inicio } from "./inicio/Inicio";
-import { NavegacaoContexto, type Navegacao } from "./lib/navegacao";
+import { type Navegacao, NavegacaoContexto } from "./lib/navegacao";
 import { irPara, useHash } from "./lib/useHash";
-import { ESCONDIDAS, FichaEleito, PAGINAS, TEMAS, type PaginaComTema } from "./paineis/registro";
+import { ESCONDIDAS, FichaEleito, PAGINAS, type PaginaComTema, TEMAS } from "./paineis/registro";
 
 // Navegação por tema: poucas abas no topo; dentro de cada tema, as perguntas viram
 // botões (como "PRESIDENTE | GOVERNADOR | ..." no site do TSE). Cada pergunta é um painel.
@@ -13,18 +13,29 @@ const ORDEM = ["inicio", ...PAGINAS.map(p => p.id)];
 /** #cidades abre a 1ª página do tema; #q7 abre a pergunta; o resto é o início. */
 function resolver(id: string): PaginaComTema | null {
   const tema = TEMAS.find(t => t.id === id);
-  return tema ? { ...tema.paginas[0], tema } : PAGINAS.find(p => p.id === id) ?? null;
+  return tema ? { ...tema.paginas[0], tema } : (PAGINAS.find(p => p.id === id) ?? null);
 }
 
 // o segredo: código Konami (↑↑↓↓←→←→BA) ou 5 cliques no logo em 3 s abrem a Arena
-const KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+const KONAMI = [
+  "ArrowUp",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowLeft",
+  "ArrowRight",
+  "b",
+  "a",
+];
 
 const digitando = (e: KeyboardEvent) => e.target instanceof Element && !!e.target.closest("input, select, textarea");
 
 export default function App() {
   const [id, extra] = useHash();
   const pagina = resolver(id);
-  const escondida = pagina ? null : ESCONDIDAS.find(x => x.id === id) ?? null;
+  const escondida = pagina ? null : (ESCONDIDAS.find(x => x.id === id) ?? null);
   const [ficha, setFicha] = useState<{ ano: number; sq: number } | null>(null);
   const [aviso, setAviso] = useState(false);
   const progresso = useRef(0);
@@ -37,23 +48,36 @@ export default function App() {
   }, []);
 
   /** Avança o código Konami; true enquanto ele está no meio (as setas não trocam de página). */
-  const konami = useCallback((tecla: string) => {
-    const k = tecla.length === 1 ? tecla.toLowerCase() : tecla;
-    progresso.current = k === KONAMI[progresso.current] ? progresso.current + 1 : k === KONAMI[0] ? 1 : 0;
-    if (progresso.current === KONAMI.length) { progresso.current = 0; desbloquear(); return true; }
-    return progresso.current > 4;
-  }, [desbloquear]);
+  const konami = useCallback(
+    (tecla: string) => {
+      const k = tecla.length === 1 ? tecla.toLowerCase() : tecla;
+      progresso.current = k === KONAMI[progresso.current] ? progresso.current + 1 : k === KONAMI[0] ? 1 : 0;
+      if (progresso.current === KONAMI.length) {
+        progresso.current = 0;
+        desbloquear();
+        return true;
+      }
+      return progresso.current > 4;
+    },
+    [desbloquear],
+  );
 
   const cliqueNoLogo = () => {
     const t = Date.now();
     cliques.current = cliques.current.filter(x => t - x < 3000).concat(t);
-    if (cliques.current.length >= 5) { cliques.current = []; desbloquear(); }
+    if (cliques.current.length >= 5) {
+      cliques.current = [];
+      desbloquear();
+    }
   };
 
-  const passo = useCallback((d: number) => {
-    const i = ORDEM.indexOf(pagina ? pagina.id : "inicio");
-    irPara(ORDEM[(Math.max(0, i) + d + ORDEM.length) % ORDEM.length]);
-  }, [pagina]);
+  const passo = useCallback(
+    (d: number) => {
+      const i = ORDEM.indexOf(pagina ? pagina.id : "inicio");
+      irPara(ORDEM[(Math.max(0, i) + d + ORDEM.length) % ORDEM.length]);
+    },
+    [pagina],
+  );
 
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
@@ -66,19 +90,32 @@ export default function App() {
     return () => document.removeEventListener("keydown", tecla);
   }, [passo, ficha, konami]);
 
-  const nav = useMemo<Navegacao>(() => ({
-    abrirCandidato: (ano, sq) => setFicha({ ano, sq }),
-    abrirMunicipio: cod => { setFicha(null); irPara(`municipios/${cod}`); },
-    abrirEstado: uf => { setFicha(null); irPara(`municipios/${uf}`); },
-  }), []);
+  const nav = useMemo<Navegacao>(
+    () => ({
+      abrirCandidato: (ano, sq) => setFicha({ ano, sq }),
+      abrirMunicipio: cod => {
+        setFicha(null);
+        irPara(`municipios/${cod}`);
+      },
+      abrirEstado: uf => {
+        setFicha(null);
+        irPara(`municipios/${uf}`);
+      },
+    }),
+    [],
+  );
 
   const telaCheia = () => {
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-    else document.documentElement.requestFullscreen().catch(() => { /* o navegador não deixa */ });
+    else
+      document.documentElement.requestFullscreen().catch(() => {
+        /* o navegador não deixa */
+      });
   };
 
   const temaAtual = pagina ? pagina.tema.id : escondida ? null : "inicio";
-  const BOTAO_FAIXA = "cursor-pointer border-0 bg-transparent px-1 py-0.5 text-[12.5px] font-bold text-white hover:underline";
+  const BOTAO_FAIXA =
+    "cursor-pointer border-0 bg-transparent px-1 py-0.5 text-[12.5px] font-bold text-white hover:underline";
 
   return (
     <NavegacaoContexto.Provider value={nav}>
@@ -89,9 +126,15 @@ export default function App() {
             <span aria-hidden="true">|</span>
             <span>Davi, Duda, Eduardo e Enrico</span>
             <span aria-hidden="true">|</span>
-            <button type="button" className={BOTAO_FAIXA} aria-label="Pergunta anterior" onClick={() => passo(-1)}>‹ anterior</button>
-            <button type="button" className={BOTAO_FAIXA} aria-label="Próxima pergunta" onClick={() => passo(1)}>próxima ›</button>
-            <button type="button" className={BOTAO_FAIXA} onClick={telaCheia}>Tela cheia</button>
+            <button type="button" className={BOTAO_FAIXA} aria-label="Pergunta anterior" onClick={() => passo(-1)}>
+              ‹ anterior
+            </button>
+            <button type="button" className={BOTAO_FAIXA} aria-label="Próxima pergunta" onClick={() => passo(1)}>
+              próxima ›
+            </button>
+            <button type="button" className={BOTAO_FAIXA} onClick={telaCheia}>
+              Tela cheia
+            </button>
           </div>
 
           <header className="relative z-[2] flex-none bg-branco shadow-[0_2px_8px_rgb(0_0_0/.06)] motion-safe:animate-desce motion-safe:[animation-delay:.08s]">
@@ -103,8 +146,12 @@ export default function App() {
               </a>
               <nav className="ml-auto flex flex-wrap gap-x-6 gap-y-1" aria-label="Temas">
                 {[{ id: "inicio", nome: "Início" }, ...TEMAS].map(a => (
-                  <a key={a.id} href={`#${a.id}`} aria-current={a.id === temaAtual ? "page" : undefined}
-                    className="border-b-4 border-transparent pt-[19px] pb-[15px] text-[14.5px] font-semibold no-underline hover:border-ouro-borda aria-[current=page]:border-ouro">
+                  <a
+                    key={a.id}
+                    href={`#${a.id}`}
+                    aria-current={a.id === temaAtual ? "page" : undefined}
+                    className="border-b-4 border-transparent pt-[19px] pb-[15px] text-[14.5px] font-semibold no-underline hover:border-ouro-borda aria-[current=page]:border-ouro"
+                  >
                     {a.nome}
                   </a>
                 ))}
@@ -116,9 +163,17 @@ export default function App() {
             <nav className="flex-none border-t border-linha bg-branco" aria-label="Perguntas do tema">
               <div className="mx-auto flex max-w-pagina flex-wrap gap-2 px-5 py-2">
                 {pagina.tema.paginas.map(q => (
-                  <a key={q.id} href={`#${q.id}`} aria-current={q.id === pagina.id ? "page" : undefined}
-                    className="group inline-flex items-center gap-2 rounded-md border-2 border-verde-esc px-3.5 py-[5px] text-[13.5px] font-bold text-verde-esc no-underline hover:bg-verde-claro motion-safe:animate-sobe aria-[current=page]:bg-verde-esc aria-[current=page]:text-white">
-                    {q.n && <small className="rounded bg-verde-esc px-1.5 text-[11.5px] text-white group-aria-[current=page]:bg-white group-aria-[current=page]:text-verde-esc">{q.n}</small>}
+                  <a
+                    key={q.id}
+                    href={`#${q.id}`}
+                    aria-current={q.id === pagina.id ? "page" : undefined}
+                    className="group inline-flex items-center gap-2 rounded-md border-2 border-verde-esc px-3.5 py-[5px] text-[13.5px] font-bold text-verde-esc no-underline hover:bg-verde-claro motion-safe:animate-sobe aria-[current=page]:bg-verde-esc aria-[current=page]:text-white"
+                  >
+                    {q.n && (
+                      <small className="rounded bg-verde-esc px-1.5 text-[11.5px] text-white group-aria-[current=page]:bg-white group-aria-[current=page]:text-verde-esc">
+                        {q.n}
+                      </small>
+                    )}
                     {q.nome}
                   </a>
                 ))}
@@ -139,17 +194,33 @@ export default function App() {
         </div>
 
         {aviso && (
-          <div role="status" className="fixed top-[40%] left-1/2 z-[60] flex -translate-1/2 items-center gap-3 rounded-2xl bg-[#1b222b] px-[30px] py-[18px] text-[26px] font-extrabold text-[#ffd86b] shadow-[0_0_0_4px_#ffd86b,0_20px_60px_rgb(0_0_0/.5)] animate-segredo">
-            <span aria-hidden="true" className="text-[38px]">⚡</span>Arena desbloqueada!
+          <div
+            role="status"
+            className="fixed top-[40%] left-1/2 z-[60] flex -translate-1/2 items-center gap-3 rounded-2xl bg-[#1b222b] px-[30px] py-[18px] text-[26px] font-extrabold text-[#ffd86b] shadow-[0_0_0_4px_#ffd86b,0_20px_60px_rgb(0_0_0/.5)] animate-segredo"
+          >
+            <span aria-hidden="true" className="text-[38px]">
+              ⚡
+            </span>
+            Arena desbloqueada!
           </div>
         )}
 
         {/* a ficha de um eleito abre por cima da página atual; ao fechar, a página continua onde estava */}
         {ficha && (
-          <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40" role="dialog" aria-modal="true" aria-label="Ficha do eleito"
-            onKeyDown={e => e.key === "Escape" && setFicha(null)}>
+          <div
+            className="fixed inset-0 z-50 overflow-y-auto bg-black/40"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Ficha do eleito"
+            onKeyDown={e => e.key === "Escape" && setFicha(null)}
+          >
             <Suspense fallback={<Carregando />}>
-              <FichaEleito key={`${ficha.ano}-${ficha.sq}`} ano={ficha.ano} sq={ficha.sq} aoFechar={() => setFicha(null)} />
+              <FichaEleito
+                key={`${ficha.ano}-${ficha.sq}`}
+                ano={ficha.ano}
+                sq={ficha.sq}
+                aoFechar={() => setFicha(null)}
+              />
             </Suspense>
           </div>
         )}

@@ -14,4 +14,6 @@ export function useHash(): [string, string | undefined] {
   return [id || "inicio", extra];
 }
 
-export const irPara = (destino: string) => { location.hash = `#${destino}`; };
+export const irPara = (destino: string) => {
+  location.hash = `#${destino}`;
+};

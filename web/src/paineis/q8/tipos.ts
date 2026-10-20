@@ -7,8 +7,16 @@ export interface DadosQ8 {
   q8: LinhaQ8[];
 }
 
-export interface Filtros { ano: number; uf: string; cargo: number; corte: number }
-export interface Grupo { n: number; e: number }
+export interface Filtros {
+  ano: number;
+  uf: string;
+  cargo: number;
+  corte: number;
+}
+export interface Grupo {
+  n: number;
+  e: number;
+}
 export interface Comparacao {
   g: { pub: Grupo; out: Grupo };
   tp: number | null;

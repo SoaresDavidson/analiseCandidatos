@@ -18,7 +18,7 @@ export function carregarDados<T>(arquivo: string): Promise<T> {
       if (!r.ok) throw new Error(`${arquivo}: HTTP ${r.status}`);
       return r.json();
     });
-    p.catch(() => cache.delete(arquivo));  // um erro de rede não fica preso no cache
+    p.catch(() => cache.delete(arquivo)); // um erro de rede não fica preso no cache
     cache.set(arquivo, p);
   }
   return p as Promise<T>;
@@ -28,7 +28,11 @@ export type EstadoDados<T> = { dados: T; erro: null } | { dados: null; erro: Err
 
 /** Carrega public/dados/<arquivo>; dados = null enquanto carrega ou se der erro. Sem arquivo, não busca. */
 export function useDados<T>(arquivo: string | null): EstadoDados<T> {
-  const [estado, setEstado] = useState<{ arquivo: string | null } & EstadoDados<T>>({ arquivo, dados: null, erro: null });
+  const [estado, setEstado] = useState<{ arquivo: string | null } & EstadoDados<T>>({
+    arquivo,
+    dados: null,
+    erro: null,
+  });
   useEffect(() => {
     if (!arquivo) return;
     let vivo = true;
@@ -36,7 +40,9 @@ export function useDados<T>(arquivo: string | null): EstadoDados<T> {
       dados => vivo && setEstado({ arquivo, dados, erro: null }),
       erro => vivo && setEstado({ arquivo, dados: null, erro }),
     );
-    return () => { vivo = false; };
+    return () => {
+      vivo = false;
+    };
   }, [arquivo]);
   // ao trocar de arquivo, não mostra os dados do anterior
   return estado.arquivo === arquivo ? estado : { dados: null, erro: null };

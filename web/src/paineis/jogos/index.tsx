@@ -14,7 +14,7 @@ interface Jogo {
   Componente: LazyExoticComponent<ComponentType> | null;
 }
 
-export const JOGOS: Jogo[] = [
+const JOGOS: Jogo[] = [
   {
     id: "politicodle",
     nome: "Politicodle",

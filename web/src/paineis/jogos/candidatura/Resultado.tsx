@@ -269,8 +269,15 @@ function Regua({
   destaque: string[];
 }) {
   const limites = [0, ...CORTES, 10];
+  // os partidos destacados costumam ter notas quase iguais: cada rótulo desce uma linha, na ordem da régua
+  const linhaDe = new Map(
+    partidos
+      .filter(p => destaque.includes(p.partido))
+      .sort((a, b) => a.nota - b.nota)
+      .map((p, i) => [p.partido, i]),
+  );
   return (
-    <div className="relative pt-7 pb-9">
+    <div className="relative pt-7 pb-14">
       <div
         role="img"
         aria-label={`Régua de 0 a 10. Sua nota: ${f1(nota)}. Partidos mais próximos: ${destaque.join(", ")}.`}
@@ -291,7 +298,10 @@ function Regua({
             style={{ left: `${p.nota * 10}%` }}
           >
             {d && (
-              <span className="absolute top-full left-1/2 -translate-x-1/2 text-[11px] font-bold whitespace-nowrap">
+              <span
+                className="absolute left-1/2 -translate-x-1/2 text-[11px] leading-[13px] font-bold whitespace-nowrap"
+                style={{ top: `calc(100% + ${(linhaDe.get(p.partido) ?? 0) * 13}px)` }}
+              >
                 {p.partido}
               </span>
             )}

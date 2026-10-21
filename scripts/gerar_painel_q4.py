@@ -1,8 +1,6 @@
-"""Gera docs/q4-painel/index.html, o painel interativo da pergunta de escolaridade.
+"""Gera os dados da pergunta de escolaridade (Q4) para o app React: web/public/dados/q4.json.
 
-Lê o banco (dados/processed/tse.duckdb) e as malhas do IBGE, e embute tudo em
-docs/q4-painel/modelo.html no lugar de __DADOS__. O resultado é um HTML único que
-abre direto no navegador, sem servidor.
+Lê o banco (dados/processed/tse.duckdb) e as malhas do IBGE.
 
 Pré-requisitos (da raiz do repositório):
     uv run python -m scripts.coleta.coleta_tse candidatos municipio_tse_ibge --uf AM,GO,MA,MT,RS,SE
@@ -10,7 +8,7 @@ Pré-requisitos (da raiz do repositório):
     uv run python scripts/carregar_staging.py 00_modelo 06_carga_nucleo 10_q4
 
 Uso:
-    uv run python scripts/gerar_painel_q4.py
+    uv run python -m scripts.gerar_painel_q4
 """
 
 from __future__ import annotations
@@ -22,11 +20,11 @@ from pathlib import Path
 
 import duckdb
 
+from scripts.painel_web import gravar
+
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
 MALHAS = RAIZ / "dados" / "raw" / "territorio"
-MODELO = RAIZ / "docs" / "q4-painel" / "modelo.html"
-SAIDA = RAIZ / "docs" / "q4-painel" / "index.html"
 
 UFS = ["AM", "GO", "MA", "MT", "RS", "SE"]
 GRUPO = {"População 18+ (Censo 2022)": 0, "Candidatos": 1, "Eleitos": 2}
@@ -159,17 +157,8 @@ def main() -> None:
     }
     con.close()
 
-    texto = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
-    assert "</script" not in texto
-    corpo = MODELO.read_text(encoding="utf-8").replace("__DADOS__", texto)
-    # o modelo é o corpo da página publicada como artefato; aqui ganha o esqueleto completo
-    html = (
-        '<!doctype html>\n<html lang="pt-BR">\n<head>\n<meta charset="utf-8">\n'
-        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-        "</head>\n<body>\n" + corpo + "\n</body>\n</html>\n"
-    )
-    SAIDA.write_text(html, encoding="utf-8")
-    print(f"{SAIDA.relative_to(RAIZ)}: {len(html) // 1024} KB, {len(dados['eleitos'])} eleitos")
+    gravar("q4.json", dados)
+    print(f"{len(dados['eleitos'])} eleitos")
 
 
 if __name__ == "__main__":

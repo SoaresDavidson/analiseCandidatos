@@ -1,0 +1,93 @@
+/* Tokens do visual (inspirado no site de resultados do TSE): faixa amarela, cartões
+   brancos, destaque amarelo-ouro e verde-oliva. Cada token vira utilitário do Tailwind:
+   --color-ouro -> bg-ouro, text-ouro, border-ouro, fill-ouro, stroke-ouro... */
+/* static: emite todas as variáveis no :root mesmo sem classe que as use, porque os
+   painéis também as leem em style={} e em SVG (var(--color-verde-esc)) */
+@theme static {
+  --font-sans: "Open Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --color-fundo: #f4f4f4;
+  --color-branco: #ffffff;
+  --color-texto: #333333;
+  --color-texto-2: #6b6b6b;
+  --color-linha: #e6e4df;
+  --color-bege: #eae8e4;
+  --color-ouro: #ebb400;
+  --color-ouro-claro: #fff6d6;
+  --color-ouro-borda: #f5dc8a;
+  --color-ouro-hover: #d9a600;
+  --color-ouro-esc: #8f6c00;
+  --color-verde: #9eb735;
+  --color-verde-claro: #eef4d8;
+  --color-verde-esc: #5e7a12;
+  --color-breve: #9a9a9a;
+  --color-sem-dado: #d9d6cf;
+  --color-sem-nota: #b9b6ae;
+  --color-capital: #c0392b;
+
+  /* 4 níveis ordinais (escolaridade etc.): um tom de verde, do claro ao escuro */
+  --color-nivel-1: #a5bd4e;
+  --color-nivel-2: #7e9a2e;
+  --color-nivel-3: #576f14;
+  --color-nivel-4: #32440a;
+
+  /* espectro político em 7 categorias, da extrema esquerda à extrema direita */
+  --color-espectro-1: #8a0f16;
+  --color-espectro-2: #c53d33;
+  --color-espectro-3: #e57f68;
+  --color-espectro-4: #dcd9d1;
+  --color-espectro-5: #73a7d4;
+  --color-espectro-6: #2f72b4;
+  --color-espectro-7: #0c3f7c;
+
+  --container-pagina: 1160px;
+  --radius-caixa: 14px;
+  --shadow-cartao: 0 1px 2px rgb(0 0 0 / 0.06);
+  --shadow-barra: 0 4px 10px rgb(0 0 0 / 0.06);
+  --shadow-dica: 0 6px 18px rgb(0 0 0 / 0.2);
+
+  --animate-desce: desce 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  --animate-sobe: sobe 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  --animate-segredo: segredo 1.8s ease both;
+
+  @keyframes desce {
+    from {
+      opacity: 0;
+      transform: translateY(-14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes sobe {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  /* só escala e sobe: a centralização fica na classe (-translate-1/2), que usa a propriedade translate */
+  @keyframes segredo {
+    0% {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    15% {
+      opacity: 1;
+      transform: scale(1.08);
+    }
+    25%,
+    80% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-10%) scale(0.95);
+    }
+  }
+}

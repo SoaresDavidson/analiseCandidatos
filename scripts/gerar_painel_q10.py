@@ -1,16 +1,14 @@
-"""Gera docs/q10-painel/index.html, o painel interativo da Q10 (carreira do político).
+"""Gera os dados da Q10 (carreira do político) para o app React: web/public/dados/q10.json.
 
-Lê as views de sql/07_q10_carreira.sql no banco (dados/processed/tse.duckdb) e embute
-os dados em docs/q10-painel/modelo.html no lugar de __DADOS__.
+Lê as views de sql/07_q10_carreira.sql no banco (dados/processed/tse.duckdb).
 
 Quem entra na busca: quem se elegeu pelo menos uma vez entre 2002 e 2024 nas 6 UFs.
 Entram todas as participações dessas pessoas, inclusive derrotas. 2026 fica de fora
 (fl_divulgado, #15).
 
 Patrimônio e campanha de cada pessoa (sql/14_q10_patrimonio.sql) vão em 64 arquivos
-pequenos, docs/q10-painel/financas/NN.json (pessoa i no arquivo i % 64): a página só
-busca o da pessoa aberta. Por isso essa parte precisa do site local
-(uv run python -m scripts.servir_painel).
+pequenos, web/public/dados/q10-financas/NN.json (pessoa i no arquivo i % 64): a página
+só busca o da pessoa aberta.
 
 Pré-requisitos (da raiz do repositório):
     uv run python -m scripts.coleta.coleta_tse candidatos historico recorte_remoto --uf AM,GO,MA,MT,RS,SE
@@ -18,22 +16,20 @@ Pré-requisitos (da raiz do repositório):
     uv run python scripts/carregar_staging.py 00_limpeza 04_politico 07_q10 13_ficha 14_q10
 
 Uso:
-    uv run python scripts/gerar_painel_q10.py
+    uv run python -m scripts.gerar_painel_q10
 """
 
 from __future__ import annotations
 
-import json
 import os
 from pathlib import Path
 
 import duckdb
 
+from scripts.painel_web import gravar
+
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
-MODELO = RAIZ / "docs" / "q10-painel" / "modelo.html"
-SAIDA = RAIZ / "docs" / "q10-painel" / "index.html"
-FINANCAS = RAIZ / "docs" / "q10-painel" / "financas"
 PARTES = 64
 # grupos de bem de q10_bem_tipo, na ordem do gráfico (de baixo para cima)
 GRUPOS = ["IMOVEIS", "EMPRESAS", "APLICACOES", "DINHEIRO", "VEICULOS", "OUTROS", "SEM TIPO"]
@@ -169,12 +165,9 @@ def main() -> None:
     fatores = dict(con.execute("SELECT ano, fator_2024 FROM q10_ipca").fetchall())
     con.close()
 
-    FINANCAS.mkdir(exist_ok=True)
     for parte in range(PARTES):
         bloco = {i: financas[i] for i in range(parte, len(pessoas), PARTES) if i in financas}
-        (FINANCAS / f"{parte:02d}.json").write_text(
-            json.dumps(bloco, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
-        )
+        gravar(f"q10-financas/{parte:02d}.json", bloco)
 
     dados = {
         "pessoas": list(pessoas.values()),
@@ -192,16 +185,8 @@ def main() -> None:
             "fator": {a: round(f, 6) for a, f in fatores.items()},
         },
     }
-    texto = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
-    assert "</script" not in texto
-    corpo = MODELO.read_text(encoding="utf-8").replace("__DADOS__", texto)
-    html = (
-        '<!doctype html>\n<html lang="pt-BR">\n<head>\n<meta charset="utf-8">\n'
-        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-        "</head>\n<body>\n" + corpo + "\n</body>\n</html>\n"
-    )
-    SAIDA.write_text(html, encoding="utf-8")
-    print(f"{SAIDA.relative_to(RAIZ)}: {len(html) // 1024} KB, {len(pessoas)} políticos eleitos ao menos uma vez")
+    gravar("q10.json", dados)
+    print(f"{len(pessoas)} políticos eleitos ao menos uma vez")
 
 
 if __name__ == "__main__":

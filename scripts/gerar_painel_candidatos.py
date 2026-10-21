@@ -1,15 +1,11 @@
 """Gera a aba Candidatos do painel: a ficha de cada eleito de 2022 e 2024, com foto.
 
 Lê a view ficha_eleito (sql/13_ficha_candidato.sql) e a linha do tempo da Q10
-(sql/07_q10_carreira.sql) e grava, em docs/candidatos-painel/:
+(sql/07_q10_carreira.sql) e grava, para o app React:
 
-    index.html   a página (cópia do modelo.html)
-    dados.json   as fichas, sem as fotos (~4 MB)
-    fotos/       <ano>/<sq_candidato>.jpg, do TSE (fora do git: scripts/servir_painel.py
-                 baixa as que faltarem, sem precisar do banco)
-
-A página lê dados.json e as fotos por arquivo, então precisa de servidor:
-    uv run python -m scripts.servir_painel
+    web/public/dados/candidatos-eleitos.json   as fichas, sem as fotos (~3 MB)
+    web/public/fotos/<ano>/<sq_candidato>.jpg  as fotos, do TSE (fora do git;
+                 scripts/baixar_fotos_web.py baixa as que faltarem, sem precisar do banco)
 
 Pré-requisitos (da raiz do repositório):
     uv run python -m scripts.coleta.coleta_tse candidatos historico recorte_remoto --uf AM,GO,MA,MT,RS,SE
@@ -22,18 +18,17 @@ Uso:
 
 from __future__ import annotations
 
-import json
 import os
 from pathlib import Path
 
 import duckdb
 
 from scripts.coleta import fotos_tse
+from scripts.painel_web import gravar
 
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
-PASTA = RAIZ / "docs" / "candidatos-painel"
-FOTOS = PASTA / "fotos"
+FOTOS = RAIZ / "web" / "public" / "fotos"
 
 UFS = ["AM", "GO", "MA", "MT", "RS", "SE"]
 RESULTADO = {"ELEITO": 0, "NAO ELEITO": 1, "SEM RESULTADO": 2}
@@ -131,18 +126,9 @@ def main() -> None:
         "espectro": espectro,
         "regua": [regua[0], float(regua[1]), regua[2], float(regua[3])],
     }
-    (PASTA / "dados.json").write_text(json.dumps(dados, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    # o modelo é o corpo da página; aqui ganha o esqueleto completo (sem doctype o navegador entra em modo quirks)
-    corpo = (PASTA / "modelo.html").read_text(encoding="utf-8")
-    (PASTA / "index.html").write_text(
-        '<!doctype html>\n<html lang="pt-BR">\n<head>\n<meta charset="utf-8">\n'
-        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-        "</head>\n<body>\n" + corpo + "\n</body>\n</html>\n",
-        encoding="utf-8",
-    )
+    gravar("candidatos-eleitos.json", dados)
     com_foto = fotos_tse.garantir([(r[0], r[1], r[4]) for r in linhas], FOTOS)
-    mb = (PASTA / "dados.json").stat().st_size >> 20
-    print(f"docs/candidatos-painel/dados.json: {mb} MB, {len(eleitos)} eleitos, {com_foto} com foto em fotos/")
+    print(f"{len(eleitos)} eleitos, {com_foto} com foto em {FOTOS.relative_to(RAIZ)}")
 
 
 if __name__ == "__main__":

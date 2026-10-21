@@ -1,0 +1,337 @@
+<title>Patrimônio × Sucesso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap">
+<style>
+/* Visual inspirado no site de resultados do TSE: fundo cinza-claro, cartões brancos,
+   destaque amarelo-ouro e verde-oliva. Cada pergunta abre com a resposta em linguagem
+   simples, dois números e um gráfico; o detalhe técnico fica nos blocos "Ver mais". */
+:root {
+  color-scheme: light;
+  --fundo: #f4f4f4; --branco: #ffffff; --texto: #333333; --texto-2: #6b6b6b; --linha: #e6e4df; --bege: #eae8e4;
+  --ouro: #ebb400; --ouro-esc: #8f6c00; --verde: #9eb735; --verde-esc: #5e7a12;
+  /* 4 níveis de escolaridade: um tom de verde, do claro ao escuro (validado, ordinal) */
+  --n1: #a5bd4e; --n2: #7e9a2e; --n3: #576f14; --n4: #32440a;
+  --sem-dado: #d9d6cf; --capital: #c0392b;
+  --fonte: "Open Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fundo); color: var(--texto); font: 15px/1.55 var(--fonte); }
+button, select, input { font: inherit; color: inherit; }
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+
+/* barra de filtros (como "Brasil / Turno" do TSE) */
+.sub { background: var(--branco); border-radius: 0 0 18px 18px; box-shadow: 0 4px 10px rgb(0 0 0 / .06); position: sticky; top: 0; z-index: 5; }
+.sub-in { max-width: 1160px; margin: 0 auto; padding: 10px 20px 14px; display: flex; gap: 14px 24px; align-items: flex-end; flex-wrap: wrap; }
+.campo { display: grid; gap: 3px; font-weight: 700; font-size: 13px; }
+.local { appearance: none; border: 2px solid var(--ouro); border-radius: 8px; padding: 7px 34px 7px 14px; font-weight: 700; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23333' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center; cursor: pointer; }
+.tog { display: inline-flex; border: 2px solid var(--ouro); border-radius: 7px; overflow: hidden; background: #fff; flex-wrap: wrap; }
+.tog button { border: 0; background: transparent; padding: 6px 13px; font-weight: 700; cursor: pointer; }
+.tog button[aria-pressed="true"] { background: var(--ouro); }
+.tog button:hover:not([aria-pressed="true"]) { background: #fff6d6; }
+
+main { max-width: 1160px; margin: 0 auto; padding: 22px 20px 64px; display: grid; gap: 18px; }
+.etiqueta { justify-self: start; background: var(--verde-esc); color: #fff; font-weight: 700; font-size: 13px; padding: 6px 14px; border-radius: 6px; letter-spacing: .03em; }
+h1 { font-size: clamp(24px, 3.2vw, 30px); font-weight: 800; margin: 0; line-height: 1.2; }
+h2 { font-size: 19px; font-weight: 800; margin: 0; line-height: 1.3; }
+h3 { font-size: 16px; font-weight: 700; margin: 0; }
+p { margin: 0; }
+.enunciado { color: var(--texto-2); font-size: 13.5px; max-width: 90ch; }
+.caixa { background: var(--branco); border-radius: 14px; padding: 18px 20px; display: grid; gap: 12px; min-width: 0; }
+.duas { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .duas { grid-template-columns: minmax(0, 1fr); } }
+.simples { font-size: 17px; line-height: 1.55; }
+.simples b { font-weight: 800; }
+.linha { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--linha); font-size: 14.5px; }
+.linha b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.aneis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 600px) { .aneis { grid-template-columns: minmax(0, 1fr); } }
+.anel { background: var(--branco); border: 2px solid var(--ouro); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 14px; align-items: center; }
+.anel.verde { border-color: var(--verde); }
+.anel .pct { font-size: 34px; font-weight: 800; color: var(--ouro-esc); line-height: 1; font-variant-numeric: tabular-nums; }
+.anel.verde .pct { color: var(--verde-esc); }
+.anel .q { font-size: 13px; color: var(--texto-2); }
+.anel .nome { font-size: 16px; font-weight: 800; text-transform: uppercase; margin-top: 4px; line-height: 1.2; }
+.barras { display: grid; gap: 10px; }
+.barra { display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr) 3.4em; gap: 10px; align-items: center; font-size: 14px; }
+.barra .trilho { height: 18px; background: var(--bege); border-radius: 3px; position: relative; }
+.barra .trilho i { display: block; height: 100%; border-radius: 3px; }
+.barra .trilho .media { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 2px dashed var(--texto-2); }
+.barra b { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.nota { font-size: 13px; color: var(--texto-2); }
+.selo { justify-self: start; display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; padding: 6px 12px; border-radius: 999px; }
+.selo.sim { background: #eef4d8; color: var(--verde-esc); }
+.selo.nao { background: var(--bege); color: var(--texto); }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--texto-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.cor { width: 13px; height: 13px; border-radius: 3px; display: inline-block; flex: none; }
+
+/* mapa */
+.mapa-grade { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .mapa-grade { grid-template-columns: minmax(0, 1fr); } }
+.mapa { width: 100%; height: auto; max-height: 560px; display: block; }
+.mapa path { stroke: #fff; stroke-width: 0.6; cursor: pointer; vector-effect: non-scaling-stroke; }
+.mapa path.sel { stroke: var(--texto); stroke-width: 2.5; }
+.controles { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: flex-end; }
+.busca { border: 2px solid var(--linha); border-radius: 8px; padding: 7px 12px; min-width: 200px; max-width: 100%; }
+.rampa { display: grid; gap: 4px; max-width: 340px; font-size: 12.5px; color: var(--texto-2); }
+.rampa .faixa-cor { height: 10px; border-radius: 3px; }
+.rampa .marcas { display: flex; justify-content: space-between; }
+.detalhe { display: grid; gap: 10px; }
+.detalhe .vazio { color: var(--texto-2); }
+.empilhada { display: flex; gap: 2px; height: 24px; border-radius: 4px; overflow: hidden; }
+.empilhada span { display: grid; place-items: center; color: #fff; font-size: 11.5px; font-weight: 700; min-width: 0; overflow: hidden; }
+.eleitos { max-height: 300px; overflow-y: auto; border-top: 1px solid var(--linha); }
+.eleitos div { display: flex; justify-content: space-between; gap: 10px; padding: 6px 2px; border-bottom: 1px solid var(--linha); font-size: 13.5px; }
+.eleitos small { color: var(--texto-2); }
+
+/* "ver mais": blocos recolhidos */
+details.mais { background: var(--branco); border-radius: 14px; padding: 0; }
+details.mais > summary { list-style: none; cursor: pointer; padding: 14px 20px; font-weight: 700; display: flex; justify-content: space-between; gap: 12px; align-items: center; border: 2px solid var(--ouro); border-radius: 14px; }
+details.mais > summary::-webkit-details-marker { display: none; }
+details.mais > summary::after { content: "+"; font-size: 22px; line-height: 1; color: var(--ouro-esc); }
+details.mais[open] > summary { border-radius: 14px 14px 0 0; }
+details.mais[open] > summary::after { content: "–"; }
+details.mais > div { padding: 16px 20px 20px; display: grid; gap: 14px; border: 2px solid var(--ouro); border-top: 0; border-radius: 0 0 14px 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--linha); font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 12.5px; color: var(--texto-2); font-weight: 700; }
+.rolagem { overflow-x: auto; }
+svg text { font-family: var(--fonte); }
+.eixo { fill: var(--texto-2); font-size: 11.5px; }
+.rot { fill: var(--texto); font-size: 12.5px; }
+.grade { stroke: var(--linha); stroke-width: 1; }
+.grafico { width: 100%; height: auto; display: block; }
+.metodo ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 90ch; }
+#dica { position: fixed; z-index: 20; pointer-events: none; background: var(--texto); color: #fff; font-size: 13px; line-height: 1.45; padding: 8px 11px; border-radius: 8px; max-width: 280px; box-shadow: 0 6px 18px rgb(0 0 0 / .2); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* comum a Q3 e Q7: selo de partido na cor do espectro, números, botão para a página da cidade */
+.chip { display: inline-block; border-left: 4px solid var(--c); background: color-mix(in srgb, var(--c) 14%, #fff); padding: 1px 7px; border-radius: 4px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.numeros { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.num { border: 2px solid var(--ouro); border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; align-content: start; }
+.num b { font-size: 22px; font-weight: 800; color: var(--ouro-esc); line-height: 1.15; font-variant-numeric: tabular-nums; }
+.num span { font-size: 13px; color: var(--texto-2); }
+.mais-detalhes { justify-self: start; margin-top: 6px; border: 0; border-radius: 8px; padding: 8px 16px; background: var(--ouro); font-weight: 700; cursor: pointer; }
+.mais-detalhes:hover { background: #d9a600; }
+.detalhe h3 { margin-bottom: 2px; }
+.quinto { display: grid; grid-template-columns: minmax(0, 11em) minmax(0, 1fr) 3.2em; gap: 10px; align-items: center; padding: 4px 0; }
+.q-rot { display: grid; font-size: 13.5px; line-height: 1.25; }
+.q-rot small { color: var(--texto-2); font-size: 12px; }
+.quinto .empilhada { height: 26px; }
+.quinto .empilhada span { font-size: 11px; text-shadow: 0 0 2px rgb(0 0 0 / .45); }
+.q-voto { text-align: right; font-variant-numeric: tabular-nums; }
+.mapa-grade #disp { max-height: 520px; }
+/* Q2: a escada (taxa de eleição por faixa de patrimônio) */
+.escada { width: 100%; height: auto; display: block; }
+.escada .barra-f { transition: height .5s ease, y .5s ease; }
+.mini { display: inline-flex; align-items: flex-end; gap: 2px; height: 26px; vertical-align: middle; }
+.mini i { display: block; width: 9px; background: var(--ouro); border-radius: 2px 2px 0 0; }
+.mini i.sem { background: var(--sem-dado); }
+.par { display: grid; grid-template-columns: minmax(0, 9em) minmax(0, 1fr) 3.4em; gap: 4px 10px; align-items: center; font-size: 14px; }
+.par .trilho { height: 13px; background: var(--bege); border-radius: 3px; }
+.par .trilho i { display: block; height: 100%; border-radius: 3px; }
+.par b { text-align: right; font-variant-numeric: tabular-nums; }
+.par .nome { grid-row: span 2; font-weight: 700; }
+.aviso { background: #fff6d6; border-left: 4px solid var(--ouro); padding: 8px 12px; border-radius: 6px; font-size: 14px; }
+</style>
+<div class="sub"><div class="sub-in">
+  <label class="campo">Estado<select class="local" id="f-uf"></select></label>
+  <span class="campo">Cargo<span class="tog" id="f-cargo"></span></span>
+  <span class="campo">Eleição<span class="tog" id="f-ano"></span></span>
+</div></div>
+
+<main>
+  <span class="etiqueta">PERGUNTA 2 · PATRIMÔNIO × SUCESSO</span>
+  <h1>Quem tem mais patrimônio se elege mais?</h1>
+  <p class="enunciado">Enunciado: qual a taxa de sucesso eleitoral por patrimônio declarado? [2018–2024]</p>
+
+  <div class="duas">
+    <section class="caixa">
+      <h2>A resposta</h2>
+      <p class="simples" id="resposta"></p>
+      <div id="linhas"></div>
+      <p class="selo" id="selo"></p>
+    </section>
+    <div style="display:grid;gap:14px;min-width:0">
+      <div class="aneis" id="aneis"></div>
+      <section class="caixa">
+        <h2 id="escada-titulo"></h2>
+        <svg class="escada" id="escada" role="img" aria-label="Taxa de eleição por faixa de patrimônio"></svg>
+        <p class="nota" id="escada-nota"></p>
+      </section>
+    </div>
+  </div>
+
+  <details class="mais" open><summary>Em todos os cargos e eleições</summary><div>
+    <p class="simples" style="font-size:15.5px" id="todos-resposta"></p>
+    <div class="rolagem" id="todos"></div>
+    <p class="nota">Cada mini gráfico é a escada do cargo: a barra cinza é quem não declarou bens; as amarelas, do quinto mais pobre ao mais rico. Clique numa linha para ver em detalhe.</p>
+  </div></details>
+
+  <details class="mais"><summary>O que os eleitos têm a mais: aplicações e empresas</summary><div>
+    <p class="simples" style="font-size:15.5px" id="comp-resposta"></p>
+    <div class="barras" id="comp"></div>
+    <div class="legenda"><span><i class="cor" style="background:var(--ouro)"></i>eleitos</span><span><i class="cor" style="background:#9a968c"></i>não eleitos</span></div>
+    <p class="nota">Só quem declarou algum bem, nos 6 estados. Porcentagem de candidatos que declararam ao menos um bem do grupo. Os cerca de 50 tipos de bem do TSE foram juntados em 6 grupos (a mesma regra da Pergunta 10).</p>
+  </div></details>
+
+  <details class="mais metodo"><summary>Como calculamos e o que os dados não dizem</summary><div>
+    <ul>
+      <li><b>Patrimônio:</b> soma dos bens que o candidato declarou ao TSE no registro da candidatura. Para comparar anos, em reais de agosto de 2024 (IPCA de agosto, IBGE, SIDRA 1737).</li>
+      <li><b>Faixas:</b> "sem bens" (nada declarado) e os <b>quintos</b> do patrimônio, cortados dentro de cada cargo e eleição, nos 6 estados juntos: cada quinto tem 20% dos candidatos que declararam bens. Faixas fixas em reais não serviriam, porque o patrimônio típico de um senador é 10 vezes o de um vereador.</li>
+      <li><b>Taxa de eleição:</b> eleitos ÷ candidatos que foram a voto. Com um estado escolhido, a página soma os eleitos e os candidatos daquele estado (os limites dos quintos continuam os dos 6 estados).</li>
+      <li><b>O teste:</b> qui-quadrado de independência (6 faixas × eleito ou não), refeito na página para o filtro. Só vale com pelo menos 5 casos esperados em cada célula; governador e senador quase nunca passam.</li>
+      <li><b>Erro de digitação:</b> candidaturas com algum bem de R$ 100 milhões ou mais ficam fora das faixas (<span id="suspeitos"></span>). Devolvê-las ao quinto mais rico não muda nenhuma taxa em mais de 0,5 ponto.</li>
+      <li><b>O que não dá para dizer:</b> é o patrimônio <b>declarado</b>, não o real (imóvel costuma ir pelo valor de compra). E é associação, não causa: quem já tem mandato tende a ser mais velho, mais conhecido e a ter acumulado mais bens.</li>
+      <li><b>Consulta no banco:</b> views <i>q2_faixa</i>, <i>q2_limite</i>, <i>q2_quiquadrado</i> e <i>q2_composicao</i> em <i>sql/18_q2_patrimonio.sql</i>; tabela BEM_CANDIDATO. Análise: Enrico, <i>docs/q2-patrimonio.md</i>.</li>
+    </ul>
+  </div></details>
+</main>
+<div id="dica" hidden></div>
+
+<script id="dados" type="application/json">__DADOS__</script>
+<script>
+(function () {
+  "use strict";
+  const D = JSON.parse(document.getElementById("dados").textContent);
+  const UF_NOME = { AM: "Amazonas", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", RS: "Rio Grande do Sul", SE: "Sergipe" };
+  const CARGO_ROT = ["Vereador", "Prefeito", "Dep. estadual", "Dep. federal", "Governador", "Senador"];
+  const CARGO_PLURAL = ["vereador", "prefeito", "deputado estadual", "deputado federal", "governador", "senador"];
+  const ANOS = c => c <= 1 ? [2020, 2024] : [2018, 2022];
+  const GRUPO_ROT = { IMOVEIS: "Imóveis", VEICULOS: "Veículos", DINHEIRO: "Dinheiro", APLICACOES: "Aplicações", EMPRESAS: "Empresas", OUTROS: "Outros" };
+  const FAIXA_ROT = ["Sem bens", "1º quinto", "2º quinto", "3º quinto", "4º quinto", "5º quinto"];
+  const NS = "http://www.w3.org/2000/svg";
+  const fmt = (x, d = 1) => (x == null || isNaN(x)) ? "–" : x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const int = x => x == null ? "–" : Math.round(x).toLocaleString("pt-BR");
+  const brl = v => v == null ? "–" : v >= 1e6 ? `R$ ${fmt(v / 1e6, 1)} mi` : v >= 1e3 ? `R$ ${int(v / 1e3)} mil` : `R$ ${int(v)}`;
+  function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function txt(parent, x, y, s, cls, anchor) { const t = el("text", { x, y, class: cls || "rot", "text-anchor": anchor || "start", "dominant-baseline": "middle" }, parent); t.textContent = s; return t; }
+  const limpa = svg => { while (svg.firstChild) svg.removeChild(svg.firstChild); };
+  const dica = document.getElementById("dica");
+  function mostra(ev, html) { dica.innerHTML = html; dica.hidden = false; const w = dica.offsetWidth, h = dica.offsetHeight; let x = ev.clientX + 14, y = ev.clientY + 14; if (x + w > innerWidth - 8) x = ev.clientX - w - 14; if (y + h > innerHeight - 8) y = ev.clientY - h - 14; dica.style.left = x + "px"; dica.style.top = y + "px"; }
+  const esconde = () => { dica.hidden = true; };
+  const pc = (a, b) => b ? 100 * a / b : null;
+  const umEm = t => t > 0 ? `1 em cada ${int(100 / t)}` : "nenhum";
+
+  // p-valor do qui-quadrado: função gama incompleta regularizada superior Q(k/2, x/2)
+  function lnGama(z) { const g = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5]; let x = z, y = z, t = x + 5.5; t -= (x + 0.5) * Math.log(t); let s = 1.000000000190015; for (const c of g) s += c / ++y; return -t + Math.log(2.5066282746310005 * s / x); }
+  function gamaQ(a, x) {
+    if (x <= 0) return 1;
+    if (x < a + 1) { let soma = 1 / a, termo = soma; for (let n = 1; n < 500; n++) { termo *= x / (a + n); soma += termo; if (Math.abs(termo) < Math.abs(soma) * 1e-15) break; } return 1 - soma * Math.exp(-x + a * Math.log(x) - lnGama(a)); }
+    let b = x + 1 - a, c = 1 / 1e-300, d = 1 / b, h = d;
+    for (let i = 1; i < 500; i++) { const an = -i * (i - a); b += 2; d = an * d + b; if (Math.abs(d) < 1e-300) d = 1e-300; c = b + an / c; if (Math.abs(c) < 1e-300) c = 1e-300; d = 1 / d; const del = d * c; h *= del; if (Math.abs(del - 1) < 1e-15) break; }
+    return Math.exp(-x + a * Math.log(x) - lnGama(a)) * h;
+  }
+  // linhas: [ano, uf, cargo, faixa, candidatos, eleitos]
+  const F = D.faixas;
+  const st = { uf: "TODAS", cargo: 0, ano: 2024 };
+  try { Object.assign(st, JSON.parse(localStorage.getItem("q2-tse") || "{}")); } catch (e) { /* sem armazenamento */ }
+  if (!ANOS(st.cargo).includes(st.ano)) st.ano = ANOS(st.cargo)[1];
+  const salvar = () => { try { localStorage.setItem("q2-tse", JSON.stringify(st)); } catch (e) { /* ignora */ } };
+  const onde = () => st.uf === "TODAS" ? "nos 6 estados" : (["AM", "MA", "MT", "RS"].includes(st.uf) ? "no " : "em ") + UF_NOME[st.uf];
+  const Onde = () => onde()[0].toUpperCase() + onde().slice(1);
+
+  // soma candidatos e eleitos por faixa para cargo, ano e estado: [[candidatos, eleitos] × 6]
+  function faixas(cargo, ano, uf) {
+    const s = Array.from({ length: 6 }, () => [0, 0]), iu = uf === "TODAS" ? -1 : D.ufs.indexOf(uf);
+    for (const r of F) if (r[0] === ano && r[2] === cargo && (iu < 0 || r[1] === iu)) { s[r[3]][0] += r[4]; s[r[3]][1] += r[5]; }
+    return s;
+  }
+  function teste(s) {
+    const n = s.reduce((a, x) => a + x[0], 0), e = s.reduce((a, x) => a + x[1], 0);
+    let chi = 0, valido = n > 0;
+    for (const [c, el_] of s) { const esp = [c * e / n, c * (n - e) / n], obs = [el_, c - el_]; for (let k = 0; k < 2; k++) { if (esp[k] < 5) valido = false; if (esp[k] > 0) chi += (obs[k] - esp[k]) ** 2 / esp[k]; } }
+    return { chi, p: gamaQ(2.5, chi / 2), valido, n, e };
+  }
+  const pTexto = p => p < 1e-9 ? "menos de 1 em 1 bilhão" : p < 1e-6 ? "menos de 1 em 1 milhão" : p < 0.001 ? "menos de 1 em mil" : `${fmt(100 * p, 1)}%`;
+  const limite = (cargo, ano) => D.limites[`${cargo}|${ano}`];
+  // faixa curta para caber sob a barra: "R$ 169–386 mil", "R$ 734 mil–1,6 mi"
+  const unid = v => v >= 1e6 ? [fmt(v / 1e6, 1), "mi"] : [int(v / 1e3), "mil"];
+  const intervalo = (a, b) => { const [x, ua] = unid(a), [y, ub] = unid(b); return ua === ub ? `R$ ${x}–${y} ${ub}` : `R$ ${x} ${ua}–${y} ${ub}`; };
+  const faixaValor = (lim, i) => !lim || !lim[i - 1] ? "" : i === 1 ? `até ${brl(lim[0][1])}` : i === 5 ? `acima de ${brl(lim[4][0])}` : intervalo(lim[i - 1][0], lim[i - 1][1]);
+
+  function anel(classe, pct, legenda, nome, cor) {
+    const C = 2 * Math.PI * 38, v = Math.max(0, Math.min(100, pct || 0));
+    return `<div class="anel ${classe}"><svg viewBox="0 0 88 88" width="88" height="88" aria-hidden="true"><circle cx="44" cy="44" r="38" fill="none" stroke="var(--bege)" stroke-width="9"/><circle cx="44" cy="44" r="38" fill="none" stroke="${cor}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C * v / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 44 44)"/></svg><div><span class="pct">${pct == null ? "–" : fmt(pct, 0) + "%"}</span><div class="q">${legenda}</div><div class="nome">${nome}</div></div></div>`;
+  }
+
+  // ---------- 1. a resposta e a escada ----------
+  function renderResposta() {
+    const s = faixas(st.cargo, st.ano, st.uf), tx = s.map(([c, e]) => pc(e, c)), t = teste(s), cargo = CARGO_PLURAL[st.cargo];
+    const sobe = tx[5] != null && tx[1] != null && tx[5] > tx[1];
+    const vezes = tx[1] ? tx[5] / tx[1] : null;
+    const pouco = t.n < 300;
+    document.getElementById("resposta").innerHTML = !t.n ? "Sem candidatos neste filtro." : `${sobe ? "Sim." : "Não neste recorte."} ${Onde()}, entre os candidatos a ${cargo} em ${st.ano}, <b>${fmt(tx[5])}%</b> dos que estão no quinto mais rico se elegeram, contra <b>${fmt(tx[1])}%</b> no quinto mais pobre${vezes && vezes >= 1.5 ? ` (${fmt(vezes, 1)} vezes mais)` : ""}. Quem não declarou nenhum bem se elegeu ${tx[0] != null && tx[0] < tx[1] ? "menos ainda" : "assim"}: <b>${fmt(tx[0])}%</b>. Isso não prova que o dinheiro elege: patrimônio anda junto com idade, carreira e mandato anterior.`;
+    document.getElementById("linhas").innerHTML = [["Candidatos que foram a voto", int(t.n)], ["Eleitos", `${int(t.e)} (${fmt(pc(t.e, t.n))}%)`], ["Não declararam bens", `${fmt(pc(s[0][0], t.n), 0)}% dos candidatos`]].map(([k, v]) => `<div class="linha"><span>${k}</span><b>${v}</b></div>`).join("");
+    const selo = document.getElementById("selo");
+    if (t.valido) { selo.className = "selo sim"; selo.textContent = `✓ A chance depende do patrimônio: a chance de ser acaso é ${pTexto(t.p)} (qui-quadrado ${fmt(t.chi, 1)})`; }
+    else { selo.className = "selo nao"; selo.textContent = `Poucos candidatos para o teste (${int(t.n)}): leia as taxas com cuidado`; }
+    document.getElementById("aneis").innerHTML = anel("", tx[5], "do quinto mais rico", "se elegeram", "var(--ouro)") + anel("verde", tx[1], "do quinto mais pobre", "se elegeram", "var(--verde-esc)");
+    renderEscada(s, tx, pouco);
+  }
+  function renderEscada(s, tx, pouco) {
+    const svg = document.getElementById("escada"); limpa(svg);
+    const lim = limite(st.cargo, st.ano), W = 680, H = 330, L = 10, Rr = 10, T = 46, B = 70, w = (W - L - Rr) / 6;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const mx = Math.max(5, ...tx.filter(v => v != null)) * 1.08, Y = v => T + (H - T - B) * (1 - v / mx);
+    el("line", { x1: L, x2: W - Rr, y1: H - B, y2: H - B, stroke: "var(--texto-2)" }, svg);
+    s.forEach(([c, e], i) => {
+      const x = L + i * w + 10, bw = w - 20, v = tx[i];
+      if (v == null) return;
+      const r = el("rect", { x, y: Y(v), width: bw, height: Math.max(1, H - B - Y(v)), rx: 4, fill: i === 0 ? "var(--sem-dado)" : "var(--ouro)", class: "barra-f" }, svg);
+      r.addEventListener("mousemove", ev => mostra(ev, `<b>${FAIXA_ROT[i]}</b>${i ? ` · ${faixaValor(lim, i)}` : ""}<br>${int(e)} eleitos de ${int(c)} candidatos<br><b>${fmt(v)}%</b> se elegeram (${umEm(v)})`));
+      r.addEventListener("mouseleave", esconde);
+      txt(svg, x + bw / 2, Y(v) - 26, `${fmt(v)}%`, "rot", "middle").setAttribute("font-weight", "800");
+      txt(svg, x + bw / 2, Y(v) - 10, umEm(v), "eixo", "middle");
+      txt(svg, x + bw / 2, H - B + 16, FAIXA_ROT[i], "rot", "middle").setAttribute("font-weight", "700");
+      txt(svg, x + bw / 2, H - B + 33, i ? faixaValor(lim, i) : "nada declarado", "eixo", "middle");
+      txt(svg, x + bw / 2, H - B + 50, `${int(c)} cand.`, "eixo", "middle");
+    });
+    txt(svg, L, 14, "Taxa de eleição: de cada 100 candidatos da faixa, quantos se elegeram", "eixo");
+    document.getElementById("escada-titulo").textContent = `${CARGO_ROT[st.cargo]}, ${st.ano}: a taxa de eleição sobe com o patrimônio?`;
+    document.getElementById("escada-nota").textContent = `Patrimônio declarado em reais de 2024. Os quintos são cortados nos 6 estados juntos${st.uf === "TODAS" ? "" : `; em ${UF_NOME[st.uf]} cada quinto pode ter mais ou menos gente`}.${pouco ? " Poucos candidatos: as taxas oscilam muito." : ""}`;
+  }
+
+  // ---------- 2. todos os cargos e anos ----------
+  function renderTodos() {
+    const linhas = [];
+    for (let c = 0; c < 6; c++) for (const a of ANOS(c)) {
+      const s = faixas(c, a, st.uf), tx = s.map(([n, e]) => pc(e, n)), t = teste(s), mx = Math.max(...tx.filter(v => v != null), 1);
+      linhas.push(`<tr data-c="${c}" data-a="${a}" style="cursor:pointer${c === st.cargo && a === st.ano ? ";background:#fff6d6" : ""}"><td><b>${CARGO_ROT[c]}</b> ${a}</td><td><span class="mini" aria-hidden="true">${tx.map((v, i) => `<i class="${i ? "" : "sem"}" style="height:${v == null ? 0 : Math.max(1, 26 * v / mx).toFixed(1)}px"></i>`).join("")}</span></td>${tx.map(v => `<td>${fmt(v)}</td>`).join("")}<td>${int(t.n)}</td><td>${t.valido ? (t.p < 0.001 ? "✓ depende" : t.p < 0.05 ? "✓ depende" : "não dá para dizer") : "poucos casos"}</td></tr>`);
+    }
+    document.getElementById("todos").innerHTML = `<table><thead><tr><th>Cargo</th><th></th>${["Sem bens", "1º", "2º", "3º", "4º", "5º"].map(f => `<th>${f}</th>`).join("")}<th>Candidatos</th><th>Teste</th></tr></thead><tbody>${linhas.join("")}</tbody></table>`;
+    document.querySelectorAll("#todos tr[data-c]").forEach(tr => tr.addEventListener("click", () => { st.cargo = +tr.dataset.c; st.ano = +tr.dataset.a; salvar(); tudo(); scrollTo({ top: 0, behavior: "smooth" }); }));
+    const comTeste = [];
+    for (let c = 0; c < 6; c++) for (const a of ANOS(c)) { const s = faixas(c, a, st.uf), tx = s.map(([n, e]) => pc(e, n)); if (teste(s).valido) comTeste.push(tx[5] > tx[1]); }
+    document.getElementById("todos-resposta").innerHTML = `${Onde()}, em <b>${comTeste.filter(Boolean).length} de ${comTeste.length}</b> combinações de cargo e eleição com candidatos suficientes para o teste, o quinto mais rico se elege mais que o mais pobre. Taxa de eleição (%) por faixa:`;
+  }
+
+  // ---------- 3. composição ----------
+  function renderComp() {
+    const C = D.composicao[`${st.cargo}|${st.ano}`], box = document.getElementById("comp");
+    if (!C) { box.innerHTML = `<p class="nota">Sem dados para ${CARGO_ROT[st.cargo]} ${st.ano}.</p>`; document.getElementById("comp-resposta").textContent = ""; return; }
+    const gs = D.grupos.filter(g => C[g]), mx = Math.max(...gs.map(g => Math.max(C[g][0] || 0, C[g][1] || 0)), 1);
+    box.innerHTML = gs.map(g => `<div class="par"><span class="nome">${GRUPO_ROT[g]}</span><span class="trilho"><i style="width:${(100 * (C[g][0] || 0) / mx).toFixed(1)}%;background:var(--ouro)"></i></span><b>${fmt(C[g][0])}%</b><span class="trilho"><i style="width:${(100 * (C[g][1] || 0) / mx).toFixed(1)}%;background:#9a968c"></i></span><b>${fmt(C[g][1])}%</b></div>`).join("");
+    const ap = C.APLICACOES, em = C.EMPRESAS;
+    document.getElementById("comp-resposta").innerHTML = ap && em ? `Entre os candidatos a ${CARGO_PLURAL[st.cargo]} em ${st.ano} que declararam bens (6 estados), <b>${fmt(ap[0])}%</b> dos eleitos têm aplicações financeiras, contra ${fmt(ap[1])}% dos não eleitos; <b>${fmt(em[0])}%</b> têm participação em empresas, contra ${fmt(em[1])}%. Imóveis quase todos têm.` : "";
+  }
+
+  function tog(id, itens, get, set) {
+    const box = document.getElementById(id); box.innerHTML = "";
+    for (const [v, rot] of itens) { const b = document.createElement("button"); b.type = "button"; b.textContent = rot; b.setAttribute("aria-pressed", String(get() === v)); b.addEventListener("click", () => { set(v); salvar(); tudo(); }); box.appendChild(b); }
+  }
+  const selUf = document.getElementById("f-uf");
+  selUf.innerHTML = `<option value="TODAS">Todos os 6 estados</option>` + D.ufs.map(u => `<option value="${u}">${UF_NOME[u]}</option>`).join("");
+  selUf.addEventListener("change", () => { st.uf = selUf.value; salvar(); tudo(); });
+  document.getElementById("suspeitos").textContent = `${int(D.suspeitos[0])} de ${int(D.suspeitos[1])} candidaturas`;
+
+  function tudo() {
+    selUf.value = st.uf;
+    tog("f-cargo", CARGO_ROT.map((r, i) => [i, r]), () => st.cargo, v => { const k = ANOS(st.cargo).indexOf(st.ano); st.cargo = v; st.ano = ANOS(v)[k < 0 ? 1 : k]; });
+    tog("f-ano", ANOS(st.cargo).map(a => [a, String(a)]), () => st.ano, v => { st.ano = v; });
+    renderResposta(); renderTodos(); renderComp();
+  }
+  tudo();
+})();
+</script>

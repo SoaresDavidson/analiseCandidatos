@@ -49,9 +49,12 @@ export const TEMAS: Tema[] = [
   },
 ];
 
-/** Páginas fora das abas de tema: a Arena abre pela aba ⚔ na faixa do topo, por link ou pelo
- *  segredo (código Konami ou 5 cliques no logo). */
-export const ESCONDIDAS: PaginaPainel[] = [{ id: "arena", nome: "Arena", Componente: lazy(() => import("./arena")) }];
+/** Páginas fora das abas de tema: a Arena e os Jogos abrem pelas abas ⚔ e 🎮 na faixa do topo
+ *  (a Arena também pelo segredo: código Konami ou 5 cliques no logo). */
+export const ESCONDIDAS: PaginaPainel[] = [
+  { id: "arena", nome: "Arena", Componente: lazy(() => import("./arena")) },
+  { id: "jogos", nome: "Jogos", Componente: lazy(() => import("./jogos")) },
+];
 
 export const PAGINAS = TEMAS.flatMap(t => t.paginas.map(p => ({ ...p, tema: t })));
 export type PaginaComTema = (typeof PAGINAS)[number];

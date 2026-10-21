@@ -90,3 +90,8 @@ e gravam cada arquivo de `public/dados/` por `scripts/painel_web.py`:
 | `q10.json`, `q10-financas/NN.json` | `uv run python -m scripts.gerar_painel_q10` |
 | `candidatos-eleitos.json` (+ fotos) | `uv run python -m scripts.gerar_painel_candidatos` |
 | `municipios-cidades.json` | `uv run python -m scripts.gerar_painel_municipios` |
+
+`q8.json` e `q9.json` guardam os números publicados por Enrico. O banco atual tem as
+atualizações posteriores do TSE (1 ou 2 candidatos de diferença por linha), e rodar
+`gerar_painel_q8_q9` troca esses números pelos do banco. Só rode se a ideia for mesmo
+atualizar a Q8 e a Q9.

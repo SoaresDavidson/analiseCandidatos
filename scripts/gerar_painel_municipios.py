@@ -42,13 +42,15 @@ LEFT JOIN dinheiro_municipio AS d USING (cod_ibge)
 ORDER BY e.sg_uf, e.nm_municipio
 """
 
-# cadeiras de vereador eleitas em 2024, por partido
+# cadeiras de vereador eleitas em 2024, por partido; ordem fixa (mais cadeiras primeiro,
+# empate pela sigla) para o JSON não mudar a cada geração
 SQL_CADEIRAS = """
-SELECT c.cod_ibge, p.sg_partido, count(*)
+SELECT c.cod_ibge, p.sg_partido, count(*) AS qt
 FROM modelo.candidatura AS c
 INNER JOIN modelo.partido AS p ON c.ano = p.ano AND c.nr_partido = p.nr_partido
 WHERE c.ano = 2024 AND c.cd_cargo = 13 AND c.fl_eleito
 GROUP BY ALL
+ORDER BY c.cod_ibge, qt DESC, p.sg_partido
 """
 
 

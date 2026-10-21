@@ -9,6 +9,10 @@ dados dela.
 Pré-requisitos (da raiz do repositório):
     uv run scripts/carregar_staging.py            # 00 a 05, 11_q8 e 12_q9
 
+Atenção: os q8.json e q9.json do repositório guardam os números publicados por
+Enrico. O banco atual já tem as atualizações posteriores do TSE, e rodar este script
+troca os números publicados pelos do banco (1 ou 2 candidatos por linha).
+
 Uso:
     uv run python -m scripts.gerar_painel_q8_q9
 """

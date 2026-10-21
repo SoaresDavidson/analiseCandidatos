@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useDica } from "../../componentes";
 import { fmt, int, pc } from "../../lib/formato";
 import { reais } from "./dominio";
-import { NUVEM_H, NUVEM_W, posicionar } from "./nuvem";
+import { NUVEM_H, NUVEM_W, posicionar } from "./layoutNuvem";
 import type { Palavra } from "./tipos";
 
 /** Nuvem de palavras em SVG; clicar (ou Enter/Espaço) numa palavra a seleciona. */

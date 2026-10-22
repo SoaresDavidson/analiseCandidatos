@@ -36,6 +36,8 @@ SELECT
     documento(nr_cpf_cnpj_doador) AS cpf_cnpj_doador,
     tipo_pessoa(nr_cpf_cnpj_doador) AS tp_pessoa,
     cnae5(cd_cnae_doador) AS cd_cnae_doador,
+    -- o candidato que repassou, quando a origem é outro candidato (Q1)
+    try_cast(sq_candidato_doador AS bigint) AS sq_candidato_doador,
     categoria(ds_fonte_receita) AS ds_fonte,
     categoria(ds_origem_receita) AS ds_origem,
     categoria(ds_natureza_receita) AS ds_natureza

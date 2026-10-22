@@ -36,6 +36,8 @@ dialect = "duckdb"
 max_line_length = 120
 # SELECT * e * EXCLUDE são intencionais na carga: as colunas vêm do leiaute do TSE
 exclude_rules = "AM04"
+# o 23_q5 passa de 20 KB (o padrão do sqlfluff), e acima disso ele pula o arquivo sem checar
+large_file_skip_byte_limit = 40000
 
 [tool.sqlfluff.rules.capitalisation.keywords]
 capitalisation_policy = "upper"

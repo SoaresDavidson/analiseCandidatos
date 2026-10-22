@@ -15,7 +15,10 @@ As páginas ficam em três temas, definidos em `src/paineis/registro.ts`:
 | Dinheiro | Q8 fundo público · Q9 propaganda · Q2 patrimônio |
 | Políticos | Q10 carreira · quem são os eleitos · plenários |
 
-A Arena fica fora dos temas e abre pela aba ⚔ na faixa do topo.
+A Arena e os Jogos ficam fora dos temas e abrem pelas abas ⚔ e 🎮 na faixa do topo. Os jogos
+(`src/paineis/jogos/`) usam os mesmos eleitos: Politicodle (adivinhe o eleito do dia, como o
+pokedle.net), Akinator, Quem ganha? (maior ou menor) e Monte sua candidatura. Cada um mora na
+própria pasta e abre por `#jogos/<id>`; o hub fica em `jogos/index.tsx`.
 
 ```bash
 npm install

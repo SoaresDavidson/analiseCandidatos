@@ -150,13 +150,20 @@ export default function App() {
                 <span>Banco de Dados Relacionais · UFPI</span>
                 <span aria-hidden="true">|</span>
                 <span>Davi, Duda, Eduardo e Enrico</span>
-                {/* a aba do jogo, na faixa ao lado dos nomes do grupo */}
+                {/* as abas da Arena e dos Jogos, na faixa ao lado dos nomes do grupo */}
                 <a
                   href="#arena"
                   aria-current={escondida?.id === "arena" ? "page" : undefined}
                   className="rounded-full bg-white px-[11px] py-0.5 font-extrabold text-texto no-underline hover:bg-verde-esc hover:text-white aria-[current=page]:bg-verde-esc aria-[current=page]:text-white"
                 >
                   ⚔ Arena
+                </a>
+                <a
+                  href="#jogos"
+                  aria-current={escondida?.id === "jogos" ? "page" : undefined}
+                  className="rounded-full bg-white px-[11px] py-0.5 font-extrabold text-texto no-underline hover:bg-verde-esc hover:text-white aria-[current=page]:bg-verde-esc aria-[current=page]:text-white"
+                >
+                  🎮 Jogos
                 </a>
                 <span aria-hidden="true">|</span>
                 <button type="button" className={BOTAO_FAIXA} aria-label="Pergunta anterior" onClick={() => passo(-1)}>

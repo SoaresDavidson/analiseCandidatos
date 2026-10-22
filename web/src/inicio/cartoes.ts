@@ -1,6 +1,7 @@
 // Cartões da página inicial. A frase de cada cartão resume os números da página:
 // atualize junto quando o gerador mudar os dados.
-// números conferidos no banco (6 estados): Q4, Q8, Q9 e Q10 em 15/10/2026; Q3 e Q7 em 17/10/2026; Q2 e Q6 em 20/10/2026
+// números conferidos no banco (6 estados): Q4, Q8 e Q10 em 15/10/2026; Q3 e Q7 em 17/10/2026; Q2 e Q6 em 20/10/2026;
+// Q9 em 22/10/2026 (64,2%: a soma exata, não a das partes arredondadas, 36% + 29%)
 
 export interface Cartao {
   n: number;
@@ -60,7 +61,7 @@ export const CARTOES: Cartao[] = [
     aba: "q9",
     assunto: "Propaganda",
     perg: "Onde o candidato gasta com propaganda?",
-    resp: "Nas eleições de 2024, **65%** foi para papel impresso e campanha de rua. Internet: 7%.",
+    resp: "Nas eleições de 2024, **64%** foi para papel impresso e campanha de rua. Internet: 7%.",
   },
   { n: 1, tema: "dinheiro", assunto: "Custo da campanha", perg: "Quanto custa uma cadeira?" },
   {

@@ -1,7 +1,7 @@
 import { type ReactNode, useMemo, useState } from "react";
 import { Caixa, Etiqueta, Legenda, Plenario } from "../../componentes";
 import { urlBandeira, urlFoto } from "../../lib/dados";
-import { CATEGORIAS, CORES_ESPECTRO, corEspectro, nomeCategoria } from "../../lib/espectro";
+import { CATEGORIAS, CORES_ESPECTRO, corEspectro, LADOS, lado, nomeCategoria } from "../../lib/espectro";
 import { brl, fmt, int, nomeProprio } from "../../lib/formato";
 import { useNavegacao } from "../../lib/navegacao";
 import { UF_NOME } from "../../lib/uf";
@@ -196,11 +196,27 @@ export function Cidade({ M: m, D, cand, aoVoltar }: Props) {
           <>
             <div className="w-full max-w-[1000px] justify-self-center">
               {vereadores.length > 0 ? (
-                <Plenario
-                  assentos={vereadores}
-                  aoClicar={a => abrirCandidato(ANO, a.sq)}
-                  titulo="Plenário da câmara de vereadores visto de cima, com a foto de cada eleito na sua cadeira"
-                />
+                <>
+                  <Plenario
+                    assentos={vereadores}
+                    lados
+                    aoClicar={a => abrirCandidato(ANO, a.sq)}
+                    titulo="Plenário da câmara de vereadores visto de cima, com a foto de cada eleito na sua cadeira, agrupados em esquerda, centro e direita"
+                  />
+                  <Legenda
+                    itens={LADOS.map((l, i) => ({
+                      cor: l.cor,
+                      rotulo: `${l.nome}: ${vereadores.filter(v => lado(v.nota) === i).length}`,
+                    }))}
+                  />
+                  <p className="texto-nota mt-1">
+                    Esquerda = extrema esquerda, esquerda e centro-esquerda; direita = centro-direita, direita e extrema
+                    direita, pela nota do partido (Bolognesi et al., 2025). O anel de cada cadeira mostra a categoria
+                    exata.
+                    {vereadores.every(v => lado(v.nota) !== 1) &&
+                      " Nenhum partido com vereador eleito em 2024 tem nota de centro (de 4,5 a 5,5) no artigo: o mais perto pela esquerda é o PV (4,12) e pela direita o Solidariedade (6,01)."}
+                  </p>
+                </>
               ) : (
                 <Semicirculo cad={cad} n={n} />
               )}

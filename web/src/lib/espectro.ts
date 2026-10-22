@@ -25,3 +25,16 @@ export const nomeCategoria = (nota: number | null | undefined): string =>
   nota == null ? "sem nota" : CATEGORIAS[categoria(nota)];
 export const corEspectro = (nota: number | null | undefined): string =>
   nota == null ? COR_SEM_NOTA : CORES_ESPECTRO[categoria(nota)];
+
+// Três lados para o plenário: esquerda (extrema esquerda, esquerda, centro-esquerda), centro e
+// direita (centro-direita, direita, extrema direita). Partido sem nota fica no centro.
+export const LADOS = [
+  { nome: "Esquerda", cor: "#b8473d" },
+  { nome: "Centro", cor: "#8e8a80" },
+  { nome: "Direita", cor: "#2f62a8" },
+] as const;
+/** 0 = esquerda, 1 = centro, 2 = direita. */
+export function lado(nota: number | null | undefined): 0 | 1 | 2 {
+  const c = categoria(nota);
+  return c < 0 || c === 3 ? 1 : c < 3 ? 0 : 2;
+}

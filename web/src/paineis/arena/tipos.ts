@@ -10,7 +10,7 @@ export type Eleito = [
   ...resto: unknown[],
 ];
 // Posições lidas por índice (a tupla acima não as nomeia): 10 = grau (índice em `graus`),
-// 13 = votos, 17 = receita, 26 = carreira (blocos de 5; o 5º é 0 quando o resultado foi vitória).
+// 13 = votos, 17 = receita, 18 = dinheiro público, 26 = carreira (blocos de 5; o 5º é 0 quando o resultado foi vitória).
 
 export interface DadosEleitos {
   ufs: string[];
@@ -21,7 +21,7 @@ export interface DadosEleitos {
   sq: number[];
 }
 
-export type ElementoId = "raio" | "fogo" | "agua" | "terra" | "luz";
+export type ElementoId = "raio" | "fogo" | "agua" | "terra" | "luz" | "ouro";
 export type Lado = "a" | "b";
 
 /** Um eleito transformado em carta. Os poderes são a posição (1 a 10) dentro do mesmo cargo e eleição. */
@@ -36,6 +36,8 @@ export interface CartaEleito {
   local: string;
   votos: number;
   receita: number;
+  /** fundo eleitoral + fundo partidário recebidos (R$); null sem prestação de contas */
+  publico: number | null;
   porVoto: number | null;
   vit: number;
   grau: number;
@@ -50,7 +52,7 @@ export interface CartaEleito {
 }
 
 export interface Rodada {
-  id: "voto" | "fogo" | "agua" | "terra" | "luz";
+  id: "voto" | "fogo" | "agua" | "terra" | "luz" | "verba";
   el: ElementoId;
   nome: string;
   pergunta: string;

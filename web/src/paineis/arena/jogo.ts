@@ -45,6 +45,7 @@ export const EL: Record<ElementoId, { ico: string; nome: string; cor: string }> 
   agua: { ico: "💧", nome: "Água", cor: "#2c6fb5" },
   terra: { ico: "🌿", nome: "Natureza", cor: "#4b7a22" },
   luz: { ico: "✨", nome: "Luz", cor: "#b58a2c" },
+  ouro: { ico: "💰", nome: "Ouro", cor: "#c9a400" },
 };
 export const RODADAS: readonly Rodada[] = [
   {
@@ -62,6 +63,12 @@ export const RODADAS: readonly Rodada[] = [
   { id: "agua", el: "agua", nome: "Onda da economia", pergunta: "Quem gastou menos por voto?" },
   { id: "terra", el: "terra", nome: "Raízes", pergunta: "Quem tem mais vitórias na carreira?" },
   { id: "luz", el: "luz", nome: "Luz do saber", pergunta: "Quem estudou mais?" },
+  {
+    id: "verba",
+    el: "ouro",
+    nome: "Verba pública",
+    pergunta: "Quem usou mais dinheiro público na campanha? (quem usou mais leva o golpe)",
+  },
 ];
 
 export const VIDA_INICIAL = 20;
@@ -105,7 +112,8 @@ export function montarCartas(C: DadosEleitos): CartaEleito[] {
     let vit = 0;
     for (let k = 0; k < carreira.length; k += 5) if (carreira[k + 4] === 0) vit++;
     const votos = r[13] as number,
-      receita = r[17] as number;
+      receita = r[17] as number,
+      publico = (r[18] as number | null) ?? null;
     T.push({
       i,
       sq: C.sq[i],
@@ -117,6 +125,7 @@ export function montarCartas(C: DadosEleitos): CartaEleito[] {
       local: (C.ues[r[3]] || "").split("|")[0],
       votos,
       receita,
+      publico: receita > 0 ? publico || 0 : null,
       porVoto: receita > 0 && votos ? receita / votos : null,
       vit,
       grau: GRAU.indexOf(C.graus[r[10] as number]),
@@ -124,7 +133,7 @@ export function montarCartas(C: DadosEleitos): CartaEleito[] {
       p_votos: 0,
       p_receita: 0,
       p_porVoto: 0,
-      poder: { raio: 0, fogo: 0, agua: 0, terra: 0, luz: 0 },
+      poder: { raio: 0, fogo: 0, agua: 0, terra: 0, luz: 0, ouro: 0 },
       el: "raio",
       atq: 1,
       mana: 1,
@@ -149,6 +158,7 @@ export function montarCartas(C: DadosEleitos): CartaEleito[] {
       agua: t.p_porVoto || 0,
       terra: Math.min(10, 2 * t.vit),
       luz: Math.max(1, Math.round(((t.grau + 1) * 10) / 7)),
+      ouro: 0, // a verba pública é só uma rodada, não um poder da carta
     };
     t.poder = p;
     // o elemento da carta é o poder mais forte entre raio, fogo, água e natureza (a escolaridade daria Luz a quase todos)
@@ -179,7 +189,9 @@ export function vencedor(r: Rodada, a: CartaEleito, b: CartaEleito): Lado | "emp
           ? cmp(a.porVoto, b.porVoto, false)
           : r.id === "terra"
             ? cmp(a.vit, b.vit, true)
-            : cmp(a.grau, b.grau, true);
+            : r.id === "verba"
+              ? cmp(a.publico, b.publico, false) // quem usou menos ataca
+              : cmp(a.grau, b.grau, true);
   return c == null ? null : c === 0 ? "empate" : c > 0 ? "a" : "b";
 }
 
@@ -194,14 +206,18 @@ export const valorRodada = (t: CartaEleito, r: Rodada): string =>
           : `R$ ${fmt(t.porVoto, 2)} por voto`
         : r.id === "terra"
           ? vitoriasTexto(t.vit)
-          : t.grau >= 0
-            ? GRAU_CURTO[t.grau]
-            : "sem dado";
+          : r.id === "verba"
+            ? t.publico == null
+              ? "sem prestação de contas"
+              : `${brl(t.publico)} de dinheiro público`
+            : t.grau >= 0
+              ? GRAU_CURTO[t.grau]
+              : "sem dado";
 
 /** Dano do golpe da rodada (a "luz" cura 3 e não passa por aqui). */
 export function danoRodada(r: Rodada, a: CartaEleito, b: CartaEleito): number {
   if (r.id === "voto") return 3 + Math.round(Math.abs(a.p_votos - b.p_votos) / 3);
   if (r.id === "fogo") return 3;
-  if (r.id === "agua") return 4;
+  if (r.id === "agua" || r.id === "verba") return 4;
   return Math.min(6, 2 + Math.abs(a.vit - b.vit));
 }

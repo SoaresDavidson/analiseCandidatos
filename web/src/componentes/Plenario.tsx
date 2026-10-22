@@ -1,10 +1,14 @@
 import { type ReactNode, useId, useMemo, useState } from "react";
+import { LADOS, lado } from "../lib/espectro";
 import { useDica } from "./Dica";
+import { setoresDosLados } from "./lados";
 
 // Plenário visto de cima, no formato da Câmara dos Deputados: a mesa diretora no alto,
 // com o painel atrás e os telões dos lados; as bancadas em arcos voltados para a mesa,
 // cortadas pelos corredores. Cada cadeira é um eleito, com a foto e um anel na cor do
-// espectro do partido, da esquerda para a direita pela nota do partido.
+// espectro do partido, da esquerda para a direita pela nota do partido. Com `lados`, as cadeiras
+// se juntam em três blocos (esquerda, centro, direita), cada um sobre um fundo da sua cor; o bloco
+// maior simplesmente ocupa mais do arco.
 
 export interface Assento {
   nome: string;
@@ -82,24 +86,35 @@ export function Plenario<A extends Assento>({
   assentos,
   aoClicar,
   titulo,
+  lados = false,
 }: {
   assentos: readonly A[];
   aoClicar?: (a: A) => void;
   titulo?: string;
+  /** agrupa as cadeiras em esquerda, centro e direita, com o fundo de cada lado */
+  lados?: boolean;
 }) {
   const id = "plen" + useId().replace(/[^a-zA-Z0-9_-]/g, ""); // vai dentro de url(#...)
   const dica = useDica();
-  // a ordem é feita aqui: pela nota do partido, depois pela sigla
+  // a ordem é feita aqui: pelo lado (se pedido), pela nota do partido e pela sigla
   const xs = useMemo(
     () =>
       assentos
         .slice()
-        .sort((a, b) => (a.nota ?? 99) - (b.nota ?? 99) || String(a.partido).localeCompare(String(b.partido))),
-    [assentos],
+        .sort(
+          (a, b) =>
+            (lados ? lado(a.nota) - lado(b.nota) : 0) ||
+            (a.nota ?? (lados ? 5 : 99)) - (b.nota ?? (lados ? 5 : 99)) ||
+            String(a.partido).localeCompare(String(b.partido)),
+        ),
+    [assentos, lados],
   );
   const g = useMemo(() => geometria(xs.length), [xs.length]);
   const rIn = g.raios[0] - g.dr * 0.75;
   const pIn = (a: number) => `${CX + rIn * Math.cos(rad(a))},${CY + rIn * Math.sin(rad(a))}`;
+  // leque entre dois ângulos, do anel de dentro ao de fora (a0 < a1)
+  const leque = (a0: number, a1: number) => `${arco(g.rExt, a0, a1)}L${pIn(a1)}A${rIn},${rIn} 0 0 0 ${pIn(a0)}Z`;
+  const fundos = useMemo(() => (lados ? setoresDosLados(xs, g.pos) : []), [lados, xs, g.pos]);
 
   return (
     <svg viewBox={`0 0 ${W} ${g.altura}`} role="img" aria-label={titulo} className="grafico">
@@ -110,10 +125,10 @@ export function Plenario<A extends Assento>({
         </radialGradient>
       </defs>
       {/* carpete só na área das bancadas (um anel em leque), com a tribuna livre perto da mesa */}
-      <path
-        d={`${arco(g.rExt, A0 - 6, A1 + 6)}L${pIn(A1 + 6)}A${rIn},${rIn} 0 0 0 ${pIn(A0 - 6)}Z`}
-        fill={`url(#${id}piso)`}
-      />
+      <path d={leque(A0 - 6, A1 + 6)} fill={`url(#${id}piso)`} />
+      {fundos.map(f => (
+        <path key={f.lado} d={leque(f.a0, f.a1)} fill={LADOS[f.lado].cor} />
+      ))}
       <path d={arco(g.rExt + 8, A0 - 6, A1 + 6)} fill="none" stroke="#cfc6b4" strokeWidth={14} />
       <MesaDiretora />
       {/* bancadas (mesas em arco, na frente de cada fileira), cortadas nos corredores */}
@@ -135,6 +150,7 @@ export function Plenario<A extends Assento>({
           assento={s}
           {...g.pos[i]}
           raio={g.raio}
+          contorno={lados}
           aoClicar={aoClicar && (() => aoClicar(s))}
           aoPassar={ev =>
             dica.mostrar(
@@ -195,6 +211,7 @@ function Cadeira({
   x,
   y,
   raio,
+  contorno,
   aoClicar,
   aoPassar,
   aoSair,
@@ -204,6 +221,8 @@ function Cadeira({
   x: number;
   y: number;
   raio: number;
+  /** contorno branco, para o anel não sumir no fundo da mesma cor */
+  contorno?: boolean;
   aoClicar?: () => void;
   aoPassar: (ev: React.MouseEvent) => void;
   aoSair: () => void;
@@ -234,6 +253,8 @@ function Cadeira({
         cy={y}
         r={raio + 3.5}
         fill={s.cor || "#b9b6ae"}
+        stroke={contorno ? "#fff" : undefined}
+        strokeWidth={contorno ? 1.5 : undefined}
         className="group-hover:stroke-ouro group-hover:stroke-4 group-focus-visible:stroke-ouro group-focus-visible:stroke-4"
       />
       <circle cx={x} cy={y} r={raio} fill="#e8e5de" />

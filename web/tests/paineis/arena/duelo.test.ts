@@ -17,23 +17,24 @@ describe("vida", () => {
 });
 
 describe("reduzir", () => {
-  it("rodada abre a aposta e esconde o botão", () => {
+  it("rodada mostra a pergunta, espera o Lutar! e esconde o botão principal", () => {
     const g = jogo();
-    const r = g.ordem[0];
-    const s = reduzir(g, { tipo: "rodada", r })!;
-    expect(s.apostando).toBe(true);
+    const s = reduzir(g, { tipo: "rodada", k: 2 })!;
+    expect(s.lutando).toBe(true);
     expect(s.botao).toBeNull();
+    expect(s.r).toBe(2);
+    expect(s.anuncio).toEqual({ tipo: "rodada", r: g.ordem[2] });
     expect(s.pula).toBe(g.pula + 1);
-    expect(s.rodadaTxt).toBe(`Rodada 1 de ${g.ordem.length}`);
+    expect(s.rodadaTxt).toBe(`Rodada 3 de ${g.ordem.length}`);
   });
 
-  it("aposta certa conta acerto e entra no topo do registro", () => {
-    const g = jogo();
-    const e = { r: g.ordem[0], a: g.a, b: g.b, v: "a" as const, aposta: "a" as const };
-    const s = reduzir(g, { tipo: "apostou", e })!;
-    expect(s.acertos).toBe(1);
+  it("depois do Lutar! a rodada entra no topo do registro, sem aposta", () => {
+    const g = reduzir(jogo(), { tipo: "rodada", k: 0 })!;
+    const e = { r: g.ordem[0], a: g.a, b: g.b, v: "a" as const };
+    const s = reduzir(g, { tipo: "lutou", e })!;
+    expect(s.lutando).toBe(false);
     expect(s.registro[0]).toBe(e);
-    expect(reduzir(g, { tipo: "apostou", e: { ...e, aposta: "b" } })!.acertos).toBe(0);
+    expect(s.vida).toEqual(g.vida);
   });
 
   it("fim marca a campeã pela vida e encerra o duelo", () => {
@@ -43,6 +44,7 @@ describe("reduzir", () => {
     expect(g.campea).toBe("a");
     expect(g.r).toBe(FIM);
     expect(g.botao).toBe("↻ Revanche");
+    expect(g.anuncio).toEqual({ tipo: "fim", ganhou: "a", a: 20, b: 15 });
   });
 
   it("não muda o estado anterior", () => {

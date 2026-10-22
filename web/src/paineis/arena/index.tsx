@@ -42,10 +42,10 @@ function Arena({ dados }: { dados: DadosEleitos }) {
     const c = escolherCartas(T, "24-11", "TODAS");
     return c ? novoJogo(0, "24-11", "TODAS", c.a, c.b) : null;
   });
-  // as rodadas são assíncronas (esperam a aposta e as animações): estas refs dizem a elas
-  // qual duelo está valendo e como entregar a aposta, sem ler o estado no meio do caminho
+  // as rodadas são assíncronas (esperam o clique em "Lutar!" e as animações): estas refs dizem
+  // a elas qual duelo está valendo e como entregar o clique, sem ler o estado no meio do caminho
   const dueloAtual = useRef(0);
-  const apostar = useRef<((l: Lado) => void) | null>(null);
+  const lutar = useRef<(() => void) | null>(null);
   const arena = useRef<HTMLElement>(null);
   const efeitos = useRef<HTMLDivElement>(null);
   const flash = useRef<HTMLDivElement>(null);
@@ -56,7 +56,7 @@ function Arena({ dados }: { dados: DadosEleitos }) {
     const c = escolherCartas(T, baralho, uf, manter);
     if (!c) return;
     dueloAtual.current += 1;
-    apostar.current = null;
+    lutar.current = null;
     despachar({ tipo: "novo", jogo: novoJogo(dueloAtual.current, baralho, uf, c.a, c.b) });
   }
 
@@ -171,42 +171,39 @@ function Arena({ dados }: { dados: DadosEleitos }) {
     }
   }
 
-  async function rodada(jg: Jogo) {
+  /** O duelo inteiro: cada rodada mostra a pergunta, espera o "Lutar!" e os dados decidem o golpe. */
+  async function duelar(jg: Jogo) {
     const n = jg.n,
       { a, b } = jg;
-    // o estado só muda no próximo render; esta cópia da vida decide o fim da rodada.
+    // o estado só muda no próximo render; esta cópia da vida decide o fim do duelo.
     // Toda mudança passa por mudaVida, que atualiza as duas juntas.
     let vida = jg.vida;
     const mudaVida: MudaVida = (l, d) => {
       vida = somarVida(vida, l, d);
       despachar({ tipo: "vida", l, d });
     };
-    if (jg.r >= jg.ordem.length || vida.a <= 0 || vida.b <= 0) return fim(vida);
-    const r = jg.ordem[jg.r];
-    despachar({ tipo: "rodada", r });
-    const aposta = await new Promise<Lado>(res => {
-      apostar.current = res;
-    });
-    apostar.current = null;
-    if (dueloAtual.current !== n) return; // o duelo foi recomeçado enquanto esperava
-    const v = vencedor(r, a, b);
-    despachar({ tipo: "apostou", e: { r, a, b, v, aposta } });
-    if (v && v !== "empate") {
-      if (r.id === "luz") await cura(v, 3, mudaVida);
-      else await golpe(v, outroLado(v), r.el, danoRodada(r, a, b), n, mudaVida); // no fogo, v é quem arrecadou menos: o outro se queima
-    } else if (v === "empate" && r.id === "luz") {
-      await Promise.all([cura("a", 1, mudaVida), cura("b", 1, mudaVida)]);
-    }
-    if (dueloAtual.current !== n) return;
-    if (v && v !== "empate" && v === aposta) {
-      const [x, y] = centroDe("a");
-      solta(x, y + 40, "+1 aposta", "cura", 0, -60, 1100);
-      mudaVida("a", 1);
-      await espera(400);
+    for (let k = 0; k < jg.ordem.length && vida.a > 0 && vida.b > 0; k++) {
+      const r = jg.ordem[k];
+      despachar({ tipo: "rodada", k });
+      await new Promise<void>(res => {
+        lutar.current = res;
+      });
+      lutar.current = null;
+      if (dueloAtual.current !== n) return; // o duelo foi recomeçado enquanto esperava
+      const v = vencedor(r, a, b);
+      despachar({ tipo: "lutou", e: { r, a, b, v } });
+      if (v && v !== "empate") {
+        if (r.id === "luz") await cura(v, 3, mudaVida);
+        // no fogo e na verba, v é quem arrecadou ou usou menos: o outro leva o golpe
+        else await golpe(v, outroLado(v), r.el, danoRodada(r, a, b), n, mudaVida);
+      } else if (v === "empate" && r.id === "luz") {
+        await Promise.all([cura("a", 1, mudaVida), cura("b", 1, mudaVida)]);
+      }
+      if (dueloAtual.current !== n) return;
+      await espera(300);
       if (dueloAtual.current !== n) return;
     }
-    if (jg.r + 1 >= jg.ordem.length || vida.a <= 0 || vida.b <= 0) return fim(vida);
-    despachar({ tipo: "proxima" });
+    fim(vida);
   }
 
   const escolher = (l: Lado, t: CartaEleito) => {
@@ -274,9 +271,9 @@ function Arena({ dados }: { dados: DadosEleitos }) {
       <Etiqueta>ARENA · MODO SECRETO</Etiqueta>
       <h1>Duelo Eleitoral</h1>
       <p className="texto-enunciado">
-        Dois eleitos, cinco rodadas, só dados reais do TSE. Em cada rodada, aposte em quem vence: acertar dá +1 de vida
-        para a sua carta. Quem terminar com mais vida ganha. É um jogo: os poderes medem números de campanha, não
-        caráter.
+        Dois eleitos, seis rodadas, só dados reais do TSE. Cada rodada faz uma pergunta: clique em Lutar! e os números
+        decidem quem ataca e quem leva o golpe. Quem terminar com mais vida ganha. É um jogo: os poderes medem números
+        de campanha, não caráter.
       </p>
 
       <Caixa className="grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start max-[760px]:grid-cols-[minmax(0,1fr)]">
@@ -322,27 +319,19 @@ function Arena({ dados }: { dados: DadosEleitos }) {
             >
               <AnuncioTexto g={g} />
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-1.5 text-[13px]">
-              {g.apostando && (
-                <>
-                  <span>Sua aposta:</span>
-                  {(["a", "b"] as const).map(l => (
-                    <button
-                      key={l}
-                      type="button"
-                      onClick={() => apostar.current?.(l)}
-                      className="cursor-pointer rounded-lg border-2 border-[#ffd86b] bg-[#2a333d] px-3 py-1.5 font-bold text-white hover:bg-[#ffd86b] hover:text-[#1b222b]"
-                    >
-                      {g[l].nome}
-                    </button>
-                  ))}
-                </>
-              )}
-            </div>
+            {g.lutando && (
+              <button
+                type="button"
+                onClick={() => lutar.current?.()}
+                className="cursor-pointer rounded-[10px] border-0 bg-linear-to-b from-[#ff8a5b] to-[#c4441d] px-[30px] py-3 text-[19px] font-extrabold tracking-[.04em] text-white shadow-[0_4px_0_#7a2a10] active:translate-y-[3px] active:shadow-[0_1px_0_#7a2a10]"
+              >
+                ⚔ Lutar!
+              </button>
+            )}
             {g.botao && (
               <button
                 type="button"
-                onClick={() => (g.r === FIM ? novoDuelo(g.baralho, g.uf, { a: g.a, b: g.b }) : void rodada(g))}
+                onClick={() => (g.r === FIM ? novoDuelo(g.baralho, g.uf, { a: g.a, b: g.b }) : void duelar(g))}
                 className="cursor-pointer rounded-[10px] border-0 bg-linear-to-b from-[#ffd86b] to-[#e3a400] px-[26px] py-2.5 text-[17px] font-extrabold text-[#1b222b] shadow-[0_4px_0_#8f6c00] active:translate-y-[3px] active:shadow-[0_1px_0_#8f6c00]"
               >
                 {g.botao}
@@ -385,7 +374,11 @@ function Arena({ dados }: { dados: DadosEleitos }) {
             <b>✨ Luz do saber:</b> quem estudou mais se cura em 3 de vida; empate, os dois em 1.
           </li>
           <li>
-            <b>Aposta:</b> acertou quem vence a rodada, sua carta (a da esquerda) ganha +1 de vida.
+            <b>💰 Verba pública:</b> quem usou mais dinheiro público na campanha (fundo eleitoral e fundo partidário,
+            pela prestação de contas) leva o golpe: 4 de dano. Sem prestação de contas, a rodada empata.
+          </li>
+          <li>
+            <b>Ordem:</b> as seis rodadas vêm sorteadas. Não há aposta: quem ataca sai sempre dos números.
           </li>
           <li>
             <b>Dados:</b> as fichas da aba "Quem são os eleitos" (TSE: votos, prestação de contas, cadastro e carreira).
@@ -420,7 +413,7 @@ function AnuncioTexto({ g }: { g: Jogo }): ReactNode {
         <span className="text-[38px] leading-none">🏆</span>
         <b>{g[an.ganhou].nome} venceu!</b>
         <span>
-          {an.a} × {an.b} de vida · você acertou {an.acertos} de {an.total} apostas
+          {an.a} × {an.b} de vida
         </span>
       </>
     );
@@ -436,9 +429,9 @@ function AnuncioTexto({ g }: { g: Jogo }): ReactNode {
   );
 }
 
-/** Uma linha do registro: valores de cada lado, quem venceu e se a aposta acertou. */
+/** Uma linha do registro: valores de cada lado e quem venceu. */
 function Registro({ e }: { e: Entrada }) {
-  const { r, a, b, v, aposta } = e;
+  const { r, a, b, v } = e;
   const resultado: ReactNode =
     v == null ? (
       "Sem dado: empate."
@@ -448,15 +441,18 @@ function Registro({ e }: { e: Entrada }) {
       <>
         <b>{(v === "a" ? b : a).nome}</b> arrecadou mais e se queimou.
       </>
+    ) : r.id === "verba" ? (
+      <>
+        <b>{(v === "a" ? b : a).nome}</b> usou mais dinheiro público e levou o golpe.
+      </>
     ) : (
       <>
         Venceu <b>{(v === "a" ? a : b).nome}</b>.
       </>
     );
-  const acerto = v && v !== "empate" ? (v === aposta ? "Você acertou! +1" : "Você errou.") : "";
   return (
     <>
-      {EL[r.el].ico} <b>{r.nome}</b>: {a.nome} {valorRodada(a, r)} × {b.nome} {valorRodada(b, r)}. {resultado} {acerto}
+      {EL[r.el].ico} <b>{r.nome}</b>: {a.nome} {valorRodada(a, r)} × {b.nome} {valorRodada(b, r)}. {resultado}
     </>
   );
 }

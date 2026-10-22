@@ -64,6 +64,7 @@ export function Carta({ t, lado, vida, campea }: { t: CartaEleito; lado: Lado; v
       <ul className="m-0 grid list-none gap-[3px] rounded bg-[#f6f0e1] px-2 py-1.5 text-[11.5px] text-[#222]">
         <Poder el="raio" rotulo="Voto de confiança" valor={`${fmt(t.votos)} votos`} />
         <Poder el="fogo" rotulo="Fogo da campanha" valor={brl(t.receita)} />
+        <Poder el="ouro" rotulo="Verba pública" valor={t.publico == null ? "sem dado" : brl(t.publico)} />
         <Poder el="agua" rotulo="Custo do voto" valor={t.porVoto == null ? "sem dado" : `R$ ${fmt(t.porVoto, 2)}`} />
         <Poder el="terra" rotulo="Raízes" valor={vitoriasTexto(t.vit)} />
         <Poder el="luz" rotulo="Luz do saber" valor={t.grau >= 0 ? GRAU_CURTO[t.grau] : "–"} />

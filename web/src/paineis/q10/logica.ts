@@ -138,6 +138,12 @@ export function curva(
   return out.map(([n, ok], k) => (k === 0 ? 100 : n >= 30 ? pc(ok, n) : null));
 }
 
+// Receita acima disso é erro de digitação na prestação de contas do TSE: nenhuma campanha das 6 UFs
+// passa de R$ 20 milhões (a maior, de governador em 2022, fica abaixo). Caso conhecido: 12 vereadores
+// do AM em 2020 com R$ 207 milhões cada (V5 de sql/validacao/q8_q9.sql).
+export const RECEITA_MAXIMA = 20_000_000;
+export const receitaComErro = (receita: number | null): boolean => receita != null && receita > RECEITA_MAXIMA;
+
 export interface AnoFin {
   ano: number;
   receita: number | null;

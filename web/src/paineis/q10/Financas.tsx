@@ -2,7 +2,7 @@ import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { Alternador, Caixa, Campo, Legenda, useDica } from "../../componentes";
 import { carregarDados } from "../../lib/dados";
 import { brl, fmt } from "../../lib/formato";
-import { ABREV, type AnoFin, anosFin, brlCurto, GRUPO_COR, GRUPO_NOME, type Pessoa } from "./logica";
+import { ABREV, type AnoFin, anosFin, brlCurto, GRUPO_COR, GRUPO_NOME, type Pessoa, receitaComErro } from "./logica";
 import type { DadosQ10, Filtros, ParteFin } from "./tipos";
 
 type Estado = { id: number; anos: AnoFin[] | null; erro: boolean };
@@ -414,30 +414,46 @@ function Campanha({ p, anos }: { p: Pessoa; anos: AnoFin[] }) {
         Sem prestação de contas carregada para esta pessoa: o painel tem receita e gasto de campanha de 2018 em diante.
       </p>
     );
+  const comErro = camp.filter(y => receitaComErro(y.receita));
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Eleição</th>
-          <th>Arrecadou</th>
-          <th>Do fundo público</th>
-          <th>Gastou</th>
-        </tr>
-      </thead>
-      <tbody>
-        {camp.map(y => (
-          <tr key={y.ano}>
-            <td>
-              {y.ano}
-              <br />
-              <small>{cargoDo(y.ano)}</small>
-            </td>
-            <td>{brl(y.receita)}</td>
-            <td>{y.receita! > 0 ? `${fmt((100 * (y.publico || 0)) / y.receita!, 0)}%` : "–"}</td>
-            <td>{brl(y.despesa || 0)}</td>
+    <>
+      <table>
+        <thead>
+          <tr>
+            <th>Eleição</th>
+            <th>Arrecadou</th>
+            <th>Do fundo público</th>
+            <th>Gastou</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {camp.map(y => (
+            <tr key={y.ano}>
+              <td>
+                {y.ano}
+                <br />
+                <small>{cargoDo(y.ano)}</small>
+              </td>
+              <td>{receitaComErro(y.receita) ? "erro no TSE*" : brl(y.receita)}</td>
+              <td>
+                {receitaComErro(y.receita)
+                  ? "–"
+                  : y.receita! > 0
+                    ? `${fmt((100 * (y.publico || 0)) / y.receita!, 0)}%`
+                    : "–"}
+              </td>
+              <td>{brl(y.despesa || 0)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {comErro.length > 0 && (
+        <p className="texto-nota mt-1.5">
+          * Em {comErro.map(y => y.ano).join(" e ")}, a prestação de contas publicada pelo TSE traz{" "}
+          {comErro.map(y => brl(y.receita)).join(", ")} arrecadados, mais do que qualquer campanha dos 6 estados (a
+          maior não chega a R$ 20 milhões). É erro de digitação no arquivo do TSE; o valor fica fora da tabela.
+        </p>
+      )}
+    </>
   );
 }

@@ -24,10 +24,10 @@ import {
   melhorChute,
   melhorPergunta,
   type Pergunta,
-  penalidades,
+  plausiveis,
+  probabilidades,
   RESPOSTAS,
   type Resposta,
-  vivos,
 } from "./logica";
 
 type Baralho = "conhecidos" | "todos";
@@ -110,17 +110,17 @@ export default function Jogo() {
 
   const { respostas, excluidos, ultimoChute } = partida;
   const proposta = useMemo(() => {
-    const pens = penalidades(pool, porId, respostas, new Set(excluidos));
-    const vs = vivos(pool, pens);
-    if (!vs.length) return { vivos: 0, pergunta: null, chute: null };
-    const pergunta = melhorPergunta(vs, perguntas, new Set(respostas.map(r => r.id)));
+    const probs = probabilidades(pool, porId, respostas, new Set(excluidos));
+    const n = plausiveis(probs);
+    if (!n) return { vivos: 0, pergunta: null, chute: null };
+    const pergunta = melhorPergunta(pool, probs, perguntas, new Set(respostas.map(r => r.id)));
     const chuta = deveChutar({
-      vivos: vs.length,
+      topo: Math.max(...probs),
       haPergunta: pergunta !== null,
       respondidas: respostas.length,
       ultimoChute,
     });
-    return { vivos: vs.length, pergunta: chuta ? null : pergunta, chute: chuta ? melhorChute(pool, pens, vs) : null };
+    return { vivos: n, pergunta: chuta ? null : pergunta, chute: chuta ? melhorChute(pool, probs) : null };
   }, [pool, porId, perguntas, respostas, excluidos, ultimoChute]);
 
   if (erro) return <p className="p-5">Não foi possível carregar os dados dos eleitos.</p>;

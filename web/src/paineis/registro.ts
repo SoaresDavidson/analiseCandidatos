@@ -36,6 +36,7 @@ export const TEMAS: Tema[] = [
       { id: "q8", n: 8, nome: "Fundo público", Componente: lazy(() => import("./q8")) },
       { id: "q9", n: 9, nome: "Propaganda", Componente: lazy(() => import("./q9")) },
       { id: "q2", n: 2, nome: "Patrimônio", Componente: lazy(() => import("./q2")) },
+      { id: "q1", n: 1, nome: "Custo da cadeira", Componente: lazy(() => import("./q1")) },
     ],
   },
   {
@@ -43,6 +44,7 @@ export const TEMAS: Tema[] = [
     nome: "Políticos",
     paginas: [
       { id: "q10", n: 10, nome: "Carreira", Componente: lazy(() => import("./q10")) },
+      { id: "q5", n: 5, nome: "Voto de legenda", Componente: lazy(() => import("./q5")) },
       { id: "candidatos", nome: "Quem são os eleitos", Componente: lazy(() => import("./candidatos")) },
       { id: "plenarios", nome: "Plenários", Componente: lazy(() => import("./plenarios")) },
     ],

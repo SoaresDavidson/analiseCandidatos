@@ -1,7 +1,7 @@
 // Cartões da página inicial. A frase de cada cartão resume os números da página:
 // atualize junto quando o gerador mudar os dados.
 // números conferidos no banco (6 estados): Q4, Q8 e Q10 em 15/10/2026; Q3 e Q7 em 17/10/2026; Q2 e Q6 em 20/10/2026;
-// Q9 em 22/10/2026 (64,2%: a soma exata, não a das partes arredondadas, 36% + 29%)
+// Q9 em 22/10/2026 (64,2%: a soma exata, não a das partes arredondadas, 36% + 29%); Q1 e Q5 em 10/11/2026
 
 export interface Cartao {
   n: number;
@@ -63,7 +63,14 @@ export const CARTOES: Cartao[] = [
     perg: "Onde o candidato gasta com propaganda?",
     resp: "Nas eleições de 2024, **64%** foi para papel impresso e campanha de rua. Internet: 7%.",
   },
-  { n: 1, tema: "dinheiro", assunto: "Custo da campanha", perg: "Quanto custa uma cadeira?" },
+  {
+    n: 1,
+    tema: "dinheiro",
+    aba: "q1",
+    assunto: "Custo da campanha",
+    perg: "Quanto custa uma cadeira?",
+    resp: "Uma de deputado federal custou **R$ 6,0 milhões** em 2022, somando o gasto de todos os candidatos; a de vereador, **R$ 39,5 mil** em 2024.",
+  },
   {
     n: 2,
     tema: "dinheiro",
@@ -80,7 +87,14 @@ export const CARTOES: Cartao[] = [
     perg: "Quanto dura a carreira de um político?",
     resp: "De cada 100 vereadores novatos, só **27** seguem eleitos 8 anos depois.",
   },
-  { n: 5, tema: "politicos", assunto: "Voto de legenda", perg: "Quantos se elegem graças ao voto no partido?" },
+  {
+    n: 5,
+    tema: "politicos",
+    aba: "q5",
+    assunto: "Voto de legenda",
+    perg: "Quantos se elegem graças ao voto no partido?",
+    resp: "Poucos: **422** dos 26.043 eleitos para vereador e deputado (**1,6%**) só ganharam a cadeira pelo voto de legenda.",
+  },
 ];
 
 /** Cartão verde no topo do tema, para as páginas de exploração. */

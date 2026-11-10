@@ -14,6 +14,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from curl_cffi import requests
+from tqdm import tqdm
 
 ROOT = Path(__file__).resolve().parents[2]
 RAW = ROOT / "dados" / "raw"
@@ -24,6 +25,15 @@ JSON = {"Accept": "application/json"}  # SIDRA devolve XML com o Accept padrão 
 
 def log(*a: object) -> None:
     print(*a, flush=True)
+
+
+def barra(total: int | None, nome: str, inicial: int = 0) -> tqdm:
+    """Barra de progresso em bytes. Some ao terminar (a linha do log fica no lugar) e
+    não aparece quando a saída vai para arquivo, para o log não encher de \\r."""
+    return tqdm(
+        total=total or None, initial=inicial, desc=f"  {nome}", unit="B", unit_scale=True, unit_divisor=1024,
+        leave=False, disable=None, dynamic_ncols=True,
+    )  # fmt: skip
 
 
 def tamanho_remoto(url: str) -> int | None:
@@ -59,10 +69,13 @@ def baixar(url: str, destino: Path, force: bool = False) -> Path | None:
         parcial.unlink(missing_ok=True)
         return baixar(url, destino, force=True)
     r.raise_for_status()
-    modo = "ab" if r.status_code == 206 else "wb"
-    with parcial.open(modo) as f:
+    retomando = r.status_code == 206
+    inicial = ja_tem if retomando else 0
+    total = int(r.headers.get("content-length") or 0)
+    with parcial.open("ab" if retomando else "wb") as f, barra(total and total + inicial, destino.name, inicial) as b:
         for chunk in r.iter_content(chunk_size=1 << 20):
             f.write(chunk)
+            b.update(len(chunk))
     r.close()
     parcial.rename(destino)
     log(f"  baixado {destino.relative_to(ROOT)} ({destino.stat().st_size >> 20} MB)")

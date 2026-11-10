@@ -18,7 +18,7 @@ from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from scripts.coleta.coleta_comum import ROOT, log, session, tamanho_remoto
+from scripts.coleta.coleta_comum import ROOT, barra, log, session, tamanho_remoto
 
 
 class ArquivoRemoto(io.RawIOBase):
@@ -124,13 +124,15 @@ def extrair(url: str, pasta: Path, nomes: list[str], force: bool = False) -> Non
         log(f"  ok      {pasta.relative_to(ROOT)}/")
         return
     pasta.mkdir(parents=True, exist_ok=True)
-    for i in infos:
-        # arquivos grandes vêm em pedaços pelo zipfile, para não segurar tudo na memória;
-        # o .part só vira o arquivo no fim, para uma extração interrompida não passar por pronta
-        parcial = pasta / (i.filename + ".part")
-        with z.open(i) as origem, open(parcial, "wb") as destino:
-            while bloco := origem.read(1 << 22):
-                destino.write(bloco)
-        parcial.replace(pasta / i.filename)
+    with barra(sum(i.file_size for i in infos), pasta.name) as b:
+        for i in infos:
+            # arquivos grandes vêm em pedaços pelo zipfile, para não segurar tudo na memória;
+            # o .part só vira o arquivo no fim, para uma extração interrompida não passar por pronta
+            parcial = pasta / (i.filename + ".part")
+            with z.open(i) as origem, open(parcial, "wb") as destino:
+                while bloco := origem.read(1 << 22):
+                    destino.write(bloco)
+                    b.update(len(bloco))
+            parcial.replace(pasta / i.filename)
     mb = sum(i.file_size for i in infos) >> 20
     log(f"  extraído {pasta.relative_to(ROOT)}/ ({len(infos)} arquivo(s), {mb} MB, sem baixar o zip)")

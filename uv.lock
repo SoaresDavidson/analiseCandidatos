@@ -24,6 +24,7 @@ dependencies = [
     { name = "pandas" },
     { name = "pymupdf" },
     { name = "requests" },
+    { name = "tqdm" },
 ]
 
 [package.dev-dependencies]
@@ -43,6 +44,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=3.0.5" },
     { name = "pymupdf", specifier = ">=1.28.2" },
     { name = "requests", specifier = ">=2.34.2" },
+    { name = "tqdm", specifier = ">=4.70.1" },
 ]
 
 [package.metadata.requires-dev]

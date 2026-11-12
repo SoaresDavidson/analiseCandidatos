@@ -1,8 +1,8 @@
+import { anosDoCargo } from "../../lib/cargos";
 import { fmt, int, pc } from "../../lib/formato";
 import type { DadosQ2, Faixa, LimiteQuinto, Teste } from "./tipos";
 
-export const CARGO_ROT = ["Vereador", "Prefeito", "Dep. estadual", "Dep. federal", "Governador", "Senador"];
-export const CARGO_NOME = ["vereador", "prefeito", "deputado estadual", "deputado federal", "governador", "senador"];
+export { anoAoTrocarCargo, anosDoCargo, CARGO_NOME, CARGO_ROT } from "../../lib/cargos";
 export const GRUPO_ROT: Record<string, string> = {
   IMOVEIS: "Imóveis",
   VEICULOS: "Veículos",
@@ -12,15 +12,6 @@ export const GRUPO_ROT: Record<string, string> = {
   OUTROS: "Outros",
 };
 export const FAIXA_ROT = ["Sem bens", "1º quinto", "2º quinto", "3º quinto", "4º quinto", "5º quinto"];
-
-/** Eleições de cada cargo: municipais (vereador e prefeito) ou gerais. */
-export const anosDoCargo = (cargo: number): number[] => (cargo <= 1 ? [2020, 2024] : [2018, 2022]);
-
-/** Ao trocar de cargo, mantém a posição do ano (1ª ou 2ª eleição do cargo). */
-export function anoAoTrocarCargo(cargoAntigo: number, ano: number, cargoNovo: number): number {
-  const k = anosDoCargo(cargoAntigo).indexOf(ano);
-  return anosDoCargo(cargoNovo)[k < 0 ? 1 : k];
-}
 
 /** Soma candidatos e eleitos por faixa (sem bens + 5 quintos) para cargo, ano e estado ("TODAS" soma os 6). */
 export function somarFaixas(D: DadosQ2, cargo: number, ano: number, uf: string): Faixa[] {

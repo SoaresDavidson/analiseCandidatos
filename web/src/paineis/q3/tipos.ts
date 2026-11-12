@@ -49,20 +49,3 @@ export interface Municipio {
   isentos: number;
   busca: string;
 }
-
-export type ChaveIndice = "pib" | "renda" | "isentos" | "eleitores";
-
-export interface Indice {
-  rot: string;
-  curto: string;
-  v: (m: Municipio) => number | null;
-  f: (v: number | null) => string;
-  log: boolean;
-  frase: string;
-}
-
-export interface Filtros {
-  uf: string;
-  indice: ChaveIndice;
-  sel: number | null;
-}

@@ -12,14 +12,13 @@ interface Props {
 
 const resposta = "texto-simples text-[15.5px] [&_b]:font-extrabold";
 
-/** Blocos "Ver mais": perfil econômico, isentos, excesso de eleitores e método. */
+/** Blocos "Ver mais": perfil econômico, isentos e excesso de eleitores. */
 export function VerMaisQ3({ xs, onde, corPartido }: Props) {
   return (
     <>
       <Perfil xs={xs} onde={onde} corPartido={corPartido} />
       <Isentos xs={xs} />
       <Excesso xs={xs} onde={onde} />
-      <Metodo />
     </>
   );
 }
@@ -49,7 +48,6 @@ function Perfil({ xs, onde, corPartido }: Props) {
               <th>Perfil econômico</th>
               <th>Cidades</th>
               <th>PIB per capita (mediana)</th>
-              <th>Nota do voto (mediana)</th>
               <th>Prefeitos mais eleitos</th>
             </tr>
           </thead>
@@ -61,7 +59,6 @@ function Perfil({ xs, onde, corPartido }: Props) {
                 </td>
                 <td>{g.ms.length}</td>
                 <td>{brl(mediana(g.ms.map(m => m.pib)))}</td>
-                <td>{fmt(mediana(g.ms.map(m => m.voto)), 2)}</td>
                 <td>
                   {contarPref(g.ms)
                     .slice(0, 3)
@@ -138,10 +135,13 @@ function Excesso({ xs, onde }: { xs: Municipio[]; onde: string }) {
         {maiusculaInicial(onde)}, <b>{int(ex.length)}</b> das {int(com.length)} cidades (
         {fmt(pc(ex.length, com.length), 0)}%) têm mais eleitores aptos que habitantes estimados
         {ex.length > 0 &&
-          `, todas pequenas (${Object.entries(porUf)
+          `, ${ex.every(m => (m.pop ?? 0) < 20000) ? "todas" : "quase todas"} com menos de 20 mil habitantes (${Object.entries(
+            porUf,
+          )
             .sort((a, b) => b[1] - a[1])
+            .slice(0, 6)
             .map(([u, n]) => `${u} ${n}`)
-            .join(", ")})`}
+            .join(", ")}${Object.keys(porUf).length > 6 ? "…" : ""})`}
         .
       </p>
       {ex.length > 0 && (
@@ -174,50 +174,12 @@ function Excesso({ xs, onde }: { xs: Municipio[]; onde: string }) {
         </>
       )}
       <p className="texto-nota">
-        Eleitores aptos do TSE (2024) ÷ população estimada pelo IBGE (2024). Não é erro da estimativa: nos 6 estados,
-        227 dessas 230 cidades têm mais eleitores até que a população <b>contada</b> no Censo 2022 (SIDRA 4709). É o
+        Eleitores aptos do TSE (2024) ÷ população estimada pelo IBGE (2024). Não é erro da estimativa: no país, 840 das
+        845 cidades nessa situação têm mais eleitores até que a população <b>contada</b> no Censo 2022 (SIDRA 4709). É o
         cadastro eleitoral: a lei deixa votar onde a pessoa tem vínculo (trabalho, família, imóvel), mesmo sem morar lá
         (Res. TSE 23.659/2021, art. 23). Nessas cidades, o número mede o vínculo eleitoral, não a participação dos
         moradores.
       </p>
-    </VerMais>
-  );
-}
-
-function Metodo() {
-  return (
-    <VerMais titulo="Como calculamos">
-      <ul>
-        <li>
-          <b>Eleição:</b> municipal de 2024, nos 6 estados.
-        </li>
-        <li>
-          <b>PIB per capita:</b> IBGE, PIB dos Municípios, 2023 (o ano mais próximo da eleição sem passar dela).
-        </li>
-        <li>
-          <b>IDHM:</b> o municipal só existe até o Censo 2010 (Atlas Brasil). No lugar, a renda domiciliar per capita e
-          os anos de estudo do Censo 2022 (IBGE, SIDRA 10295 e 10062), duas das três dimensões do IDHM.
-        </li>
-        <li>
-          <b>Eleitores por habitante:</b> aptos (TSE) ÷ população estimada (IBGE, SIDRA 6579), os dois de 2024.
-        </li>
-        <li>
-          <b>Isentos:</b> (abstenções + votos brancos + votos nulos) ÷ aptos, na eleição para prefeito, 1º turno (TSE,
-          detalhe da votação).
-        </li>
-        <li>
-          <b>Quem vence:</b> partido do prefeito eleito e partido com mais vereadores (empates marcados); nota do voto
-          para vereador como na Pergunta 7.
-        </li>
-        <li>
-          <b>Quintos:</b> as cidades do filtro em ordem do índice, divididas em 5 grupos do mesmo tamanho. Correlação de
-          postos (Spearman): de −1 a 1; perto de 0, o índice não diz nada sobre o voto.
-        </li>
-        <li>
-          <b>Consulta no banco:</b> view <i>q3_municipio</i> em <i>sql/21_q3_indices.sql</i>; tabelas MUNICIPIO_ANO,
-          MUNICIPIO_CENSO e COMPARECIMENTO_MUNICIPIO (<i>sql/16_indicadores_municipio.sql</i>).
-        </li>
-      </ul>
     </VerMais>
   );
 }

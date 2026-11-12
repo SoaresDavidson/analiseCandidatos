@@ -19,7 +19,22 @@ export interface DadosQ2 {
   composicao: Record<string, Record<string, ComposicaoGrupo>>;
   /** [candidaturas com bem de R$ 100 milhões ou mais, total de candidaturas] */
   suspeitos: [number, number];
+  /** chave "cargo|ano|uf" (uf = índice em `ufs` ou "BR"): os maiores patrimônios declarados */
+  destaques: Record<string, { top: LinhaDestaque[]; fora: number }>;
 }
+
+/** [nome de urna, nome civil, partido, UF, lugar, sq_candidato, patrimônio (reais da época), nº de bens, 1 se eleito] */
+export type LinhaDestaque = [
+  urna: string,
+  civil: string,
+  partido: string,
+  uf: string,
+  lugar: string,
+  sq: number,
+  patrimonio: number,
+  bens: number,
+  eleito: number,
+];
 
 export interface Filtros {
   uf: string;

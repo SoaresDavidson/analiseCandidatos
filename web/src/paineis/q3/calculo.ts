@@ -3,50 +3,13 @@ import { semAcento } from "../../lib/uf";
 export { maiusculaInicial, nomeLugar } from "../../lib/formato";
 
 import { fmt, int, nomeLugar } from "../../lib/formato";
-import type { ChaveIndice, DadosQ3, Indice, Municipio } from "./tipos";
+import type { DadosQ3, Municipio } from "./tipos";
 
 export const PERFIL = ["Agropecuária", "Administração pública", "Serviços e comércio", "Indústria e outros"];
 
 // Formatador local: o brl deste painel só chega até "mil" (o do kit vai a milhões).
 export const brl = (v: number | null | undefined): string =>
   v == null ? "–" : v >= 1e3 ? `R$ ${fmt(v / 1e3, v >= 1e5 ? 0 : 1)} mil` : `R$ ${int(v)}`;
-const reais = (v: number | null): string => (v == null ? "–" : `R$ ${int(v)}`);
-
-export const INDICES: Record<ChaveIndice, Indice> = {
-  pib: {
-    rot: "PIB per capita",
-    curto: "PIB per capita",
-    v: m => m.pib,
-    f: brl,
-    log: true,
-    frase: "riqueza (PIB per capita)",
-  },
-  renda: {
-    rot: "renda domiciliar per capita (Censo 2022)",
-    curto: "renda per capita",
-    v: m => m.renda,
-    f: reais,
-    log: true,
-    frase: "renda das famílias",
-  },
-  isentos: {
-    rot: "isentos (abstenção + brancos + nulos)",
-    curto: "isentos",
-    v: m => m.isentos,
-    f: v => `${fmt(v)}%`,
-    log: false,
-    frase: "taxa de isentos",
-  },
-  eleitores: {
-    rot: "eleitores por habitante",
-    curto: "eleitores por habitante",
-    v: m => m.eleitHab,
-    f: v => fmt(v, 2),
-    log: false,
-    frase: "proporção de eleitores por habitante",
-  },
-};
-
 export function montarMunicipios(D: DadosQ3): Municipio[] {
   // eleitores por habitante pelos números inteiros (aptos ÷ população): arredondada, 1,0003 virava 1,000
   return D.municipios.map(r => ({

@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { anosDoCargo, filtrarPartidos, porPartido, somar, trocas } from "../../../src/paineis/q5/calculo";
-import type { DadosQ5 } from "../../../src/paineis/q5/tipos";
+import {
+  anosDoCargo,
+  filtrarPartidos,
+  porPartido,
+  resumoPartidos,
+  somar,
+  trocas,
+} from "../../../src/paineis/q5/calculo";
+import type { DadosQ5, PartidoQ5 } from "../../../src/paineis/q5/tipos";
 
 const D: DadosQ5 = {
   ufs: ["AM", "RS"],
@@ -57,4 +64,25 @@ describe("trocas", () => {
 it("vereador nas municipais, deputados nas gerais", () => {
   expect(anosDoCargo(0)).toEqual([2020, 2024]);
   expect(anosDoCargo(1)).toEqual([2018, 2022]);
+});
+
+describe("resumoPartidos", () => {
+  it("soma os estados, ordena por eleitos pela legenda e deixa de fora quem não tem nenhum", () => {
+    const ps: PartidoQ5[] = [
+      [2024, 0, 0, "MDB", 10, 2, 1000, 100],
+      [2024, 1, 0, "MDB", 5, 1, 500, 50],
+      [2024, 0, 0, "PSD", 8, 3, 900, 90],
+      [2024, 0, 0, "PT", 4, 0, 400, 80],
+    ];
+    const r = resumoPartidos(ps);
+    expect(r.map(x => x.partido)).toEqual(["MDB", "PSD"]);
+    expect(r[0]).toEqual({ partido: "MDB", eleitos: 15, legenda: 3, votosNominais: 1500, votosLegenda: 150 });
+  });
+  it("no empate de eleitos, vem primeiro quem teve mais votos de legenda", () => {
+    const r = resumoPartidos([
+      [2024, 0, 0, "A", 5, 2, 100, 10],
+      [2024, 0, 0, "B", 5, 2, 100, 30],
+    ]);
+    expect(r.map(x => x.partido)).toEqual(["B", "A"]);
+  });
 });

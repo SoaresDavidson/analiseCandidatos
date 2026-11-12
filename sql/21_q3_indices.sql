@@ -4,7 +4,7 @@
 -- população total, isentos = votos brancos + nulos + abstenções) com relação aos
 -- eleitos/partidos mais vitoriosos?" Período: 2024 (decisão do grupo, 17/10).
 --
--- Uma linha por município dos 6 estados, com os índices e quem venceu:
+-- Uma linha por município do país, com os índices e quem venceu:
 --   PIB per capita       IBGE, 2023 (o ano mais próximo da eleição sem passar dela)
 --   perfil econômico     atividade com maior valor adicionado, IBGE 2021 (o IBGE não
 --                        publicou a atividade de 2022 e 2023 nesta edição)
@@ -110,5 +110,5 @@ LEFT JOIN modelo.municipio_ano AS pop ON m.cod_ibge = pop.cod_ibge AND pop.ano =
 LEFT JOIN modelo.municipio_censo AS ce ON m.cod_ibge = ce.cod_ibge AND ce.ano_censo = 2022
 LEFT JOIN q7_prefeito AS pr ON m.cod_ibge = pr.cod_ibge AND pr.ano = 2024
 LEFT JOIN maior_bancada AS mb ON m.cod_ibge = mb.cod_ibge
-LEFT JOIN q7_vies_municipio AS v ON m.cod_ibge = v.cod_ibge AND v.ano = 2024
-WHERE m.sg_uf IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE');
+-- a nota do voto (q7_vies_municipio) só existe nos 6 estados da Q7; no resto do país fica vazia
+LEFT JOIN q7_vies_municipio AS v ON m.cod_ibge = v.cod_ibge AND v.ano = 2024;

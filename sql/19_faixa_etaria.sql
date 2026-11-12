@@ -47,7 +47,7 @@ SELECT
 FROM
     read_csv(
         'dados/raw/abstencao/*/comparecimento_abstencao_[0-9]*/perfil_comparecimento_abstencao_[0-9]*_??.csv',
-        delim = ';', quote = '"', header = TRUE, encoding = 'latin-1',
+        delim = ';', quote = '"', header = TRUE, encoding = 'cp1252',
         all_varchar = TRUE, union_by_name = TRUE
     )
 GROUP BY ALL;

@@ -17,7 +17,7 @@ export function anoAoTrocarCargo(cargoAntigo: number, ano: number, cargoNovo: nu
   return anosDoCargo(cargoNovo)[k < 0 ? 1 : k];
 }
 
-/** As UEs de cargo, ano e estado ("TODAS" = os 6). */
+/** As UEs de cargo, ano e estado ("TODAS" = o país). */
 export function filtrar(D: DadosQ1, cargo: number, ano: number, uf: string): UeQ1[] {
   const iu = uf === "TODAS" ? -1 : D.ufs.indexOf(uf);
   return D.ues.filter(u => u[0] === ano && u[1] === cargo && (iu < 0 || u[2] === iu));
@@ -79,4 +79,14 @@ export function curto(v: number): string {
   if (v >= 1e4) return `${fmt(v / 1e3, 0)}\u00a0mil`;
   if (v >= 1e3) return `${fmt(v / 1e3, 1)}\u00a0mil`;
   return fmt(v, 0);
+}
+
+/** Rampa do mapa: da cadeira mais barata (verde escuro) à mais cara (amarelo). */
+export const RAMPA_CUSTO = ["#2f6d31", "#6c9b2e", "#a9c23a", "#dccf3c", "#ffd21f"];
+
+/** Cortes que dividem os valores em 5 grupos do mesmo tamanho (4 cortes); com poucos valores, repete. */
+export function classes(valores: readonly number[]): number[] {
+  const v = [...valores].sort((a, b) => a - b);
+  if (!v.length) return [];
+  return [1, 2, 3, 4].map(k => v[Math.min(v.length - 1, Math.floor((k * v.length) / 5))]);
 }

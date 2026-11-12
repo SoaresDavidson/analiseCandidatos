@@ -1,6 +1,6 @@
 import { VerMais } from "../../componentes";
 import { fmt, int, maiusculaInicial } from "../../lib/formato";
-import { noEstado } from "../../lib/uf";
+import { noLugar } from "../../lib/uf";
 import { anosDoCargo, CARGO_ROT, contarMaisRicosGanham, somarFaixas, taxas, teste } from "./calculo";
 import type { DadosQ2, Filtros } from "./tipos";
 
@@ -11,9 +11,9 @@ export function Todos({ D, f, escolher }: { D: DadosQ2; f: Filtros; escolher: (c
   const { favoraveis, total } = contarMaisRicosGanham(D, f.uf);
   const linhas = CARGO_ROT.flatMap((_, c) => anosDoCargo(c).map(a => [c, a] as const));
   return (
-    <VerMais titulo="Em todos os cargos e eleições" aberto>
+    <VerMais titulo="Em todos os cargos e eleições">
       <p className="texto-simples !text-[15.5px]">
-        {maiusculaInicial(noEstado(f.uf))}, em{" "}
+        {maiusculaInicial(noLugar(f.uf))}, em{" "}
         <b>
           {favoraveis} de {total}
         </b>{" "}

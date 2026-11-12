@@ -1,4 +1,4 @@
--- 01_staging.sql — views canônicas da prestação de contas de candidatos.
+-- 01_staging.sql — tabelas canônicas da prestação de contas de candidatos.
 --
 -- Dono: Enrico. Consumidores: Davi (Q1), Enrico (Q8, Q9) — numeração da lista de
 -- 10 perguntas entregue ao professor.
@@ -12,8 +12,18 @@
 --
 -- O que entra: só prestação de contas de CANDIDATOS, só eleições ordinárias (R1:
 -- CD_TIPO_ELEICAO = '2'; em 2020 há receitas de suplementares no mesmo arquivo).
--- O recorte de UF vem da extração (`--uf AM,GO,MA,MT,RS,SE`): o glob pega os
+-- O recorte de UF vem da extração (`--uf ...`, ou o país inteiro): o glob pega os
 -- arquivos `_??` que estiverem no disco. `_BRASIL` não casa com `_??`.
+--
+-- São TABELAS, não views: com o país inteiro são ~15 GB de CSV, e uma view releria
+-- tudo a cada consulta das Perguntas 1, 8 e 9. Quem tem um banco antigo, em que
+-- stg_receita e stg_despesa eram views, precisa apagar o arquivo do banco e recarregar.
+--
+-- Encoding: `cp1252`, não `latin-1`. Arquivos de outros estados têm aspas curvas e
+-- travessões (bytes 0x80–0x9F), e o DuckDB recusa latin-1 com "File is not latin-1 encoded".
+-- Algumas linhas trazem um byte que nem em cp1252 existe (0x9D numa despesa de SC em 2020):
+-- rode `uv run python -m scripts.coleta.limpar_bytes` depois da coleta, senão o DuckDB 1.5
+-- para com erro interno ("Attempted to access index 51 within vector").
 --
 -- Uma prestação aparece num tipo de entrega só (FINAL, PARCIAL, RELATÓRIO
 -- FINANCEIRO…): conferido em 2018–2026, nenhum candidato tem dois tipos, então
@@ -26,7 +36,10 @@
 -- Receita
 -- ---------------------------------------------------------------------------
 
-CREATE OR REPLACE VIEW stg_receita AS
+INSTALL encodings;
+LOAD encodings;
+
+CREATE OR REPLACE TABLE stg_receita AS
 SELECT
     try_cast(sq_candidato AS bigint) AS sq_candidato,
     try_cast(aa_eleicao AS integer) AS ano,
@@ -44,7 +57,7 @@ SELECT
 FROM
     read_csv(
         'dados/raw/prestacao_contas/20*/prestacao_contas_candidatos_????/receitas_candidatos_????_??.csv',
-        delim = ';', quote = '"', header = TRUE, encoding = 'latin-1',
+        delim = ';', quote = '"', header = TRUE, encoding = 'cp1252',
         all_varchar = TRUE, union_by_name = TRUE
     )
 WHERE cd_tipo_eleicao = '2';
@@ -59,7 +72,7 @@ WHERE cd_tipo_eleicao = '2';
 -- descrição). Uma despesa = uma linha.
 -- ---------------------------------------------------------------------------
 
-CREATE OR REPLACE VIEW stg_despesa AS
+CREATE OR REPLACE TABLE stg_despesa AS
 SELECT
     try_cast(sq_candidato AS bigint) AS sq_candidato,
     try_cast(aa_eleicao AS integer) AS ano,
@@ -73,7 +86,7 @@ SELECT
 FROM
     read_csv(
         'dados/raw/prestacao_contas/20*/prestacao_contas_candidatos_????/despesas_contratadas_candidatos_????_??.csv',
-        delim = ';', quote = '"', header = TRUE, encoding = 'latin-1',
+        delim = ';', quote = '"', header = TRUE, encoding = 'cp1252',
         all_varchar = TRUE, union_by_name = TRUE
     )
 WHERE cd_tipo_eleicao = '2';

@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { anoAoTrocarCargo, em2024, filtrar, maisCaras, mediana, somar } from "../../../src/paineis/q1/calculo";
+import {
+  anoAoTrocarCargo,
+  classes,
+  em2024,
+  filtrar,
+  maisCaras,
+  mediana,
+  RAMPA_CUSTO,
+  somar,
+} from "../../../src/paineis/q1/calculo";
 import type { DadosQ1 } from "../../../src/paineis/q1/tipos";
 
 const D: DadosQ1 = {
@@ -52,5 +61,18 @@ describe("auxiliares", () => {
   it("ao trocar de cargo mantém a posição da eleição", () => {
     expect(anoAoTrocarCargo(0, 2020, 3)).toBe(2018);
     expect(anoAoTrocarCargo(3, 2022, 0)).toBe(2024);
+  });
+});
+
+describe("classes do mapa", () => {
+  it("4 cortes dividem os estados em 5 grupos do mesmo tamanho", () => {
+    const cortes = classes([10, 20, 30, 40, 50, 60, 70, 80, 90, 100]);
+    expect(cortes).toEqual([30, 50, 70, 90]);
+    const classe = (v: number) => cortes.filter(c => v > c).length;
+    expect([10, 30, 40, 100].map(classe)).toEqual([0, 0, 1, 4]);
+  });
+  it("sem valores, sem cortes; a rampa tem uma cor por grupo", () => {
+    expect(classes([])).toEqual([]);
+    expect(RAMPA_CUSTO).toHaveLength(5);
   });
 });

@@ -18,6 +18,7 @@ const D: DadosQ2 = {
   cargos: [],
   grupos: [],
   qui: {},
+  destaques: {},
   composicao: {},
   suspeitos: [0, 0],
   limites: {},

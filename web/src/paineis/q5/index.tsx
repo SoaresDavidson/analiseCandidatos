@@ -1,39 +1,24 @@
 import { useMemo, useState } from "react";
-import {
-  Alternador,
-  Aneis,
-  Anel,
-  Barra,
-  Barras,
-  Botao,
-  Caixa,
-  Campo,
-  Carregando,
-  Etiqueta,
-  Linha,
-  Pagina,
-  SeletorUf,
-  VerMais,
-} from "../../componentes";
+import { Alternador, Botao, Caixa, Campo, Carregando, Etiqueta, Pagina, SeletorUf, VerMais } from "../../componentes";
 import { useDados } from "../../lib/dados";
 import { fmt, int, maiusculaInicial, nomeLugar, nomeProprio } from "../../lib/formato";
-import { noEstado } from "../../lib/uf";
+import { noLugar } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
+import { Album } from "./Album";
 import {
   anoAoTrocarCargo,
   anosDoCargo,
-  CARGO_NOME,
   CARGO_PLURAL,
   CARGO_ROT,
   filtrarPartidos,
-  porPartido,
+  resumoPartidos,
   somar,
   trocas,
 } from "./calculo";
 import type { AfetadoQ5, DadosQ5, Filtros } from "./tipos";
 
 const PADRAO: Filtros = { uf: "TODAS", cargo: 0, ano: 2024 };
-const PRIMEIRAS = 3; // na tela, só alguns exemplos; a lista inteira abre no botão
+const PRIMEIRAS = 10; // as primeiras linhas; a lista inteira abre no botão
 
 export default function Painel() {
   const { dados } = useDados<DadosQ5>("q5.json");
@@ -41,11 +26,12 @@ export default function Painel() {
 }
 
 function Conteudo({ D }: { D: DadosQ5 }) {
-  const [salvo, setF] = usePersistente<Filtros>("q5-tse", PADRAO);
+  const [salvo, setF] = usePersistente<Filtros>("q5-brasil", PADRAO);
   const f = anosDoCargo(salvo.cargo).includes(salvo.ano) ? salvo : { ...salvo, ano: anosDoCargo(salvo.cargo)[1] };
   const ps = useMemo(() => filtrarPartidos(D, f.cargo, f.ano, f.uf), [D, f.cargo, f.ano, f.uf]);
   const s = useMemo(() => somar(ps), [ps]);
-  const lugar = maiusculaInicial(noEstado(f.uf));
+  const partidos = useMemo(() => resumoPartidos(ps), [ps]);
+  const lugar = maiusculaInicial(noLugar(f.uf));
 
   const escolher = (cargo: number, ano: number) => {
     setF(x => ({ ...x, cargo, ano }));
@@ -56,8 +42,8 @@ function Conteudo({ D }: { D: DadosQ5 }) {
     <Pagina
       filtros={
         <>
-          <Campo rotulo="Estado">
-            <SeletorUf value={f.uf} onChange={e => setF(x => ({ ...x, uf: e.target.value }))} />
+          <Campo rotulo="Onde">
+            <SeletorUf brasil value={f.uf} onChange={e => setF(x => ({ ...x, uf: e.target.value }))} />
           </Campo>
           <Campo rotulo="Cargo" grupo>
             <Alternador
@@ -80,58 +66,35 @@ function Conteudo({ D }: { D: DadosQ5 }) {
     >
       <Etiqueta>PERGUNTA 5 · VOTO DE LEGENDA</Etiqueta>
       <h1>Quantos se elegem graças ao voto no partido?</h1>
-      <p className="texto-enunciado">
-        Enunciado: quantos candidatos se elegem por causa dos votos de legenda, e de quais partidos? [2018, 2020, 2022,
-        2024]
-      </p>
 
       <Caixa>
-        <h2>O que é o voto de legenda?</h2>
-        <p className="texto-simples !text-[15.5px]">
-          Na eleição para vereador e deputado, dá para votar só no número do partido (os dois primeiros dígitos). Esse
-          voto não vai para ninguém em particular: ele entra na conta do partido para decidir <b>quantas cadeiras</b> o
-          partido ganha. Quem ocupa as cadeiras são os candidatos mais votados dele.
+        <p className="texto-simples m-0 !text-[16px]">
+          <b>O que é o voto de legenda?</b> Para vereador e deputado, dá para votar só no número do partido. Esse voto
+          não vai para um candidato: ele ajuda a decidir <b>quantas cadeiras</b> o partido ganha.{" "}
+          {s.eleitos > 0 && (
+            <>
+              {lugar}, em {f.ano},{" "}
+              <b>
+                {int(s.eleitosLegenda)} dos {int(s.eleitos)}
+              </b>{" "}
+              {CARGO_PLURAL[f.cargo]} eleitos ({fmt(s.pcEleitos)}%) só ganharam a cadeira por causa desses votos, que
+              foram {fmt(s.pcVotos)}% do total.
+            </>
+          )}
         </p>
       </Caixa>
 
-      <div className="grade-duas">
-        <Caixa>
-          <h2>A resposta</h2>
-          <p className="texto-simples">
-            {!s.eleitos ? (
-              "Sem dados neste filtro."
-            ) : (
-              <>
-                {s.pcEleitos != null && s.pcEleitos < 5 ? "Poucos." : "Uma parte."} {lugar}, em {f.ano},{" "}
-                <b>
-                  {int(s.eleitosLegenda)} dos {int(s.eleitos)}
-                </b>{" "}
-                {CARGO_PLURAL[f.cargo]} eleitos ({fmt(s.pcEleitos)}%) só ganharam a cadeira por causa dos votos de
-                legenda: sem eles, o partido teria uma cadeira a menos e a vaga iria para outro partido.{" "}
-                <b>{fmt(s.pcVotos)}%</b> dos votos foram dados só ao número do partido.
-              </>
-            )}
-          </p>
-          <div>
-            <Linha rotulo={`${maiusculaInicial(CARGO_PLURAL[f.cargo])} eleitos`} valor={int(s.eleitos)} />
-            <Linha rotulo="Eleitos pela legenda" valor={int(s.eleitosLegenda)} />
-            <Linha rotulo="Votos de legenda" valor={`${int(s.legenda)} (${fmt(s.pcVotos)}%)`} />
-          </div>
-        </Caixa>
-        <div className="grid min-w-0 gap-3.5">
-          <Aneis>
-            <Anel pct={s.pcVotos} legenda="dos votos foram" nome="só no partido" />
-            <Anel pct={s.pcEleitos} legenda="dos eleitos entraram" nome="pela legenda" variante="verde" />
-          </Aneis>
-          <PorPartido ps={ps} f={f} />
-        </div>
-      </div>
+      <Album key={`${f.cargo}|${f.ano}|${f.uf}`} D={D} f={f} partidos={partidos} />
 
       <Trocas D={D} f={f} />
       <Todas D={D} f={f} escolher={escolher} />
 
-      <VerMais titulo="Como calculamos e o que os dados não dizem">
+      <VerMais titulo="De onde vêm os dados e como calculamos">
         <ul>
+          <li>
+            <b>Fonte:</b> TSE, dados abertos: votos por candidato e por partido (legenda), vagas e resultado das
+            eleições de 2018 a 2024.
+          </li>
           <li>
             <b>A conta:</b> refizemos a distribuição das cadeiras duas vezes, com as regras do Código Eleitoral (arts.
             106 a 111): com os votos de legenda, como o TSE fez, e sem eles. A cadeira que um partido (ou coligação, ou
@@ -139,8 +102,9 @@ function Conteudo({ D }: { D: DadosQ5 }) {
             votado da lista.
           </li>
           <li>
-            <b>A conta com legenda reproduz o TSE:</b> elege exatamente os 26.043 eleitos oficiais dos 6 estados. Isso
-            confere o método antes de tirar a legenda.
+            <b>A conta com legenda reproduz o TSE</b> em 99,9% dos casos: no país, 87 dos 119 mil eleitos diferem do
+            resultado oficial, 85 deles em 2024, onde há câmaras que o TSE recontou depois. Isso confere o método antes
+            de tirar a legenda.
           </li>
           <li>
             <b>Regras de cada ano:</b> quociente eleitoral, quociente partidário, sobras e a fase 3, com as regras de
@@ -154,7 +118,7 @@ function Conteudo({ D }: { D: DadosQ5 }) {
           </li>
           <li>
             <b>O que não dá para dizer:</b> a conta supõe que quem votou na legenda não votaria em ninguém. Parte desse
-            eleitor votaria num candidato do mesmo partido, então o número é o teto do efeito. Em 2024, 17 câmaras
+            eleitor votaria num candidato do mesmo partido, então o número é o teto do efeito. Algumas câmaras de 2024
             ficaram sem resultado publicado pelo TSE.
           </li>
           <li>
@@ -165,34 +129,6 @@ function Conteudo({ D }: { D: DadosQ5 }) {
         </ul>
       </VerMais>
     </Pagina>
-  );
-}
-
-/** Eleitos pela legenda por partido no filtro (os 10 maiores). */
-function PorPartido({ ps, f }: { ps: ReturnType<typeof filtrarPartidos>; f: Filtros }) {
-  const linhas = porPartido(ps).slice(0, 10);
-  return (
-    <Caixa>
-      <h2>Quais partidos mais elegeram pela legenda?</h2>
-      {!linhas.length ? (
-        <p className="texto-nota">Nenhum {CARGO_NOME[f.cargo]} foi eleito pela legenda neste filtro.</p>
-      ) : (
-        <Barras>
-          {linhas.map(x => (
-            <Barra
-              key={x.partido}
-              rotulo={x.partido}
-              titulo={`${x.legenda} de ${x.eleitos} eleitos do partido`}
-              pct={(100 * x.legenda) / linhas[0].legenda}
-              valor={int(x.legenda)}
-            />
-          ))}
-        </Barras>
-      )}
-      <p className="texto-nota">
-        {CARGO_ROT[f.cargo]}, {f.ano}, {noEstado(f.uf)}. Número de eleitos de cada partido que só entraram pela legenda.
-      </p>
-    </Caixa>
   );
 }
 
@@ -210,8 +146,7 @@ function Trocas({ D, f }: { D: DadosQ5; f: Filtros }) {
   if (!t.length) return null;
   const vistas = todas ? t : t.slice(0, PRIMEIRAS);
   return (
-    <Caixa>
-      <h2>Quem entrou pela legenda, e quem ficaria com a vaga sem ela?</h2>
+    <VerMais titulo="Quem entrou pela legenda, e quem ficaria com a vaga sem ela">
       <div className="rolagem-x">
         <table className="[&_:is(th,td)]:text-left">
           <thead>
@@ -242,7 +177,7 @@ function Trocas({ D, f }: { D: DadosQ5; f: Filtros }) {
         candidato de outra lista que levaria essa cadeira na conta sem os votos de legenda. "Lista" é a coligação ou a
         federação, quando o partido não concorreu sozinho.
       </p>
-    </Caixa>
+    </VerMais>
   );
 }
 
@@ -252,7 +187,7 @@ function Todas({ D, f, escolher }: { D: DadosQ5; f: Filtros; escolher: (cargo: n
   return (
     <VerMais titulo="Em todos os cargos e eleições">
       <p className="texto-simples !text-[15.5px]">
-        {maiusculaInicial(noEstado(f.uf))}, o peso do voto de legenda e os eleitos por ele em cada eleição:
+        {maiusculaInicial(noLugar(f.uf))}, o peso do voto de legenda e os eleitos por ele em cada eleição:
       </p>
       <div className="rolagem-x">
         <table>

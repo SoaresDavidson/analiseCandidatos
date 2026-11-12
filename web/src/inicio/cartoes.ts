@@ -1,7 +1,8 @@
 // Cartões da página inicial. A frase de cada cartão resume os números da página:
 // atualize junto quando o gerador mudar os dados.
 // números conferidos no banco (6 estados): Q4, Q8 e Q10 em 15/10/2026; Q3 e Q7 em 17/10/2026; Q2 e Q6 em 20/10/2026;
-// Q9 em 22/10/2026 (64,2%: a soma exata, não a das partes arredondadas, 36% + 29%); Q1 e Q5 em 10/11/2026
+// Q9 em 22/10/2026 (64,2%: a soma exata, não a das partes arredondadas, 36% + 29%); Q1 e Q5 em 10/11/2026.
+// Q1, Q2, Q3 e Q5 refeitos com o país inteiro (27 UFs) em 12/11/2026
 
 export interface Cartao {
   n: number;
@@ -29,7 +30,7 @@ export const CARTOES: Cartao[] = [
     aba: "q3",
     assunto: "Índices da cidade",
     perg: "A cidade mais rica vota diferente?",
-    resp: "Quase não: ricas ou pobres, elegem os mesmos partidos. **59%** das prefeituras ficaram com União, MDB e PP.",
+    resp: "Pouco: nas cidades mais pobres do país quem mais elege prefeitos é o MDB; nas mais ricas, o PSD. Os dois com **16%** das prefeituras do grupo.",
   },
   {
     n: 4,
@@ -69,7 +70,7 @@ export const CARTOES: Cartao[] = [
     aba: "q1",
     assunto: "Custo da campanha",
     perg: "Quanto custa uma cadeira?",
-    resp: "Uma de deputado federal custou **R$ 6,0 milhões** em 2022, somando o gasto de todos os candidatos; a de vereador, **R$ 39,5 mil** em 2024.",
+    resp: "No Brasil, uma de deputado federal custou **R$ 5,9 milhões** em 2022, somando o gasto de todos os candidatos; a de vereador, **R$ 44,7 mil** em 2024.",
   },
   {
     n: 2,
@@ -77,7 +78,7 @@ export const CARTOES: Cartao[] = [
     aba: "q2",
     assunto: "Patrimônio",
     perg: "Quem é mais rico se elege mais?",
-    resp: "Sim: entre os candidatos a vereador em 2024, **27%** do quinto mais rico se elegeram; do mais pobre, **12%**.",
+    resp: "Sim: entre os candidatos a vereador do país em 2024, **23%** do quinto mais rico se elegeram; do mais pobre, **11%**.",
   },
   {
     n: 10,
@@ -93,7 +94,7 @@ export const CARTOES: Cartao[] = [
     aba: "q5",
     assunto: "Voto de legenda",
     perg: "Quantos se elegem graças ao voto no partido?",
-    resp: "Poucos: **422** dos 26.043 eleitos para vereador e deputado (**1,6%**) só ganharam a cadeira pelo voto de legenda.",
+    resp: "Poucos: no país, **2.254** dos 119 mil eleitos para vereador e deputado (**1,9%**) só ganharam a cadeira pelo voto de legenda.",
   },
 ];
 

@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, SelectHTMLAttributes } from "react";
-import { UF_NOME, UFS } from "../lib/uf";
+import { UF_NOME, UFS, UFS_BR } from "../lib/uf";
 
 const SETA = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23333' stroke-width='2' fill='none'/%3E%3C/svg%3E")`;
 
@@ -47,12 +47,17 @@ export function Alternador<T extends string | number>({
   );
 }
 
-/** Seletor de estado: "Todos os 6 estados" (valor TODAS) e os 6 pelo nome. */
-export function SeletorUf(props: Omit<SelectHTMLAttributes<HTMLSelectElement>, "children">) {
+/** Seletor de estado: "Todos os 6 estados" (valor TODAS) e os 6 pelo nome. Com `brasil`,
+ *  "Brasil" e os 27 estados (páginas com a base do país inteiro). */
+export function SeletorUf({
+  brasil,
+  ...props
+}: Omit<SelectHTMLAttributes<HTMLSelectElement>, "children"> & { brasil?: boolean }) {
+  const ufs = brasil ? [...UFS_BR].sort((a, b) => UF_NOME[a].localeCompare(UF_NOME[b], "pt-BR")) : UFS;
   return (
     <Seletor {...props}>
-      <option value="TODAS">Todos os {UFS.length} estados</option>
-      {UFS.map(u => (
+      <option value="TODAS">{brasil ? "Brasil" : `Todos os ${UFS.length} estados`}</option>
+      {ufs.map(u => (
         <option key={u} value={u}>
           {UF_NOME[u]}
         </option>

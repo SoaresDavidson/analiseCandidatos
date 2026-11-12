@@ -15,13 +15,14 @@ from __future__ import annotations
 
 import csv
 import os
+import sys
 from functools import cache
 from pathlib import Path
 
 import duckdb
 
 from scripts.gerar_painel_q4 import CAPITAIS, mapa
-from scripts.painel_web import gravar
+from scripts.painel_web import CAPITAIS_BR, UFS_BR, gravar
 
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
@@ -128,6 +129,7 @@ def dados_q7(con: duckdb.DuckDBPyConnection) -> dict:
 
 
 def dados_q3(con: duckdb.DuckDBPyConnection) -> dict:
+    # a Q3 usa a base do país inteiro (27 UFs); a Q7 segue nos 6 estados até ser migrada
     regua = con.execute("SELECT vl_mais_esquerda, vl_mais_direita, vl_meio FROM espectro_regua").fetchone()
     partidos = {
         sg: [float(vl), cat]
@@ -138,7 +140,7 @@ def dados_q3(con: duckdb.DuckDBPyConnection) -> dict:
     }
     municipios = [
         [
-            cod, nome, UFS.index(uf), 1 if cod in CAPITAIS else 0,
+            cod, nome, UFS_BR.index(uf), 1 if cod in CAPITAIS_BR else 0,
             num(pib, 0), PERFIS.index(perfil) if perfil in PERFIS else -1, pop, aptos,
             num(renda, 0), num(estudo, 1), sg_pref or "", sg_banc or "", qt_banc or 0, 1 if empate else 0,
             num(voto), num(eleit_hab), num(isentos, 2),
@@ -153,7 +155,7 @@ def dados_q3(con: duckdb.DuckDBPyConnection) -> dict:
         ).fetchall()
     ]  # fmt: skip
     return {
-        "ufs": UFS,
+        "ufs": UFS_BR,
         "perfis": PERFIS,
         "regua": [num(r, 3) for r in regua],
         "partidos": partidos,
@@ -164,10 +166,13 @@ def dados_q3(con: duckdb.DuckDBPyConnection) -> dict:
 def main() -> None:
     os.chdir(RAIZ)
     con = duckdb.connect(str(BANCO), read_only=True)
-    q7, q3 = dados_q7(con), dados_q3(con)
+    # `python -m scripts.gerar_painel_q3_q7 q3` gera só a Q3 (ou só a q7)
+    quais = set(sys.argv[1:]) or {"q3", "q7"}
+    if "q7" in quais:
+        gravar("q7.json", dados_q7(con))
+    if "q3" in quais:
+        gravar("q3.json", dados_q3(con))
     con.close()
-    gravar("q7.json", q7)
-    gravar("q3.json", q3)
 
 
 if __name__ == "__main__":

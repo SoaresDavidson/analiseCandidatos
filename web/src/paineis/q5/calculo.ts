@@ -20,7 +20,7 @@ const daUf = (ufs: string[], uf: string) => {
   return (u: number) => iu < 0 || u === iu;
 };
 
-/** As linhas de partido de cargo, ano e estado ("TODAS" = os 6). */
+/** As linhas de partido de cargo, ano e estado ("TODAS" = o país). */
 export function filtrarPartidos(D: DadosQ5, cargo: number, ano: number, uf: string): PartidoQ5[] {
   const ok = daUf(D.ufs, uf);
   return D.partidos.filter(p => p[0] === ano && p[2] === cargo && ok(p[1]));
@@ -73,4 +73,30 @@ export function trocas(D: DadosQ5, cargo: number, ano: number, uf: string): Troc
     (a[9] ? t.entraram : t.ficaramFora).push(a);
   }
   return [...m.values()].sort((a, b) => a.uf - b.uf || a.ue.localeCompare(b.ue, "pt-BR"));
+}
+
+export interface ResumoPartido {
+  partido: string;
+  eleitos: number;
+  /** eleitos que só entraram por causa dos votos de legenda */
+  legenda: number;
+  votosNominais: number;
+  votosLegenda: number;
+}
+
+/** Cada partido do filtro somado (os estados juntos), do que mais elegeu pela legenda ao que menos;
+ *  no empate, quem tem mais votos de legenda. Só partidos com algum eleito pela legenda. */
+export function resumoPartidos(ps: readonly PartidoQ5[]): ResumoPartido[] {
+  const m = new Map<string, ResumoPartido>();
+  for (const p of ps) {
+    const x = m.get(p[3]) ?? { partido: p[3], eleitos: 0, legenda: 0, votosNominais: 0, votosLegenda: 0 };
+    x.eleitos += p[4];
+    x.legenda += p[5];
+    x.votosNominais += p[6];
+    x.votosLegenda += p[7];
+    m.set(p[3], x);
+  }
+  return [...m.values()]
+    .filter(x => x.legenda > 0)
+    .sort((a, b) => b.legenda - a.legenda || b.votosLegenda - a.votosLegenda || a.partido.localeCompare(b.partido));
 }

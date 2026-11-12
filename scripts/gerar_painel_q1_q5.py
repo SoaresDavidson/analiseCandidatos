@@ -15,22 +15,24 @@ Uso:
 from __future__ import annotations
 
 import os
+import sys
 
 import duckdb
 
 from scripts.gerar_painel_q2_q6 import CARGOS_Q2
-from scripts.gerar_painel_q3_q7 import BANCO, RAIZ, UFS, num
-from scripts.painel_web import gravar
+from scripts.gerar_painel_q3_q7 import BANCO, RAIZ, num
+from scripts.painel_web import UFS_BR, gravar
 
 CARGOS_Q5 = ["VEREADOR", "DEPUTADO ESTADUAL", "DEPUTADO FEDERAL"]
 
 
 def dados_q1(con: duckdb.DuckDBPyConnection) -> dict:
+    # a Q1 e a Q5 usam a base do país inteiro (27 UFs)
     # uma linha por eleição × cargo × UE: a página soma para o filtro (custo = soma do gasto ÷ soma das vagas)
     # [ano, cargo, uf, cod_ibge (0 nos cargos estaduais), nome da UE, vagas, candidatos, eleitos,
     #  despesa, despesa dos eleitos, dinheiro público], em reais da época
     ues = [
-        [ano, CARGOS_Q2.index(cargo), UFS.index(uf), cod or 0, nome, vagas, cand, eleitos,
+        [ano, CARGOS_Q2.index(cargo), UFS_BR.index(uf), cod or 0, nome, vagas, cand, eleitos,
          num(desp, 0), num(desp_e, 0), num(pub, 0)]
         for ano, cargo, uf, cod, nome, vagas, cand, eleitos, desp, desp_e, pub in con.execute(
             """SELECT ano, ds_cargo, sg_uf, cod_ibge, nm_ue, qt_vaga, qt_candidatos, qt_eleitos,
@@ -48,13 +50,13 @@ def dados_q1(con: duckdb.DuckDBPyConnection) -> dict:
             "SELECT ano, fator_2024 FROM q10_ipca WHERE ano IN (SELECT DISTINCT ano FROM q1_custo_ue)"
         ).fetchall()
     }
-    return {"ufs": UFS, "cargos": CARGOS_Q2, "ues": ues, "ipca": ipca}
+    return {"ufs": UFS_BR, "cargos": CARGOS_Q2, "ues": ues, "ipca": ipca}
 
 
 def dados_q5(con: duckdb.DuckDBPyConnection) -> dict:
     # [ano, uf, cargo, partido, eleitos, eleitos pela legenda, votos nominais, votos de legenda do partido]
     partidos = [
-        [ano, UFS.index(uf), CARGOS_Q5.index(cargo), partido, eleitos, legenda, int(nominais), int(vl)]
+        [ano, UFS_BR.index(uf), CARGOS_Q5.index(cargo), partido, eleitos, legenda, int(nominais), int(vl)]
         for ano, uf, cargo, partido, eleitos, legenda, nominais, vl in con.execute(
             """SELECT ano, sg_uf, ds_cargo, sg_partido, qt_eleitos, qt_eleitos_legenda, qt_votos_nominais,
                       qt_votos_legenda
@@ -64,7 +66,7 @@ def dados_q5(con: duckdb.DuckDBPyConnection) -> dict:
     # quem a legenda pôs e quem ela tirou: [ano, uf, cargo, nome da UE, candidato, partido, lista,
     # partidos na lista, votos, 1 = eleito pela legenda / 0 = ficou fora por causa dela]
     afetados = [
-        [ano, UFS.index(uf), CARGOS_Q5.index(cargo), ue, nome, partido, lista, npart, int(votos), int(efeito)]
+        [ano, UFS_BR.index(uf), CARGOS_Q5.index(cargo), ue, nome, partido, lista, npart, int(votos), int(efeito)]
         for ano, uf, cargo, ue, nome, partido, lista, npart, votos, efeito in con.execute(
             """SELECT ano, sg_uf, ds_cargo, nm_ue, nm_candidato, sg_partido, sg_lista, qt_partidos, qt_votos,
                       tp_efeito = 'ELEITO PELA LEGENDA'
@@ -72,16 +74,19 @@ def dados_q5(con: duckdb.DuckDBPyConnection) -> dict:
                ORDER BY ano, sg_uf, ds_cargo, nm_ue, tp_efeito, qt_votos DESC"""
         ).fetchall()
     ]
-    return {"ufs": UFS, "cargos": CARGOS_Q5, "partidos": partidos, "afetados": afetados}
+    return {"ufs": UFS_BR, "cargos": CARGOS_Q5, "partidos": partidos, "afetados": afetados}
 
 
 def main() -> None:
     os.chdir(RAIZ)
     con = duckdb.connect(str(BANCO), read_only=True)
-    q1, q5 = dados_q1(con), dados_q5(con)
+    # `python -m scripts.gerar_painel_q1_q5 q1` gera só a Q1 (ou só a q5)
+    quais = set(sys.argv[1:]) or {"q1", "q5"}
+    if "q1" in quais:
+        gravar("q1.json", dados_q1(con))
+    if "q5" in quais:
+        gravar("q5.json", dados_q5(con))
     con.close()
-    gravar("q1.json", q1)
-    gravar("q5.json", q5)
 
 
 if __name__ == "__main__":

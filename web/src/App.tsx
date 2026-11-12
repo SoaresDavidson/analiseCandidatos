@@ -182,7 +182,7 @@ export default function App() {
                   <a className="grid leading-none no-underline" href="#inicio" onClick={cliqueNoLogo}>
                     <b className="text-[11.5px] font-extrabold tracking-[.02em]">ELEIÇÕES</b>
                     <span className="text-[21px] font-extrabold text-ouro">POLITICAGEM</span>
-                    <small className="mt-0.5 text-[9px] font-bold text-texto-2">AM · GO · MA · MT · RS · SE</small>
+                    <small className="mt-0.5 text-[9px] font-bold text-texto-2">BRASIL</small>
                   </a>
                   <nav className="ml-auto flex flex-wrap gap-x-6 gap-y-1" aria-label="Temas">
                     {[{ id: "inicio", nome: "Início" }, ...TEMAS].map(a => (

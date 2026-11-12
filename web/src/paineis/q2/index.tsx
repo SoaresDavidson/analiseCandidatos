@@ -3,9 +3,10 @@ import { Alternador, Campo, Carregando, Etiqueta, Pagina, SeletorUf, VerMais } f
 import { useDados } from "../../lib/dados";
 import { int } from "../../lib/formato";
 import { usePersistente } from "../../lib/usePersistente";
+import { Chances } from "./Chances";
 import { Composicao } from "./Composicao";
 import { anoAoTrocarCargo, anosDoCargo, CARGO_ROT, somarFaixas } from "./calculo";
-import { Escada, Resposta } from "./Resposta";
+import { Destaque } from "./Destaque";
 import { Todos } from "./Todos";
 import type { DadosQ2, Filtros } from "./tipos";
 
@@ -17,7 +18,7 @@ export default function Painel() {
 }
 
 function Conteudo({ D }: { D: DadosQ2 }) {
-  const [salvo, setF] = usePersistente<Filtros>("q2-tse", PADRAO);
+  const [salvo, setF] = usePersistente<Filtros>("q2-brasil", PADRAO);
   // ano salvo que não existe para o cargo cai na eleição mais recente dele
   const f = anosDoCargo(salvo.cargo).includes(salvo.ano) ? salvo : { ...salvo, ano: anosDoCargo(salvo.cargo)[1] };
   const s = useMemo(() => somarFaixas(D, f.cargo, f.ano, f.uf), [D, f.cargo, f.ano, f.uf]);
@@ -31,8 +32,8 @@ function Conteudo({ D }: { D: DadosQ2 }) {
     <Pagina
       filtros={
         <>
-          <Campo rotulo="Estado">
-            <SeletorUf value={f.uf} onChange={e => setF(x => ({ ...x, uf: e.target.value }))} />
+          <Campo rotulo="Onde">
+            <SeletorUf brasil value={f.uf} onChange={e => setF(x => ({ ...x, uf: e.target.value }))} />
           </Campo>
           <Campo rotulo="Cargo" grupo>
             <Alternador
@@ -55,32 +56,31 @@ function Conteudo({ D }: { D: DadosQ2 }) {
     >
       <Etiqueta>PERGUNTA 2 · PATRIMÔNIO × SUCESSO</Etiqueta>
       <h1>Quem tem mais patrimônio se elege mais?</h1>
-      <p className="texto-enunciado">
-        Enunciado: qual a taxa de sucesso eleitoral por patrimônio declarado? [2018–2024]
-      </p>
 
-      <div className="grade-duas">
-        <Resposta f={f} s={s} />
-        <Escada D={D} f={f} s={s} />
-      </div>
+      <Destaque D={D} f={f} />
+      <Chances D={D} f={f} s={s} />
 
       <Todos D={D} f={f} escolher={escolher} />
       <Composicao D={D} f={f} />
 
-      <VerMais titulo="Como calculamos e o que os dados não dizem">
+      <VerMais titulo="De onde vêm os dados e como calculamos">
         <ul>
+          <li>
+            <b>Fonte:</b> declaração de bens e cadastro de candidaturas do TSE (dados abertos), eleições de 2018 a 2024,
+            no Brasil inteiro. A foto é a do registro da candidatura.
+          </li>
           <li>
             <b>Patrimônio:</b> soma dos bens que o candidato declarou ao TSE no registro da candidatura. Para comparar
             anos, em reais de agosto de 2024 (IPCA de agosto, IBGE, SIDRA 1737).
           </li>
           <li>
             <b>Faixas:</b> "sem bens" (nada declarado) e os <b>quintos</b> do patrimônio, cortados dentro de cada cargo
-            e eleição, nos 6 estados juntos: cada quinto tem 20% dos candidatos que declararam bens. Faixas fixas em
-            reais não serviriam, porque o patrimônio típico de um senador é 10 vezes o de um vereador.
+            e eleição, no Brasil inteiro: cada quinto tem 20% dos candidatos que declararam bens. Faixas fixas em reais
+            não serviriam, porque o patrimônio típico de um senador é 10 vezes o de um vereador.
           </li>
           <li>
             <b>Taxa de eleição:</b> eleitos ÷ candidatos que foram a voto. Com um estado escolhido, a página soma os
-            eleitos e os candidatos daquele estado (os limites dos quintos continuam os dos 6 estados).
+            eleitos e os candidatos daquele estado (os limites dos quintos continuam os do país).
           </li>
           <li>
             <b>O teste:</b> qui-quadrado de independência (6 faixas × eleito ou não), refeito na página para o filtro.

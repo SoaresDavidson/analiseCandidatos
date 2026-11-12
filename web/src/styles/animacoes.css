@@ -37,3 +37,147 @@
     animation-delay: 0.66s;
   }
 }
+
+/* barras que crescem a partir da base e blocos que surgem (Pergunta 2) */
+@keyframes cresce-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes surge {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .anima-cresce-y {
+    animation: cresce-y 0.8s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+    transform-box: fill-box;
+    transform-origin: bottom;
+  }
+  .anima-surge {
+    animation: surge 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+}
+
+/* pacote de figurinhas (Pergunta 5): flutua fechado, treme, rasga, a figurinha sobe */
+@keyframes flutua {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1.5deg);
+  }
+}
+@keyframes treme {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  15% {
+    transform: rotate(-5deg) translateX(-6px);
+  }
+  30% {
+    transform: rotate(5deg) translateX(6px);
+  }
+  45% {
+    transform: rotate(-4deg) translateX(-4px);
+  }
+  60% {
+    transform: rotate(4deg) translateX(4px);
+  }
+  80% {
+    transform: rotate(-2deg);
+  }
+}
+@keyframes rasga {
+  to {
+    transform: translate(40px, -130px) rotate(28deg);
+    opacity: 0;
+  }
+}
+@keyframes cai {
+  to {
+    transform: translateY(70%);
+    opacity: 0;
+  }
+}
+@keyframes sobe-figurinha {
+  0% {
+    transform: translateY(18%) scale(0.72);
+  }
+  55% {
+    transform: translateY(-34%) scale(0.8);
+  }
+  100% {
+    transform: translateY(-6%) scale(1.06);
+  }
+}
+@keyframes chega-figurinha {
+  from {
+    transform: translateX(46%) scale(1.12) rotate(6deg);
+    opacity: 0.4;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes brilho-holo {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 200%;
+  }
+}
+.pacote-flutua {
+  animation: flutua 3.2s ease-in-out infinite;
+}
+.pacote-treme {
+  animation: treme 0.55s ease-in-out both;
+}
+.pacote-rasga {
+  animation: rasga 0.7s 0.5s cubic-bezier(0.3, 0, 0.7, 1) both;
+}
+.pacote-cai {
+  animation: cai 0.7s 1.35s ease-in both;
+}
+.figurinha-sobe {
+  animation: sobe-figurinha 1.5s 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+.figurinha-chega {
+  animation: chega-figurinha 0.7s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+.holo {
+  background-image: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgb(255 255 255 / 0.45) 32%,
+    rgb(120 220 255 / 0.35) 40%,
+    rgb(255 150 240 / 0.3) 48%,
+    transparent 60%
+  );
+  background-size: 200% 200%;
+  animation: brilho-holo 3.6s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pacote-flutua,
+  .pacote-treme,
+  .pacote-rasga,
+  .pacote-cai,
+  .figurinha-sobe,
+  .figurinha-chega,
+  .holo {
+    animation: none;
+  }
+}

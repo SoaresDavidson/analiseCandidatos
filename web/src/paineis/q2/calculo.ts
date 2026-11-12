@@ -22,7 +22,7 @@ export function anoAoTrocarCargo(cargoAntigo: number, ano: number, cargoNovo: nu
   return anosDoCargo(cargoNovo)[k < 0 ? 1 : k];
 }
 
-/** Soma candidatos e eleitos por faixa (sem bens + 5 quintos) para cargo, ano e estado ("TODAS" soma os 6). */
+/** Soma candidatos e eleitos por faixa (sem bens + 5 quintos) para cargo, ano e estado ("TODAS" soma o país). */
 export function somarFaixas(D: DadosQ2, cargo: number, ano: number, uf: string): Faixa[] {
   const s: Faixa[] = Array.from({ length: 6 }, () => [0, 0]);
   const iu = uf === "TODAS" ? -1 : D.ufs.indexOf(uf);

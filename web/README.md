@@ -3,7 +3,8 @@
 Painel do grupo em React + Vite + TypeScript + Tailwind CSS v4. Substitui os HTML
 gerados em `docs/*-painel/`.
 
-O app mostra as respostas às perguntas do trabalho para os 6 estados do recorte (AM, GO,
+O app mostra as respostas às perguntas do trabalho. As Perguntas 1, 2 e 3 usam a base do
+Brasil inteiro (27 UFs); as outras, por enquanto, os 6 estados do recorte original (AM, GO,
 MA, MT, RS, SE). É um site estático: não tem servidor nem banco. Os dados chegam já prontos
 em `public/dados/`, gravados pelos geradores Python (ver [Dados](#dados)).
 
@@ -86,13 +87,25 @@ e gravam cada arquivo de `public/dados/` por `scripts/painel_web.py`:
 
 | arquivo | gerador |
 | --- | --- |
+| `q1.json`, `q5.json` | `uv run python -m scripts.gerar_painel_q1_q5` |
 | `q3.json`, `q7.json` | `uv run python -m scripts.gerar_painel_q3_q7` |
-| `q2.json`, `q6.json` | `uv run python -m scripts.gerar_painel_q2_q6` |
+| `q2.json`, `q6.json`, `q2-fotos/` | `uv run python -m scripts.gerar_painel_q2_q6` |
+| `malhas/brasil.json`, `malhas/<UF>.json` | `uv run python -m scripts.gerar_malhas_web` |
 | `q4.json` | `uv run python -m scripts.gerar_painel_q4` |
 | `q8.json`, `q9.json` | `uv run python -m scripts.gerar_painel_q8_q9` |
 | `q10.json`, `q10-financas/NN.json` | `uv run python -m scripts.gerar_painel_q10` |
 | `candidatos-eleitos.json` (+ fotos) | `uv run python -m scripts.gerar_painel_candidatos` |
 | `municipios-cidades.json` | `uv run python -m scripts.gerar_painel_municipios` |
+
+Os geradores de duas perguntas aceitam o nome de uma só (`... gerar_painel_q1_q5 q1`). As
+Perguntas 1, 2 e 3 saem com o país inteiro (`ufs` com as 27 siglas, `UFS_BR` em
+`painel_web.py`); a 5, a 6 e a 7 seguem nos 6 estados. Para o país inteiro, a coleta é
+`recorte_remoto --uf` com as 27 siglas (uns 31 GB em `dados/raw/`).
+
+`malhas/` são os mapas: os 27 estados e os municípios de cada um, no mesmo sistema de
+coordenadas, para o `MapaBrasil` (`src/componentes`) dar zoom do país para um estado.
+`q2-fotos/` tem a foto original do TSE (161×225) do candidato de maior patrimônio de cada
+cargo, eleição e estado; essas vão para o git, porque são poucas (uma por destaque).
 
 `q8.json` e `q9.json` guardam os números publicados por Enrico. O banco atual tem as
 atualizações posteriores do TSE (1 ou 2 candidatos de diferença por linha), e rodar

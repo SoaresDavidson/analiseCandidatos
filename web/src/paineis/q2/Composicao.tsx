@@ -5,7 +5,7 @@ import type { DadosQ2, Filtros } from "./tipos";
 
 const CINZA = "#9a968c";
 
-/** Que tipos de bem os eleitos declaram a mais que os não eleitos (6 estados). */
+/** Que tipos de bem os eleitos declaram a mais que os não eleitos (no país). */
 export function Composicao({ D, f }: { D: DadosQ2; f: Filtros }) {
   const C = D.composicao[`${f.cargo}|${f.ano}`];
   const gs = C ? D.grupos.filter(g => C[g]) : [];
@@ -16,8 +16,8 @@ export function Composicao({ D, f }: { D: DadosQ2; f: Filtros }) {
     <VerMais titulo="O que os eleitos têm a mais: aplicações e empresas">
       {ap && em && (
         <p className="texto-simples !text-[15.5px]">
-          Entre os candidatos a {CARGO_NOME[f.cargo]} em {f.ano} que declararam bens (6 estados), <b>{fmt(ap[0])}%</b>{" "}
-          dos eleitos têm aplicações financeiras, contra {fmt(ap[1])}% dos não eleitos; <b>{fmt(em[0])}%</b> têm
+          Entre os candidatos a {CARGO_NOME[f.cargo]} em {f.ano} que declararam bens no Brasil, <b>{fmt(ap[0])}%</b> dos
+          eleitos têm aplicações financeiras, contra {fmt(ap[1])}% dos não eleitos; <b>{fmt(em[0])}%</b> têm
           participação em empresas, contra {fmt(em[1])}%. Imóveis quase todos têm.
         </p>
       )}
@@ -48,7 +48,7 @@ export function Composicao({ D, f }: { D: DadosQ2; f: Filtros }) {
         ]}
       />
       <p className="texto-nota">
-        Só quem declarou algum bem, nos 6 estados. Porcentagem de candidatos que declararam ao menos um bem do grupo. Os
+        Só quem declarou algum bem, no Brasil. Porcentagem de candidatos que declararam ao menos um bem do grupo. Os
         cerca de 50 tipos de bem do TSE foram juntados em 6 grupos (a mesma regra da Pergunta 10).
       </p>
     </VerMais>

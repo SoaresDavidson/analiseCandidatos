@@ -30,7 +30,7 @@ falha com `Table with name candidatura does not exist!` quando o `04` ainda não
 | --- | --- | --- |
 | `00_limpeza.sql` | Macros de limpeza (`limpa`, `valor_br`, `data_br`, `documento`, `ano_divulgado`...) usadas pelos outros scripts | — |
 | `00_modelo.sql` | Cria o schema `modelo` com as tabelas do DER. Idempotente: não apaga dados | — |
-| `01_staging.sql` | Views `stg_receita` e `stg_despesa` da prestação de contas (2018–2026, só candidatos e eleições ordinárias) | 00_limpeza |
+| `01_staging.sql` | Tabelas `stg_receita` e `stg_despesa` da prestação de contas (2018–2024, só candidatos e eleições ordinárias). Eram views; viraram tabelas para o país inteiro não ser relido a cada consulta | 00_limpeza |
 | `02_fonte_recurso.sql` | Classifica a receita em público × privado | 01 |
 | `03_tipo_despesa.sql` | Classifica a despesa por canal de propaganda | 01 |
 | `04_politico.sql` | `stg_candidatura`, `candidatura` e `politico` (em `main`) a partir do `consulta_cand`. A pessoa é identificada pelo título de eleitor, nunca pelo CPF | 00_limpeza |

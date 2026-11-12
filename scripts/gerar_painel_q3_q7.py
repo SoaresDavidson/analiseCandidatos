@@ -21,8 +21,7 @@ from pathlib import Path
 
 import duckdb
 
-from scripts.gerar_painel_q4 import CAPITAIS, mapa
-from scripts.painel_web import CAPITAIS_BR, UFS_BR, gravar
+from scripts.painel_web import CAPITAIS_BR, UFS_BR, gravar, mapa
 
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
@@ -75,7 +74,7 @@ def dados_q7(con: duckdb.DuckDBPyConnection) -> dict:
                 nome,
                 UFS.index(uf),
                 idx_regiao.get(cd_reg, -1),
-                1 if cod in CAPITAIS else 0,
+                1 if cod in CAPITAIS_BR else 0,
                 [None] * 4,
                 [None] * 4,
                 [],

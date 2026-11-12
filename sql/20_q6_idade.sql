@@ -12,7 +12,7 @@
 --   idade do candidato: só de 18 a 100 anos. O TSE tem datas de nascimento erradas (idade de
 --           807, 2003 e -941 anos); ficam fora.
 --   município mais jovem × mais velho = terços da idade média da população no Censo 2022, entre
---           as 1.238 cidades dos 6 estados que o Censo tem (e, à parte, dentro de cada estado).
+--           as cidades do país que o Censo tem (e, à parte, dentro de cada estado).
 --   voto: o mesmo cargo da Q7 — deputado federal em 2018 e 2022, vereador em 2020 e 2024; 1º turno.
 --   alternância: o partido (com renomeações e fusões) ou a pessoa (pelo título) do prefeito eleito
 --           mudou de 2016 para 2020 e de 2020 para 2024.
@@ -22,7 +22,7 @@
 --     uv run python scripts/carregar_staging.py 20_q6
 
 -- ---------------------------------------------------------------------------
--- Idade da população (Censo 2022), uma linha por município dos 6 estados
+-- Idade da população (Censo 2022), uma linha por município
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE VIEW q6_censo_municipio AS
 WITH base AS (
@@ -38,7 +38,7 @@ WITH base AS (
     FROM modelo.censo_faixa_etaria AS c
     INNER JOIN modelo.faixa_etaria AS f ON c.id_faixa = f.id_faixa
     INNER JOIN modelo.municipio AS m ON c.cod_ibge = m.cod_ibge
-    WHERE c.ano_censo = 2022 AND m.sg_uf IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE')
+    WHERE c.ano_censo = 2022
     GROUP BY ALL
 )
 
@@ -71,7 +71,7 @@ SELECT
 FROM modelo.comparecimento_perfil AS p
 INNER JOIN modelo.faixa_etaria AS f ON p.id_faixa = f.id_faixa
 INNER JOIN modelo.municipio AS m ON p.cod_ibge = m.cod_ibge
-WHERE p.nr_turno = 1 AND f.nr_idade_min IS NOT NULL AND m.sg_uf IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE')
+WHERE p.nr_turno = 1 AND f.nr_idade_min IS NOT NULL
 GROUP BY ALL;
 
 -- ---------------------------------------------------------------------------
@@ -104,7 +104,7 @@ WHERE
     AND c.cd_cargo IN (3, 5, 6, 7, 11, 13)           -- sem presidente, vices e suplentes
     AND c.ds_sit_tot_turno IS NOT NULL               -- foi a voto (indeferido fica fora)
     AND c.nr_idade_eleicao BETWEEN 18 AND 100
-    AND coalesce(m.sg_uf, c.sg_ue) IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE');
+    AND coalesce(m.sg_uf, c.sg_ue) <> 'BR';          -- cargo nacional não tem estado
 
 -- Idade de candidatos e eleitos por eleição, estado e cargo (E.P.: 2018 a 2024)
 CREATE OR REPLACE VIEW q6_idade_eleitos AS
@@ -203,8 +203,8 @@ INNER JOIN oferta AS o
             OR (v.cd_cargo = 6 AND o.cod_ibge = -1 AND e.sg_uf = o.sg_uf)
         );
 
--- Correlação entre a idade do eleitorado e a idade de quem recebeu o voto, por eleição: nos 6
--- estados juntos ('TODAS') e dentro de cada estado (tira o efeito de MA e AM serem jovens e RS velho)
+-- Correlação entre a idade do eleitorado e a idade de quem recebeu o voto, por eleição: no país
+-- ('TODAS') e dentro de cada estado (tira o efeito de o Norte ser jovem e o Sul, velho)
 CREATE OR REPLACE VIEW q6_voto_idade_correlacao AS
 SELECT
     q.ano,
@@ -334,7 +334,7 @@ LEFT JOIN concorreu AS c20 ON cm.cod_ibge = c20.cod_ibge AND c20.ano = 2020
 LEFT JOIN concorreu AS c24 ON cm.cod_ibge = c24.cod_ibge AND c24.ano = 2024;
 
 -- Resumo por terço de idade: a resposta da pergunta, uma linha por corte, terço e eleição
--- municipal (2020, 2024). ds_corte = '6 UFS' (terços entre todas as cidades) ou 'NA UF' (terços
+-- municipal (2020, 2024). ds_corte = 'BRASIL' (terços entre todas as cidades) ou 'NA UF' (terços
 -- dentro de cada estado). Idades da população, do eleitorado e dos eleitos: Censo 2022 e 2024.
 CREATE OR REPLACE VIEW q6_resumo AS
 WITH t AS (
@@ -347,13 +347,13 @@ WITH t AS (
         m.nr_idade_media_eleitorado_2024,
         m.nr_idade_media_vereadores_2024,
         m.nr_idade_prefeito_2024,
-        CASE c.ds_corte WHEN '6 UFS' THEN m.nr_terco ELSE m.nr_terco_uf END AS nr_terco,
+        CASE c.ds_corte WHEN 'BRASIL' THEN m.nr_terco ELSE m.nr_terco_uf END AS nr_terco,
         CASE a.ano WHEN 2020 THEN m.fl_troca_partido_2020 ELSE m.fl_troca_partido_2024 END AS fl_troca_partido,
         CASE a.ano WHEN 2020 THEN m.fl_prefeito_concorreu_2020 ELSE m.fl_prefeito_concorreu_2024 END
             AS fl_concorreu,
         CASE a.ano WHEN 2020 THEN m.fl_prefeito_reeleito_2020 ELSE m.fl_prefeito_reeleito_2024 END AS fl_reeleito
     FROM q6_municipio AS m
-    CROSS JOIN (VALUES ('6 UFS'), ('NA UF')) AS c (ds_corte)
+    CROSS JOIN (VALUES ('BRASIL'), ('NA UF')) AS c (ds_corte)
     CROSS JOIN (VALUES (2020), (2024)) AS a (ano)
 )
 

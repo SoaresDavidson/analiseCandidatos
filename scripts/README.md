@@ -41,7 +41,7 @@ por meio de `painel_web.py`.
 | arquivo | grava | lê |
 | --- | --- | --- |
 | `gerar_painel_q1_q5.py` | `q1.json` (país inteiro), `q5.json` | `22_q1_custo_cadeira`, `23_q5_voto_legenda` |
-| `gerar_painel_q2_q6.py` | `q2.json` (país inteiro) e as fotos de `q2-fotos/`, `q6.json` | `18_q2_patrimonio`, `20_q6_idade` |
+| `gerar_painel_q2_q6.py` | `q2.json` e as fotos de `q2-fotos/`, `q6.json` (os dois com o país inteiro) | `18_q2_patrimonio`, `20_q6_idade` |
 | `gerar_painel_q3_q7.py` | `q3.json` (país inteiro), `q7.json` | `17_q7_vies`, `21_q3_indices` |
 | `gerar_malhas_web.py` | `malhas/brasil.json` e `malhas/<UF>.json`: os mapas do `MapaBrasil` | API de malhas do IBGE (não precisa do banco) |
 | `gerar_painel_q4.py` | `q4.json` (o país) e `q4/<UF>.json` (cada estado) | `10_q4_escolaridade`; os mapas são os de `gerar_malhas_web.py` |
@@ -49,7 +49,7 @@ por meio de `painel_web.py`.
 | `gerar_painel_q10.py` | `q10.json`, `q10-financas/NN.json` | `07_q10_carreira`, `14_q10_patrimonio` |
 | `gerar_painel_candidatos.py` | `candidatos/<UF>.json` (as fichas do país, um arquivo por estado) e as fotos | `13_ficha_candidato`, `07_q10_carreira` |
 | `gerar_painel_municipios.py` | `municipios-cidades.json` | `15_espectro` |
-| `painel_web.py` | (código comum) | `gravar()`, usado por todos os geradores |
+| `painel_web.py` | (código comum) | `gravar()`, usado por todos os geradores; as 27 siglas e capitais; `mapa()`, o mapa das páginas ainda nos 6 estados |
 | `baixar_fotos_web.py` | `web/public/fotos/<ano>/<sq>.jpg` | `candidatos/<UF>.json` e `candidatos-eleitos.json` (não precisa do banco). Também roda com `npm run fotos` em `web/`. |
 
 ## Consulta e documentação

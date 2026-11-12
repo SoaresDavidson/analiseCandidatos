@@ -1,134 +1,130 @@
 import { describe, expect, it } from "vitest";
 import {
+  afastar,
+  corCabelo,
   corIdade,
   doFiltro,
-  forcaCorrelacao,
+  entre,
   grupos,
+  idadesDe,
   linhasEleitos,
   MAPA_COR,
   media,
-  pearson,
   pesada,
-  pontosDispersao,
-  reeleicao,
   troca,
   votoGrupo,
 } from "../../../src/paineis/q6/calculo";
 import type { Municipio, Voto } from "../../../src/paineis/q6/tipos";
 
-const v = (aptos: number, aj: number | null, votos: number, vj: number | null, vi: number | null = 0): Voto => [
-  aptos,
-  aj,
-  10,
-  votos,
-  vj,
-  vi,
-  5,
-];
+const v = (
+  aptos: number,
+  aj: number | null,
+  votos: number,
+  vj: number | null,
+  vi: number | null = 0,
+  idade: number | null = 45,
+): Voto => [aptos, aj, 10, votos, vj, vi, 5, idade];
 const mun = (p: Partial<Municipio>) =>
   ({
     uf: "MA",
     terco: 1,
     tercoUf: 1,
-    troca: [null, null],
-    conc: [null, null],
-    reel: [null, null],
-    voto: [],
+    pop: 1000,
+    aptos: 800,
+    troca: null,
+    conc: null,
+    reel: null,
+    voto: null,
     ...p,
   }) as Municipio;
 
-describe("médias e correlação", () => {
+describe("médias", () => {
   it("media ignora nulos", () => {
-    expect(media([2, null, 4])).toBe(3);
-    expect(media([null])).toBeNull();
+    expect(media([1, null, 3])).toBe(2);
+    expect(media([null, undefined])).toBeNull();
   });
   it("pesada ignora nulo e peso zero", () => {
     expect(pesada([10, 20, null, 99], [1, 3, 5, 0])).toBe(17.5);
     expect(pesada([null], [1])).toBeNull();
   });
-  it("pearson em conjunto conhecido", () => {
-    expect(pearson([1, 2, 3, 4], [2, 4, 6, 8])).toBeCloseTo(1);
-    expect(pearson([1, 2, 3, 4], [8, 6, 4, 2])).toBeCloseTo(-1);
-    expect(pearson([1, 2, 3, 4, 5], [2, 1, 4, 3, 5])).toBeCloseTo(0.8);
-    expect(pearson([1, 2], [1, 2])).toBeNull();
-  });
-  it("forcaCorrelacao", () => {
-    expect(forcaCorrelacao(0.05)).toBe("nada");
-    expect(forcaCorrelacao(-0.2)).toBe("pouco");
-    expect(forcaCorrelacao(0.4)).toBe("moderadamente");
-    expect(forcaCorrelacao(0.9)).toBe("bastante");
-    expect(forcaCorrelacao(null)).toBe("");
-  });
 });
 
 describe("grupos e alternância", () => {
   const ms = [
-    mun({ cod: 1, terco: 1, tercoUf: 3, troca: [1, 1] }),
-    mun({ cod: 2, terco: 1, tercoUf: 1, troca: [0, 1] }),
-    mun({ cod: 3, terco: 3, tercoUf: 2, troca: [1, 0] }),
-    mun({ cod: 4, terco: null, tercoUf: null, troca: [null, null], uf: "GO" }),
+    mun({ uf: "MA", terco: 1, tercoUf: 3, troca: 1 }),
+    mun({ uf: "MA", terco: 2, tercoUf: 1, troca: 0 }),
+    mun({ uf: "RS", terco: 3, tercoUf: 1, troca: 1 }),
+    mun({ uf: "RS", terco: null, tercoUf: null, troca: null }),
   ];
-  it("grupos por terço, conforme o corte", () => {
-    expect(grupos(ms, "todas").map(g => g.map(m => m.cod))).toEqual([[1, 2], [], [3]]);
-    expect(grupos(ms, "uf").map(g => g.map(m => m.cod))).toEqual([[2], [3], [1]]);
+  it("grupos por terço: os do país ou os de dentro do estado", () => {
+    expect(grupos(ms, false).map(g => g.length)).toEqual([1, 1, 1]);
+    expect(grupos(ms, true).map(g => g.length)).toEqual([2, 0, 1]);
   });
-  it("filtra por estado", () => {
-    expect(doFiltro(ms, "TODAS")).toHaveLength(4);
-    expect(doFiltro(ms, "GO").map(m => m.cod)).toEqual([4]);
+  it("filtra por estado; sem estado, é o país", () => {
+    expect(doFiltro(ms, "RS")).toHaveLength(2);
+    expect(doFiltro(ms, null)).toHaveLength(4);
   });
-  it("conta trocas por eleição, sem contar sem dado", () => {
-    expect(troca(ms, 2020)).toEqual({ n: 3, t: 2, pc: (100 * 2) / 3 });
-    expect(troca(ms, 2024)).toEqual({ n: 3, t: 2, pc: (100 * 2) / 3 });
-    expect(troca([], 2024)).toEqual({ n: 0, t: 0, pc: null });
-  });
-  it("reeleição: tentaram e venceram", () => {
-    const rs = [
-      mun({ conc: [1, 1], reel: [0, 1] }),
-      mun({ conc: [1, 1], reel: [1, 0] }),
-      mun({ conc: [1, 0], reel: [null, null] }),
-      mun({ conc: [0, 1], reel: [0, 1] }),
-    ];
-    const r = reeleicao(rs, 2024);
-    expect(r.tentou).toBe(75);
-    expect(r.venceu).toBeCloseTo(200 / 3, 5);
+  it("conta as trocas de partido, sem contar cidade sem dado", () => {
+    expect(troca(ms)).toEqual({ n: 3, t: 2, pc: (100 * 2) / 3 });
+    expect(troca([]).pc).toBeNull();
   });
 });
 
-describe("voto por faixa", () => {
+describe("voto por faixa e idades", () => {
   const ms = [
-    mun({ voto: [null, v(100, 30, 80, 10, 4)] }),
-    mun({ voto: [null, v(300, 10, 120, null, null)] }),
-    mun({ voto: [null, null] }),
+    mun({ pop: 100, idade: 30, aptos: 100, idEl: 40, voto: v(100, 30, 50, 10, 0, 44) }),
+    mun({ pop: 300, idade: 38, aptos: 300, idEl: 48, voto: v(300, 10, 150, null, 20, 48) }),
+    mun({ pop: 50, idade: 35, aptos: null, idEl: null, voto: null }),
   ];
-  it("pesa pelos aptos e pelos votos; sem candidato conta 0% nos votos", () => {
-    const g = votoGrupo(ms, 2024);
-    expect(g.aj).toBeCloseTo((30 * 100 + 10 * 300) / 400);
-    expect(g.vj).toBeCloseTo((10 * 80 + 0 * 120) / 200);
-    expect(g.vi).toBeCloseTo((4 * 80) / 200);
+  it("pesa pelos aptos e pelos votos; sem candidato da faixa conta 0% nos votos", () => {
+    const g = votoGrupo(ms);
+    expect(g.aj).toBe(15);
+    expect(g.vj).toBe(2.5);
+    expect(g.vi).toBe(15);
   });
-  it("dispersão: pontos completos, cidades sem candidato e correlação", () => {
-    const d = [
-      mun({ voto: [null, v(1, 10, 1, 20)] }),
-      mun({ voto: [null, v(1, 20, 1, 40)] }),
-      mun({ voto: [null, v(1, 30, 1, 60)] }),
-      mun({ voto: [null, v(1, 5, 1, null)] }),
-    ];
-    const r = pontosDispersao(d, 2024, "jovem");
-    expect(r.pontos).toHaveLength(3);
-    expect(r.semCand).toBe(1);
-    expect(r.r).toBeCloseTo(1);
+  it("idades do conjunto: pela população, pelos eleitores e pelos votos", () => {
+    const id = idadesDe(ms);
+    expect(id.mora).toBeCloseTo((30 * 100 + 38 * 300 + 35 * 50) / 450);
+    expect(id.vota).toBe(46);
+    expect(id.votado).toBe(47);
+  });
+  it("uma cidade sem votação fica sem a idade do voto", () => {
+    expect(idadesDe([ms[2]])).toEqual({ mora: 35, vota: null, votado: null });
   });
 });
 
 describe("escala de cor do mapa", () => {
   it("extremos e cortes", () => {
     expect(corIdade(20)).toBe(MAPA_COR[0]);
-    expect(corIdade(31.9)).toBe(MAPA_COR[0]);
-    expect(corIdade(32)).toBe(MAPA_COR[1]);
-    expect(corIdade(40.9)).toBe(MAPA_COR[3]);
-    expect(corIdade(41)).toBe(MAPA_COR[4]);
+    expect(corIdade(32.9)).toBe(MAPA_COR[0]);
+    expect(corIdade(33)).toBe(MAPA_COR[1]);
+    expect(corIdade(38.9)).toBe(MAPA_COR[3]);
+    expect(corIdade(39)).toBe(MAPA_COR[4]);
     expect(corIdade(60)).toBe(MAPA_COR[4]);
     expect(corIdade(null)).toBe("var(--color-sem-dado)");
+  });
+});
+
+describe("rótulos do gráfico", () => {
+  it("afasta os que ficariam um em cima do outro e mantém a ordem de entrada", () => {
+    expect(afastar([100, 104, 200], 16, 0, 400)).toEqual([100, 116, 200]);
+    expect(afastar([104, 100], 16, 0, 400)).toEqual([116, 100]);
+  });
+  it("não passa do fim: empurra o grupo para cima", () => {
+    expect(afastar([390, 395, 398], 16, 0, 400)).toEqual([368, 384, 400]);
+  });
+});
+
+describe("rosto", () => {
+  it("cada traço entra aos poucos entre duas idades", () => {
+    expect(entre(30, 36, 50)).toBe(0);
+    expect(entre(43, 36, 50)).toBe(0.5);
+    expect(entre(70, 36, 50)).toBe(1);
+  });
+  it("cabelo escuro, grisalho e branco", () => {
+    expect(corCabelo(25)).toBe("rgb(43,31,23)");
+    expect(corCabelo(56)).toBe("rgb(143,139,134)");
+    expect(corCabelo(80)).toBe("rgb(239,239,235)");
   });
 });
 

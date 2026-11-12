@@ -2,7 +2,7 @@
 // atualize junto quando o gerador mudar os dados.
 // números conferidos no banco (6 estados): Q4, Q8 e Q10 em 15/10/2026; Q3 e Q7 em 17/10/2026; Q2 e Q6 em 20/10/2026;
 // Q9 em 22/10/2026 (64,2%: a soma exata, não a das partes arredondadas, 36% + 29%); Q1 e Q5 em 10/11/2026.
-// Q1, Q2, Q3, Q4 e Q5 refeitos com o país inteiro (27 UFs) em 12/11/2026
+// Q1 a Q6 refeitos com o país inteiro (27 UFs) em 12/11/2026
 
 export interface Cartao {
   n: number;
@@ -46,7 +46,7 @@ export const CARTOES: Cartao[] = [
     aba: "q6",
     assunto: "Idade",
     perg: "Jovem vota em jovem? A cidade troca de comando?",
-    resp: "Jovem não vota em jovem: só **5,5%** dos votos para vereador em 2024 foram para candidatos de até 29 anos. E **60%** das cidades trocaram o partido do prefeito.",
+    resp: "Jovem não vota em jovem: os jovens são **23%** dos eleitores, mas só **5%** dos votos para vereador em 2024 foram para candidatos de até 29 anos. E **65%** das cidades trocaram o partido do prefeito.",
   },
   {
     n: 8,

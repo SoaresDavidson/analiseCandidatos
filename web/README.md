@@ -3,7 +3,7 @@
 Painel do grupo em React + Vite + TypeScript + Tailwind CSS v4. Substitui os HTML
 gerados em `docs/*-painel/`.
 
-O app mostra as respostas às perguntas do trabalho. As Perguntas 1 a 5 usam a base do
+O app mostra as respostas às perguntas do trabalho. As Perguntas 1 a 6 usam a base do
 Brasil inteiro (27 UFs); as outras, por enquanto, os 6 estados do recorte original (AM, GO,
 MA, MT, RS, SE). É um site estático: não tem servidor nem banco. Os dados chegam já prontos
 em `public/dados/`, gravados pelos geradores Python (ver [Dados](#dados)).
@@ -99,8 +99,8 @@ e gravam cada arquivo de `public/dados/` por `scripts/painel_web.py`:
 | `municipios-cidades.json` | `uv run python -m scripts.gerar_painel_municipios` |
 
 Os geradores de duas perguntas aceitam o nome de uma só (`... gerar_painel_q1_q5 q1`). As
-Perguntas 1 a 5 e as fichas dos eleitos saem com o país inteiro (`ufs` com as 27 siglas,
-`UFS_BR` em `painel_web.py`); a 6 e a 7 seguem nos 6 estados. Para o país inteiro, a coleta é
+Perguntas 1 a 6 e as fichas dos eleitos saem com o país inteiro (`ufs` com as 27 siglas,
+`UFS_BR` em `painel_web.py`); a 7 segue nos 6 estados. Para o país inteiro, a coleta é
 `recorte_remoto --uf` com as 27 siglas (uns 31 GB em `dados/raw/`).
 
 A Pergunta 4 é um livro (`src/paineis/q4/`, estilos em `src/styles/livro.css`): a capa abre
@@ -108,6 +108,10 @@ girando na lombada, o sumário lista os 27 estados e cada capítulo traz o mapa 
 página da esquerda e a resposta na da direita. O `Livro.tsx` cuida da capa e das folhas que
 viram; `capitulos.ts` diz a ordem das aberturas. Os dados de cada estado (`q4/<UF>.json`) só
 são buscados quando o capítulo é aberto.
+
+A Pergunta 6 (`src/paineis/q6/`) tem o mapa do país com zoom e dois rostos desenhados
+(`Rosto.tsx`): cada um tem a idade do número embaixo dele, a de quem vota e a de quem recebeu
+os votos no lugar escolhido.
 
 `malhas/` são os mapas: os 27 estados e os municípios de cada um, no mesmo sistema de
 coordenadas, para o `MapaBrasil` (`src/componentes`) dar zoom do país para um estado.

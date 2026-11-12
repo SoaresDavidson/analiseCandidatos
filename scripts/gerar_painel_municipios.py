@@ -21,8 +21,7 @@ from pathlib import Path
 
 import duckdb
 
-from scripts.gerar_painel_q4 import CAPITAIS
-from scripts.painel_web import gravar
+from scripts.painel_web import CAPITAIS_BR, gravar
 
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
@@ -86,7 +85,7 @@ def main() -> None:
     ) in linhas:  # fmt: skip
         municipios.append(
             [
-                cod, nome, UFS.index(uf), 1 if cod in CAPITAIS else 0,
+                cod, nome, UFS.index(uf), 1 if cod in CAPITAIS_BR else 0,
                 num(voto24, 3), num(pc_class, 1), votos24 or 0,
                 qt_ver or 0, num(camara, 3), sg_pref or "", num(vl_pref, 2), num(voto22, 3),
                 qt_cand or 0, num(receita), num(publico), num(propaganda),

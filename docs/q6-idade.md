@@ -131,7 +131,7 @@ nos três terços (82% a 86% em 2024).
 | View | Grão (uma linha por) | Colunas principais |
 |---|---|---|
 | `q6_municipio` | município (1.238) | idade média da população, % jovem e % 60+ (Censo 2022); terço nos 6 estados e no estado; idade média e % jovem do eleitorado 2024; abstenção jovem × não jovem; idade média dos vereadores e do prefeito eleitos em 2024; partido do prefeito em 2016, 2020 e 2024; troca de partido; prefeito concorreu e foi reeleito |
-| `q6_resumo` | corte (`6 UFS` ou `NA UF`) × terço × eleição municipal (2020, 2024) | as médias das idades, % troca de partido, % prefeito concorreu, % reeleito, votos em jovem e em 60+ |
+| `q6_resumo` | corte (`BRASIL` ou `NA UF`) × terço × eleição municipal (2020, 2024) | as médias das idades, % troca de partido, % prefeito concorreu, % reeleito, votos em jovem e em 60+ |
 | `q6_idade_eleitos` | eleição × estado × cargo (2018–2024) | idade média de candidatos e eleitos, % jovem e % 60+, chance de vitória por faixa |
 | `q6_voto_idade` | município × eleição (vereador 2020/2024, deputado federal 2018/2022) | idade do eleitorado, % jovem e % 60+ no eleitorado e nos votos, idade média do voto, % jovem entre candidatos e eleitos |
 | `q6_voto_idade_correlacao` | eleição × estado (e `TODAS`) | correlações entre o eleitorado e os votos, jovem e 60+ |

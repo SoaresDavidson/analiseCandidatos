@@ -60,7 +60,7 @@ export function Inicio() {
       <div className="mx-auto grid max-w-pagina gap-4 px-5 pt-[26px] pb-14">
         <h1 className="motion-safe:animate-sobe">O que os dados das eleições respondem</h1>
         <p className="max-w-[72ch] text-texto-2 motion-safe:animate-sobe motion-safe:[animation-delay:.08s]">
-          Candidaturas e resultados do TSE e dados do IBGE, de 2002 a 2024. As Perguntas 1 a 5 já usam o Brasil inteiro;
+          Candidaturas e resultados do TSE e dados do IBGE, de 2002 a 2024. As Perguntas 1 a 6 já usam o Brasil inteiro;
           as outras, por enquanto, os seis estados sorteados (AM, GO, MA, MT, RS e SE). Escolha uma pergunta: cada uma
           abre com a resposta em linguagem simples. De onde vêm os dados fica no fim de cada página.
         </p>

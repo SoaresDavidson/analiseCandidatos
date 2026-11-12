@@ -1,6 +1,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Carregando, ProvedorDica } from "./componentes";
 import { Inicio } from "./inicio/Inicio";
+import { modalAberto } from "./lib/modal";
 import { type Navegacao, NavegacaoContexto } from "./lib/navegacao";
 import { irPara, useHash } from "./lib/useHash";
 import { useRecolheAoRolar } from "./lib/useRecolheAoRolar";
@@ -96,7 +97,8 @@ export default function App() {
         if (e.key === "Escape") fecharFicha();
         return;
       }
-      if (digitando(e)) return;
+      // outro diálogo aberto (patrimônio, ficha da lista de eleitos): as teclas são dele
+      if (digitando(e) || modalAberto()) return;
       if (konami(e.key)) return;
       if (e.key === "ArrowRight") passo(1);
       if (e.key === "ArrowLeft") passo(-1);

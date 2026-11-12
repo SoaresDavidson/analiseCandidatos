@@ -9,5 +9,6 @@ export { Alternador, Botao, Seletor, SeletorUf } from "./controles";
 export { ProvedorDica, useDica } from "./Dica";
 export { FotoEleito } from "./FotoEleito";
 export { Aneis, Anel, Barra, Barras, Empilhada } from "./graficos";
+export { Janela } from "./Janela";
 export { Campo, Pagina } from "./Pagina";
 export { type Assento, Plenario } from "./Plenario";

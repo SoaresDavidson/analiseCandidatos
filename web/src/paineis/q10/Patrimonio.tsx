@@ -1,9 +1,8 @@
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import { Alternador, Cor, useDica } from "../../componentes";
+import { Alternador, Cor, Janela, useDica } from "../../componentes";
 import { brl, fmt } from "../../lib/formato";
 import type { Foto } from "./fotos";
-import { type AnoFin, GRUPO_COR, GRUPO_NOME, type Pessoa } from "./logica";
+import { type AnoFin, anosSuspeitos, GRUPO_COR, GRUPO_NOME, type Pessoa } from "./logica";
 import { Retrato } from "./Retrato";
 import type { DadosQ10 } from "./tipos";
 import { quadricular, type Ret } from "./treemap";
@@ -13,18 +12,10 @@ import type { Financas } from "./useFinancas";
 function analisar(D: DadosQ10, anos: AnoFin[]) {
   const comBens = anos.filter(x => x.temBens);
   const fat = (ano: number) => D.fin.fator[ano] || 1;
-  // um ano 50 vezes acima da mediana dos outros (e acima de R$ 10 milhões) tem cara de erro de digitação
-  const suspeitos = comBens.filter(x => {
-    const outros = comBens
-      .filter(y => y !== x)
-      .map(y => y.total)
-      .sort((a, b) => a - b);
-    if (!outros.length) return false;
-    const med = outros[outros.length >> 1];
-    return x.total >= 1e7 && x.total >= 50 * Math.max(med, 1);
-  });
-  // a comparação deixa de fora os anos com cara de erro de digitação
+  const suspeitos = anosSuspeitos(comBens);
+  // a comparação deixa de fora os anos com cara de erro de digitação, e diz isso na frase
   const confiaveis = comBens.filter(x => !suspeitos.includes(x));
+  const semContar = suspeitos.length ? ` (sem contar ${lista(suspeitos.map(x => x.ano))})` : "";
 
   let frase: ReactNode = null;
   if (comBens.length === 1) frase = "É a única declaração disponível (o TSE publica bens a partir de 2006).";
@@ -37,7 +28,8 @@ function analisar(D: DadosQ10, anos: AnoFin[]) {
     const variacao = ra > 0 ? (100 * (rb - ra)) / ra : null;
     frase = (
       <>
-        De {a.ano} a {b.ano}, o patrimônio declarado foi de {brl(a.total)} para {brl(b.total)}.
+        De {a.ano} a {b.ano}
+        {semContar}, o patrimônio declarado foi de {brl(a.total)} para {brl(b.total)}.
         {variacao != null && (
           <>
             {" "}
@@ -58,6 +50,10 @@ function analisar(D: DadosQ10, anos: AnoFin[]) {
   return { comBens, suspeitos, frase };
 }
 
+/** "2014" ou "2010 e 2014". */
+const lista = (anos: number[]): string =>
+  anos.length < 2 ? anos.join("") : `${anos.slice(0, -1).join(", ")} e ${anos[anos.length - 1]}`;
+
 /** Pop-up do patrimônio: o rosto em cima e, embaixo, um retângulo por bem, do tamanho do valor declarado. */
 export function Patrimonio({
   D,
@@ -77,7 +73,7 @@ export function Patrimonio({
   const [escolhido, setEscolhido] = useState<number | null>(null);
   // abre no ano mais recente, até a pessoa escolher outro
   const x = comBens.find(y => y.ano === escolhido) ?? comBens[comBens.length - 1];
-  const suspeito = x != null && analise?.suspeitos.includes(x);
+  const suspeitos = analise?.suspeitos ?? [];
   const fator = x ? D.fin.fator[x.ano] || 1 : 1;
 
   return (
@@ -114,7 +110,7 @@ export function Patrimonio({
             <div className="justify-self-center">
               <Alternador
                 rotulo="Eleição da declaração"
-                opcoes={comBens.map(y => [y.ano, `${analise?.suspeitos.includes(y) ? "⚠ " : ""}${y.ano}`] as const)}
+                opcoes={comBens.map(y => [y.ano, `${suspeitos.includes(y) ? "⚠ " : ""}${y.ano}`] as const)}
                 valor={x.ano}
                 aoMudar={setEscolhido}
               />
@@ -133,10 +129,11 @@ export function Patrimonio({
                 </span>
               ))}
           </div>
-          {suspeito && (
+          {suspeitos.length > 0 && (
             <p className="rounded-md border-l-4 border-ouro bg-ouro-claro px-3 py-2 text-sm">
-              Atenção: o valor de {x.ano} é muito maior que o dos outros anos. Pode ser erro de digitação na declaração
-              ao TSE; o painel mostra o valor como foi publicado.
+              Atenção: o valor de {lista(suspeitos.map(y => y.ano))} (⚠) é muito maior que o dos outros anos. Pode ser
+              erro de digitação na declaração ao TSE; o painel mostra o valor como foi publicado e deixa{" "}
+              {suspeitos.length > 1 ? "esses anos" : "esse ano"} fora da comparação abaixo.
             </p>
           )}
           {analise?.frase && <p className="text-center text-[15px]">{analise.frase}</p>}
@@ -189,10 +186,12 @@ function Mapa({ x, fator }: { x: AnoFin; fator: number }) {
     const porTipo = new Map<string, { nome: string; g: number; v: number }>();
     for (const it of x.itens) {
       if (it.v <= 0) continue;
-      const k = `${it.g}|${it.nome}`;
+      // soma pelo nome já arrumado: "CASA" e "Casa" são o mesmo retângulo
+      const nome = nomeBem(it.nome);
+      const k = `${it.g}|${nome}`;
       const ja = porTipo.get(k);
       if (ja) ja.v += it.v;
-      else porTipo.set(k, { nome: nomeBem(it.nome), g: it.g, v: it.v });
+      else porTipo.set(k, { nome, g: it.g, v: it.v });
     }
     const grupos = [...new Set([...porTipo.values()].map(it => it.g))];
     const doGrupo = (g: number) => [...porTipo.values()].filter(it => it.g === g).sort((a, b) => b.v - a.v);
@@ -281,70 +280,5 @@ function Mapa({ x, fator }: { x: AnoFin; fator: number }) {
         );
       })}
     </div>
-  );
-}
-
-const FOCAVEIS = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-
-/** Janela por cima da página: fecha com Esc, no X ou clicando fora; o foco fica preso dentro e volta ao sair. */
-function Janela({ titulo, aoFechar, children }: { titulo: string; aoFechar: () => void; children: ReactNode }) {
-  const caixa = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const antes = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const el = caixa.current;
-    el?.focus();
-    const tecla = (ev: KeyboardEvent) => {
-      if (ev.key === "Escape") aoFechar();
-      if (ev.key !== "Tab" || !el) return;
-      const focaveis = [...el.querySelectorAll<HTMLElement>(FOCAVEIS)];
-      const primeiro = focaveis[0],
-        ultimo = focaveis[focaveis.length - 1];
-      if (!primeiro) return;
-      if (ev.shiftKey && (document.activeElement === primeiro || document.activeElement === el)) {
-        ev.preventDefault();
-        ultimo.focus();
-      } else if (!ev.shiftKey && document.activeElement === ultimo) {
-        ev.preventDefault();
-        primeiro.focus();
-      }
-    };
-    document.addEventListener("keydown", tecla);
-    const rolagem = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", tecla);
-      document.body.style.overflow = rolagem;
-      antes?.focus();
-    };
-  }, [aoFechar]);
-
-  return createPortal(
-    // biome-ignore lint/a11y/noStaticElementInteractions: clicar no véu fecha; o teclado usa Esc e o botão Fechar
-    <div
-      className="q10-veu fixed inset-0 z-[60] grid place-items-center overflow-y-auto bg-black/55 p-3"
-      onMouseDown={ev => {
-        if (ev.target === ev.currentTarget) aoFechar();
-      }}
-    >
-      <div
-        ref={caixa}
-        role="dialog"
-        aria-modal="true"
-        aria-label={titulo}
-        tabIndex={-1}
-        className="q10-janela relative grid w-full max-w-[900px] gap-3.5 rounded-caixa bg-branco px-5 pt-6 pb-5 shadow-[0_20px_60px_rgb(0_0_0/0.35)] outline-none"
-      >
-        <button
-          type="button"
-          aria-label="Fechar"
-          onClick={aoFechar}
-          className="absolute top-3 right-3 grid size-9 cursor-pointer place-items-center rounded-full border-0 bg-bege text-[22px] leading-none font-bold hover:bg-ouro"
-        >
-          ×
-        </button>
-        {children}
-      </div>
-    </div>,
-    document.body,
   );
 }

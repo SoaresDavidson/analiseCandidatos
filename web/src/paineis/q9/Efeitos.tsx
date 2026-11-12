@@ -123,30 +123,75 @@ function Fincadas() {
   );
 }
 
-/** Repete `pintar` a cada `intervalo` ms enquanto o componente existir; parado para quem reduz movimento. */
-function useQuadros(pintar: (ctx: CanvasRenderingContext2D, tela: HTMLCanvasElement) => () => void, intervalo: number) {
+/** Depois da entrada da cena o enfeite fica de fundo, quase transparente: pinta na metade do ritmo. */
+const ENTRADA_MS = 1800;
+
+/**
+ * Repete `pintar` a cada `intervalo` ms. Para poupar bateria, o laço só roda com a tela à vista
+ * (IntersectionObserver) e desacelera depois da entrada; parado para quem reduz movimento.
+ * Com `acompanhaTamanho`, a cena é remontada quando a tela muda de tamanho (girar o celular).
+ */
+function useQuadros(
+  pintar: (ctx: CanvasRenderingContext2D, tela: HTMLCanvasElement) => () => void,
+  intervalo: number,
+  acompanhaTamanho = false,
+) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const tela = ref.current;
     const ctx = tela?.getContext("2d");
     if (!tela || !ctx) return;
-    const quadro = pintar(ctx, tela);
-    quadro();
-    if (semMovimento()) {
-      for (let k = 0; k < 40; k++) quadro();
-      return;
-    }
+    const parado = semMovimento();
+    let quadro = () => {};
+    const montar = () => {
+      quadro = pintar(ctx, tela);
+      // parado: uma imagem pronta, já com a tela "cheia"
+      for (let k = parado ? 40 : 1; k > 0; k--) quadro();
+    };
+    montar();
+
     let id = 0,
-      ultimo = 0;
+      rodando = false,
+      ultimo = 0,
+      inicio = 0;
     const passo = (t: number) => {
-      if (t - ultimo >= intervalo) {
+      inicio ||= t;
+      if (t - ultimo >= (t - inicio > ENTRADA_MS ? 2 * intervalo : intervalo)) {
         ultimo = t;
         quadro();
       }
       id = requestAnimationFrame(passo);
     };
-    id = requestAnimationFrame(passo);
-    return () => cancelAnimationFrame(id);
+    const ligar = (sim: boolean) => {
+      if (parado || sim === rodando) return;
+      rodando = sim;
+      if (sim) id = requestAnimationFrame(passo);
+      else cancelAnimationFrame(id);
+    };
+
+    const vista =
+      typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver(([e]) => ligar(e.isIntersecting));
+    if (vista) vista.observe(tela);
+    else ligar(true);
+
+    let larg = tela.clientWidth,
+      alt = tela.clientHeight;
+    const tamanho =
+      !acompanhaTamanho || typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(() => {
+            if (tela.clientWidth === larg && tela.clientHeight === alt) return;
+            larg = tela.clientWidth;
+            alt = tela.clientHeight;
+            montar();
+          });
+    tamanho?.observe(tela);
+
+    return () => {
+      ligar(false);
+      vista?.disconnect();
+      tamanho?.disconnect();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return ref;
@@ -170,21 +215,25 @@ function Chuvisco() {
 
 /** Colunas de caracteres caindo, como tela de terminal. */
 function ChuvaDeCodigo() {
-  const ref = useQuadros((ctx, tela) => {
-    const w = (tela.width = tela.clientWidth || 1000);
-    const h = (tela.height = tela.clientHeight || 430);
-    const fs = 15;
-    const colunas = Array.from({ length: Math.ceil(w / fs) }, () => Math.random() * -40);
-    return () => {
-      ctx.fillStyle = "rgb(6 18 11 / 0.16)";
-      ctx.fillRect(0, 0, w, h);
-      ctx.fillStyle = "#35d06f";
-      ctx.font = `${fs}px ui-monospace, Menlo, Consolas, monospace`;
-      colunas.forEach((y, i) => {
-        ctx.fillText(GLIFOS[(Math.random() * GLIFOS.length) | 0], i * fs, y * fs);
-        colunas[i] = y * fs > h && Math.random() > 0.97 ? 0 : y + 1;
-      });
-    };
-  }, 55);
+  const ref = useQuadros(
+    (ctx, tela) => {
+      const w = (tela.width = tela.clientWidth || 1000);
+      const h = (tela.height = tela.clientHeight || 430);
+      const fs = 15;
+      const colunas = Array.from({ length: Math.ceil(w / fs) }, () => Math.random() * -40);
+      return () => {
+        ctx.fillStyle = "rgb(6 18 11 / 0.16)";
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "#35d06f";
+        ctx.font = `${fs}px ui-monospace, Menlo, Consolas, monospace`;
+        colunas.forEach((y, i) => {
+          ctx.fillText(GLIFOS[(Math.random() * GLIFOS.length) | 0], i * fs, y * fs);
+          colunas[i] = y * fs > h && Math.random() > 0.97 ? 0 : y + 1;
+        });
+      };
+    },
+    55,
+    true,
+  );
   return <canvas ref={ref} className="net-chuva" />;
 }

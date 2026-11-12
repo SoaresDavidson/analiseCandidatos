@@ -9,7 +9,7 @@ export type Eleito = [
   nomeCompleto: string, // 6
   ...resto: unknown[],
 ];
-// Posições lidas por índice (a tupla acima não as nomeia): 10 = grau (índice em `graus`),
+// Posições lidas por índice (a tupla acima não as nomeia): 8 = gênero (índice em `generos`), 10 = grau (índice em `graus`),
 // 13 = votos, 17 = receita, 18 = dinheiro público, 26 = carreira (blocos de 5; o 5º é 0 quando o resultado foi vitória).
 
 export interface DadosEleitos {
@@ -17,11 +17,14 @@ export interface DadosEleitos {
   ues: string[];
   partidos: string[];
   graus: string[];
+  generos: string[];
   eleitos: Eleito[];
   sq: number[];
 }
 
 export type ElementoId = "raio" | "fogo" | "agua" | "terra" | "luz" | "ouro";
+/** Raridade da carta: a posição em votos dentro do mesmo cargo e eleição. */
+export type Raridade = "comum" | "incomum" | "rara" | "epica" | "lendaria";
 export type Lado = "a" | "b";
 
 /** Um eleito transformado em carta. Os poderes são a posição (1 a 10) dentro do mesmo cargo e eleição. */
@@ -49,6 +52,9 @@ export interface CartaEleito {
   el: ElementoId;
   atq: number;
   mana: number;
+  raridade: Raridade;
+  /** gênero feminino no cadastro do TSE (para o carimbo "DERROTADA") */
+  fem: boolean;
 }
 
 export interface Rodada {

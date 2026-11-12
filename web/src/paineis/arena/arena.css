@@ -1,0 +1,812 @@
+/* Visual da Arena: palco, cartas em pixel-art com raridade e holo, centro do duelo e carimbos.
+   Fica num CSS próprio (e não em classes do Tailwind) porque são dezenas de camadas de gradiente e
+   keyframes que só a Arena usa. As cores de base vêm de styles/tema.css. */
+
+.fonte-pixel {
+  font-family: "Press Start 2P", monospace;
+}
+
+/* contorno preto "em degrau" nas letras, para ler sobre a foto e sobre o holo */
+.contorno-pixel {
+  text-shadow:
+    2px 0 #000,
+    -2px 0 #000,
+    0 2px #000,
+    0 -2px #000,
+    2px 2px #000,
+    -2px -2px #000,
+    2px -2px #000,
+    -2px 2px #000,
+    0 4px #000;
+}
+
+/* ============================== palco ============================== */
+
+.arena-palco {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  border-top: 6px solid var(--color-ouro);
+  padding: 30px 18px 34px;
+  background: linear-gradient(180deg, var(--color-nivel-4) 0%, #26340a 100%);
+}
+/* a foto do Congresso a 30%, por cima do verde */
+.arena-palco::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: url("./congresso.webp") center / cover no-repeat;
+  opacity: 0.3;
+}
+.arena-palco > * {
+  position: relative;
+}
+
+.arena-treme {
+  animation: arena-treme 0.35s;
+}
+@keyframes arena-treme {
+  20% {
+    translate: 4px 2px;
+  }
+  40% {
+    translate: -4px -2px;
+  }
+  60% {
+    translate: 3px 0;
+  }
+  80% {
+    translate: -2px 1px;
+  }
+}
+
+/* centro: altura fixa para o botão "Lutar!" nunca mudar de lugar quando o histórico cresce */
+.arena-centro {
+  display: grid;
+  grid-template-rows: 150px auto 190px;
+  justify-items: center;
+  align-items: start;
+  gap: 18px;
+  width: 100%;
+  max-width: 280px;
+  text-align: center;
+}
+.arena-placa {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 9px;
+  width: 100%;
+  height: 150px;
+  padding: 12px 14px;
+  background: rgb(20 28 6 / 0.82);
+  box-shadow:
+    0 0 0 3px #1b2405,
+    0 0 0 6px var(--color-ouro),
+    0 0 0 9px #1b2405;
+}
+.arena-placa .rodada {
+  font-size: 9px;
+  color: var(--color-verde-claro);
+  letter-spacing: 0.05em;
+}
+.arena-placa .titulo {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-ouro);
+}
+.arena-placa .pergunta {
+  font-size: 8px;
+  line-height: 1.75;
+  color: #fff;
+}
+
+/* botão de videogame: cantos em degrau, sombra dura, afunda ao clicar */
+.botao-pixel {
+  cursor: pointer;
+  border: 0;
+  padding: 13px 22px;
+  font-size: 14px;
+  color: #222;
+  background: var(--color-ouro);
+  box-shadow:
+    0 -4px 0 0 #1b2405,
+    0 4px 0 0 #1b2405,
+    -4px 0 0 0 #1b2405,
+    4px 0 0 0 #1b2405,
+    inset 0 -5px 0 0 var(--color-ouro-esc),
+    inset 0 4px 0 0 var(--color-ouro-claro),
+    0 9px 0 0 #000;
+}
+.botao-pixel:hover:not(:disabled) {
+  background: #f5c51a;
+}
+.botao-pixel:active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow:
+    0 -4px 0 0 #1b2405,
+    0 4px 0 0 #1b2405,
+    -4px 0 0 0 #1b2405,
+    4px 0 0 0 #1b2405,
+    inset 0 4px 0 0 var(--color-ouro-esc),
+    0 4px 0 0 #000;
+}
+.botao-pixel:disabled {
+  cursor: default;
+  filter: saturate(0.6) brightness(0.85);
+}
+
+.arena-registro {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  width: 100%;
+  height: 190px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  text-align: left;
+}
+.arena-registro li {
+  padding: 6px 8px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--color-verde-claro);
+  background: rgb(0 0 0 / 0.55);
+  box-shadow: 0 0 0 2px #111;
+}
+.arena-registro b {
+  color: #fff;
+}
+
+/* barra de vida em pixel: anda em degraus e muda de cor */
+.vida-pixel {
+  position: relative;
+  width: 236px;
+  max-width: 100%;
+  height: 22px;
+  padding: 3px;
+  background: #111;
+  box-shadow:
+    0 0 0 3px var(--color-ouro),
+    0 0 0 6px #111;
+}
+.vida-pixel i {
+  display: block;
+  height: 100%;
+  transition:
+    width 0.6s steps(10),
+    background 0.6s;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--cor-vida) 0 8px,
+    color-mix(in srgb, var(--cor-vida) 70%, #000) 8px 10px
+  );
+}
+.vida-pixel span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 8px;
+  color: #fff;
+  text-shadow: 1px 1px 0 #111;
+}
+
+/* a caixa da carta: é ela que pula, apanha e recebe o carimbo, para a carta ficar livre para inclinar */
+.arena-slot {
+  position: relative;
+  perspective: 900px;
+}
+.arena-slot.venceu {
+  translate: 0 -10px;
+  filter: drop-shadow(0 0 14px rgb(158 183 53 / 0.9));
+  transition:
+    translate 0.5s,
+    filter 0.5s;
+}
+.arena-slot.perdeu {
+  filter: grayscale(1) brightness(0.75);
+  transition: filter 0.5s;
+}
+
+/* ============================== carimbos ============================== */
+
+.carimbo-pixel {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  z-index: 7;
+  translate: -50% -50%;
+  padding: 9px 12px;
+  font-size: 15px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: carimbo 0.45s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  animation-delay: var(--atraso, 0s);
+}
+.carimbo-pixel.venceu {
+  rotate: -12deg;
+  color: var(--color-verde-esc);
+  background: var(--color-verde-claro);
+  box-shadow:
+    0 0 0 4px var(--color-verde-esc),
+    0 0 0 7px #111,
+    6px 8px 0 4px rgb(0 0 0 / 0.35);
+}
+.carimbo-pixel.perdeu,
+.carimbo-pixel.empate {
+  color: var(--color-texto);
+  background: var(--color-bege);
+  box-shadow:
+    0 0 0 4px var(--color-texto-2),
+    0 0 0 7px #111,
+    6px 8px 0 4px rgb(0 0 0 / 0.35);
+}
+.carimbo-pixel.perdeu {
+  rotate: 9deg;
+  font-size: 13px;
+}
+.carimbo-pixel.empate {
+  rotate: -6deg;
+}
+@keyframes carimbo {
+  0% {
+    opacity: 0;
+    scale: 2.6;
+  }
+  60% {
+    opacity: 1;
+    scale: 0.9;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/* ============================== a carta ============================== */
+
+.carta-px {
+  --mx: 50%;
+  --my: 50%;
+  --rx: 0deg;
+  --ry: 0deg;
+  position: relative;
+  width: 236px;
+  max-width: 100%;
+  padding: 10px;
+  color: #fff;
+  text-align: left;
+  image-rendering: pixelated;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.25s ease-out;
+  /* brilho atrás da foto + raios (da rara para cima) + textura em pixel + degradê da raridade */
+  background:
+    radial-gradient(ellipse at 50% 32%, color-mix(in srgb, var(--r-claro) 55%, transparent) 0%, transparent 55%),
+    var(--raios, linear-gradient(transparent, transparent)),
+    var(--textura) 0 0 / 32px 32px,
+    linear-gradient(160deg, var(--r-claro) -20%, var(--r) 35%, var(--r-esc) 115%);
+  /* moldura em relevo: claro em cima e à esquerda, escuro embaixo e à direita, contorno preto */
+  box-shadow:
+    inset 3px 3px 0 0 color-mix(in srgb, var(--r-claro) 80%, #fff),
+    inset -3px -3px 0 0 var(--r-esc),
+    0 -4px 0 0 #111,
+    0 4px 0 0 #111,
+    -4px 0 0 0 #111,
+    4px 0 0 0 #111,
+    10px 14px 0 0 rgb(0 0 0 / 0.35);
+}
+.carta-px img {
+  display: block;
+  image-rendering: pixelated;
+}
+.carta-px.comum {
+  --r: #8f8f8f;
+  --r-claro: #c9c9c9;
+  --r-esc: #3f3f3f;
+  --pap: #eceae6;
+}
+.carta-px.incomum {
+  --r: #6f9a24;
+  --r-claro: #b7da6a;
+  --r-esc: #2c4208;
+  --pap: #eef4d8;
+}
+.carta-px.rara {
+  --r: #2f72b4;
+  --r-claro: #8cc4f2;
+  --r-esc: #0c2f5e;
+  --pap: #dcebf8;
+}
+.carta-px.epica {
+  --r: #7b5cc9;
+  --r-claro: #c4b0ff;
+  --r-esc: #2a1a5a;
+  --pap: #ece6fa;
+}
+.carta-px.lendaria {
+  --r: #e0a800;
+  --r-claro: #fff0a0;
+  --r-esc: #6e4a00;
+  --pap: #fff6d6;
+}
+.carta-px.rara,
+.carta-px.epica,
+.carta-px.lendaria {
+  --raios: repeating-conic-gradient(from 0deg at 50% 32%, rgb(255 255 255 / 0.1) 0 6deg, transparent 6deg 18deg);
+}
+
+.carta-px .gema {
+  position: absolute;
+  z-index: 3;
+  width: 14px;
+  height: 14px;
+}
+.carta-px .gema.g1 {
+  top: -7px;
+  left: -7px;
+}
+.carta-px .gema.g2 {
+  top: -7px;
+  right: -7px;
+}
+.carta-px .gema.g3 {
+  bottom: -7px;
+  left: -7px;
+}
+.carta-px .gema.g4 {
+  bottom: -7px;
+  right: -7px;
+}
+
+.carta-px .miolo {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 7px;
+  padding: 8px;
+  box-shadow:
+    inset 0 0 0 2px #111,
+    inset 0 0 0 4px color-mix(in srgb, var(--r-claro) 70%, transparent);
+}
+
+/* o nome numa fita de pontas recortadas */
+.carta-px .fita {
+  margin: 0 -14px;
+  padding: 7px 14px;
+  text-align: center;
+  background: var(--r-esc);
+  clip-path: polygon(0 0, 100% 0, 94% 50%, 100% 100%, 0 100%, 6% 50%);
+  box-shadow:
+    inset 0 2px 0 0 color-mix(in srgb, var(--r-claro) 60%, transparent),
+    inset 0 -3px 0 0 rgb(0 0 0 / 0.4);
+}
+.carta-px.rara .fita,
+.carta-px.epica .fita,
+.carta-px.lendaria .fita {
+  background: linear-gradient(90deg, var(--r-esc), color-mix(in srgb, var(--r) 70%, var(--r-esc)), var(--r-esc));
+}
+.carta-px .nome {
+  display: block;
+  overflow: hidden;
+  font-size: 9px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow:
+    1px 1px 0 #111,
+    2px 2px 0 rgb(0 0 0 / 0.4);
+}
+
+.carta-px .meio {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+}
+.carta-px .moldura-foto {
+  position: relative;
+  padding: 4px;
+  background: var(--r-esc);
+  box-shadow:
+    0 0 0 2px #111,
+    inset 2px 2px 0 0 var(--r-claro),
+    inset -2px -2px 0 0 rgb(0 0 0 / 0.45);
+}
+.carta-px .foto {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 81 / 113;
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--color-breve);
+  background: var(--color-bege);
+  box-shadow: inset 0 0 0 2px #111;
+}
+.carta-px .foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: auto;
+}
+.carta-px .elemento {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  background: var(--pap);
+  box-shadow:
+    0 0 0 2px #111,
+    inset 0 0 0 2px var(--r);
+}
+.carta-px .elemento img {
+  width: 18px;
+  height: 18px;
+}
+
+.carta-px .lado {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 6px;
+  min-width: 0;
+}
+.carta-px .estrelas {
+  display: flex;
+  gap: 2px;
+}
+.carta-px .estrelas img {
+  width: 10px;
+  height: 10px;
+}
+.carta-px .selo {
+  padding: 4px 5px;
+  font-size: 7px;
+  color: var(--r-claro);
+  background: #111;
+  box-shadow: 0 0 0 2px var(--r-claro);
+}
+.carta-px .info {
+  max-width: 100%;
+  padding: 4px 5px;
+  font-size: 10.5px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  background: rgb(10 10 20 / 0.72);
+  box-shadow: 0 0 0 2px #111;
+  text-shadow: 1px 1px 0 #111;
+}
+.carta-px .tipo {
+  padding: 3px 5px;
+  font-size: 6.5px;
+  color: #111;
+  background: var(--r-claro);
+  box-shadow: 0 0 0 2px #111;
+}
+
+/* os seis poderes, em ladrilhos */
+.carta-px .poderes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+.carta-px .poder {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  column-gap: 4px;
+  align-items: center;
+  padding: 3px 5px;
+  background: var(--pap);
+  box-shadow:
+    0 0 0 2px #111,
+    inset 0 -2px 0 0 color-mix(in srgb, var(--r) 45%, transparent);
+}
+.carta-px .poder img {
+  grid-row: span 2;
+  width: 18px;
+  height: 18px;
+}
+.carta-px .poder .rotulo {
+  font-size: 8.5px;
+  line-height: 1.1;
+  color: var(--color-texto-2);
+}
+.carta-px .poder b {
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.15;
+  color: #222;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* o ladrilho da rodada em jogo */
+.carta-px .poder.destaque {
+  box-shadow:
+    0 0 0 2px #111,
+    0 0 0 4px var(--color-ouro);
+}
+
+.carta-px .pe {
+  display: flex;
+  justify-content: space-between;
+}
+.carta-px .placa-pe {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px 4px 6px;
+  background: #111;
+  box-shadow: 0 0 0 2px var(--r-claro);
+}
+.carta-px .placa-pe b {
+  font-size: 11px;
+  color: #fff;
+}
+.carta-px .placa-pe img {
+  width: 18px;
+  height: 18px;
+}
+
+/* ============================== holográfico ==============================
+   --mx/--my: onde está o mouse; --rx/--ry: inclinação (o componente atualiza). O efeito cresce com a
+   raridade: rara = arco-íris discreto que segue o mouse; épica = carta inteira em arco-íris, riscas de
+   foil e purpurina; lendária = tudo no máximo e animado sozinho, com aura e moldura trocando de cor. */
+
+.carta-px .holo,
+.carta-px .purpurina,
+.carta-px .reflexo {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+}
+.carta-px .holo-foto {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.carta-px.rara .holo {
+  opacity: 0.26;
+  mix-blend-mode: color-dodge;
+  background:
+    repeating-linear-gradient(115deg, #ff2a6d 0%, #ffb400 8%, #2bff88 16%, #00e5ff 24%, #e84bff 32%, #ff2a6d 40%)
+    calc(var(--mx) * 1.2) calc(var(--my) * 1.2) / 260% 260%;
+}
+.carta-px.rara .holo-foto {
+  opacity: 0.35;
+  mix-blend-mode: color-dodge;
+  background:
+    repeating-linear-gradient(115deg, #ff2a6d 0%, #00e5ff 12%, #e84bff 24%, #ff2a6d 36%) var(--mx) var(--my) / 300% 300%;
+}
+.carta-px.rara .reflexo {
+  opacity: 0.35;
+  mix-blend-mode: soft-light;
+  background: radial-gradient(circle at var(--mx) var(--my), rgb(255 255 255 / 0.9), transparent 45%);
+}
+
+.carta-px.epica {
+  animation: carta-pulsa 2.4s ease-in-out infinite;
+}
+.carta-px.epica .holo {
+  opacity: 0.4;
+  mix-blend-mode: color-dodge;
+  background:
+    repeating-linear-gradient(
+      115deg,
+      #ff2a6d 0%,
+      #ffb400 6%,
+      #f6ff00 12%,
+      #2bff88 18%,
+      #00e5ff 24%,
+      #5b6cff 30%,
+      #e84bff 36%,
+      #ff2a6d 42%
+    )
+    calc(var(--mx) * 1.6) calc(var(--my) * 1.6) / 300% 300%,
+    repeating-linear-gradient(25deg, rgb(255 255 255 / 0) 0 6px, rgb(255 255 255 / 0.18) 6px 8px);
+}
+.carta-px.epica .holo-foto {
+  opacity: 0.55;
+  mix-blend-mode: color-dodge;
+  background:
+    repeating-linear-gradient(115deg, #ff2a6d 0%, #f6ff00 10%, #00e5ff 20%, #e84bff 30%, #ff2a6d 40%) var(--mx)
+    var(--my) / 260% 260%;
+}
+.carta-px.epica .purpurina,
+.carta-px.lendaria .purpurina {
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 72% 9%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 35% 64%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 88% 47%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 54% 31%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 20% 86%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 81% 78%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 46% 92%, #fff 50%, transparent 51%);
+  background-size: 70px 70px;
+}
+.carta-px.epica .purpurina {
+  opacity: 0.6;
+  animation: carta-purpurina 1.6s steps(3) infinite;
+}
+.carta-px.epica .reflexo {
+  opacity: 0.5;
+  mix-blend-mode: soft-light;
+  background: radial-gradient(circle at var(--mx) var(--my), #fff, transparent 50%);
+}
+
+.carta-px.lendaria {
+  animation:
+    carta-flutua 3s ease-in-out infinite,
+    carta-aura 2.5s linear infinite;
+}
+.carta-px.lendaria .holo {
+  opacity: 0.46;
+  mix-blend-mode: color-dodge;
+  background:
+    repeating-linear-gradient(
+      115deg,
+      #ff2a6d 0%,
+      #ffb400 5%,
+      #f6ff00 10%,
+      #2bff88 15%,
+      #00e5ff 20%,
+      #5b6cff 25%,
+      #e84bff 30%,
+      #ff2a6d 35%
+    )
+    calc(var(--mx) * 2) calc(var(--my) * 2) / 320% 320%,
+    conic-gradient(from 0deg at 50% 32%, #ff2a6d, #f6ff00, #2bff88, #00e5ff, #e84bff, #ff2a6d);
+  animation: carta-gira-cor 5s linear infinite;
+}
+.carta-px.lendaria .holo-foto {
+  opacity: 0.6;
+  mix-blend-mode: color-dodge;
+  background:
+    repeating-linear-gradient(115deg, #ff2a6d 0%, #f6ff00 9%, #2bff88 18%, #00e5ff 27%, #e84bff 36%, #ff2a6d 45%) 0 0 /
+    260% 260%;
+  animation: carta-holo-corre 3s linear infinite;
+}
+.carta-px.lendaria .purpurina {
+  opacity: 0.9;
+  background-size: 46px 46px;
+  animation: carta-purpurina 1s steps(4) infinite;
+}
+.carta-px.lendaria .reflexo {
+  opacity: 0.45;
+  mix-blend-mode: overlay;
+  background: radial-gradient(circle at var(--mx) var(--my), #fff, transparent 55%);
+}
+.carta-px.lendaria .gema,
+.carta-px.lendaria .fita {
+  animation: carta-troca-cor 2.5s linear infinite;
+}
+.carta-px.lendaria .nome {
+  animation: carta-nome-pisca 1.6s steps(2) infinite;
+}
+.carta-px.lendaria .moldura-foto::after {
+  content: "\2726";
+  position: absolute;
+  top: -10px;
+  left: -8px;
+  font-size: 16px;
+  color: #fff6a0;
+  text-shadow: 1px 1px 0 #111;
+  animation: carta-pisca 1.2s steps(2) infinite;
+}
+/* faíscas subindo em volta da lendária */
+.carta-px.lendaria::before {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(2px 2px at 10% 100%, #fff6a0 60%, transparent 61%),
+    radial-gradient(2px 2px at 30% 100%, #ffd6de 60%, transparent 61%),
+    radial-gradient(3px 3px at 55% 100%, #fff 60%, transparent 61%),
+    radial-gradient(2px 2px at 78% 100%, #c4f1ff 60%, transparent 61%),
+    radial-gradient(3px 3px at 92% 100%, #fff6a0 60%, transparent 61%);
+  background-size: 100% 60px;
+  animation: carta-faiscas 2.2s linear infinite;
+}
+
+@keyframes carta-pulsa {
+  50% {
+    filter: drop-shadow(0 0 12px rgb(176 108 255 / 0.85));
+  }
+}
+@keyframes carta-flutua {
+  50% {
+    translate: 0 -6px;
+  }
+}
+@keyframes carta-aura {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 10px #ff2a6d) drop-shadow(0 0 22px rgb(255 180 0 / 0.6));
+  }
+  33% {
+    filter: drop-shadow(0 0 10px #2bff88) drop-shadow(0 0 22px rgb(0 229 255 / 0.6));
+  }
+  66% {
+    filter: drop-shadow(0 0 10px #e84bff) drop-shadow(0 0 22px rgb(91 108 255 / 0.6));
+  }
+}
+@keyframes carta-gira-cor {
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+@keyframes carta-troca-cor {
+  from {
+    filter: hue-rotate(0deg) saturate(1.4);
+  }
+  to {
+    filter: hue-rotate(360deg) saturate(1.4);
+  }
+}
+@keyframes carta-holo-corre {
+  to {
+    background-position: 260% 260%;
+  }
+}
+@keyframes carta-purpurina {
+  33% {
+    background-position: 23px 11px;
+  }
+  66% {
+    background-position: 9px 31px;
+  }
+}
+@keyframes carta-nome-pisca {
+  50% {
+    color: #fff6a0;
+    text-shadow:
+      1px 1px 0 #111,
+      0 0 8px #fff;
+  }
+}
+@keyframes carta-pisca {
+  50% {
+    opacity: 0.15;
+  }
+}
+@keyframes carta-faiscas {
+  from {
+    background-position: 0 100%;
+    opacity: 1;
+  }
+  to {
+    background-position: 0 -40%;
+    opacity: 0.2;
+  }
+}
+
+/* com "reduzir movimento" ligado: nada se mexe; as cores e os carimbos aparecem já no lugar */
+@media (prefers-reduced-motion: reduce) {
+  .carta-px {
+    transition: none;
+    transform: none;
+  }
+  .carta-px,
+  .carta-px *,
+  .carta-px::before,
+  .carta-px *::after,
+  .carimbo-pixel,
+  .arena-treme {
+    animation: none !important;
+  }
+}

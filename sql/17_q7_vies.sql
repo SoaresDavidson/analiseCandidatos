@@ -103,7 +103,6 @@ SELECT
         AS pc_votos_com_nota
 FROM q7_voto_partido AS v
 INNER JOIN modelo.municipio AS m ON v.cod_ibge = m.cod_ibge
-WHERE m.sg_uf IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE')
 GROUP BY ALL;
 
 -- Viés de cada região geográfica imediata (IBGE) em cada eleição: votos somados da região
@@ -121,7 +120,7 @@ SELECT
         AS vl_fixa_2018
 FROM q7_voto_partido AS v
 INNER JOIN modelo.municipio AS m ON v.cod_ibge = m.cod_ibge
-WHERE m.sg_uf IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE') AND m.cd_regiao_imediata IS NOT NULL
+WHERE m.cd_regiao_imediata IS NOT NULL
 GROUP BY ALL;
 
 -- Partido do prefeito eleito em 2020 e 2024, com as duas réguas (alternância de lado)

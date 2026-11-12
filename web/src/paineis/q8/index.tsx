@@ -7,7 +7,6 @@ import {
   Campo,
   Carregando,
   Etiqueta,
-  Linha,
   Pagina,
   SeletorUf,
   Selo,
@@ -15,11 +14,23 @@ import {
 } from "../../componentes";
 import { useDados } from "../../lib/dados";
 import { fmt, int, pc } from "../../lib/formato";
-import { noEstado } from "../../lib/uf";
+import { noLugar } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
-import { Bonecos } from "./Bonecos";
-import { ANOS, CARGO, cargosDoAno, comparar, faixas, N_MIN, rotFaixa, SING, ufIdx } from "./estatistica";
-import { calcularHalteres, GraficoHalteres } from "./Halteres";
+import { Congresso } from "./Congresso";
+import { Estados } from "./Estados";
+import {
+  ANOS,
+  CARGO,
+  cargosDoAno,
+  comparar,
+  dependenciaPorUf,
+  faixas,
+  N_MIN,
+  panorama,
+  rotFaixa,
+  SING,
+  ufIdx,
+} from "./estatistica";
 import { GraficoSensibilidade } from "./Sensibilidade";
 import type { DadosQ8, Filtros } from "./tipos";
 
@@ -31,17 +42,20 @@ export default function Painel() {
 }
 
 function Conteudo({ D }: { D: DadosQ8 }) {
-  const [f, setF] = usePersistente<Filtros>("q8-tse", PADRAO);
+  const [salvo, setF] = usePersistente<Filtros>("q8-brasil", PADRAO);
+  // valor salvo de outra versão: estado que não existe volta para o Brasil
+  const f: Filtros = salvo.uf !== "TODAS" && !D.ufs.includes(salvo.uf) ? { ...salvo, uf: "TODAS" } : salvo;
   // cargo salvo que não existe naquele ano cai no primeiro cargo do ano
   const cargo = cargosDoAno(f.ano).includes(f.cargo) ? f.cargo : cargosDoAno(f.ano)[0];
   const { ano, uf, corte } = f;
   const us = useMemo(() => ufIdx(D.ufs, uf), [D, uf]);
-  const lugar = noEstado(uf);
+  const lugar = noLugar(uf);
 
   const r = useMemo(() => faixas(D, ano, cargo, us), [D, ano, cargo, us]);
   const c = useMemo(() => comparar(r, 50), [r]);
   const cc = useMemo(() => comparar(r, corte), [r, corte]);
-  const pan = useMemo(() => calcularHalteres(D, us), [D, us]);
+  const pan = useMemo(() => panorama(D, us), [D, us]);
+  const porUf = useMemo(() => dependenciaPorUf(D, ano, cargo), [D, ano, cargo]);
 
   const N = r.reduce((s, b) => s + b.n, 0),
     E = r.reduce((s, b) => s + b.e, 0),
@@ -80,7 +94,7 @@ function Conteudo({ D }: { D: DadosQ8 }) {
       filtros={
         <>
           <Campo rotulo="Estado">
-            <SeletorUf value={uf} onChange={e => setF(s => ({ ...s, uf: e.target.value }))} />
+            <SeletorUf brasil value={uf} onChange={e => setF(s => ({ ...s, uf: e.target.value }))} />
           </Campo>
           <Campo rotulo="Eleição" grupo>
             <Alternador rotulo="Eleição" opcoes={ANOS} valor={ano} aoMudar={mudarAno} />
@@ -104,6 +118,56 @@ function Conteudo({ D }: { D: DadosQ8 }) {
       </p>
 
       <Caixa>
+        <h2>
+          {N ? (
+            <>
+              De cada 100 candidatos a {dadoLugar}, {fmt(pPub, 0)} dependeram do fundo público
+            </>
+          ) : (
+            "Não há candidatos com receita declarada neste recorte"
+          )}
+        </h2>
+        {N > 0 && (
+          <p className="texto-simples m-0">
+            {!c.ok ? (
+              "Um dos grupos tem poucos candidatos: não dá para comparar com segurança."
+            ) : !c.real ? (
+              <>
+                E <b>não faz diferença</b> na urna: se elegeram {fmt(c.tp, 0)} em cada 100 dos que dependem do fundo e{" "}
+                {fmt(c.to, 0)} em cada 100 dos outros.
+              </>
+            ) : (
+              <>
+                E quem depende do fundo se elegeu <b>{c.dif! < 0 ? "menos" : "mais"}</b>: {fmt(c.tp, 0)} em cada 100,
+                contra {fmt(c.to, 0)} em cada 100 dos financiados por outras fontes.
+              </>
+            )}
+          </p>
+        )}
+        <Congresso
+          c={c}
+          descricao={`O Congresso Nacional como gráfico: de cada 100 candidatos a ${dadoLugar}, ${fmt(pPub, 0)} estão dentro da cumbuca, a dos que dependem do fundo público. Eleitos em cada 100: ${fmt(c.tp, 0)} entre eles e ${fmt(c.to, 0)} entre os outros.`}
+        />
+        <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
+          <p className="texto-nota m-0 max-w-[88ch]">
+            <b>Na cumbuca</b> entra quem teve metade ou mais da campanha paga com dinheiro público (Fundo Eleitoral e
+            Fundo Partidário); <b>na cúpula</b>, os outros. <b>Nas torres</b>, cada janela acesa é um eleito em cada 100
+            do grupo ao lado. Fonte: TSE, prestação de contas das campanhas.
+          </p>
+          {N > 0 && (
+            <Selo tipo={c.real ? "sim" : "nao"}>
+              {c.p == null || !c.ok
+                ? "Poucos candidatos: o teste não é confiável"
+                : c.real
+                  ? "Diferença real (teste estatístico, p < 0,05)"
+                  : "Sem diferença real (teste estatístico)"}
+            </Selo>
+          )}
+        </div>
+        <Estados itens={porUf} uf={uf} cargo={SING[cargo]} ano={ano} aoMudar={u => setF(s => ({ ...s, uf: u }))} />
+      </Caixa>
+
+      <Caixa>
         <h2>O que é o fundo público?</h2>
         <div className="grid gap-2.5 min-[761px]:grid-cols-3">
           {[
@@ -123,130 +187,91 @@ function Conteudo({ D }: { D: DadosQ8 }) {
             </div>
           ))}
         </div>
-        <p className="texto-simples !text-[15.5px]">
-          Aqui, <b>depende do fundo público</b> quem teve <b>metade ou mais</b> da campanha paga com os dois fundos.{" "}
-          {N > 0 && (
-            <>
-              Para {dadoLugar}, <b>{fmt(pPub, 0)}%</b> dos candidatos estavam nessa situação.
-            </>
-          )}
-        </p>
       </Caixa>
 
-      <div className="grade-duas">
+      <div className="grid items-start gap-[18px] min-[901px]:grid-cols-2">
         <Caixa>
-          <h2>A resposta</h2>
-          <p className="texto-simples">
-            {!N ? (
-              "Não há candidatos com receita declarada neste recorte."
-            ) : !c.ok ? (
-              `Para ${dadoLugar}, um dos grupos tem poucos candidatos: não dá para comparar com segurança.`
-            ) : !c.real ? (
-              <>
-                Para {dadoLugar}, <b>não faz diferença</b>: quem teve metade ou mais da campanha paga com dinheiro
-                público se elegeu {fmt(c.tp, 0)} vezes em cada 100, e os outros, {fmt(c.to, 0)}.
-              </>
-            ) : (
-              <>
-                Para {dadoLugar}, quem teve metade ou mais da campanha paga com dinheiro público se elegeu{" "}
-                <b>{c.dif! < 0 ? "menos" : "mais"}</b>: {fmt(c.tp, 0)} em cada 100, contra {fmt(c.to, 0)} entre os
-                financiados por outras fontes.
-              </>
+          <h2>Quanto mais fundo público na campanha, mais chance?</h2>
+          <Barras>
+            {FX.map(x =>
+              x.n ? (
+                <Barra
+                  key={x.rot}
+                  titulo={`${int(x.e)} eleitos de ${int(x.n)} candidatos`}
+                  rotulo={x.rot}
+                  pct={(100 * Math.min(x.t ?? 0, mx)) / mx}
+                  valor={fmt(x.t, (x.t ?? 0) < 10 ? 1 : 0)}
+                  cor={
+                    x.n < N_MIN
+                      ? "var(--color-sem-dado)"
+                      : x.t === melhor
+                        ? "var(--color-verde-esc)"
+                        : "var(--color-verde)"
+                  }
+                  media={geral != null ? (100 * geral) / mx : undefined}
+                />
+              ) : (
+                <div
+                  key={x.rot}
+                  className="grid grid-cols-[minmax(0,13em)_minmax(0,1fr)_3.4em] items-center gap-2.5 text-sm"
+                >
+                  <span>{x.rot}</span>
+                  <span className="texto-nota">sem candidatos</span>
+                  <b />
+                </div>
+              ),
             )}
+          </Barras>
+          <p className="texto-nota">
+            De cada 100 candidatos a {dadoLugar}, quantos se elegeram, conforme a parte da campanha paga pelo fundo. A
+            linha tracejada é a média do cargo ({fmt(geral, 0)} em cada 100). Barra cinza: menos de 30 candidatos.
           </p>
-          <div>
-            <Linha rotulo="Candidatos com receita declarada" valor={int(N)} />
-            <Linha rotulo="Dependem do fundo (metade ou mais)" valor={`${fmt(pPub, 0)}%`} />
-            <Linha rotulo="Chance média de se eleger" valor={`${fmt(geral, 0)} em 100`} />
-          </div>
         </Caixa>
-        <div className="grid min-w-0 gap-3.5">
-          <Caixa>
-            <h2>De cada 100 candidatos a {SING[cargo]}, quantos se elegeram?</h2>
-            <div className="grid gap-[18px] min-[601px]:grid-cols-2">
-              <Bonecos t={c.tp} cor="var(--color-ouro)" nome="Dependem do fundo público" g={c.g.pub} />
-              <Bonecos t={c.to} cor="var(--color-verde-esc)" nome="Outras fontes" g={c.g.out} />
-            </div>
-            <Selo tipo={c.real ? "sim" : "nao"}>
-              {c.p == null || !c.ok
-                ? "Poucos candidatos: o teste não é confiável"
-                : c.real
-                  ? "Diferença real (teste estatístico, p < 0,05)"
-                  : "Sem diferença real (teste estatístico)"}
-            </Selo>
-          </Caixa>
-          <Caixa>
-            <h2>
-              De cada 100 candidatos a {SING[cargo]}, quantos se elegem, conforme a parte da campanha paga pelo fundo
-              público?
-            </h2>
-            <Barras>
-              {FX.map(x =>
-                x.n ? (
-                  <Barra
-                    key={x.rot}
-                    titulo={`${int(x.e)} eleitos de ${int(x.n)} candidatos`}
-                    rotulo={x.rot}
-                    pct={(100 * Math.min(x.t ?? 0, mx)) / mx}
-                    valor={fmt(x.t, (x.t ?? 0) < 10 ? 1 : 0)}
-                    cor={
-                      x.n < N_MIN
-                        ? "var(--color-sem-dado)"
-                        : x.t === melhor
-                          ? "var(--color-verde-esc)"
-                          : "var(--color-verde)"
-                    }
-                    media={geral != null ? (100 * geral) / mx : undefined}
-                  />
-                ) : (
-                  <div
-                    key={x.rot}
-                    className="grid grid-cols-[minmax(0,13em)_minmax(0,1fr)_3.4em] items-center gap-2.5 text-sm"
-                  >
-                    <span>{x.rot}</span>
-                    <span className="texto-nota">sem candidatos</span>
-                    <b />
-                  </div>
-                ),
-              )}
-            </Barras>
-            <p className="texto-nota">
-              Candidatos a {dadoLugar} que declararam receita. A linha tracejada é a média do cargo ({fmt(geral, 0)} em
-              cada 100). Barra cinza: menos de 30 candidatos.
-            </p>
-          </Caixa>
-        </div>
-      </div>
 
-      <Caixa>
-        <h2>Em todos os cargos e eleições, o padrão se repete?</h2>
-        <p className="texto-simples !text-base">
-          {pano}, nos cargos e anos com diferença real, quem depende do fundo público se elege{" "}
-          <b>menos em {pan.menos}</b> e <b>mais em {pan.mais}</b>
-          {pan.igual ? `; em ${pan.igual}, não há diferença` : ""}.
-        </p>
-        <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[13px] text-texto-2">
-          <span className="inline-flex items-center gap-1.5">
-            <i className="inline-block size-3 rounded-full bg-ouro" />
-            dependem do fundo público
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <i className="inline-block size-3 rounded-full bg-verde-esc" />
-            outras fontes
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            Linha apagada: sem diferença real no teste estatístico, ou poucos candidatos.
-          </span>
-        </div>
-        <div className="rolagem-x">
-          <GraficoHalteres calc={pan} ano={ano} cargo={cargo} aoEscolher={escolher} />
-        </div>
-        <p className="texto-nota">
-          Cada linha: de cada 100 candidatos daquele cargo e eleição, quantos se elegeram em cada grupo. "Menos chance":
-          quem depende do fundo se elegeu menos que os outros, com diferença real no teste estatístico. Clique numa
-          linha para ver aquele cargo e ano no alto da página.
-        </p>
-      </Caixa>
+        <Caixa>
+          <h2>Em todos os cargos e eleições, o padrão se repete?</h2>
+          <p className="texto-simples !text-base">
+            {pano}, nos cargos e anos com diferença real, quem depende do fundo público se elege{" "}
+            <b>menos em {pan.menos}</b> e <b>mais em {pan.mais}</b>
+            {pan.igual ? `; em ${pan.igual}, não há diferença` : ""}.
+          </p>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-1.5">
+            {pan.itens.map(({ a, c: cg, k }) => {
+              const atual = a === ano && cg === cargo;
+              const [rot, cor] = !k.ok
+                ? ["poucos candidatos", "bg-fundo text-texto-2"]
+                : !k.real
+                  ? ["sem diferença", "bg-bege text-texto"]
+                  : k.dif! < 0
+                    ? ["menos chance", "bg-ouro-claro text-ouro-esc"]
+                    : ["mais chance", "bg-verde-claro text-verde-esc"];
+              return (
+                <button
+                  key={`${a}|${cg}`}
+                  type="button"
+                  aria-pressed={atual}
+                  onClick={() => escolher(a, cg)}
+                  title={
+                    k.ok
+                      ? `${fmt(k.tp, 0)} em cada 100 (fundo) × ${fmt(k.to, 0)} em cada 100 (outras fontes)`
+                      : undefined
+                  }
+                  className={`grid cursor-pointer gap-0.5 rounded-lg border-2 px-2.5 py-1.5 text-left hover:border-ouro ${atual ? "border-texto" : "border-transparent"} ${cor}`}
+                >
+                  <span className="text-[13px] font-extrabold text-texto">
+                    {CARGO[cg]} · {a}
+                  </span>
+                  <span className="text-[12.5px] font-bold">{rot}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="texto-nota">
+            "Menos chance": quem depende do fundo se elegeu menos que os outros, com diferença real no teste
+            estatístico. Clique num cargo e ano para vê-lo no Congresso, no alto da página.
+          </p>
+        </Caixa>
+      </div>
 
       <VerMais titulo={`Mudar o que conta como "depender" do fundo público`}>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">

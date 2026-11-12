@@ -1,8 +1,10 @@
 """Gera os dados das perguntas Q3 (índices do município × quem vence, 2024) e Q7 (viés
-político na linha do tempo) para o app React: web/public/dados/q3.json e q7.json.
+político na linha do tempo) para o app React: web/public/dados/q3.json e q7-brasil.json,
+os dois com o país inteiro (27 UFs).
 
-Lê as views de sql/17_q7_vies.sql e sql/21_q3_indices.sql. As duas perguntas são sobre o município, por isso saem do mesmo script; o mapa da Q7
-reaproveita as malhas da Q4.
+Lê as views de sql/17_q7_vies.sql e sql/21_q3_indices.sql. As duas perguntas são sobre o
+município, por isso saem do mesmo script; os mapas vêm de scripts/gerar_malhas_web.py.
+O q7.json antigo (6 estados) não é mais gerado: só o jogo da candidatura ainda o lê.
 
 Pré-requisitos (da raiz do repositório):
     uv run python scripts/carregar_staging.py 13_ficha 15_espectro 16_indicadores 17_q7 21_q3
@@ -21,12 +23,11 @@ from pathlib import Path
 
 import duckdb
 
-from scripts.painel_web import CAPITAIS_BR, UFS_BR, gravar, mapa
+from scripts.painel_web import CAPITAIS_BR, UFS_BR, gravar
 
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
 
-UFS = ["AM", "GO", "MA", "MT", "RS", "SE"]
 ANOS = [2018, 2020, 2022, 2024]
 PERFIS = ["AGROPECUARIA", "ADMINISTRACAO PUBLICA", "SERVICOS E COMERCIO", "INDUSTRIA E OUTROS"]
 
@@ -52,83 +53,75 @@ def sucessor_2024(sigla: str) -> str:
 
 
 def dados_q7(con: duckdb.DuckDBPyConnection) -> dict:
+    """Viés de cada cidade, região imediata, estado e do país nas quatro eleições, com a mesma
+    régua em todas (rodada de 2018): o que muda de um ano para o outro é só o voto."""
     regua = con.execute("SELECT vl_mais_esquerda, vl_mais_direita, vl_meio FROM espectro_regua").fetchone()
+    # as duas notas que servem de marco no chão do painel: o PT de Lula e o PL de Bolsonaro
+    marcos = dict(
+        con.execute(
+            "SELECT sg_partido_tse, round(vl_ideologia, 2) FROM q7_nota_rodada2018 WHERE sg_partido_tse IN ('PT', 'PL')"
+        ).fetchall()
+    )
     regioes: dict[int, list] = {}
-    for uf, cd, nome, ano, n, vr, vf in con.execute(
-        """SELECT sg_uf, cd_regiao_imediata, nm_regiao_imediata, ano, qt_municipios, vl_rodada, vl_fixa_2018
+    for uf, cd, nome, ano, n, vf in con.execute(
+        """SELECT sg_uf, cd_regiao_imediata, nm_regiao_imediata, ano, qt_municipios, vl_fixa_2018
            FROM q7_vies_regiao ORDER BY sg_uf, nm_regiao_imediata, ano"""
     ).fetchall():
-        r = regioes.setdefault(cd, [cd, nome, UFS.index(uf), n, [None] * 4, [None] * 4])
-        r[4][ANOS.index(ano)], r[5][ANOS.index(ano)] = num(vr), num(vf)
+        r = regioes.setdefault(cd, [cd, nome, UFS_BR.index(uf), n, [None] * 4])
+        r[4][ANOS.index(ano)] = num(vf, 2)
     idx_regiao = {cd: i for i, cd in enumerate(regioes)}
 
     municipios: dict[int, list] = {}
-    for cod, nome, uf, cd_reg, ano, vr, vf in con.execute(
-        """SELECT cod_ibge, nm_municipio, sg_uf, cd_regiao_imediata, ano, vl_rodada, vl_fixa_2018
+    for cod, nome, uf, cd_reg, ano, vf in con.execute(
+        """SELECT cod_ibge, nm_municipio, sg_uf, cd_regiao_imediata, ano, vl_fixa_2018
            FROM q7_vies_municipio ORDER BY sg_uf, nm_municipio, ano"""
     ).fetchall():
         m = municipios.setdefault(
             cod,
-            [
-                cod,
-                nome,
-                UFS.index(uf),
-                idx_regiao.get(cd_reg, -1),
-                1 if cod in CAPITAIS_BR else 0,
-                [None] * 4,
-                [None] * 4,
-                [],
-            ],
+            [cod, nome, UFS_BR.index(uf), idx_regiao.get(cd_reg, -1), 1 if cod in CAPITAIS_BR else 0, [None] * 4, []],
         )
-        m[5][ANOS.index(ano)], m[6][ANOS.index(ano)] = num(vr), num(vf)
-    # prefeito eleito em 2020 e 2024: [sigla 2020, nota fixa, sigla 2024, nota fixa, mesmo partido (com fusões)]
+        m[5][ANOS.index(ano)] = num(vf, 2)
+    # prefeito eleito em 2020 e 2024: [sigla 2020, nota, sigla 2024, nota, mesmo partido (com fusões)]
     pref: dict[int, dict] = {}
-    for cod, ano, sg, vr, vf in con.execute(
-        "SELECT cod_ibge, ano, sg_partido, vl_rodada, vl_fixa_2018 FROM q7_prefeito"
-    ).fetchall():
-        pref.setdefault(cod, {})[ano] = (sg, num(vr, 2), num(vf, 2))
+    for cod, ano, sg, vf in con.execute("SELECT cod_ibge, ano, sg_partido, vl_fixa_2018 FROM q7_prefeito").fetchall():
+        pref.setdefault(cod, {})[ano] = (sg, num(vf, 2))
     for cod, m in municipios.items():
         p20, p24 = pref.get(cod, {}).get(2020), pref.get(cod, {}).get(2024)
-        m[7] = [p20[0] if p20 else "", p20[2] if p20 else None, p24[0] if p24 else "", p24[2] if p24 else None]
-        m[7].append(1 if p20 and p24 and sucessor_2024(p20[0]) == p24[0] else 0)
+        m[6] = [p20[0] if p20 else "", p20[1] if p20 else None, p24[0] if p24 else "", p24[1] if p24 else None]
+        m[6].append(1 if p20 and p24 and sucessor_2024(p20[0]) == p24[0] else 0)
 
-    # médias dos 6 estados e de cada UF, pesadas pelos votos (não a média das cidades)
+    # médias do país e de cada UF, pesadas pelos votos (não a média das cidades)
     media: dict[str, list] = {}
-    for uf, ano, vr, vf in con.execute(
-        """SELECT coalesce(m.sg_uf, 'TODAS'), v.ano,
-                  sum(v.qt_votos * v.vl_rodada) / sum(v.qt_votos) FILTER (WHERE v.vl_rodada IS NOT NULL),
+    for uf, ano, vf in con.execute(
+        """SELECT coalesce(m.sg_uf, 'BR'), v.ano,
                   sum(v.qt_votos * v.vl_fixa_2018) / sum(v.qt_votos) FILTER (WHERE v.vl_fixa_2018 IS NOT NULL)
            FROM q7_voto_partido AS v INNER JOIN modelo.municipio AS m USING (cod_ibge)
-           WHERE m.sg_uf IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE')
            GROUP BY GROUPING SETS ((m.sg_uf, v.ano), (v.ano))"""
     ).fetchall():
-        par = media.setdefault(uf, [[None] * 4, [None] * 4])
-        par[0][ANOS.index(ano)], par[1][ANOS.index(ano)] = num(vr), num(vf)
+        media.setdefault(uf, [None] * 4)[ANOS.index(ano)] = num(vf, 2)
 
     # fatia de votos de cada família de partido, por UF e ano (o que puxou o movimento)
     familias: dict[str, dict[str, list]] = {}
     for uf, fam, ano, qt in con.execute(
-        """SELECT coalesce(m.sg_uf, 'TODAS'), f.ds_familia, f.ano, sum(f.qt_votos)
+        """SELECT coalesce(m.sg_uf, 'BR'), f.ds_familia, f.ano, sum(f.qt_votos)
            FROM q7_voto_familia AS f INNER JOIN modelo.municipio AS m USING (cod_ibge)
-           WHERE m.sg_uf IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE')
            GROUP BY GROUPING SETS ((m.sg_uf, f.ds_familia, f.ano), (f.ds_familia, f.ano))"""
     ).fetchall():
         familias.setdefault(uf, {}).setdefault(fam, [0] * 4)[ANOS.index(ano)] = int(qt)
 
     return {
-        "ufs": UFS,
+        "ufs": UFS_BR,
         "anos": ANOS,
         "regua": [num(regua[0], 2), num(regua[1], 2), num(regua[2])],
+        "marcos": {"pt": float(marcos["PT"]), "pl": float(marcos["PL"])},
         "municipios": list(municipios.values()),
         "regioes": list(regioes.values()),
         "media": media,
         "familias": familias,
-        "mapas": {uf: mapa(uf) for uf in UFS},
     }
 
 
 def dados_q3(con: duckdb.DuckDBPyConnection) -> dict:
-    # a Q3 usa a base do país inteiro (27 UFs); a Q7 segue nos 6 estados até ser migrada
     regua = con.execute("SELECT vl_mais_esquerda, vl_mais_direita, vl_meio FROM espectro_regua").fetchone()
     partidos = {
         sg: [float(vl), cat]
@@ -168,7 +161,7 @@ def main() -> None:
     # `python -m scripts.gerar_painel_q3_q7 q3` gera só a Q3 (ou só a q7)
     quais = set(sys.argv[1:]) or {"q3", "q7"}
     if "q7" in quais:
-        gravar("q7.json", dados_q7(con))
+        gravar("q7-brasil.json", dados_q7(con))
     if "q3" in quais:
         gravar("q3.json", dados_q3(con))
     con.close()

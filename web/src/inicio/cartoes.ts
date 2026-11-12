@@ -2,7 +2,7 @@
 // atualize junto quando o gerador mudar os dados.
 // números conferidos no banco (6 estados): Q4, Q8 e Q10 em 15/10/2026; Q3 e Q7 em 17/10/2026; Q2 e Q6 em 20/10/2026;
 // Q9 em 22/10/2026 (64,2%: a soma exata, não a das partes arredondadas, 36% + 29%); Q1 e Q5 em 10/11/2026.
-// Q1 a Q6 refeitos com o país inteiro (27 UFs) em 12/11/2026
+// Q1 a Q8 refeitos com o país inteiro (27 UFs) em 12/11/2026
 
 export interface Cartao {
   n: number;
@@ -21,8 +21,8 @@ export const CARTOES: Cartao[] = [
     tema: "cidades",
     aba: "q7",
     assunto: "Viés político",
-    perg: "Para que lado as cidades foram?",
-    resp: "Para a direita: de 2020 a 2024, **66%** das cidades votaram mais à direita para vereador, mesmo com a régua fixa.",
+    perg: "Para que lado vota cada cidade?",
+    resp: "Um pouco mais para a direita: no Brasil, **57%** das cidades votaram mais à direita para vereador em 2024 do que em 2020. Numa régua de 0 a 10, o país foi de 6,56 para **6,66**.",
   },
   {
     n: 3,
@@ -54,7 +54,7 @@ export const CARTOES: Cartao[] = [
     aba: "q8",
     assunto: "Dinheiro público",
     perg: "Depender do fundo público ajuda a vencer?",
-    resp: "Em geral, não: vereadores de 2024 que dependem dele se elegem **14%** das vezes; os outros, **20%**.",
+    resp: "Em geral, não: no Brasil, de cada 100 candidatos a vereador de 2024 que dependem dele, **13** se elegeram; dos outros, **18**.",
   },
   {
     n: 9,

@@ -6,7 +6,6 @@ import { fmt, maiusculaInicial, nomeLugar } from "../../../lib/formato";
 import { useNavegacao } from "../../../lib/navegacao";
 import { noEstado, UF_NOME } from "../../../lib/uf";
 import { useEleitos } from "../../candidatos/modelo";
-import type { DadosQ7 } from "../../q7/tipos";
 import {
   type Cidade,
   contarPorUf,
@@ -18,6 +17,7 @@ import {
   ranquear,
   textoResultado,
 } from "./logica";
+import type { DadosQ7Legado as DadosQ7 } from "./q7Legado";
 
 const COR_FORTE = "var(--color-verde-esc)";
 const COR_PERTO = "var(--color-verde-claro)";

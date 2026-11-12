@@ -1,60 +1,64 @@
-// Formato de public/dados/q7.json (gerado pelo SQL 17_q7_vies.sql).
+// Formato de public/dados/q7-brasil.json (scripts/gerar_painel_q3_q7.py, views de sql/17_q7_vies.sql).
 
 /** Uma nota por eleição (2018, 2020, 2022, 2024); null quando o lugar não tem voto. */
 export type Notas = (number | null)[];
 
 /** Prefeito: [sigla 2020, nota, sigla 2024, nota, mesmo partido (0/1)]. */
-export type Prefeito = [string | null, number | null, string | null, number | null, number];
+export type Prefeito = [string, number | null, string, number | null, number];
 
-/** [cod, nome, índice da UF, região imediata, capital (0/1), notas da régua de cada ano,
- *  notas da régua fixa de 2018, prefeito] */
-export type LinhaMunicipio = [number, string, number, number, number, Notas, Notas, Prefeito];
+/** [cod, nome, índice da UF, índice da região imediata, capital (0/1), notas, prefeito] */
+export type LinhaMunicipio = [number, string, number, number, number, Notas, Prefeito];
 
-/** [código, nome, índice da UF, nº de cidades, notas da régua de cada ano, notas da régua fixa] */
-export type LinhaRegiao = [number, string, number, number, Notas, Notas];
-
-export interface MapaUf {
-  w: number;
-  h: number;
-  /** código do município -> contorno SVG */
-  p: Record<string, string>;
-}
+/** [código, nome, índice da UF, nº de cidades, notas] */
+export type LinhaRegiao = [number, string, number, number, Notas];
 
 export interface DadosQ7 {
   ufs: string[];
   anos: number[];
   /** notas das duas pontas e do meio da régua */
   regua: [number, number, number];
+  /** nota do PT e do PL, os dois marcos do chão */
+  marcos: { pt: number; pl: number };
   municipios: LinhaMunicipio[];
   regioes: LinhaRegiao[];
-  /** por UF (ou TODAS): [média pela régua de cada ano, média pela régua fixa] */
-  media: Record<string, [Notas, Notas]>;
-  /** por UF (ou TODAS): família de partidos -> votos nas 4 eleições */
+  /** "BR" ou a sigla da UF -> média pesada pelos votos */
+  media: Record<string, Notas>;
+  /** "BR" ou a sigla da UF -> família de partidos -> votos nas 4 eleições */
   familias: Record<string, Record<string, number[]>>;
-  mapas: Record<string, MapaUf>;
 }
 
+/** O cargo comparado: vereador (2020 e 2024) ou deputado federal (2018 e 2022). */
 export type Par = "mun" | "ger";
-export type Regua = "fixa" | "rodada";
+/** O que o mapa pinta: de que lado está o voto, ou para que lado ele foi. */
+export type Modo = "lado" | "mudou";
 
 export interface Filtros {
-  uf: string;
-  par: Par;
-  regua: Regua;
-  mapaUf: string;
+  /** estado em foco no mapa; null = Brasil */
+  uf: string | null;
+  /** cidade escolhida */
   sel: number | null;
+  par: Par;
+  /** 0 = a primeira eleição do par, 1 = a segunda */
+  quando: 0 | 1;
+  modo: Modo;
 }
 
 export interface Municipio {
   cod: number;
   nome: string;
   uf: string;
-  reg: number;
   cap: boolean;
-  rodada: Notas;
-  fixa: Notas;
+  notas: Notas;
   pref: Prefeito;
   busca: string;
+}
+
+export interface Regiao {
+  cd: number;
+  nome: string;
+  uf: string;
+  n: number;
+  notas: Notas;
 }
 
 /** O que cada seção recebe: dados já preparados e filtros atuais. */
@@ -63,13 +67,4 @@ export interface Ctx {
   M: Municipio[];
   R: Regiao[];
   f: Filtros;
-}
-
-export interface Regiao {
-  cd: number;
-  nome: string;
-  uf: string;
-  n: number;
-  rodada: Notas;
-  fixa: Notas;
 }

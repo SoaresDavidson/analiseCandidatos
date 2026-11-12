@@ -3,7 +3,7 @@
 Painel do grupo em React + Vite + TypeScript + Tailwind CSS v4. Substitui os HTML
 gerados em `docs/*-painel/`.
 
-O app mostra as respostas às perguntas do trabalho. As Perguntas 1 a 6 usam a base do
+O app mostra as respostas às perguntas do trabalho. As Perguntas 1 a 8 usam a base do
 Brasil inteiro (27 UFs); as outras, por enquanto, os 6 estados do recorte original (AM, GO,
 MA, MT, RS, SE). É um site estático: não tem servidor nem banco. Os dados chegam já prontos
 em `public/dados/`, gravados pelos geradores Python (ver [Dados](#dados)).
@@ -88,19 +88,20 @@ e gravam cada arquivo de `public/dados/` por `scripts/painel_web.py`:
 | arquivo | gerador |
 | --- | --- |
 | `q1.json`, `q5.json` | `uv run python -m scripts.gerar_painel_q1_q5` |
-| `q3.json`, `q7.json` | `uv run python -m scripts.gerar_painel_q3_q7` |
+| `q3.json`, `q7-brasil.json` | `uv run python -m scripts.gerar_painel_q3_q7` |
+| `q7.json` | a Pergunta 7 antiga (6 estados), que só o jogo da candidatura ainda lê (não é mais gerado) |
 | `q2.json`, `q6.json`, `q2-fotos/` | `uv run python -m scripts.gerar_painel_q2_q6` |
 | `malhas/brasil.json`, `malhas/<UF>.json` | `uv run python -m scripts.gerar_malhas_web` |
 | `q4.json` (o país) e `q4/<UF>.json` (cada estado) | `uv run python -m scripts.gerar_painel_q4` |
-| `q8.json`, `q9.json` | `uv run python -m scripts.gerar_painel_q8_q9` |
+| `q8.json`, `q9.json` | `uv run python -m scripts.gerar_painel_q8_q9` (com `q8`, só a Pergunta 8) |
 | `q10.json`, `q10-financas/NN.json` | `uv run python -m scripts.gerar_painel_q10` |
 | `candidatos/<UF>.json` (+ fotos): as fichas do país, um arquivo por estado | `uv run python -m scripts.gerar_painel_candidatos` |
 | `candidatos-eleitos.json` | as fichas dos 6 estados, das páginas ainda no recorte original (não é mais gerado) |
 | `municipios-cidades.json` | `uv run python -m scripts.gerar_painel_municipios` |
 
 Os geradores de duas perguntas aceitam o nome de uma só (`... gerar_painel_q1_q5 q1`). As
-Perguntas 1 a 6 e as fichas dos eleitos saem com o país inteiro (`ufs` com as 27 siglas,
-`UFS_BR` em `painel_web.py`); a 7 segue nos 6 estados. Para o país inteiro, a coleta é
+Perguntas 1 a 8 e as fichas dos eleitos saem com o país inteiro (`ufs` com as 27 siglas,
+`UFS_BR` em `painel_web.py`); a 9 e a 10 seguem nos 6 estados. Para o país inteiro, a coleta é
 `recorte_remoto --uf` com as 27 siglas (uns 31 GB em `dados/raw/`).
 
 A Pergunta 4 é um livro (`src/paineis/q4/`, estilos em `src/styles/livro.css`): a capa abre
@@ -113,12 +114,24 @@ A Pergunta 6 (`src/paineis/q6/`) tem o mapa do país com zoom e dois rostos dese
 (`Rosto.tsx`): cada um tem a idade do número embaixo dele, a de quem vota e a de quem recebeu
 os votos no lugar escolhido.
 
+A Pergunta 7 (`src/paineis/q7/`) tem um chão que vai do vermelho (nota 0, esquerda) ao azul
+(nota 10, direita): a urninha (`Mascote.tsx`) corre até a nota do lugar clicado no mapa
+(`Chao.tsx`). Lula e Bolsonaro ficam na nota do PT e do PL; as fotos (`public/img/q7/`) são as
+do registro de candidatura a presidente em 2022, dos dados abertos do TSE. A cor do mapa é a
+mesma do chão (`corNota` em `util.ts`).
+
+A Pergunta 8 (`src/paineis/q8/`) desenha o Congresso Nacional como gráfico (`Congresso.tsx`):
+de cada 100 candidatos, os que dependem do fundo público ficam dentro da cumbuca e os outros,
+na cúpula; cada janela acesa das torres é um eleito em cada 100 do grupo. `cena.ts` calcula o
+lugar dos 100 bonecos. As animações das duas cenas estão em `src/styles/cenas.css`.
+
 `malhas/` são os mapas: os 27 estados e os municípios de cada um, no mesmo sistema de
 coordenadas, para o `MapaBrasil` (`src/componentes`) dar zoom do país para um estado.
 `q2-fotos/` tem a foto original do TSE (161×225) do candidato de maior patrimônio de cada
 cargo, eleição e estado; essas vão para o git, porque são poucas (uma por destaque).
 
-`q8.json` e `q9.json` guardam os números publicados por Enrico. O banco atual tem as
-atualizações posteriores do TSE (1 ou 2 candidatos de diferença por linha), e rodar
-`gerar_painel_q8_q9` troca esses números pelos do banco. Só rode se a ideia for mesmo
-atualizar a Q8 e a Q9.
+`q8.json` foi refeito com o país inteiro (27 UFs), direto do banco. `q9.json` ainda guarda
+os números publicados por Enrico para os 6 estados: o banco atual tem as atualizações
+posteriores do TSE (1 ou 2 candidatos de diferença por linha), e rodar `gerar_painel_q8_q9`
+sem argumento troca esses números pelos do banco. Para mexer só na Pergunta 8, rode
+`gerar_painel_q8_q9 q8`.

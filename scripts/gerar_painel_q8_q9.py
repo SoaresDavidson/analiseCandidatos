@@ -13,23 +13,30 @@ Atenção: os q8.json e q9.json do repositório guardam os números publicados p
 Enrico. O banco atual já tem as atualizações posteriores do TSE, e rodar este script
 troca os números publicados pelos do banco (1 ou 2 candidatos por linha).
 
+A Q8 usa o país inteiro (27 UFs). A Q9 segue nos 6 estados até ser migrada: as consultas
+dela filtram esses estados, porque as views já têm o país.
+
 Uso:
-    uv run python -m scripts.gerar_painel_q8_q9
+    uv run python -m scripts.gerar_painel_q8_q9        # as duas
+    uv run python -m scripts.gerar_painel_q8_q9 q8     # só a Q8 (não toca no q9.json)
 """
 
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 import duckdb
 
-from scripts.painel_web import gravar
+from scripts.painel_web import UFS_BR, gravar
 
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
 
+# a Q9 ainda está nos 6 estados
 UFS = ["AM", "GO", "MA", "MT", "RS", "SE"]
+SO_6_UFS = "sg_uf IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE')"
 CARGOS = ["VEREADOR", "PREFEITO", "DEPUTADO ESTADUAL", "DEPUTADO FEDERAL", "SENADOR", "GOVERNADOR"]
 # do maior ao menor valor no período (ordem fixa: a cor e a posição seguem o canal)
 CANAIS = ["IMPRESSO", "RUA", "RADIO E TV", "ADESIVO", "DIGITAL", "JINGLE", "CARRO DE SOM", "JORNAL E REVISTA"]
@@ -49,6 +56,7 @@ WITH g AS (
         sum(qt_despesas) AS qt,
         sum(vr_despesa) AS vr
     FROM q9_termo
+    WHERE {SO_6_UFS}
     GROUP BY GROUPING SETS (
         (ano, ds_cargo, ds_termo, sg_uf, fl_eleito, ds_canal),
         (ano, ds_cargo, ds_termo, sg_uf, fl_eleito),
@@ -69,7 +77,7 @@ ORDER BY ano, ds_cargo, sg_uf, eleito, ds_canal, qt DESC, ds_termo
 """
 
 # total de despesas com descrição em cada combinação (o denominador do "% das despesas")
-SQL_TOTAIS = """
+SQL_TOTAIS = f"""
 SELECT
     ano,
     ds_cargo,
@@ -78,6 +86,7 @@ SELECT
     coalesce(ds_canal, 'TODOS') AS ds_canal,
     count(*) AS qt
 FROM q9_despesa
+WHERE {SO_6_UFS}
 GROUP BY GROUPING SETS (
     (ano, ds_cargo, sg_uf, fl_eleito, ds_canal),
     (ano, ds_cargo, sg_uf, fl_eleito),
@@ -97,23 +106,23 @@ def chave(ano: int, cargo: str, uf: str, eleito: int, canal: str) -> str:
     return f"{ano}|{CARGOS.index(cargo)}|{u}|{eleito}|{c}"
 
 
-def main() -> None:
-    os.chdir(RAIZ)  # o staging lê os CSV por caminho relativo à raiz
-    con = duckdb.connect(str(BANCO), read_only=True)
-
+def dados_q8(con: duckdb.DuckDBPyConnection) -> dict:
     q8 = [
-        [ano, UFS.index(uf), CARGOS.index(cargo), faixa, int(n), int(e)]
+        [ano, UFS_BR.index(uf), CARGOS.index(cargo), faixa, int(n), int(e)]
         for ano, uf, cargo, faixa, n, e in con.execute(
             """SELECT ano, sg_uf, ds_cargo, nr_faixa, qt_candidatos, qt_eleitos
                FROM q8_faixa ORDER BY 1, 2, 3, 4"""
         ).fetchall()
     ]
+    return {"ufs": UFS_BR, "cargos": CARGOS, "q8": q8}
 
+
+def dados_q9(con: duckdb.DuckDBPyConnection) -> dict:
     q9c = [
         [ano, UFS.index(uf), CARGOS.index(cargo), int(el), CANAIS.index(canal), int(nc), int(nd), round(float(vr))]
         for ano, uf, cargo, el, canal, nc, nd, vr in con.execute(
-            """SELECT ano, sg_uf, ds_cargo, fl_eleito, ds_canal, qt_candidatos, qt_despesas, vr_despesa
-               FROM q9_canal ORDER BY 1, 2, 3, 4, 5"""
+            f"""SELECT ano, sg_uf, ds_cargo, fl_eleito, ds_canal, qt_candidatos, qt_despesas, vr_despesa
+               FROM q9_canal WHERE {SO_6_UFS} ORDER BY 1, 2, 3, 4, 5"""
         ).fetchall()
     ]
 
@@ -133,23 +142,28 @@ def main() -> None:
         chave(ano, cargo, uf, eleito, canal): int(qt)
         for ano, cargo, uf, eleito, canal, qt in con.execute(SQL_TOTAIS).fetchall()
     }
-    con.close()
-
-    gravar("q8.json", {"ufs": UFS, "cargos": CARGOS, "q8": q8})
-    gravar(
-        "q9.json",
-        {
-            "ufs": UFS,
-            "cargos": CARGOS,
-            "canais": CANAIS,
-            "q9c": q9c,
-            "termos": termos,
-            "q9t": q9t,
-            "q9tot": q9tot,
-            "top": TOP_TERMOS,
-        },
-    )
     print(f"nuvem: {len(termos)} termos, {len(q9t)} grupos")
+    return {
+        "ufs": UFS,
+        "cargos": CARGOS,
+        "canais": CANAIS,
+        "q9c": q9c,
+        "termos": termos,
+        "q9t": q9t,
+        "q9tot": q9tot,
+        "top": TOP_TERMOS,
+    }
+
+
+def main() -> None:
+    os.chdir(RAIZ)  # o staging lê os CSV por caminho relativo à raiz
+    con = duckdb.connect(str(BANCO), read_only=True)
+    quais = set(sys.argv[1:]) or {"q8", "q9"}
+    if "q8" in quais:
+        gravar("q8.json", dados_q8(con))
+    if "q9" in quais:
+        gravar("q9.json", dados_q9(con))
+    con.close()
 
 
 if __name__ == "__main__":

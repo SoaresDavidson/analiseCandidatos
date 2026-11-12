@@ -1,0 +1,95 @@
+/* Cenas animadas das Perguntas 7 (a urninha que corre no chão da esquerda à direita) e
+   8 (os bonequinhos que entram na cumbuca do Congresso). */
+
+/* --- Pergunta 7: a urninha ------------------------------------------------------------- */
+.urninha-perna-a {
+  transform-origin: -10px -24px;
+}
+.urninha-perna-b {
+  transform-origin: 10px -24px;
+}
+.urninha-braco-a {
+  transform-origin: -30px -46px;
+}
+.urninha-braco-b {
+  transform-origin: 30px -46px;
+}
+.urninha-olhos {
+  transform-origin: -9px -53px;
+}
+@keyframes urninha-passo {
+  from {
+    transform: rotate(-36deg);
+  }
+  to {
+    transform: rotate(36deg);
+  }
+}
+@keyframes urninha-pulo {
+  from {
+    transform: rotate(5deg);
+  }
+  to {
+    transform: translateY(-5px) rotate(5deg);
+  }
+}
+@keyframes urninha-respira {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(-1.6px);
+  }
+}
+@keyframes urninha-pisca {
+  0%,
+  93%,
+  100% {
+    transform: none;
+  }
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .urninha[data-correndo] .urninha-perna-a,
+  .urninha[data-correndo] .urninha-braco-b {
+    animation: urninha-passo 0.3s ease-in-out infinite alternate;
+  }
+  .urninha[data-correndo] .urninha-perna-b,
+  .urninha[data-correndo] .urninha-braco-a {
+    animation: urninha-passo 0.3s ease-in-out infinite alternate-reverse;
+  }
+  .urninha[data-correndo] .urninha-corpo {
+    animation: urninha-pulo 0.15s ease-in-out infinite alternate;
+  }
+  .urninha:not([data-correndo]) .urninha-corpo {
+    animation: urninha-respira 1.9s ease-in-out infinite alternate;
+  }
+  .urninha-olhos {
+    animation: urninha-pisca 4.6s infinite;
+  }
+}
+
+/* --- Pergunta 8: os bonequinhos do Congresso ------------------------------------------- */
+.boneco path,
+.janela {
+  transition: fill 0.4s;
+}
+@keyframes boneco-pulo {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: translateY(-58px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .boneco {
+    transition: transform 0.95s cubic-bezier(0.5, 0.05, 0.3, 1);
+  }
+  .boneco-pulo {
+    animation: boneco-pulo 0.95s cubic-bezier(0.35, 0.5, 0.65, 0.5) both;
+  }
+}

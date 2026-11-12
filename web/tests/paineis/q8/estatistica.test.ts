@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { comparar, grupos, inicioFaixa, rotFaixa } from "../../../src/paineis/q8/estatistica";
-import type { Grupo } from "../../../src/paineis/q8/tipos";
+import {
+  comparar,
+  dependenciaPorUf,
+  grupos,
+  inicioFaixa,
+  panorama,
+  rotFaixa,
+  ufIdx,
+} from "../../../src/paineis/q8/estatistica";
+import type { DadosQ8, Grupo } from "../../../src/paineis/q8/tipos";
 
 // 22 faixas: 0 = nada do fundo, 1..20 = de 5 em 5 pontos, 21 = tudo
 const vazias = (): Grupo[] => Array.from({ length: 22 }, () => ({ n: 0, e: 0 }));
@@ -43,5 +51,38 @@ describe("comparar", () => {
     expect(c.ok).toBe(true);
     expect(c.real).toBe(true);
     expect(c.p).toBeLessThan(0.001);
+  });
+});
+
+describe("país inteiro", () => {
+  // AC: 40 de 100 dependem do fundo; SP: 10 de 100
+  const D: DadosQ8 = {
+    ufs: ["AC", "SP"],
+    cargos: [],
+    q8: [
+      [2024, 0, 0, 0, 60, 30],
+      [2024, 0, 0, 21, 40, 4],
+      [2024, 1, 0, 0, 90, 30],
+      [2024, 1, 0, 11, 10, 1],
+    ],
+  };
+  it("TODAS vale para todas as UFs do arquivo", () => {
+    expect(ufIdx(D.ufs, "TODAS")).toEqual([0, 1]);
+    expect(ufIdx(D.ufs, "SP")).toEqual([1]);
+  });
+  it("dependência por estado: de cada 100 candidatos, quantos têm metade ou mais do fundo", () => {
+    expect(dependenciaPorUf(D, 2024, 0)).toEqual([
+      { uf: "AC", n: 100, pub: 40 },
+      { uf: "SP", n: 100, pub: 10 },
+    ]);
+    expect(dependenciaPorUf(D, 2022, 2)[0]).toEqual({ uf: "AC", n: 0, pub: null });
+  });
+  it("panorama: uma comparação por cargo e eleição, com a contagem dos resultados", () => {
+    const p = panorama(D, [0, 1]);
+    expect(p.itens).toHaveLength(12);
+    expect(p.itens[0]).toMatchObject({ a: 2024, c: 0 });
+    // vereador 2024: 5 eleitos de 50 (fundo) contra 60 de 150: diferença real, para menos
+    expect(p.menos).toBe(1);
+    expect(p.mais + p.igual).toBe(0);
   });
 });

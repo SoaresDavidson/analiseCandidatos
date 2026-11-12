@@ -13,7 +13,9 @@ export const cargosDoAno = (a: number): number[] => (a === 2020 || a === 2024 ? 
 /** Mínimo de candidatos por grupo para comparar com segurança. */
 export const N_MIN = 30;
 
-export const ufIdx = (ufs: string[], uf: string): number[] => (uf === "TODAS" ? [0, 1, 2, 3, 4, 5] : [ufs.indexOf(uf)]);
+/** Índices das UFs do filtro: todas ("TODAS" = Brasil) ou só uma. */
+export const ufIdx = (ufs: string[], uf: string): number[] =>
+  uf === "TODAS" ? ufs.map((_, i) => i) : [ufs.indexOf(uf)];
 
 // qui-quadrado 2×2 (mesma função das outras perguntas)
 function lgamma(z: number): number {
@@ -119,4 +121,31 @@ export function comparar(r: Grupo[], corte: number): Comparacao {
     t = qui2x2(g.pub.e, g.pub.n, g.out.e, g.out.n);
   const ok = g.pub.n >= N_MIN && g.out.n >= N_MIN && t.p != null && t.minEsp >= 5;
   return { g, tp, to, dif: tp != null && to != null ? tp - to : null, p: t.p, ok, real: ok && t.p! < 0.05 };
+}
+
+/** O padrão em todos os cargos e eleições: uma comparação por combinação, da mais nova à mais
+ *  antiga, e quantas deram "menos", "mais" ou "sem diferença" para quem depende do fundo. */
+export function panorama(D: DadosQ8, us: number[]) {
+  const itens = [2024, 2022, 2020, 2018].flatMap(a =>
+    cargosDoAno(a).map(c => ({ a, c, k: comparar(faixas(D, a, c, us), 50) })),
+  );
+  let menos = 0,
+    mais = 0,
+    igual = 0;
+  for (const { k } of itens) {
+    if (k.real) {
+      if (k.dif! < 0) menos++;
+      else mais++;
+    } else if (k.ok) igual++;
+  }
+  return { itens, menos, mais, igual };
+}
+
+/** Por estado: de cada 100 candidatos, quantos dependem do fundo (metade ou mais da campanha). */
+export function dependenciaPorUf(D: DadosQ8, ano: number, cargo: number) {
+  return D.ufs.map((uf, u) => {
+    const g = grupos(faixas(D, ano, cargo, [u]), 50),
+      n = g.pub.n + g.out.n;
+    return { uf, n, pub: pc(g.pub.n, n) };
+  });
 }

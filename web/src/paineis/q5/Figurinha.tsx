@@ -15,7 +15,7 @@ export function Figurinha({
   viva?: boolean;
   className?: string;
 }) {
-  const url = urlFigurinha(sigla);
+  const url = urlFigurinha(sigla, ano);
   const caixa = useRef<HTMLDivElement>(null);
   const [falhou, setFalhou] = useState(false);
   const inclinar = (ev: React.MouseEvent) => {

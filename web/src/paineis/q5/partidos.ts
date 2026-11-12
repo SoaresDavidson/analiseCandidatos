@@ -51,18 +51,33 @@ export const PARTIDO: Record<string, readonly [number, string]> = {
 
 /** Partidos com a figurinha pronta: sigla -> arquivo em public/img/figurinhas. */
 const IMAGEM: Record<string, string> = {
-  PL: "PL",
-  PT: "PT",
-  UNIÃO: "UNIAO",
-  PSDB: "PSDB",
+  AVANTE: "AVANTE",
+  CIDADANIA: "CIDADANIA",
   MDB: "MDB",
+  NOVO: "NOVO",
+  "PC do B": "PCdoB",
   PDT: "PDT",
+  PL: "PL",
+  PODE: "PODE",
   PP: "PP",
   PRD: "PRD",
+  PSB: "PSB",
+  PSD: "PSD",
+  PSDB: "PSDB",
+  PT: "PT",
+  PV: "PV",
+  REDE: "REDE",
+  REPUBLICANOS: "REPUBLICANOS",
+  SOLIDARIEDADE: "SOLIDARIEDADE",
+  UNIÃO: "UNIAO",
 };
 
-export const urlFigurinha = (sigla: string): string | null =>
-  IMAGEM[sigla] ? `${import.meta.env.BASE_URL}img/figurinhas/${IMAGEM[sigla]}.webp` : null;
+/** Imagem da figurinha do partido, se houver. A do Podemos traz o número 20, que ele só passou a
+ *  usar em 2023: nas eleições até 2022 (número 19) vale a figurinha montada na página. */
+export const urlFigurinha = (sigla: string, ano: number): string | null =>
+  IMAGEM[sigla] && !(sigla === "PODE" && ano <= 2022)
+    ? `${import.meta.env.BASE_URL}img/figurinhas/${IMAGEM[sigla]}.webp`
+    : null;
 export const URL_PACOTE = `${import.meta.env.BASE_URL}img/figurinhas/pacote.webp`;
 
 /** Número de urna; o Podemos era 19 até 2022 e passou a 20 ao incorporar o PSC. */

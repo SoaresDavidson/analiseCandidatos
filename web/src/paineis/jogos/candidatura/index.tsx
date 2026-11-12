@@ -56,8 +56,8 @@ export default function Jogo() {
           <Etiqueta>MONTE SUA CANDIDATURA</Etiqueta>
           <h1 className="m-0">Quem é você na urna?</h1>
           <p className="m-0 text-texto-2">
-            Responda a {N} propostas e descubra seu lugar no espectro, o partido que combina com você e as cidades onde
-            você seria eleito em 2024. Esta parte é só sabor e pode ficar em branco.
+            Responda a {N} propostas e descubra seu lugar no espectro, o partido que combina com você e as cidades que
+            votaram parecido com você em 2024. Esta parte é só sabor e pode ficar em branco.
           </p>
           <label className="grid gap-1 text-[13px] font-bold">
             Nome de urna

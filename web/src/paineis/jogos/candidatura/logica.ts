@@ -1,4 +1,4 @@
-// Lógica pura do jogo "Monte sua candidatura": nota do jogador, cidades onde ele ganharia,
+// Lógica pura do jogo "Monte sua candidatura": nota do jogador, cidades que votam parecido,
 // partidos mais próximos e prefeito parecido. Sem React, para testar no Vitest.
 
 export interface Proposta {
@@ -88,7 +88,7 @@ export function ranquear(cidades: readonly Cidade[], nota: number, limite = LIMI
     .sort((a, b) => a.dist - b.dist || a.nome.localeCompare(b.nome, "pt-BR"));
 }
 
-/** Cidades onde você ganharia (dist ≤ limite). */
+/** Cidades que votam parecido (dist ≤ limite). */
 export const favoraveis = (ranque: readonly CidadeRanque[]): CidadeRanque[] => ranque.filter(c => c.nivel === "forte");
 
 /** Quantas cidades favoráveis por estado, da maior para a menor contagem. */
@@ -156,7 +156,7 @@ export function textoResultado(o: {
   return [
     `${o.nome || "Eu"} (${o.cargo}, 2024) · nota ${f1(o.nota)}/10: ${o.categoria}`,
     `Partidos mais parecidos: ${o.partidos.join(", ")}`,
-    `Eu ganharia em ${o.ganharia} de ${o.total} cidades${o.topo.length ? `, como ${o.topo.join(", ")}` : ""}.`,
+    `${o.ganharia} de ${o.total} cidades votam parecido comigo${o.topo.length ? `, como ${o.topo.join(", ")}` : ""}.`,
     "Monte sua candidatura · painel de análise dos eleitos",
   ].join("\n");
 }

@@ -103,8 +103,8 @@ function Conteudo({ D }: { D: DadosQ1 }) {
                 {s.pcPublico != null && (
                   <>
                     {" "}
-                    O dinheiro público (Fundo Eleitoral e Fundo Partidário) pagaria <b>{fmt(s.pcPublico, 0)}%</b> do
-                    gasto.
+                    De cada R$ 100 gastos, <b>R$ {fmt(s.pcPublico, 0)}</b> vieram de dinheiro público (Fundo Eleitoral e
+                    Fundo Partidário).
                   </>
                 )}
               </>
@@ -245,7 +245,7 @@ function MaisCaras({ ues, ufs, f }: { ues: UeQ1[]; ufs: string[]; f: Filtros }) 
 function Todas({ D, f, escolher }: { D: DadosQ1; f: Filtros; escolher: (cargo: number, ano: number) => void }) {
   const linhas = CARGO_ROT.flatMap((_, c) => anosDoCargo(c).map(a => [c, a] as const)).reverse();
   return (
-    <VerMais titulo="Em todos os cargos e eleições" aberto>
+    <VerMais titulo="Em todos os cargos e eleições">
       <p className="texto-simples !text-[15.5px]">
         {maiusculaInicial(noEstado(f.uf))}, em reais de 2024 para comparar as eleições:
       </p>

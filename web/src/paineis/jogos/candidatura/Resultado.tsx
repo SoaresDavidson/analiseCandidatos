@@ -132,7 +132,7 @@ function Corpo({ q7, modelo, nota, nome, cargo, aoRefazer }: Props & { q7: Dados
       </Caixa>
 
       <Caixa className="motion-safe:animate-sobe">
-        <h3 className="m-0">Onde você seria eleito</h3>
+        <h3 className="m-0">Cidades que votam parecido com você</h3>
         <p className="m-0 text-[28px] font-extrabold" aria-live="polite">
           {fav.length > 0 ? (
             <>
@@ -143,9 +143,10 @@ function Corpo({ q7, modelo, nota, nome, cargo, aoRefazer }: Props & { q7: Dados
           )}
         </p>
         <p className="texto-nota m-0">
-          Você ganharia onde a nota da cidade em 2024 fica a até {f2(LIMITE)} ponto da sua. Escolhemos 0,35 porque a
-          maioria das cidades fica entre 5,7 e 7,8: um limite maior pegaria quase todo o centro, um menor deixaria
-          poucas. {fav.length === 0 && "Abaixo, as cidades mais próximas, mesmo fora do limite."}
+          "Parecido" é a cidade cuja nota do voto em 2024 fica a até {f2(LIMITE)} ponto da sua. Não é previsão de
+          vitória: a sua nota vem das 10 propostas do jogo, não da régua do artigo. Escolhemos 0,35 porque a maioria das
+          cidades fica entre 5,7 e 7,8: um limite maior pegaria quase todo o centro, um menor deixaria poucas.{" "}
+          {fav.length === 0 && "Abaixo, as cidades mais próximas, mesmo fora do limite."}
         </p>
 
         {porUf.length > 0 && (
@@ -198,7 +199,7 @@ function Corpo({ q7, modelo, nota, nome, cargo, aoRefazer }: Props & { q7: Dados
                   {c.nome}
                 </button>
                 <span className={c.nivel === "forte" ? "font-bold text-verde-esc" : "text-texto-2"}>
-                  {c.nivel === "forte" ? "você ganharia" : c.nivel === "perto" ? "perto" : "longe"} · {f2(c.nota)}
+                  {c.nivel === "forte" ? "parecido" : c.nivel === "perto" ? "perto" : "longe"} · {f2(c.nota)}
                 </span>
               </li>
             ))}
@@ -217,7 +218,7 @@ function Corpo({ q7, modelo, nota, nome, cargo, aoRefazer }: Props & { q7: Dados
           <MapaUf q7={q7} uf={uf} ranque={ranque} onAbrir={cod => nav.abrirMunicipio(cod)} />
           <Legenda
             itens={[
-              { cor: COR_FORTE, rotulo: "você ganharia" },
+              { cor: COR_FORTE, rotulo: "parecido" },
               { cor: COR_PERTO, rotulo: `perto (até ${f2(LIMITE * FATOR_PERTO)})` },
               { cor: COR_LONGE, rotulo: "longe" },
             ]}
@@ -342,7 +343,7 @@ function MapaUf({
       className="mapa"
       viewBox={`0 0 ${G.w} ${G.h}`}
       role="img"
-      aria-label={`Mapa de ${UF_NOME[uf]} pintado pelas cidades onde você ganharia`}
+      aria-label={`Mapa de ${UF_NOME[uf]} pintado pelas cidades que votam parecido com você`}
     >
       {Object.entries(G.p).map(([cod, d]) => {
         const c = porCod.get(+cod);

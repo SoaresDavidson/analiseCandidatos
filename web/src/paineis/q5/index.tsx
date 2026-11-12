@@ -33,7 +33,7 @@ import {
 import type { AfetadoQ5, DadosQ5, Filtros } from "./tipos";
 
 const PADRAO: Filtros = { uf: "TODAS", cargo: 0, ano: 2024 };
-const PRIMEIRAS = 12;
+const PRIMEIRAS = 3; // na tela, só alguns exemplos; a lista inteira abre no botão
 
 export default function Painel() {
   const { dados } = useDados<DadosQ5>("q5.json");
@@ -250,7 +250,7 @@ function Trocas({ D, f }: { D: DadosQ5; f: Filtros }) {
 function Todas({ D, f, escolher }: { D: DadosQ5; f: Filtros; escolher: (cargo: number, ano: number) => void }) {
   const linhas = CARGO_ROT.flatMap((_, c) => anosDoCargo(c).map(a => [c, a] as const)).sort((x, y) => x[1] - y[1]);
   return (
-    <VerMais titulo="Em todos os cargos e eleições" aberto>
+    <VerMais titulo="Em todos os cargos e eleições">
       <p className="texto-simples !text-[15.5px]">
         {maiusculaInicial(noEstado(f.uf))}, o peso do voto de legenda e os eleitos por ele em cada eleição:
       </p>

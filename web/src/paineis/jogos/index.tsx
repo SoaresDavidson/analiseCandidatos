@@ -39,7 +39,7 @@ const JOGOS: Jogo[] = [
   {
     id: "candidatura",
     nome: "Monte sua candidatura",
-    chamada: "Escolha suas propostas e veja onde você seria eleito",
+    chamada: "Escolha suas propostas e veja as cidades que votam parecido com você",
     icone: "📣",
     Componente: lazy(() => import("./candidatura")),
   },

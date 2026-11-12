@@ -317,7 +317,7 @@ function Arena({ dados }: { dados: DadosEleitos }) {
                 onClick={() => (g.r === FIM ? novoDuelo(g.baralho, g.uf, { a: g.a, b: g.b }) : void duelar(g))}
                 className="botao-pixel fonte-pixel"
               >
-                {semSimbolo(g.botao).toUpperCase()}
+                {g.botao}
               </button>
             ) : (
               <button type="button" disabled className="botao-pixel fonte-pixel">
@@ -376,9 +376,6 @@ function Arena({ dados }: { dados: DadosEleitos }) {
     </Pagina>
   );
 }
-
-/** Tira o símbolo do começo ("⚔ Começar o duelo" -> "Começar o duelo"): a fonte de pixel não tem esses glifos. */
-const semSimbolo = (s: string): string => s.replace(/^[^\p{L}]+/u, "");
 
 function AnuncioTexto({ g }: { g: Jogo }): ReactNode {
   const an = g.anuncio;

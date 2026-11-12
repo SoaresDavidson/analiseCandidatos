@@ -51,7 +51,6 @@ export interface CartaEleito {
   poder: Record<ElementoId, number>;
   el: ElementoId;
   atq: number;
-  mana: number;
   raridade: Raridade;
   /** gênero feminino no cadastro do TSE (para o carimbo "DERROTADA") */
   fem: boolean;

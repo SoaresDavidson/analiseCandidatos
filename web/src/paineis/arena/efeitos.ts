@@ -1,7 +1,9 @@
 // Efeitos visuais da Arena com a Web Animations API. Com "reduzir movimento" ligado, nada anima e as
 // esperas encurtam. Os desenhos (ícones, cores da raridade) ficam em sprites.ts e arena.css.
 
-export const movimento = (): boolean => !matchMedia("(prefers-reduced-motion: reduce)").matches;
+// uma MediaQueryList só para o módulo: movimento() é chamado em toda animação
+const reduz = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null;
+export const movimento = (): boolean => !reduz?.matches;
 export const espera = (ms: number): Promise<void> =>
   new Promise(r => setTimeout(r, movimento() ? ms : Math.min(ms, 150)));
 
@@ -83,20 +85,22 @@ export async function canhao(
   // parábola de bala de canhão: sobe mais quanto mais longe for o alvo
   const altura = 150 + Math.abs(x1 - x0) * 0.15,
     passos = 28,
+    duracao = 720,
     giro = GIRO[icone.id] ?? 0;
+  const ponto = (t: number): [number, number] => [x0 + (x1 - x0) * t, y0 + (y1 - y0) * t - altura * 4 * t * (1 - t)];
   const quadros: Keyframe[] = [];
   for (let i = 0; i <= passos; i++) {
-    const t = i / passos;
-    const x = x0 + (x1 - x0) * t,
-      y = y0 + (y1 - y0) * t - altura * 4 * t * (1 - t);
+    const t = i / passos,
+      [x, y] = ponto(t);
     quadros.push({
       transform: `translate(${x - 20}px, ${y - 20}px) rotate(${giro * t}deg) scale(${1 + 0.5 * Math.sin(Math.PI * t)})`,
     });
   }
-  const voo = bala.animate(quadros, { duration: 720, easing: "linear" });
+  const voo = bala.animate(quadros, { duration: duracao, easing: "linear" });
+  // o rastro segue a mesma parábola pelo tempo da animação, sem ler a posição do DOM
   const rastro = setInterval(() => {
-    const m = new DOMMatrix(getComputedStyle(bala).transform);
-    pixel(caixa, m.e + 20, m.f + 20, cor, (Math.random() - 0.5) * 14, 10 + Math.random() * 12, 420, 5);
+    const [x, y] = ponto(Math.min(1, Number(voo.currentTime ?? 0) / duracao));
+    pixel(caixa, x, y, cor, (Math.random() - 0.5) * 14, 10 + Math.random() * 12, 420, 5);
   }, 35);
   try {
     await voo.finished;

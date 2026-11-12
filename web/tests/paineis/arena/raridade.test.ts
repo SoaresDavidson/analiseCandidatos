@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { atribuirRaridade, RARIDADE, raridadeDe } from "../../../src/paineis/arena/jogo";
+import { atribuirRaridade, grupoRaridade, RARIDADE, raridadeDe } from "../../../src/paineis/arena/jogo";
 import type { CartaEleito } from "../../../src/paineis/arena/tipos";
 
 describe("raridadeDe", () => {
@@ -44,9 +44,35 @@ describe("atribuirRaridade", () => {
     atribuirRaridade(l);
     expect(l[0].raridade).toBe("comum");
   });
+  it("votos iguais dão a mesma raridade, qualquer que seja a ordem do arquivo", () => {
+    for (const ordem of [
+      [5, 5, 5, 5, 10],
+      [10, 5, 5, 5, 5],
+      [5, 10, 5, 5, 5],
+    ]) {
+      const l = cartas(ordem);
+      atribuirRaridade(l);
+      const empatados = new Set(l.filter(t => t.votos === 5).map(t => t.raridade));
+      expect(empatados).toEqual(new Set(["comum"]));
+      expect(l.find(t => t.votos === 10)?.raridade).toBe("lendaria");
+    }
+  });
   it("baralho de uma carta só: ela é lendária", () => {
     const l = cartas([500]);
     atribuirRaridade(l);
     expect(l[0].raridade).toBe("lendaria");
+  });
+});
+
+describe("grupoRaridade", () => {
+  const c = (ano: number, cargo: number, uf: string) => ({ ano, cargo, uf }) as CartaEleito;
+
+  it("compara só com o mesmo cargo, a mesma eleição e o mesmo estado", () => {
+    expect(grupoRaridade(c(2022, 6, "SE"))).toBe(grupoRaridade(c(2022, 6, "SE")));
+    expect(grupoRaridade(c(2022, 6, "SE"))).not.toBe(grupoRaridade(c(2022, 6, "RS")));
+    expect(grupoRaridade(c(2022, 6, "SE"))).not.toBe(grupoRaridade(c(2018, 6, "SE")));
+  });
+  it("separa governador de senador, que dividem o mesmo baralho no duelo", () => {
+    expect(grupoRaridade(c(2022, 3, "GO"))).not.toBe(grupoRaridade(c(2022, 5, "GO")));
   });
 });

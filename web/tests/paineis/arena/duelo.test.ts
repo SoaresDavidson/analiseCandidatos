@@ -43,7 +43,7 @@ describe("reduzir", () => {
     g = reduzir(g, { tipo: "fim" })!;
     expect(g.campea).toBe("a");
     expect(g.r).toBe(FIM);
-    expect(g.botao).toBe("↻ Revanche");
+    expect(g.botao).toBe("Revanche");
     expect(g.anuncio).toEqual({ tipo: "fim", ganhou: "a", a: 20, b: 15 });
   });
 

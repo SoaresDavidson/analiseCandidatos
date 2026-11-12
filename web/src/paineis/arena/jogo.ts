@@ -39,14 +39,14 @@ export const GRAU_CURTO = [
   "Superior completo",
 ];
 
-/** Os cinco elementos (cor da moldura e efeito do golpe). */
-export const EL: Record<ElementoId, { ico: string; nome: string; cor: string }> = {
-  raio: { ico: "⚡", nome: "Raio", cor: "#7b5cc9" },
-  fogo: { ico: "🔥", nome: "Fogo", cor: "#c4441d" },
-  agua: { ico: "💧", nome: "Água", cor: "#2c6fb5" },
-  terra: { ico: "🌿", nome: "Natureza", cor: "#4b7a22" },
-  luz: { ico: "✨", nome: "Luz", cor: "#b58a2c" },
-  ouro: { ico: "💰", nome: "Ouro", cor: "#c9a400" },
+/** Os elementos: nome e ícone no histórico das rodadas (o ícone em pixel da carta está em PODER_ICONE). */
+export const EL: Record<ElementoId, { ico: string; nome: string }> = {
+  raio: { ico: "⚡", nome: "Raio" },
+  fogo: { ico: "🔥", nome: "Fogo" },
+  agua: { ico: "💧", nome: "Água" },
+  terra: { ico: "🌿", nome: "Natureza" },
+  luz: { ico: "✨", nome: "Luz" },
+  ouro: { ico: "💰", nome: "Ouro" },
 };
 /** Ícone em pixel de cada elemento e de cada rodada (o poder que a rodada usa). */
 export const PODER_ICONE: Record<ElementoId | Rodada["id"], IconeId> = {
@@ -125,12 +125,20 @@ export const RARIDADE: Record<Raridade, { nome: string; estrelas: number }> = {
 export const raridadeDe = (frac: number): Raridade =>
   frac < 0.4 ? "comum" : frac < 0.7 ? "incomum" : frac < 0.9 ? "rara" : frac < 0.98 ? "epica" : "lendaria";
 
-/** Dá a raridade a cada carta de um baralho (mesmo cargo e eleição), pela ordem de votos. Sem votos, comum. */
+/** Com quem a carta disputa a raridade: o mesmo cargo, na mesma eleição e no mesmo estado. Mais estreito que o
+ * baralho do duelo (`grupo`), que junta governador com senador e os seis estados: lá um deputado de SE nunca
+ * passaria de comum ao lado dos de RS. */
+export const grupoRaridade = (t: CartaEleito): string => `${t.ano}-${t.cargo}-${t.uf}`;
+
+/** Dá a raridade a cada carta de um grupo pela ordem de votos. Votos iguais ficam na posição do primeiro deles
+ * (posição mínima), para o empate não depender da ordem do arquivo. Sem votos, comum. */
 export function atribuirRaridade(lista: CartaEleito[]): void {
   const v = lista.filter(t => t.votos != null).sort((a, b) => a.votos - b.votos);
   for (const t of lista) t.raridade = "comum";
+  let inicio = 0;
   v.forEach((t, k) => {
-    t.raridade = raridadeDe(v.length === 1 ? 1 : k / (v.length - 1));
+    if (k > 0 && t.votos !== v[k - 1].votos) inicio = k;
+    t.raridade = raridadeDe(v.length === 1 ? 1 : inicio / (v.length - 1));
   });
 }
 
@@ -181,9 +189,8 @@ export function montarCartas(C: DadosEleitos): CartaEleito[] {
       poder: { raio: 0, fogo: 0, agua: 0, terra: 0, luz: 0, ouro: 0 },
       el: "raio",
       atq: 1,
-      mana: 1,
       raridade: "comum",
-      fem: C.generos?.[r[8] as number] === "FEMININO",
+      fem: C.generos[r[8] as number] === "FEMININO",
     });
   });
   const porGrupo = new Map<string, CartaEleito[]>();
@@ -197,8 +204,15 @@ export function montarCartas(C: DadosEleitos): CartaEleito[] {
     posicoes(g, "votos");
     posicoes(g, "receita");
     posicoes(g, "porVoto", true);
-    atribuirRaridade(g);
   });
+  const porRaridade = new Map<string, CartaEleito[]>();
+  for (const t of T) {
+    const k = grupoRaridade(t);
+    const l = porRaridade.get(k);
+    if (l) l.push(t);
+    else porRaridade.set(k, [t]);
+  }
+  porRaridade.forEach(atribuirRaridade);
   T.forEach(t => {
     const p: Record<ElementoId, number> = {
       raio: t.p_votos || 1,
@@ -212,7 +226,6 @@ export function montarCartas(C: DadosEleitos): CartaEleito[] {
     // o elemento da carta é o poder mais forte entre raio, fogo, água e natureza (a escolaridade daria Luz a quase todos)
     t.el = (["raio", "fogo", "agua", "terra"] as const).slice().sort((a, b) => p[b] - p[a])[0];
     t.atq = Math.max(1, Math.round((p.raio + p.terra) / 2));
-    t.mana = Math.max(1, Math.min(5, Math.round((t.p_receita || 1) / 2)));
   });
   return T;
 }

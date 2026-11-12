@@ -76,7 +76,7 @@ export function reduzir(g: Jogo | null, a: Acao): Jogo | null {
         rodadaTxt: "Fim do duelo",
         anuncio: { tipo: "fim", ganhou, a: g.vida.a, b: g.vida.b },
         campea: ganhou,
-        botao: "↻ Revanche",
+        botao: "Revanche",
         r: FIM,
       };
     }
@@ -98,7 +98,7 @@ export function novoJogo(n: number, baralho: string, uf: string, a: CartaEleito,
     pula: 0,
     lutando: false,
     registro: [],
-    botao: "⚔ Começar o duelo",
+    botao: "Começar o duelo",
     campea: null,
   };
 }

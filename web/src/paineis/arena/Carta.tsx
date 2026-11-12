@@ -16,7 +16,6 @@ const PODERES: readonly { id: Rodada["id"]; rotulo: string; valor: (t: CartaElei
 
 /** Quanto a carta inclina com o mouse: só as holográficas, e mais quanto mais rara. */
 const INCLINACAO: Partial<Record<CartaEleito["raridade"], number>> = { rara: 6, epica: 12, lendaria: 18 };
-const reduzMovimento = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function moveHolo(e: PointerEvent<HTMLElement>, forca: number | undefined) {
   const c = e.currentTarget,
@@ -25,7 +24,8 @@ function moveHolo(e: PointerEvent<HTMLElement>, forca: number | undefined) {
     y = (e.clientY - b.top) / b.height;
   c.style.setProperty("--mx", `${x * 100}%`);
   c.style.setProperty("--my", `${y * 100}%`);
-  if (forca && !reduzMovimento()) {
+  // com "reduzir movimento" o CSS já trava o transform da carta (.carta-px { transform: none })
+  if (forca) {
     c.style.setProperty("--ry", `${(x - 0.5) * forca}deg`);
     c.style.setProperty("--rx", `${(0.5 - y) * forca}deg`);
   }
@@ -36,7 +36,8 @@ function soltaHolo(e: PointerEvent<HTMLElement>) {
   for (const v of ["--rx", "--ry"]) c.style.setProperty(v, "0deg");
 }
 
-/** Carta em pixel-art: a cor e a textura vêm da raridade (votos no próprio cargo); da rara para cima, holográfica.
+/** Carta em pixel-art: a cor e a textura vêm da raridade (votos no mesmo cargo, eleição e estado); da rara para
+ * cima, holográfica.
  * `destaque` marca o ladrilho do poder da rodada em jogo. */
 export function Carta({ t, vida, destaque }: { t: CartaEleito; vida: number; destaque?: Rodada["id"] | null }) {
   const [semFoto, setSemFoto] = useState(false);

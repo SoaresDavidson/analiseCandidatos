@@ -294,9 +294,13 @@ export function Metodo({ D }: { D: DadosQ10 }) {
           eleitos 4, 8, 12 e 16 anos depois. Calculada na view <i>q10_curva_sobrevivencia</i>.
         </li>
         <li>
-          <b>Busca:</b> quem se elegeu ao menos uma vez, {int(D.totais.eleitos)} pessoas, com todas as candidaturas
-          delas ({int(D.totais.participacoes)} candidaturas de {int(D.totais.pessoas)} pessoas até 2024). As contas de
-          reeleição e as curvas vão até 2024; a linha do tempo de cada pessoa já mostra 2026.
+          <b>Busca:</b> entra quem se elegeu ao menos uma vez de 2002 a 2026: {int(D.totais.eleitos)} pessoas, cada uma
+          com todas as suas candidaturas, inclusive as derrotas.
+        </li>
+        <li>
+          <b>Base inteira:</b> de 2002 a 2024 são {int(D.totais.participacoes)} candidaturas de {int(D.totais.pessoas)}{" "}
+          pessoas, eleitas ou não. As contas de reeleição e as curvas usam essa base e vão até 2024; a linha do tempo de
+          cada pessoa já mostra 2026.
         </li>
         <li>
           <b>Limite:</b> presidente e vice não entram (estão na página dos presidentes).

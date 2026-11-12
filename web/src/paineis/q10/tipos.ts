@@ -1,8 +1,9 @@
 /** Formato de public/dados/q10.json (o que vale para o país) e de q10/<UF>.json (as pessoas de cada
  *  estado; q10/BR.json = quem já se elegeu governador, senador ou deputado). */
 
-/** [nome de urna, nome civil, linhas planas de 6 em 6: ano-2000, cargo, ue, partido, resultado, reeleição] */
-export type PessoaBruta = [string, string, number[]];
+/** [nome de urna, nome civil, linhas planas de 6 em 6: ano-2000, cargo, ue, partido, resultado, reeleição,
+ *  e a foto da vitória mais recente em 2022 ou 2024 ([ano-2000, número sequencial do TSE]), quando há] */
+export type PessoaBruta = [string, string, number[], [number, number]?];
 
 /** [ano, UF, cargo, eleitos, tentaram de novo, reeleitos, sem reeleição na conta] */
 export type LinhaSobrevivencia = [number, string, number, number, number, number, number];

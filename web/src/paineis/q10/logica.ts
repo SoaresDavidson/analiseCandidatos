@@ -103,6 +103,12 @@ export interface Candidatura {
   reeleito: boolean;
   tentou: boolean;
 }
+/** Onde está a foto do registro no TSE: public/fotos/<ano>/<sq>.jpg. */
+export interface Foto {
+  ano: number;
+  sq: number;
+}
+
 export interface Pessoa {
   id: number;
   nome: string;
@@ -116,6 +122,8 @@ export interface Pessoa {
   partidos: number;
   ufs: string[];
   ult: Candidatura;
+  /** a foto da vitória mais recente em 2022 ou 2024; null para quem só venceu antes */
+  foto: Foto | null;
 }
 
 export interface Mandato {
@@ -176,6 +184,7 @@ export function montarPessoas(D: PessoasQ10): Pessoa[] {
       partidos: new Set(r.map(x => x.partido)).size,
       ufs: [...new Set(r.map(x => x.uf))],
       ult: r[r.length - 1],
+      foto: p[3] ? { ano: 2000 + p[3][0], sq: p[3][1] } : null,
     };
   });
 }

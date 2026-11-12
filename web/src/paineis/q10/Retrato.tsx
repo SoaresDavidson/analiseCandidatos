@@ -1,5 +1,5 @@
 import { FotoEleito } from "../../componentes";
-import type { Foto } from "./fotos";
+import type { Foto } from "./logica";
 
 /** Foto do registro no TSE; sem foto casada (ou se o arquivo faltar), a inicial do nome. */
 export function Retrato({ foto, nome, className }: { foto: Foto | null; nome: string; className: string }) {

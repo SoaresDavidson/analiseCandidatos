@@ -4,7 +4,8 @@ Lê as views de sql/07_q10_carreira.sql no banco (dados/processed/tse.duckdb) e 
 web/public/dados/:
 
     q10.json                  o que vale para o país: reeleição, curvas, tipos de bem, IPCA
-    q10/<UF>.json             as pessoas de cada estado (quem já disputou ali)
+    q10/<UF>.json             as pessoas de cada estado (quem já disputou ali), cada uma já com
+                              a foto da vitória mais recente (ano e número sequencial do TSE)
     q10/BR.json               quem já se elegeu governador, senador ou deputado, no país inteiro
     q10-financas/<UF>-NN.json patrimônio e campanha (pessoa i do arquivo do estado em i % 16)
 
@@ -149,6 +150,18 @@ def main() -> None:
     totais = con.execute(
         "SELECT count(*), count(DISTINCT nr_titulo_eleitoral) FROM q10_linha_do_tempo WHERE fl_divulgado"
     ).fetchone()
+    # a foto de cada pessoa: a da vitória mais recente em 2022 ou 2024, as eleições que têm foto no
+    # painel (web/public/fotos/<ano>/<sq>.jpg). Vai junto da pessoa: a página não precisa buscar as fichas.
+    fotos = {
+        titulo: [ano - 2000, sq]
+        for titulo, ano, sq in con.execute(
+            """SELECT nr_titulo_eleitoral, max(ano), arg_max(sq_candidato, ano)
+               FROM modelo.candidatura
+               WHERE fl_eleito AND ano IN (2022, 2024) AND cd_cargo IN (3, 5, 6, 7, 8, 11, 13)
+                 AND nr_titulo_eleitoral IS NOT NULL
+               GROUP BY 1"""
+        ).fetchall()
+    }
     financas, tipos = ler_financas(con, list(pessoas))
     fatores = dict(con.execute("SELECT ano, fator_2024 FROM q10_ipca").fetchall())
     con.close()
@@ -177,7 +190,8 @@ def main() -> None:
             for ano, cargo, ue, partido, res, flag in p["r"]:
                 # [ano - 2000, cargo, ue, partido, resultado, reeleito (1) / tentou e perdeu (2) / 0]
                 plano.extend([ano, cargo, indice(ue, ues, idx_ue), indice(partido, partidos, idx_partido), res, flag])
-            linhas.append([p["nome"], p["civil"], plano])
+            # [nome de urna, nome civil, participações, foto ([ano - 2000, sq]) quando há]
+            linhas.append([p["nome"], p["civil"], plano, *([fotos[t]] if t in fotos else [])])
         gravar(f"q10/{escopo}.json", {"pessoas": linhas, "partidos": partidos, "ues": ues})
         for parte in range(PARTES):
             bloco = {i: financas[t] for i, t in enumerate(titulos) if i % PARTES == parte and t in financas}

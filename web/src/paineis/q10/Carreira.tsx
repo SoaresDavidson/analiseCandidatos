@@ -1,7 +1,6 @@
 import { memo, type RefObject, useMemo, useState } from "react";
 import { Botao, BuscaComLista, Caixa, useDica } from "../../componentes";
 import { noLugar, semAcento, UF_NOME } from "../../lib/uf";
-import type { Foto } from "./fotos";
 import {
   ABREV,
   ANO_FIM,
@@ -13,6 +12,7 @@ import {
   COR_VERDE_ESC,
   FAIXA,
   FAIXA_NOME,
+  type Foto,
   mandatos,
   type Pessoa,
   RES,
@@ -28,7 +28,6 @@ export function Carreira({
   uf,
   sel,
   foto,
-  fotosProntas,
   aoEscolher,
   aoPatrimonio,
   raiz,
@@ -37,9 +36,7 @@ export function Carreira({
   pessoas: Pessoa[];
   uf: string;
   sel: number;
-  /** foto casada com a lista de eleitos; `fotosProntas` = a lista já chegou */
   foto: Foto | null;
-  fotosProntas: boolean;
   aoEscolher: (id: number) => void;
   aoPatrimonio: () => void;
   raiz: RefObject<HTMLDivElement | null>;
@@ -56,7 +53,7 @@ export function Carreira({
       </label>
       <Busca pessoas={pessoas} aoEscolher={aoEscolher} />
       <div ref={raiz} className="grid items-start gap-[18px] min-[801px]:grid-cols-[236px_minmax(0,1fr)]">
-        <Cartao p={p} foto={foto} fotosProntas={fotosProntas} aoPatrimonio={aoPatrimonio} />
+        <Cartao p={p} foto={foto} aoPatrimonio={aoPatrimonio} />
         <div className="grid min-w-0 gap-2.5">
           <h3>Os cargos ao longo do tempo</h3>
           <div className="rolagem-x">
@@ -139,17 +136,7 @@ function Numero({ valor, rotulo }: { valor: number; rotulo: string }) {
 }
 
 /** Cartão da esquerda: foto, nome, último mandato, botão do patrimônio e os números da carreira. */
-function Cartao({
-  p,
-  foto,
-  fotosProntas,
-  aoPatrimonio,
-}: {
-  p: Pessoa;
-  foto: Foto | null;
-  fotosProntas: boolean;
-  aoPatrimonio: () => void;
-}) {
+function Cartao({ p, foto, aoPatrimonio }: { p: Pessoa; foto: Foto | null; aoPatrimonio: () => void }) {
   const vitoria = p.r.findLast(x => x.res === 0) ?? p.ult;
   const estadual = vitoria.local === UF_NOME[vitoria.uf];
 
@@ -174,11 +161,7 @@ function Cartao({
         <Numero valor={p.partidos} rotulo={p.partidos > 1 ? "partidos" : "partido"} />
       </div>
       <p className="text-[11.5px] leading-snug text-texto-2">
-        {foto
-          ? `Foto do registro no TSE, ${foto.ano}.`
-          : fotosProntas
-            ? "Sem foto: o painel tem as dos eleitos de 2022 e 2024."
-            : ""}
+        {foto ? `Foto do registro no TSE, ${foto.ano}.` : "Sem foto: o painel tem as dos eleitos de 2022 e 2024."}
       </p>
     </aside>
   );

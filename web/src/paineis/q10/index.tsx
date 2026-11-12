@@ -3,11 +3,9 @@ import { Caixa, Campo, Carregando, Etiqueta, Pagina, SeletorUf } from "../../com
 import { useDados } from "../../lib/dados";
 import { semAcento } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
-import type { DadosCandidatos } from "../candidatos/tipos";
 import type { PainelProps } from "../tipos";
 import { Carreira } from "./Carreira";
 import { Comparar, Metodo, Ranking, Reeleicao } from "./Detalhes";
-import { fotoDe, indiceFotos } from "./fotos";
 import { montarPessoas } from "./logica";
 import { Patrimonio } from "./Patrimonio";
 import type { DadosQ10, Filtros, PessoasQ10 } from "./tipos";
@@ -48,12 +46,9 @@ function Conteudo({ D }: { D: DadosQ10 }) {
   }, [f.sel, pessoas]);
   const p = pessoas && sel >= 0 ? pessoas[sel] : undefined;
 
-  // patrimônio e campanha de quem está aberto; a foto vem das fichas dos eleitos de 2022 e 2024 do estado dele
+  // patrimônio e campanha de quem está aberto; a foto já vem com a pessoa
   const fin = useFinancas(D, escopo, p);
-  const ufDaFoto = p ? (p.r.findLast(x => x.res === 0) ?? p.ult).uf : null;
-  const { dados: eleitos } = useDados<DadosCandidatos>(ufDaFoto ? `candidatos/${ufDaFoto}.json` : null);
-  const fotos = useMemo(() => (eleitos ? indiceFotos(eleitos) : null), [eleitos]);
-  const foto = useMemo(() => (fotos && p ? fotoDe(p, fotos) : null), [fotos, p]);
+  const foto = p?.foto ?? null;
   const [patrimonioAberto, setPatrimonioAberto] = useState(false);
   const fecharPatrimonio = useCallback(() => setPatrimonioAberto(false), []);
 
@@ -80,7 +75,6 @@ function Conteudo({ D }: { D: DadosQ10 }) {
             uf={f.uf}
             sel={sel}
             foto={foto}
-            fotosProntas={fotos != null}
             aoEscolher={id => mudar("sel", id)}
             aoPatrimonio={() => setPatrimonioAberto(true)}
             raiz={escada}

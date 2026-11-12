@@ -2,7 +2,7 @@ import { type CSSProperties, type ReactNode, useEffect, useMemo, useRef, useStat
 import { createPortal } from "react-dom";
 import { Alternador, Cor, useDica } from "../../componentes";
 import { brl, fmt } from "../../lib/formato";
-import type { Foto } from "./fotos";
+import type { Foto } from "./logica";
 import { ABREV, type AnoFin, brlCurto, GRUPO_COR, GRUPO_NOME, type Pessoa, receitaComErro } from "./logica";
 import { Retrato } from "./Retrato";
 import type { DadosQ10 } from "./tipos";

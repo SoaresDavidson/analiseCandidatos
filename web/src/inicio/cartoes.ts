@@ -69,7 +69,7 @@ export const CARTOES: Cartao[] = [
     aba: "q1",
     assunto: "Custo da campanha",
     perg: "Quanto custa uma cadeira?",
-    resp: "Uma de deputado federal custou **R$ 6,0 milhões** em 2022, somando o gasto de todos os candidatos; a de vereador, **R$ 39,5 mil** em 2024.",
+    resp: "Uma de deputado federal custou **R$ 6,0 milhões** em 2022, somando o gasto de todos os candidatos; a de vereador, **R$ 40 mil** em 2024.",
   },
   {
     n: 2,

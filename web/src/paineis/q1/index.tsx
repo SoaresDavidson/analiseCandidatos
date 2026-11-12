@@ -23,6 +23,7 @@ import {
   anosDoCargo,
   CARGO_NOME,
   CARGO_ROT,
+  chaveSoma,
   curto,
   custoUe,
   em2024,
@@ -30,10 +31,12 @@ import {
   maisCaras,
   municipal,
   somar,
+  somasPorFiltro,
 } from "./calculo";
-import type { DadosQ1, Filtros, UeQ1 } from "./tipos";
+import type { DadosQ1, Filtros, Soma, UeQ1 } from "./tipos";
 
 const PADRAO: Filtros = { uf: "TODAS", cargo: 3, ano: 2022 };
+const VAZIA = somar([]);
 
 export default function Painel() {
   const { dados } = useDados<DadosQ1>("q1.json");
@@ -43,7 +46,13 @@ export default function Painel() {
 function Conteudo({ D }: { D: DadosQ1 }) {
   const [salvo, setF] = usePersistente<Filtros>("q1-tse", PADRAO);
   // ano salvo que não existe para o cargo cai na eleição mais recente dele
-  const f = anosDoCargo(salvo.cargo).includes(salvo.ano) ? salvo : { ...salvo, ano: anosDoCargo(salvo.cargo)[1] };
+  // ano ou UF salvos que não existem (dado antigo no localStorage) voltam ao padrão: UF desconhecida vira "TODAS"
+  const f: Filtros = {
+    ...salvo,
+    uf: salvo.uf === "TODAS" || D.ufs.includes(salvo.uf) ? salvo.uf : "TODAS",
+    ano: anosDoCargo(salvo.cargo).includes(salvo.ano) ? salvo.ano : anosDoCargo(salvo.cargo)[1],
+  };
+  const somas = useMemo(() => somasPorFiltro(D), [D]);
   const ues = useMemo(() => filtrar(D, f.cargo, f.ano, f.uf), [D, f.cargo, f.ano, f.uf]);
   const s = useMemo(() => somar(ues), [ues]);
   const lugar = noEstado(f.uf);
@@ -98,8 +107,14 @@ function Conteudo({ D }: { D: DadosQ1 }) {
               <>
                 {maiusculaInicial(lugar)}, uma cadeira de {nome} custou <b>{brl(s.custo)}</b> em {f.ano}: é o gasto de
                 todos os candidatos dividido pelas vagas
-                {f.ano < 2024 ? <> ({brl(em2024(D, f.ano, s.custo))} em reais de 2024)</> : null}. Quem ganhou gastou
-                bem menos, <b>{brl(s.custoEleito)}</b> em média; o resto foi gasto por quem perdeu.
+                {f.ano < 2024 ? <> ({brl(em2024(D, f.ano, s.custo))} em reais de 2024)</> : null}.
+                {s.custoEleito != null && (
+                  <>
+                    {" "}
+                    Quem ganhou gastou {s.custo != null && s.custoEleito < s.custo ? "bem menos, " : ""}
+                    <b>{brl(s.custoEleito)}</b> em média; o resto foi gasto por quem perdeu.
+                  </>
+                )}
                 {s.pcPublico != null && (
                   <>
                     {" "}
@@ -125,12 +140,12 @@ function Conteudo({ D }: { D: DadosQ1 }) {
             <Anel pct={s.pcPublico} legenda="do gasto" nome="dinheiro público" />
             <Anel pct={s.pcEleitos} legenda="do gasto foi de quem" nome="se elegeu" variante="verde" />
           </Aneis>
-          <PorEstado D={D} f={f} />
+          <PorEstado D={D} f={f} somas={somas} />
         </div>
       </div>
 
       {mun && <MaisCaras ues={ues} ufs={D.ufs} f={f} />}
-      <Todas D={D} f={f} escolher={escolher} />
+      <Todas D={D} f={f} somas={somas} escolher={escolher} />
 
       <VerMais titulo="Como calculamos e o que os dados não dizem">
         <ul>
@@ -174,13 +189,16 @@ function Conteudo({ D }: { D: DadosQ1 }) {
 }
 
 /** Custo da cadeira em cada estado, para o cargo e o ano do filtro. */
-function PorEstado({ D, f }: { D: DadosQ1; f: Filtros }) {
+function PorEstado({ D, f, somas }: { D: DadosQ1; f: Filtros; somas: Map<string, Soma> }) {
   const linhas = D.ufs
-    .map(uf => ({ uf, s: somar(filtrar(D, f.cargo, f.ano, uf)) }))
+    .flatMap(uf => {
+      const s = somas.get(chaveSoma(f.cargo, f.ano, uf));
+      return s ? [{ uf, s }] : [];
+    })
     .filter(x => x.s.custo != null)
     .sort((a, b) => b.s.custo! - a.s.custo!);
   const mx = Math.max(...linhas.map(x => x.s.custo!), 1);
-  const geral = somar(filtrar(D, f.cargo, f.ano, "TODAS")).custo;
+  const geral = somas.get(chaveSoma(f.cargo, f.ano, "TODAS"))?.custo ?? null;
   return (
     <Caixa>
       <h2>
@@ -242,7 +260,17 @@ function MaisCaras({ ues, ufs, f }: { ues: UeQ1[]; ufs: string[]; f: Filtros }) 
 }
 
 /** Todos os cargos e eleições em reais de 2024; clicar numa linha escolhe o cargo e o ano. */
-function Todas({ D, f, escolher }: { D: DadosQ1; f: Filtros; escolher: (cargo: number, ano: number) => void }) {
+function Todas({
+  D,
+  f,
+  somas,
+  escolher,
+}: {
+  D: DadosQ1;
+  f: Filtros;
+  somas: Map<string, Soma>;
+  escolher: (cargo: number, ano: number) => void;
+}) {
   const linhas = CARGO_ROT.flatMap((_, c) => anosDoCargo(c).map(a => [c, a] as const)).reverse();
   return (
     <VerMais titulo="Em todos os cargos e eleições" aberto>
@@ -263,7 +291,7 @@ function Todas({ D, f, escolher }: { D: DadosQ1; f: Filtros; escolher: (cargo: n
           </thead>
           <tbody>
             {linhas.map(([c, a]) => {
-              const s = somar(filtrar(D, c, a, f.uf)),
+              const s = somas.get(chaveSoma(c, a, f.uf)) ?? VAZIA,
                 atual = c === f.cargo && a === f.ano;
               return (
                 <tr

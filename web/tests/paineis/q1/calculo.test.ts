@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { anoAoTrocarCargo, em2024, filtrar, maisCaras, mediana, somar } from "../../../src/paineis/q1/calculo";
+import { mediana } from "../../../src/lib/estatistica";
+import {
+  anoAoTrocarCargo,
+  chaveSoma,
+  em2024,
+  filtrar,
+  maisCaras,
+  somar,
+  somasPorFiltro,
+} from "../../../src/paineis/q1/calculo";
 import type { DadosQ1 } from "../../../src/paineis/q1/tipos";
 
 const D: DadosQ1 = {
@@ -36,6 +45,26 @@ describe("somar", () => {
     expect(somar(filtrar(D, 0, 2020, "AM")).custoEleito).toBeNull();
   });
 
+  it("a parte dos eleitos ignora a despesa de UE sem eleito", () => {
+    // AM 2020 tem R$ 10 mi de despesa e nenhum eleito: não entra no denominador
+    const ues = filtrar(D, 0, 2020, "TODAS");
+    expect(somar(ues).pcEleitos).toBeNull();
+    const mistas = [...filtrar(D, 0, 2024, "AM"), ...ues];
+    expect(somar(mistas).pcEleitos).toBeCloseTo((100 * 8_050_000) / 40_200_000);
+  });
+
+  it("UF desconhecida dá lista vazia, não todas", () => {
+    expect(filtrar(D, 0, 2024, "XX")).toEqual([]);
+    expect(filtrar(D, 0, 2024, "TODAS")).toHaveLength(3);
+  });
+
+  it("somasPorFiltro bate com somar(filtrar)", () => {
+    const m = somasPorFiltro(D);
+    expect(m.get(chaveSoma(0, 2024, "AM"))).toEqual(somar(filtrar(D, 0, 2024, "AM")));
+    expect(m.get(chaveSoma(0, 2024, "TODAS"))).toEqual(somar(filtrar(D, 0, 2024, "TODAS")));
+    expect(m.get(chaveSoma(0, 2024, "XX"))).toBeUndefined();
+  });
+
   it("sem UEs não divide por zero", () => {
     const s = somar([]);
     expect(s.custo).toBeNull();
@@ -47,6 +76,10 @@ describe("somar", () => {
 describe("auxiliares", () => {
   it("mediana com quantidade par", () => expect(mediana([4, 1, 3, 2])).toBe(2.5));
   it("corrige para reais de 2024", () => expect(em2024(D, 2020, 100)).toBeCloseTo(130));
+  it("sem IPCA do ano não inventa fator 1", () => {
+    expect(em2024(D, 2018, 100)).toBeNull();
+    expect(em2024(D, 2020, null)).toBeNull();
+  });
   it("ordena as cadeiras mais caras", () =>
     expect(maisCaras(filtrar(D, 0, 2024, "TODAS"), 2).map(u => u[4])).toEqual(["MANAUS", "GOIANIA"]));
   it("ao trocar de cargo mantém a posição da eleição", () => {

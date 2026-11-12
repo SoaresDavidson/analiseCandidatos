@@ -114,13 +114,19 @@ export function grupos(r: Grupo[], corte: number): { pub: Grupo; out: Grupo } {
   return g;
 }
 
+/** Diferença mínima, em pontos percentuais, para chamar de "real". Com o país inteiro os grupos têm
+ *  dezenas de milhares de candidatos e o teste dá p < 0,05 até para 0,3 ponto: o teste diz que não é
+ *  acaso, este corte diz que a diferença tem tamanho para importar. */
+export const EFEITO_MINIMO = 2;
+
 export function comparar(r: Grupo[], corte: number): Comparacao {
   const g = grupos(r, corte),
     tp = pc(g.pub.e, g.pub.n),
     to = pc(g.out.e, g.out.n),
     t = qui2x2(g.pub.e, g.pub.n, g.out.e, g.out.n);
   const ok = g.pub.n >= N_MIN && g.out.n >= N_MIN && t.p != null && t.minEsp >= 5;
-  return { g, tp, to, dif: tp != null && to != null ? tp - to : null, p: t.p, ok, real: ok && t.p! < 0.05 };
+  const dif = tp != null && to != null ? tp - to : null;
+  return { g, tp, to, dif, p: t.p, ok, real: ok && t.p! < 0.05 && Math.abs(dif ?? 0) >= EFEITO_MINIMO };
 }
 
 /** O padrão em todos os cargos e eleições: uma comparação por combinação, da mais nova à mais

@@ -159,8 +159,8 @@ function Conteudo({ D }: { D: DadosQ8 }) {
               {c.p == null || !c.ok
                 ? "Poucos candidatos: o teste não é confiável"
                 : c.real
-                  ? "Diferença real (teste estatístico, p < 0,05)"
-                  : "Sem diferença real (teste estatístico)"}
+                  ? "Diferença real (2 pontos ou mais, e não é acaso)"
+                  : "Sem diferença real (menos de 2 pontos, ou pode ser acaso)"}
             </Selo>
           )}
         </div>
@@ -267,8 +267,8 @@ function Conteudo({ D }: { D: DadosQ8 }) {
             })}
           </div>
           <p className="texto-nota">
-            "Menos chance": quem depende do fundo se elegeu menos que os outros, com diferença real no teste
-            estatístico. Clique num cargo e ano para vê-lo no Congresso, no alto da página.
+            "Menos chance": quem depende do fundo se elegeu menos que os outros, com diferença real (2 pontos ou mais e
+            teste estatístico). Clique num cargo e ano para vê-lo no Congresso, no alto da página.
           </p>
         </Caixa>
       </div>
@@ -296,7 +296,7 @@ function Conteudo({ D }: { D: DadosQ8 }) {
         <p className="texto-simples !text-[15.5px]">
           {!cc.ok
             ? "Com esse corte, um dos grupos fica com poucos candidatos."
-            : `Com esse corte, quem depende do fundo se elege ${fmt(cc.tp, 0)} vezes em 100 e os outros ${fmt(cc.to, 0)}: diferença de ${cc.dif! > 0 ? "+" : "−"}${fmt(Math.abs(cc.dif!), 1)} pontos${cc.real ? "" : " (sem diferença real no teste)"}.`}
+            : `Com esse corte, quem depende do fundo se elege ${fmt(cc.tp, 0)} vezes em 100 e os outros ${fmt(cc.to, 0)}: diferença de ${cc.dif! > 0 ? "+" : "−"}${fmt(Math.abs(cc.dif!), 1)} pontos${cc.real ? "" : " (sem diferença real)"}.`}
         </p>
         <h3>A conclusão muda com o corte?</h3>
         <GraficoSensibilidade r={r} corte={corte} />
@@ -366,8 +366,9 @@ function Conteudo({ D }: { D: DadosQ8 }) {
             2026 fica de fora até o resultado final.
           </li>
           <li>
-            <b>Chance de se eleger:</b> eleitos ÷ candidatos de cada grupo, sempre dentro do mesmo cargo. O teste é o
-            qui-quadrado.
+            <b>Chance de se eleger:</b> eleitos ÷ candidatos de cada grupo, sempre dentro do mesmo cargo. A diferença só
+            conta como real se for de 2 pontos ou mais e passar no teste do qui-quadrado (p &lt; 0,05): com o país
+            inteiro os grupos são tão grandes que o teste sozinho aprova até meio ponto.
           </li>
           <li>
             <b>Cuidado:</b> isso mostra o que anda junto, não o que causa. O partido decide quem recebe o fundo, e quem

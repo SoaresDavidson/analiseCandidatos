@@ -45,16 +45,25 @@ function Conteudo({ D, B }: { D: DadosQ4; B: MalhaBrasil }) {
     setEstados(antes => (antes[uf] ? antes : { ...antes, [uf]: pronto }));
   }, []);
 
-  /** Vai para uma abertura; se for um estado ainda não carregado, busca antes de virar as folhas. */
+  /** Vai para uma abertura; se for um estado ainda não carregado, busca antes de virar as folhas.
+   *  Só vira (ou mostra o erro) se este ainda for o último destino pedido: a resposta atrasada de
+   *  um estado lento não traz o livro de volta para ele. */
+  const destino = useRef(0);
   const irPara = useCallback(
     (indice: number) => {
       const c = CAPITULOS[indice];
       if (!c) return;
+      destino.current = indice;
+      setErro(null);
       const virar = () => {
+        if (destino.current !== indice) return;
         setSel(null);
         setPagina(indice);
       };
-      if (c.tipo === "estado" && !prontos.current[c.uf]) garantir(c.uf).then(virar, setErro);
+      if (c.tipo === "estado" && !prontos.current[c.uf])
+        garantir(c.uf).then(virar, e => {
+          if (destino.current === indice) setErro(e);
+        });
       else virar();
     },
     [garantir],

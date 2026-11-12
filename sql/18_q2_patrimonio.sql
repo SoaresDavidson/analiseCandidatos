@@ -23,8 +23,13 @@
 
 -- ---------------------------------------------------------------------------
 -- Base: uma linha por candidatura que entra na análise
+--
+-- `q2_candidatura_base` tem todas as eleições carregadas, 2026 inclusive: é a fonte da aba
+-- 2026 do painel. `q2_candidatura`, logo abaixo, é a da página da Q2 e fica só com as
+-- eleições divulgadas (macro ano_divulgado). Os quintos são cortados dentro de cada ano e
+-- cargo, então 2026 não muda os dos outros anos.
 -- ---------------------------------------------------------------------------
-CREATE OR REPLACE VIEW q2_candidatura AS
+CREATE OR REPLACE VIEW q2_candidatura_base AS
 WITH bens AS (
     SELECT
         id_candidatura,
@@ -56,7 +61,7 @@ base AS (
     LEFT JOIN bens AS b ON c.id_candidatura = b.id_candidatura
     LEFT JOIN q10_ipca AS i ON c.ano = i.ano
     WHERE
-        c.ano IN (2018, 2020, 2022, 2024)                -- E.P.; 2026 fora
+        c.ano IN (2018, 2020, 2022, 2024, 2026)          -- E.P. e 2026 (só a aba 2026 usa)
         AND cg.ds_cargo IN (
             'VEREADOR', 'PREFEITO', 'DEPUTADO ESTADUAL', 'DEPUTADO FEDERAL', 'SENADOR', 'GOVERNADOR'
         )                                                -- vices e suplentes herdam a chapa
@@ -75,6 +80,11 @@ SELECT
         )
     END AS nr_faixa
 FROM base;
+
+CREATE OR REPLACE VIEW q2_candidatura AS
+SELECT *
+FROM q2_candidatura_base
+WHERE ano_divulgado(ano);
 
 -- ---------------------------------------------------------------------------
 -- Os limites de cada quinto, em reais da época e de 2024, para o rótulo da página
@@ -96,7 +106,7 @@ GROUP BY ALL;
 -- ---------------------------------------------------------------------------
 -- Taxa de eleição por faixa: a view da página
 --
--- Grão: ano × UF × cargo × faixa. As faixas são cortadas no conjunto das 6 UFs
+-- Grão: ano × UF × cargo × faixa. As faixas são cortadas no país inteiro
 -- (ano × cargo); a UF fica no grão para o filtro da página somar.
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE VIEW q2_faixa AS

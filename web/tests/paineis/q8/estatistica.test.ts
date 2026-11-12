@@ -52,6 +52,18 @@ describe("comparar", () => {
     expect(c.real).toBe(true);
     expect(c.p).toBeLessThan(0.001);
   });
+
+  it("diferença pequena não é real, mesmo com p < 0,05 em grupos enormes", () => {
+    const r = vazias();
+    // 10,0% contra 10,5%: meio ponto, com 200 mil candidatos de cada lado
+    r[0] = { n: 200000, e: 20000 };
+    r[21] = { n: 200000, e: 21000 };
+    const c = comparar(r, 50);
+    expect(c.ok).toBe(true);
+    expect(c.p).toBeLessThan(0.05);
+    expect(c.dif).toBeCloseTo(0.5);
+    expect(c.real).toBe(false);
+  });
 });
 
 describe("país inteiro", () => {

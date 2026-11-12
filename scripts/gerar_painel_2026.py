@@ -115,25 +115,18 @@ def main() -> None:
             alvo[k] += x
     fundo = [[*k, *v] for k, v in sorted(juntos.items())]
 
-    # patrimônio (Q2): quem declarou bens vai em 5 grupos do mesmo tamanho (no país, por cargo e eleição);
-    # 0 = não declarou nenhum bem
+    # patrimônio (Q2): os mesmos quintos da página da Q2 (q2_candidatura_base): sem as declarações
+    # suspeitas de erro de digitação, cortados no país por cargo e eleição; 0 = não declarou nenhum bem.
+    # Como na Q2, o deputado distrital do DF fica de fora desta conta.
     patrimonio = [
-        [ano, uf_idx(uf), cargo, quinto, int(n), int(e)]
-        for ano, uf, cargo, quinto, n, e in con.execute(
-            """WITH bens AS (
-                    SELECT id_candidatura, sum(vr_bem) AS vr FROM modelo.bem_candidato GROUP BY 1
-                ),
-                q AS (
-                    SELECT c.ano, c.sg_uf, c.cd_cargo, c.fl_eleito,
-                           CASE WHEN coalesce(b.vr, 0) <= 0 THEN 0
-                                ELSE ntile(5) OVER (PARTITION BY c.ano, c.cd_cargo, coalesce(b.vr, 0) > 0 ORDER BY b.vr)
-                           END AS quinto
-                    FROM cand AS c LEFT JOIN bens AS b USING (id_candidatura)
-                    WHERE c.ano IN (2022, 2026)
-                )
-                SELECT ano, sg_uf, cd_cargo, quinto, count(*), count(*) FILTER (WHERE fl_eleito)
-                FROM q GROUP BY GROUPING SETS ((ano, sg_uf, cd_cargo, quinto), (ano, cd_cargo, quinto))
-                ORDER BY 1, 2 NULLS FIRST, 3, 4"""
+        [ano, uf_idx(uf), NOME_CARGO[cargo], faixa, int(n), int(e)]
+        for ano, uf, cargo, faixa, n, e in con.execute(
+            """SELECT ano, sg_uf, ds_cargo, nr_faixa, count(*), count(*) FILTER (WHERE fl_eleito)
+               FROM q2_candidatura_base
+               WHERE ano IN (2022, 2026) AND nr_faixa IS NOT NULL
+                 AND ds_cargo IN ('GOVERNADOR', 'SENADOR', 'DEPUTADO FEDERAL', 'DEPUTADO ESTADUAL')
+               GROUP BY GROUPING SETS ((ano, sg_uf, ds_cargo, nr_faixa), (ano, ds_cargo, nr_faixa))
+               ORDER BY 1, 2 NULLS FIRST, 3, 4"""
         ).fetchall()
     ]
 

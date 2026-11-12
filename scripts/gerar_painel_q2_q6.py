@@ -95,7 +95,7 @@ def destaques_q2(con: duckdb.DuckDBPyConnection) -> dict:
 
     Chave "cargo|ano|uf" (uf = índice em UFS_BR ou "BR") -> {"top": [[nome de urna, nome civil,
     partido, UF, lugar, sq_candidato, patrimônio em reais da época, nº de bens, 1 se eleito] × até 5],
-    "fora": nº de declarações acima do 1º que ficaram de fora por suspeita de erro de digitação}.
+    "fora": nº de candidaturas com patrimônio suspeito de erro de digitação, que ficaram de fora do ranking}.
     A regra de suspeita é a da análise (um bem de R$ 100 milhões ou mais, sql/18_q2_patrimonio.sql).
     """
     linhas = con.execute(

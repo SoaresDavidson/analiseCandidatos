@@ -361,7 +361,8 @@ function Conteudo({ D }: { D: Dados2026 }) {
           </li>
           <li>
             <b>Mesmas contas:</b> cada cartão repete a conta da pergunta dele (o método está no fim de cada página).
-            Reais de 2024 pelo IPCA de agosto (IBGE). O deputado distrital do DF entra como estadual.
+            Reais de 2024 pelo IPCA de agosto (IBGE). O deputado distrital do DF entra como estadual, menos no
+            patrimônio, que segue a Pergunta 2 e o deixa de fora.
           </li>
           <li>
             <b>Viés:</b> nota dos partidos da pesquisa de Bolognesi, Ribeiro e Codato (2023), rodada de 2018, nos três

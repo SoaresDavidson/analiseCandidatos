@@ -66,7 +66,7 @@ WHERE p.ano IN (2022, 2024) AND s.vl_ideologia IS NOT NULL;
 
 -- ---------------------------------------------------------------------------
 -- A régua: do partido mais à esquerda ao mais à direita entre os que elegeram
--- alguém em 2024 nos 6 estados. O meio da régua separa "tende à esquerda" de
+-- alguém em 2024 no país. O meio da régua separa "tende à esquerda" de
 -- "tende à direita".
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE VIEW espectro_regua AS

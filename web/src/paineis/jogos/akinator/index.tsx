@@ -17,17 +17,17 @@ import { CARGO, useEleitos } from "../../candidatos/modelo";
 import type { Eleito } from "../../candidatos/tipos";
 import { conhecido } from "../comum";
 import {
+  avaliar,
   deveChutar,
   discordancias,
   ERROS_PARA_REVELAR,
   gerarPerguntas,
-  melhorChute,
   melhorPergunta,
+  montarTabela,
   type Pergunta,
-  penalidades,
   RESPOSTAS,
   type Resposta,
-  vivos,
+  TOLERANCIA,
 } from "./logica";
 
 type Baralho = "conhecidos" | "todos";
@@ -107,21 +107,17 @@ export default function Jogo() {
   );
   const perguntas = useMemo(() => gerarPerguntas(pool), [pool]);
   const porId = useMemo(() => new Map(perguntas.map(p => [p.id, p])), [perguntas]);
+  const tabela = useMemo(() => montarTabela(pool, perguntas), [pool, perguntas]);
 
   const { respostas, excluidos, ultimoChute } = partida;
   const proposta = useMemo(() => {
-    const pens = penalidades(pool, porId, respostas, new Set(excluidos));
-    const vs = vivos(pool, pens);
-    if (!vs.length) return { vivos: 0, pergunta: null, chute: null };
-    const pergunta = melhorPergunta(vs, perguntas, new Set(respostas.map(r => r.id)));
-    const chuta = deveChutar({
-      vivos: vs.length,
-      haPergunta: pergunta !== null,
-      respondidas: respostas.length,
-      ultimoChute,
-    });
-    return { vivos: vs.length, pergunta: chuta ? null : pergunta, chute: chuta ? melhorChute(pool, pens, vs) : null };
-  }, [pool, porId, perguntas, respostas, excluidos, ultimoChute]);
+    const { probs, lider, topo, contraLider, plausiveis } = avaliar(tabela, respostas, new Set(excluidos));
+    // nem o líder fica dentro da tolerância de contradições: o gênio desiste
+    if (lider < 0 || contraLider > TOLERANCIA) return { vivos: 0, pergunta: null, chute: null };
+    const pergunta = melhorPergunta(tabela, probs, new Set(respostas.map(r => r.id)));
+    const chuta = deveChutar({ topo, haPergunta: pergunta !== null, respondidas: respostas.length, ultimoChute });
+    return { vivos: plausiveis, pergunta: chuta ? null : pergunta, chute: chuta ? pool[lider] : null };
+  }, [pool, tabela, respostas, excluidos, ultimoChute]);
 
   if (erro) return <p className="p-5">Não foi possível carregar os dados dos eleitos.</p>;
   if (!modelo) return <Carregando />;
@@ -246,7 +242,9 @@ export default function Jogo() {
 
           {semOpcoes && (
             <Genio>
-              <p className="m-0 text-lg font-bold">Desisto! Não sobrou ninguém que combine com as suas respostas.</p>
+              <p className="m-0 text-lg font-bold">
+                Desisto! Até o candidato mais provável contradiz mais de {TOLERANCIA} das suas respostas.
+              </p>
             </Genio>
           )}
 

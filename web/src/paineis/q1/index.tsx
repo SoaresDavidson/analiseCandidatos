@@ -22,6 +22,7 @@ import {
   anosDoCargo,
   CARGO_NOME,
   CARGO_ROT,
+  chaveSoma,
   classes,
   curto,
   custoUe,
@@ -31,10 +32,12 @@ import {
   municipal,
   RAMPA_CUSTO,
   somar,
+  somasPorFiltro,
 } from "./calculo";
 import type { DadosQ1, Filtros, Soma, UeQ1 } from "./tipos";
 
 const PADRAO: Filtros = { uf: "TODAS", cargo: 3, ano: 2022 };
+const VAZIA = somar([]);
 
 export default function Painel() {
   const { dados } = useDados<DadosQ1>("q1.json");
@@ -44,18 +47,24 @@ export default function Painel() {
 function Conteudo({ D }: { D: DadosQ1 }) {
   const [salvo, setF] = usePersistente<Filtros>("q1-brasil", PADRAO);
   // ano salvo que não existe para o cargo cai na eleição mais recente dele
-  const f = anosDoCargo(salvo.cargo).includes(salvo.ano) ? salvo : { ...salvo, ano: anosDoCargo(salvo.cargo)[1] };
+  // ano ou UF salvos que não existem (dado antigo no localStorage) voltam ao padrão: UF desconhecida vira "TODAS"
+  const f: Filtros = {
+    ...salvo,
+    uf: salvo.uf === "TODAS" || D.ufs.includes(salvo.uf) ? salvo.uf : "TODAS",
+    ano: anosDoCargo(salvo.cargo).includes(salvo.ano) ? salvo.ano : anosDoCargo(salvo.cargo)[1],
+  };
+  const somas = useMemo(() => somasPorFiltro(D), [D]);
   const ues = useMemo(() => filtrar(D, f.cargo, f.ano, f.uf), [D, f.cargo, f.ano, f.uf]);
   const s = useMemo(() => somar(ues), [ues]);
   // o custo em cada estado, para o mapa e as listas ao lado dele
   const porUf = useMemo(() => {
     const m = new Map<string, Soma>();
     for (const uf of D.ufs) {
-      const x = somar(filtrar(D, f.cargo, f.ano, uf));
-      if (x.custo != null && x.vagas > 0) m.set(uf, x);
+      const x = somas.get(chaveSoma(f.cargo, f.ano, uf));
+      if (x && x.custo != null && x.vagas > 0) m.set(uf, x);
     }
     return m;
-  }, [D, f.cargo, f.ano]);
+  }, [D, somas, f.cargo, f.ano]);
   const mun = municipal(f.cargo);
 
   const escolher = (cargo: number, ano: number) => {
@@ -105,10 +114,15 @@ function Conteudo({ D }: { D: DadosQ1 }) {
       <div ref={destaque} className="scroll-mt-24">
         <Destaque D={D} f={f} s={s} />
       </div>
-      <NoMapa f={f} porUf={porUf} geral={somar(filtrar(D, f.cargo, f.ano, "TODAS")).custo} aoEscolher={escolherUf} />
+      <NoMapa
+        f={f}
+        porUf={porUf}
+        geral={somas.get(chaveSoma(f.cargo, f.ano, "TODAS"))?.custo ?? null}
+        aoEscolher={escolherUf}
+      />
 
       {mun && <MaisCaras ues={ues} ufs={D.ufs} f={f} />}
-      <Todas D={D} f={f} escolher={escolher} />
+      <Todas D={D} f={f} somas={somas} escolher={escolher} />
 
       <VerMais titulo="De onde vêm os dados e como calculamos">
         <ul>
@@ -343,7 +357,17 @@ function MaisCaras({ ues, ufs, f }: { ues: UeQ1[]; ufs: string[]; f: Filtros }) 
 }
 
 /** Todos os cargos e eleições em reais de 2024; clicar numa linha escolhe o cargo e o ano. */
-function Todas({ D, f, escolher }: { D: DadosQ1; f: Filtros; escolher: (cargo: number, ano: number) => void }) {
+function Todas({
+  D,
+  f,
+  somas,
+  escolher,
+}: {
+  D: DadosQ1;
+  f: Filtros;
+  somas: Map<string, Soma>;
+  escolher: (cargo: number, ano: number) => void;
+}) {
   const linhas = CARGO_ROT.flatMap((_, c) => anosDoCargo(c).map(a => [c, a] as const)).reverse();
   return (
     <VerMais titulo="Em todos os cargos e eleições">
@@ -364,7 +388,7 @@ function Todas({ D, f, escolher }: { D: DadosQ1; f: Filtros; escolher: (cargo: n
           </thead>
           <tbody>
             {linhas.map(([c, a]) => {
-              const s = somar(filtrar(D, c, a, f.uf)),
+              const s = somas.get(chaveSoma(c, a, f.uf)) ?? VAZIA,
                 atual = c === f.cargo && a === f.ano;
               return (
                 <tr

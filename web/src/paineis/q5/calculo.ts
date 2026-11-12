@@ -16,8 +16,9 @@ export function anoAoTrocarCargo(cargoAntigo: number, ano: number, cargoNovo: nu
 }
 
 const daUf = (ufs: string[], uf: string) => {
-  const iu = uf === "TODAS" ? -1 : ufs.indexOf(uf);
-  return (u: number) => iu < 0 || u === iu;
+  const todas = uf === "TODAS",
+    iu = ufs.indexOf(uf); // UF desconhecida: -1, não casa com nada e a lista fica vazia
+  return (u: number) => todas || u === iu;
 };
 
 /** As linhas de partido de cargo, ano e estado ("TODAS" = o país). */
@@ -99,4 +100,22 @@ export function resumoPartidos(ps: readonly PartidoQ5[]): ResumoPartido[] {
   return [...m.values()]
     .filter(x => x.legenda > 0)
     .sort((a, b) => b.legenda - a.legenda || b.votosLegenda - a.votosLegenda || a.partido.localeCompare(b.partido));
+}
+
+/** Chave de `somasPorFiltro`: cargo, ano e UF ("TODAS" = o país). */
+export const chaveSoma = (cargo: number, ano: number, uf: string): string => `${cargo}|${ano}|${uf}`;
+
+/** Soma de cada cargo, ano e UF (e "TODAS") de uma vez, para a tabela não refiltrar a cada linha. */
+export function somasPorFiltro(D: DadosQ5): Map<string, Soma> {
+  const grupos = new Map<string, PartidoQ5[]>();
+  const poe = (k: string, p: PartidoQ5) => {
+    const g = grupos.get(k);
+    if (g) g.push(p);
+    else grupos.set(k, [p]);
+  };
+  for (const p of D.partidos) {
+    poe(chaveSoma(p[2], p[0], D.ufs[p[1]]), p);
+    poe(chaveSoma(p[2], p[0], "TODAS"), p);
+  }
+  return new Map([...grupos].map(([k, g]) => [k, somar(g)]));
 }

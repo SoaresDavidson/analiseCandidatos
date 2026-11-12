@@ -38,6 +38,16 @@ export const LIMIAR_CHUTE = 0.8;
 export const CHUTE_A_CADA = 20;
 /** Chutes errados a partir dos quais o jogador pode dizer quem era. */
 export const ERROS_PARA_REVELAR = 3;
+/**
+ * Contradições a mais que o líder toleradas para um eleito continuar entre os "candidatos
+ * possíveis" ("Sim"/"Não" contam 1, "provavelmente" conta 0,5). Quando o próprio líder passa
+ * disso, o gênio desiste.
+ */
+export const TOLERANCIA = 2;
+/** Na escolha da pergunta, ignora quem tem probabilidade abaixo desta fração da do líder. */
+export const PODA = 1e-4;
+/** Ganho mínimo, em bits, para uma pergunta valer a pena; abaixo disso o gênio chuta. */
+export const GANHO_MINIMO = 0.01;
 
 const nulo = (v: number | null | undefined, f: (x: number) => boolean): boolean | null => (v == null ? null : f(v));
 
@@ -145,117 +155,214 @@ export function gerarPerguntas(eleitos: readonly Eleito[]): Pergunta[] {
 }
 
 /**
- * P(resposta | eleito): 1 - ERRO se concorda com o dado, ERRO se contradiz, interpolado para
- * "provavelmente" (0,7 / 0,3). "Não sei" e dado ausente valem 1: não mudam nada.
+ * Resultado de cada pergunta para cada eleito (mesma ordem de `eleitos`): 1 sim, -1 não, 0 sem dado.
+ * Os testes não mudam durante a partida, então a tabela é montada uma vez por baralho.
  */
+export interface Tabela {
+  eleitos: readonly Eleito[];
+  perguntas: readonly Pergunta[];
+  linhas: ReadonlyMap<string, Int8Array>;
+}
+
+export function montarTabela(eleitos: readonly Eleito[], perguntas: readonly Pergunta[]): Tabela {
+  const linhas = new Map<string, Int8Array>();
+  for (const p of perguntas) {
+    const linha = new Int8Array(eleitos.length);
+    eleitos.forEach((e, i) => {
+      const t = p.teste(e);
+      linha[i] = t === null ? 0 : t ? 1 : -1;
+    });
+    linhas.set(p.id, linha);
+  }
+  return { eleitos, perguntas, linhas };
+}
+
+/**
+ * P(resposta | dado): 1 - ERRO se a resposta concorda com o dado (1 sim, -1 não), ERRO se
+ * contradiz, interpolado para "provavelmente" (0,7 / 0,3). "Não sei" e dado ausente (0) valem 1:
+ * não mudam nada.
+ */
+export function chance(dado: number, valor: number): number {
+  if (dado === 0 || valor === 0) return 1;
+  const acerto = 0.5 + Math.abs(valor) * (0.5 - ERRO);
+  return valor > 0 === dado > 0 ? acerto : 1 - acerto;
+}
+
+/** P(resposta | eleito), com o dado tirado da pergunta. */
 export function verossimilhanca(p: Pergunta, valor: number, e: Eleito): number {
   const t = p.teste(e);
-  if (t === null || valor === 0) return 1;
-  const acerto = 0.5 + Math.abs(valor) * (0.5 - ERRO);
-  return valor > 0 === t ? acerto : 1 - acerto;
+  return chance(t === null ? 0 : t ? 1 : -1, valor);
 }
 
 /** true quando a resposta contradiz o dado do eleito. */
 export const contradiz = (p: Pergunta, valor: number, e: Eleito): boolean => verossimilhanca(p, valor, e) < 0.5;
 
+/** Peso da contradição: 1 para "Sim"/"Não", 0,5 para "provavelmente", 0 se não contradiz. */
+const peso = (dado: number, valor: number): number => (chance(dado, valor) < 0.5 ? Math.abs(valor) : 0);
+
+export interface Avaliacao {
+  /** Probabilidade de cada eleito (mesma ordem de `eleitos`). Excluídos valem 0. Soma 1, ou tudo 0. */
+  probs: Float64Array;
+  /** Índice do líder (maior probabilidade, desempate pelos votos); -1 se não sobrou ninguém. */
+  lider: number;
+  /** Probabilidade do líder. */
+  topo: number;
+  /** Contradições do líder. */
+  contraLider: number;
+  /** Eleitos não excluídos com no máximo TOLERANCIA contradições a mais que o líder: a contagem na tela. */
+  plausiveis: number;
+}
+
 /**
- * Probabilidade de cada eleito (mesma ordem de `eleitos`) dado o histórico, partindo de uma
- * distribuição uniforme. Excluídos valem 0. Soma 1, ou tudo 0 se não sobrou ninguém.
+ * Aplica as respostas partindo de uma distribuição uniforme e resume o resultado numa passada.
  * A conta é feita em log para não estourar com muitas respostas.
  */
-export function probabilidades(
-  eleitos: readonly Eleito[],
-  perguntas: ReadonlyMap<string, Pergunta>,
+export function avaliar(
+  tabela: Tabela,
   respostas: readonly Resposta[],
   excluidos: ReadonlySet<number> = new Set(),
-): number[] {
-  const lista = respostas.flatMap(r => {
-    const p = perguntas.get(r.id);
-    return p ? [{ p, valor: r.valor }] : [];
-  });
-  const logs = eleitos.map(e =>
-    excluidos.has(e.id)
-      ? Number.NEGATIVE_INFINITY
-      : lista.reduce((s, r) => s + Math.log(verossimilhanca(r.p, r.valor, e)), 0),
-  );
-  const max = Math.max(...logs);
-  if (max === Number.NEGATIVE_INFINITY) return eleitos.map(() => 0);
-  const pesos = logs.map(l => Math.exp(l - max));
-  const total = pesos.reduce((s, x) => s + x, 0);
-  return pesos.map(x => x / total);
+): Avaliacao {
+  const { eleitos, linhas } = tabela;
+  const n = eleitos.length;
+  const logs = new Float64Array(n);
+  const contra = new Float64Array(n);
+  for (const r of respostas) {
+    const linha = linhas.get(r.id);
+    if (!linha) continue;
+    const lSim = Math.log(chance(1, r.valor));
+    const lNao = Math.log(chance(-1, r.valor));
+    const cSim = peso(1, r.valor);
+    const cNao = peso(-1, r.valor);
+    for (let i = 0; i < n; i++) {
+      if (linha[i] === 1) {
+        logs[i] += lSim;
+        contra[i] += cSim;
+      } else if (linha[i] === -1) {
+        logs[i] += lNao;
+        contra[i] += cNao;
+      }
+    }
+  }
+  let max = Number.NEGATIVE_INFINITY;
+  for (let i = 0; i < n; i++) {
+    if (excluidos.has(eleitos[i].id)) logs[i] = Number.NEGATIVE_INFINITY;
+    else if (logs[i] > max) max = logs[i];
+  }
+  const probs = new Float64Array(n);
+  if (max === Number.NEGATIVE_INFINITY) return { probs, lider: -1, topo: 0, contraLider: 0, plausiveis: 0 };
+  let total = 0;
+  for (let i = 0; i < n; i++) {
+    probs[i] = Math.exp(logs[i] - max);
+    total += probs[i];
+  }
+  let lider = -1;
+  let topo = 0;
+  for (let i = 0; i < n; i++) {
+    const p = probs[i] / total;
+    probs[i] = p;
+    if (p === 0) continue;
+    if (p > topo || (p === topo && (eleitos[i].votos ?? 0) > (eleitos[lider].votos ?? 0))) {
+      lider = i;
+      topo = p;
+    }
+  }
+  const contraLider = contra[lider];
+  let plausiveis = 0;
+  for (let i = 0; i < n; i++) if (probs[i] > 0 && contra[i] - contraLider <= TOLERANCIA) plausiveis++;
+  return { probs, lider, topo, contraLider, plausiveis };
 }
 
 /**
- * Quantos eleitos ainda são plausíveis: os que estão no máximo uma contradição atrás do líder
- * (probabilidade acima de 1/10 da dele). Serve para a contagem na tela.
+ * Entropia (em nats) da distribuição depois de uma resposta que multiplica a probabilidade de cada
+ * grupo g por w[g]. s[g] é a soma de p no grupo e t[g] a soma de p·ln p.
  */
-export function plausiveis(probs: readonly number[]): number {
-  const max = Math.max(0, ...probs);
-  return max === 0 ? 0 : probs.filter(p => p > max * ERRO).length;
+function entropiaApos(s: readonly number[], t: readonly number[], w: readonly number[]): number {
+  let z = 0;
+  for (let g = 0; g < 3; g++) z += w[g] * s[g];
+  let soma = 0;
+  for (let g = 0; g < 3; g++) if (s[g] > 0) soma += w[g] * (t[g] + s[g] * Math.log(w[g] / z));
+  return -soma / z;
 }
 
-/** Entropia binária em bits. */
-const h = (q: number): number => (q <= 0 || q >= 1 ? 0 : -q * Math.log2(q) - (1 - q) * Math.log2(1 - q));
-
 /**
- * Pergunta ainda não feita de maior ganho de informação esperado: H(resposta) - H(resposta | eleito),
- * com a resposta modelada como sim/não errando com chance ERRO; eleito sem o dado responde ao acaso.
- * Empate sorteado. null se nenhuma pergunta separa os eleitos que restam.
+ * Pergunta ainda não feita que mais reduz, em média, a entropia da distribuição. A redução usa a
+ * mesma `chance` de `avaliar` (eleito sem o dado não se mexe). Para prever a resposta, supõe-se
+ * "Sim" ou "Não" (errando com chance ERRO) e que quem não tem o dado responde qualquer um dos dois.
+ * Quem tem probabilidade abaixo de PODA vezes a do líder fica fora da conta.
+ * Empate sorteado. null se nenhuma pergunta rende pelo menos GANHO_MINIMO bits.
  */
 export function melhorPergunta(
-  eleitos: readonly Eleito[],
-  probs: readonly number[],
-  perguntas: readonly Pergunta[],
+  tabela: Tabela,
+  probs: ArrayLike<number>,
   feitas: ReadonlySet<string>,
   rnd: () => number = Math.random,
 ): Pergunta | null {
-  const ativos = eleitos.flatMap((e, i) => (probs[i] > 0 ? [{ e, p: probs[i] }] : []));
-  if (ativos.length < 2) return null;
-  const pontuadas: { p: Pergunta; ganho: number }[] = [];
-  for (const p of perguntas) {
-    if (feitas.has(p.id)) continue;
-    let sim = 0;
-    let nao = 0;
-    let nulo = 0;
-    for (const a of ativos) {
-      const t = p.teste(a.e);
-      if (t === true) sim += a.p;
-      else if (t === false) nao += a.p;
-      else nulo += a.p;
+  const n = probs.length;
+  // só entra na conta quem está a menos de PODA do líder, renormalizado
+  let topo = 0;
+  for (let i = 0; i < n; i++) if (probs[i] > topo) topo = probs[i];
+  const corte = topo * PODA;
+  const ps = new Float64Array(n);
+  let massa = 0;
+  let ativos = 0;
+  for (let i = 0; i < n; i++) {
+    if (probs[i] > 0 && probs[i] >= corte) {
+      ps[i] = probs[i];
+      massa += ps[i];
+      ativos++;
     }
-    if (sim === 0 || nao === 0) continue;
-    const qSim = (1 - ERRO) * sim + ERRO * nao + 0.5 * nulo;
-    const ganho = h(qSim) - (sim + nao) * h(ERRO) - nulo;
-    if (ganho > 1e-9) pontuadas.push({ p, ganho });
   }
-  if (!pontuadas.length) return null;
-  const melhor = Math.max(...pontuadas.map(x => x.ganho));
+  if (ativos < 2) return null;
+  const plnp = new Float64Array(n);
+  let h0 = 0;
+  for (let i = 0; i < n; i++) {
+    if (ps[i] > 0) {
+      ps[i] /= massa;
+      plnp[i] = ps[i] * Math.log(ps[i]);
+      h0 -= plnp[i];
+    }
+  }
+  const wSim = [chance(1, 1), chance(-1, 1), 1];
+  const wNao = [chance(1, -1), chance(-1, -1), 1];
+  const pontuadas: { p: Pergunta; ganho: number }[] = [];
+  let melhor = 0;
+  for (const p of tabela.perguntas) {
+    const linha = tabela.linhas.get(p.id);
+    if (!linha || feitas.has(p.id)) continue;
+    // grupos: 0 = sim, 1 = não, 2 = sem dado
+    const s = [0, 0, 0];
+    const t = [0, 0, 0];
+    for (let i = 0; i < n; i++) {
+      const q = ps[i];
+      if (q === 0) continue;
+      const g = linha[i] === 1 ? 0 : linha[i] === -1 ? 1 : 2;
+      s[g] += q;
+      t[g] += plnp[i];
+    }
+    if (s[0] === 0 || s[1] === 0) continue;
+    const pSim = (1 - ERRO) * s[0] + ERRO * s[1] + 0.5 * s[2];
+    const depois = pSim * entropiaApos(s, t, wSim) + (1 - pSim) * entropiaApos(s, t, wNao);
+    const ganho = (h0 - depois) / Math.LN2;
+    if (ganho < GANHO_MINIMO) continue;
+    pontuadas.push({ p, ganho });
+    if (ganho > melhor) melhor = ganho;
+  }
   const empatadas = pontuadas.filter(x => melhor - x.ganho < 1e-9).map(x => x.p);
   return sortear(empatadas, rnd) ?? null;
 }
 
-/** Hora do chute: líder acima do limiar, nenhuma pergunta separa mais, ou 20 perguntas desde o último chute. */
+/**
+ * Hora do chute: líder acima do limiar (com pelo menos uma resposta desde o último chute, para não
+ * emendar chutes depois de um erro), nenhuma pergunta útil, ou 20 perguntas desde o último chute.
+ */
 export function deveChutar(estado: {
   topo: number;
   haPergunta: boolean;
   respondidas: number;
   ultimoChute: number;
 }): boolean {
-  return estado.topo >= LIMIAR_CHUTE || !estado.haPergunta || estado.respondidas - estado.ultimoChute >= CHUTE_A_CADA;
-}
-
-/** Candidato do chute: maior probabilidade, desempate pelos votos. null se não sobrou ninguém. */
-export function melhorChute(eleitos: readonly Eleito[], probs: readonly number[]): Eleito | null {
-  let melhor: Eleito | null = null;
-  let pMelhor = 0;
-  eleitos.forEach((e, i) => {
-    const p = probs[i];
-    if (p > pMelhor || (p === pMelhor && p > 0 && melhor && (e.votos ?? 0) > (melhor.votos ?? 0))) {
-      melhor = e;
-      pMelhor = p;
-    }
-  });
-  return melhor;
+  const desde = estado.respondidas - estado.ultimoChute;
+  return (estado.topo >= LIMIAR_CHUTE && desde > 0) || !estado.haPergunta || desde >= CHUTE_A_CADA;
 }
 
 /** Respostas em que o eleito contradiz o que o jogador disse. */

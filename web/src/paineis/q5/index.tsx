@@ -10,14 +10,17 @@ import {
   anosDoCargo,
   CARGO_PLURAL,
   CARGO_ROT,
+  chaveSoma,
   filtrarPartidos,
   resumoPartidos,
   somar,
+  somasPorFiltro,
   trocas,
 } from "./calculo";
-import type { AfetadoQ5, DadosQ5, Filtros } from "./tipos";
+import type { AfetadoQ5, DadosQ5, Filtros, Soma } from "./tipos";
 
 const PADRAO: Filtros = { uf: "TODAS", cargo: 0, ano: 2024 };
+const VAZIA = somar([]);
 const PRIMEIRAS = 10; // as primeiras linhas; a lista inteira abre no botão
 
 export default function Painel() {
@@ -27,7 +30,13 @@ export default function Painel() {
 
 function Conteudo({ D }: { D: DadosQ5 }) {
   const [salvo, setF] = usePersistente<Filtros>("q5-brasil", PADRAO);
-  const f = anosDoCargo(salvo.cargo).includes(salvo.ano) ? salvo : { ...salvo, ano: anosDoCargo(salvo.cargo)[1] };
+  // ano ou UF salvos que não existem (dado antigo no localStorage) voltam ao padrão: UF desconhecida vira "TODAS"
+  const f: Filtros = {
+    ...salvo,
+    uf: salvo.uf === "TODAS" || D.ufs.includes(salvo.uf) ? salvo.uf : "TODAS",
+    ano: anosDoCargo(salvo.cargo).includes(salvo.ano) ? salvo.ano : anosDoCargo(salvo.cargo)[1],
+  };
+  const somas = useMemo(() => somasPorFiltro(D), [D]);
   const ps = useMemo(() => filtrarPartidos(D, f.cargo, f.ano, f.uf), [D, f.cargo, f.ano, f.uf]);
   const s = useMemo(() => somar(ps), [ps]);
   const partidos = useMemo(() => resumoPartidos(ps), [ps]);
@@ -86,8 +95,8 @@ function Conteudo({ D }: { D: DadosQ5 }) {
 
       <Album key={`${f.cargo}|${f.ano}|${f.uf}`} D={D} f={f} partidos={partidos} />
 
-      <Trocas D={D} f={f} />
-      <Todas D={D} f={f} escolher={escolher} />
+      <Trocas key={`${f.cargo}|${f.ano}|${f.uf}`} D={D} f={f} />
+      <Todas f={f} somas={somas} escolher={escolher} />
 
       <VerMais titulo="De onde vêm os dados e como calculamos">
         <ul>
@@ -169,7 +178,7 @@ function Trocas({ D, f }: { D: DadosQ5; f: Filtros }) {
       </div>
       {t.length > PRIMEIRAS && (
         <Botao className="justify-self-start" onClick={() => setTodas(v => !v)}>
-          {todas ? "Mostrar menos" : `Mostrar todas as ${int(t.length)} ${f.cargo === 0 ? "cidades" : "listas"}`}
+          {todas ? "Mostrar menos" : `Mostrar todas as ${int(t.length)} cidades`}
         </Botao>
       )}
       <p className="texto-nota">
@@ -182,7 +191,15 @@ function Trocas({ D, f }: { D: DadosQ5; f: Filtros }) {
 }
 
 /** Todos os cargos e eleições; clicar numa linha escolhe o cargo e o ano. */
-function Todas({ D, f, escolher }: { D: DadosQ5; f: Filtros; escolher: (cargo: number, ano: number) => void }) {
+function Todas({
+  f,
+  somas,
+  escolher,
+}: {
+  f: Filtros;
+  somas: Map<string, Soma>;
+  escolher: (cargo: number, ano: number) => void;
+}) {
   const linhas = CARGO_ROT.flatMap((_, c) => anosDoCargo(c).map(a => [c, a] as const)).sort((x, y) => x[1] - y[1]);
   return (
     <VerMais titulo="Em todos os cargos e eleições">
@@ -202,7 +219,7 @@ function Todas({ D, f, escolher }: { D: DadosQ5; f: Filtros; escolher: (cargo: n
           </thead>
           <tbody>
             {linhas.map(([c, a]) => {
-              const s = somar(filtrarPartidos(D, c, a, f.uf)),
+              const s = somas.get(chaveSoma(c, a, f.uf)) ?? VAZIA,
                 atual = c === f.cargo && a === f.ano;
               return (
                 <tr

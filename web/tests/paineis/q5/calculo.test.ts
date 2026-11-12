@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   anosDoCargo,
+  chaveSoma,
   filtrarPartidos,
   porPartido,
   resumoPartidos,
   somar,
+  somasPorFiltro,
   trocas,
 } from "../../../src/paineis/q5/calculo";
 import type { DadosQ5, PartidoQ5 } from "../../../src/paineis/q5/tipos";
@@ -40,6 +42,17 @@ describe("somar", () => {
   it("filtra o estado e o cargo", () => {
     expect(somar(filtrarPartidos(D, 0, 2024, "AM")).eleitos).toBe(10);
     expect(somar(filtrarPartidos(D, 2, 2022, "TODAS")).eleitosLegenda).toBe(1);
+  });
+
+  it("UF desconhecida dá lista vazia, não todas", () => {
+    expect(filtrarPartidos(D, 0, 2024, "XX")).toEqual([]);
+    expect(trocas(D, 0, 2024, "XX")).toEqual([]);
+  });
+
+  it("somasPorFiltro bate com somar(filtrarPartidos)", () => {
+    const m = somasPorFiltro(D);
+    expect(m.get(chaveSoma(0, 2024, "RS"))).toEqual(somar(filtrarPartidos(D, 0, 2024, "RS")));
+    expect(m.get(chaveSoma(0, 2024, "TODAS"))).toEqual(somar(filtrarPartidos(D, 0, 2024, "TODAS")));
   });
 });
 

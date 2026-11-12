@@ -17,17 +17,17 @@ import { CARGO, useEleitos } from "../../candidatos/modelo";
 import type { Eleito } from "../../candidatos/tipos";
 import { conhecido } from "../comum";
 import {
+  avaliar,
   deveChutar,
   discordancias,
   ERROS_PARA_REVELAR,
   gerarPerguntas,
-  melhorChute,
   melhorPergunta,
+  montarTabela,
   type Pergunta,
-  plausiveis,
-  probabilidades,
   RESPOSTAS,
   type Resposta,
+  TOLERANCIA,
 } from "./logica";
 
 type Baralho = "conhecidos" | "todos";
@@ -107,21 +107,17 @@ export default function Jogo() {
   );
   const perguntas = useMemo(() => gerarPerguntas(pool), [pool]);
   const porId = useMemo(() => new Map(perguntas.map(p => [p.id, p])), [perguntas]);
+  const tabela = useMemo(() => montarTabela(pool, perguntas), [pool, perguntas]);
 
   const { respostas, excluidos, ultimoChute } = partida;
   const proposta = useMemo(() => {
-    const probs = probabilidades(pool, porId, respostas, new Set(excluidos));
-    const n = plausiveis(probs);
-    if (!n) return { vivos: 0, pergunta: null, chute: null };
-    const pergunta = melhorPergunta(pool, probs, perguntas, new Set(respostas.map(r => r.id)));
-    const chuta = deveChutar({
-      topo: Math.max(...probs),
-      haPergunta: pergunta !== null,
-      respondidas: respostas.length,
-      ultimoChute,
-    });
-    return { vivos: n, pergunta: chuta ? null : pergunta, chute: chuta ? melhorChute(pool, probs) : null };
-  }, [pool, porId, perguntas, respostas, excluidos, ultimoChute]);
+    const { probs, lider, topo, plausiveis } = avaliar(tabela, respostas, new Set(excluidos));
+    // ninguém fica dentro da tolerância de contradições: o gênio desiste
+    if (!plausiveis) return { vivos: 0, pergunta: null, chute: null };
+    const pergunta = melhorPergunta(tabela, probs, new Set(respostas.map(r => r.id)));
+    const chuta = deveChutar({ topo, haPergunta: pergunta !== null, respondidas: respostas.length, ultimoChute });
+    return { vivos: plausiveis, pergunta: chuta ? null : pergunta, chute: chuta ? pool[lider] : null };
+  }, [pool, tabela, respostas, excluidos, ultimoChute]);
 
   if (erro) return <p className="p-5">Não foi possível carregar os dados dos eleitos.</p>;
   if (!modelo) return <Carregando />;
@@ -246,7 +242,9 @@ export default function Jogo() {
 
           {semOpcoes && (
             <Genio>
-              <p className="m-0 text-lg font-bold">Desisto! Não sobrou ninguém que combine com as suas respostas.</p>
+              <p className="m-0 text-lg font-bold">
+                Desisto! Todos os eleitos do baralho contradizem mais de {TOLERANCIA} das suas respostas.
+              </p>
             </Genio>
           )}
 

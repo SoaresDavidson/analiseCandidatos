@@ -13,24 +13,6 @@
   }
 }
 
-/* pop-up do patrimônio */
-.q10-veu {
-  animation: q10-veu 0.2s ease backwards;
-}
-@keyframes q10-veu {
-  from {
-    opacity: 0;
-  }
-}
-.q10-janela {
-  animation: q10-janela 0.32s cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
-}
-@keyframes q10-janela {
-  from {
-    opacity: 0;
-    transform: translateY(18px) scale(0.97);
-  }
-}
 /* cada bem "toma o seu espaço": cresce a partir do canto, do maior para o menor */
 .q10-bem {
   transform-origin: top left;

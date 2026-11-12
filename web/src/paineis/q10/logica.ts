@@ -52,11 +52,11 @@ export const ANO_FIM = 2030;
 // senador e seus suplentes: mandato de 8 anos
 const OITO_ANOS = new Set([5, 9, 10]);
 
-export const TURMAS: readonly (readonly [number, string, string])[] = [
-  [13, "Vereador", "vereadores"],
-  [11, "Prefeito", "prefeitos"],
-  [7, "Dep. estadual", "deputados estaduais"],
-  [6, "Dep. federal", "deputados federais"],
+export const TURMAS: readonly (readonly [number, string])[] = [
+  [13, "Vereador"],
+  [11, "Prefeito"],
+  [7, "Dep. estadual"],
+  [6, "Dep. federal"],
 ];
 export const CARGOS_RE: readonly (readonly [number, string])[] = [
   [13, "Vereador"],
@@ -84,14 +84,6 @@ export const GRUPO_NOME = [
   "Sem tipo (o TSE não separava)",
 ];
 export const GRUPO_COR = ["#5e7a12", "#c58a00", "#2a78d6", "#eb6834", "#4a3aa7", "#b9b6ae", "#d9d6cf"];
-
-/** Valor curto para eixos e rótulos: "1,2 mi", "35 mil". */
-export function brlCurto(v: number): string {
-  if (v >= 1e9) return `${fmt(v / 1e9, 1)} bi`;
-  if (v >= 1e6) return `${fmt(v / 1e6, v >= 1e7 ? 0 : 1)} mi`;
-  if (v >= 1e3) return `${fmt(v / 1e3, 0)} mil`;
-  return int(v);
-}
 
 export interface Candidatura {
   ano: number;
@@ -244,6 +236,31 @@ export function anosFin(D: DadosQ10, linhas: LinhaFin[]): AnoFin[] {
       grupos,
       itens,
     };
+  });
+}
+
+/** Valor curto para eixos e rótulos: "1,2 mi", "35 mil". */
+export function brlCurto(v: number): string {
+  if (v >= 1e9) return `${fmt(v / 1e9, 1)} bi`;
+  if (v >= 1e6) return `${fmt(v / 1e6, v >= 1e7 ? 0 : 1)} mi`;
+  if (v >= 1e3) return `${fmt(v / 1e3, 0)} mil`;
+  return int(v);
+}
+
+/**
+ * Declarações de bens com cara de erro de digitação: pelo menos R$ 10 milhões e 50 vezes a mediana
+ * das outras. Só vale com duas outras declarações de valor positivo para comparar: com uma só não
+ * dá para saber qual das duas está errada (e um patrimônio pode mesmo crescer muito em 16 anos).
+ */
+export function anosSuspeitos(comBens: AnoFin[]): AnoFin[] {
+  return comBens.filter(x => {
+    const outros = comBens
+      .filter(y => y !== x && y.total > 0)
+      .map(y => y.total)
+      .sort((a, b) => a - b);
+    if (outros.length < 2) return false;
+    const mediana = outros[outros.length >> 1];
+    return x.total >= 1e7 && x.total >= 50 * mediana;
   });
 }
 

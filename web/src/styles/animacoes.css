@@ -179,5 +179,22 @@
   .figurinha-chega,
   .holo {
     animation: none;
+/* Janela (componentes/Janela.tsx): o véu escurece e a caixa sobe. Parte do estado final (fill
+   "backwards"): com "reduzir movimento" ligado, base.css zera a animação e a janela aparece pronta. */
+.janela-veu {
+  animation: janela-veu 0.2s ease backwards;
+}
+@keyframes janela-veu {
+  from {
+    opacity: 0;
+  }
+}
+.janela-caixa {
+  animation: janela-caixa 0.32s cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+}
+@keyframes janela-caixa {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
   }
 }

@@ -80,7 +80,9 @@ export function Nuvem({
   useEffect(() => {
     if (tema !== "internet" || !grupo.current) return;
     return decifrar([...grupo.current.querySelectorAll("text")]);
-  }, [tema, recorte, itens]);
+    // só na entrada da cena (o <g> é remontado por estas chaves), não quando a fonte web chega
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tema, recorte, tela.w]);
 
   return (
     <div ref={palco} className="nuvem-palco" data-tema={tema}>
@@ -165,6 +167,7 @@ function PalavraSvg({
         data-cartaz={cartaz ? "" : undefined}
         style={estilo}
         role="button"
+        aria-label={w.termo}
         tabIndex={0}
         aria-pressed={sel}
         onMouseMove={aoMover}

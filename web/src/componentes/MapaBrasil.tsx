@@ -7,12 +7,12 @@ import { useDica } from "./Dica";
 // passar a camada de municípios, pinta cada cidade. Os estados e os municípios usam o mesmo
 // sistema de coordenadas (scripts/gerar_malhas_web.py), então o zoom é só mudar o viewBox.
 
-interface MalhaBrasil {
+export interface MalhaBrasil {
   w: number;
   h: number;
   ufs: Record<string, { d: string; bb: [number, number, number, number]; c: [number, number] }>;
 }
-interface MalhaUf {
+export interface MalhaUf {
   uf: string;
   bb: [number, number, number, number];
   /** código IBGE -> [caminho, x do centro, y do centro] */

@@ -38,7 +38,7 @@ export default function App() {
   const pagina = resolver(id);
   const escondida = pagina ? null : (ESCONDIDAS.find(x => x.id === id) ?? null);
   const [recolhido, aoRolar] = useRecolheAoRolar(pagina?.id ?? escondida?.id ?? "inicio");
-  const [ficha, setFicha] = useState<{ ano: number; sq: number } | null>(null);
+  const [ficha, setFicha] = useState<{ ano: number; sq: number; uf?: string } | null>(null);
   const [aviso, setAviso] = useState(false);
 
   const progresso = useRef(0);
@@ -107,9 +107,9 @@ export default function App() {
 
   const nav = useMemo<Navegacao>(
     () => ({
-      abrirCandidato: (ano, sq) => {
+      abrirCandidato: (ano, sq, uf) => {
         if (document.activeElement instanceof HTMLElement) focoAntes.current = document.activeElement;
-        setFicha({ ano, sq });
+        setFicha({ ano, sq, uf });
       },
       abrirMunicipio: cod => {
         setFicha(null);
@@ -260,7 +260,13 @@ export default function App() {
             aria-label="Ficha do eleito"
           >
             <Suspense fallback={<Carregando />}>
-              <FichaEleito key={`${ficha.ano}-${ficha.sq}`} ano={ficha.ano} sq={ficha.sq} aoFechar={fecharFicha} />
+              <FichaEleito
+                key={`${ficha.ano}-${ficha.sq}`}
+                ano={ficha.ano}
+                sq={ficha.sq}
+                uf={ficha.uf}
+                aoFechar={fecharFicha}
+              />
             </Suspense>
           </div>
         )}

@@ -1,158 +1,172 @@
-import { useMemo, useRef, useState } from "react";
-import { Alternador, Campo, Carregando, Etiqueta, Pagina, SeletorUf, VerMais } from "../../componentes";
-import { useDados } from "../../lib/dados";
-import { int } from "../../lib/formato";
-import { UFS } from "../../lib/uf";
-
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Carregando, type MalhaBrasil, type MalhaUf } from "../../componentes";
+import { carregarDados, useDados } from "../../lib/dados";
 import { usePersistente } from "../../lib/usePersistente";
-import { Cidades } from "./Cidades";
-import { chance, prepararEleitos, prepararMunicipios, teste, totaisPorAno } from "./calculo";
-import { Graus } from "./Graus";
-import { Mapa } from "./Mapa";
-import { Moda } from "./Moda";
-import { Perfil } from "./Perfil";
-import { Resposta } from "./Resposta";
-import { CARGO, CARGOS, type DadosQ4, type Filtros, type Metrica } from "./tipos";
+import { Capa, Guarda } from "./Capa";
+import { Cidade } from "./Cidade";
+import { prepararEleitos, prepararMunicipios } from "./calculo";
+import { CAPITULOS, INDICE_BRASIL, indiceDoEstado, nomeDoCapitulo } from "./capitulos";
+import { type Abertura, Livro } from "./Livro";
+import { MapaEstado, MapaPais } from "./MapaLivro";
+import { NotasCuidados, NotasFontes } from "./Notas";
+import { Resumo } from "./Resumo";
+import { Sumario } from "./Sumario";
+import type { DadosQ4, DadosUf, EstadoPronto, Filtros } from "./tipos";
 
-const PADRAO: Filtros = { ano: 2024, uf: "TODAS", cargo: 13, mapaUf: "MA", metrica: "pop", semCap: false };
+const TITULO = "Quem estuda mais se elege mais?";
+const PADRAO: Filtros = { cargo: 13, metrica: "pop" };
 
-function Conteudo({ D }: { D: DadosQ4 }) {
-  const [salvo, setFiltros] = usePersistente<Filtros>("q4-tse", PADRAO);
-  // valor salvo de uma versão antiga que não combina ano e cargo volta ao padrão
-  const f: Filtros = CARGOS[salvo.ano]?.includes(salvo.cargo) ? salvo : { ...salvo, ano: 2024, cargo: 13 };
+/** Busca os dados e o mapa de um estado (uma vez só) e deixa prontos para as páginas dele. */
+async function prepararEstado(uf: string): Promise<EstadoPronto> {
+  const [dados, malha] = await Promise.all([
+    carregarDados<DadosUf>(`q4/${uf}.json`),
+    carregarDados<MalhaUf>(`malhas/${uf}.json`),
+  ]);
+  const MUN = prepararMunicipios(dados);
+  return { uf, MUN, MUN_BY: Object.fromEntries(MUN.map(m => [m.cod, m])), ELEITOS: prepararEleitos(dados), malha };
+}
+
+function Conteudo({ D, B }: { D: DadosQ4; B: MalhaBrasil }) {
+  const [aberto, setAberto] = useState(false);
+  const [pagina, setPagina] = useState(0);
   const [sel, setSel] = useState<number | null>(null);
-  const svgMapa = useRef<SVGSVGElement>(null);
+  const [f, setF] = usePersistente<Filtros>("q4-livro", PADRAO);
+  const [estados, setEstados] = useState<Record<string, EstadoPronto>>({});
+  // espelho de `estados` para as funções que não podem depender dele (irPara, garantir)
+  const prontos = useRef(estados);
+  useEffect(() => {
+    prontos.current = estados;
+  }, [estados]);
+  const [erro, setErro] = useState<Error | null>(null);
 
-  const MUN = useMemo(() => prepararMunicipios(D), [D]);
-  const MUN_BY = useMemo(() => Object.fromEntries(MUN.map(m => [m.cod, m])), [MUN]);
-  const ELEITOS = useMemo(() => prepararEleitos(D), [D]);
-  const totais = useMemo(() => totaisPorAno(D.chance), [D]);
+  const garantir = useCallback(async (uf: string) => {
+    if (prontos.current[uf]) return;
+    const pronto = await prepararEstado(uf);
+    setEstados(antes => (antes[uf] ? antes : { ...antes, [uf]: pronto }));
+  }, []);
 
-  const ufs = useMemo(() => (f.uf === "TODAS" ? UFS : [f.uf]), [f.uf]);
-  const r = useMemo(() => chance(D.chance, f.ano, ufs, f.cargo), [D, f.ano, ufs, f.cargo]);
-  const t = useMemo(() => teste(r), [r]);
-
-  const mudar = (p: Partial<Filtros>) => setFiltros({ ...f, ...p });
-  const mudarAno = (ano: number) => mudar({ ano, cargo: CARGOS[ano].includes(f.cargo) ? f.cargo : CARGOS[ano][0] });
-  const mudarUf = (uf: string) => {
-    if (uf !== "TODAS") {
-      mudar({ uf, mapaUf: uf });
-      setSel(null);
-    } else mudar({ uf });
-  };
-  const mudarMapaUf = (mapaUf: string) => {
-    mudar({ mapaUf });
-    setSel(null);
-  };
-
-  // clicar numa cidade da dispersão leva o mapa para a vista
-  const escolherNaDispersao = (cod: number) => {
-    setSel(cod);
-    requestAnimationFrame(() => svgMapa.current?.scrollIntoView({ block: "center", behavior: "smooth" }));
-  };
-
-  const filtros = (
-    <>
-      <Campo rotulo="Estado">
-        <SeletorUf value={f.uf} onChange={e => mudarUf(e.target.value)} />
-      </Campo>
-      <Campo rotulo="Eleição" grupo>
-        <Alternador
-          rotulo="Eleição"
-          opcoes={
-            [
-              [2022, "2022"],
-              [2024, "2024"],
-            ] as const
-          }
-          valor={f.ano}
-          aoMudar={mudarAno}
-        />
-      </Campo>
-      <Campo rotulo="Cargo" grupo>
-        <Alternador
-          rotulo="Cargo"
-          opcoes={CARGOS[f.ano].map(c => [c, CARGO[c]] as const)}
-          valor={f.cargo}
-          aoMudar={cargo => mudar({ cargo })}
-        />
-      </Campo>
-    </>
+  /** Vai para uma abertura; se for um estado ainda não carregado, busca antes de virar as folhas. */
+  const irPara = useCallback(
+    (indice: number) => {
+      const c = CAPITULOS[indice];
+      if (!c) return;
+      const virar = () => {
+        setSel(null);
+        setPagina(indice);
+      };
+      if (c.tipo === "estado" && !prontos.current[c.uf]) garantir(c.uf).then(virar, setErro);
+      else virar();
+    },
+    [garantir],
   );
 
+  // deixa os capítulos vizinhos carregados, para a seta de "próxima" virar na hora
+  useEffect(() => {
+    for (const i of [pagina - 1, pagina + 1]) {
+      const c = CAPITULOS[i];
+      if (c?.tipo === "estado") garantir(c.uf).catch(() => {});
+    }
+  }, [pagina, garantir]);
+
+  const fechar = () => {
+    setAberto(false);
+    setSel(null);
+    setPagina(0);
+  };
+  const mudar = (p: Partial<Filtros>) => setF(antes => ({ ...antes, ...p }));
+
+  const desenhar = (indice: number): Abertura => {
+    const c = CAPITULOS[indice];
+    const cabeca = nomeDoCapitulo(c);
+    if (c.tipo === "sumario") return { cabeca, esquerda: null, direita: <Sumario aoIr={irPara} /> };
+    if (c.tipo === "brasil")
+      return {
+        cabeca,
+        esquerda: (
+          <MapaPais
+            D={D}
+            B={B}
+            metrica={f.metrica}
+            aoMudarMetrica={metrica => mudar({ metrica })}
+            aoEscolherUf={uf => irPara(indiceDoEstado(uf))}
+          />
+        ),
+        direita: <Resumo D={D} escopo="BR" indice={INDICE_BRASIL} f={f} aoMudar={mudar} />,
+      };
+    if (c.tipo === "notas") return { cabeca, esquerda: <NotasFontes D={D} />, direita: <NotasCuidados D={D} /> };
+
+    const P = estados[c.uf];
+    // a cidade escolhida só vale na abertura em que o livro está
+    const cidade = indice === pagina && P && sel != null && P.MUN_BY[sel] ? sel : null;
+    return {
+      cabeca,
+      esquerda: P ? (
+        <MapaEstado
+          P={P}
+          metrica={f.metrica}
+          sel={cidade}
+          aoMudarMetrica={metrica => mudar({ metrica })}
+          aoSelecionar={setSel}
+        />
+      ) : (
+        <Carregando />
+      ),
+      direita:
+        P && cidade != null ? (
+          <Cidade P={P} cod={cidade} indice={indice} aoVoltar={() => setSel(null)} />
+        ) : (
+          <Resumo D={D} escopo={c.uf} indice={indice} regiao={c.regiao} f={f} aoMudar={mudar} />
+        ),
+    };
+  };
+
   return (
-    <Pagina filtros={filtros}>
-      <Etiqueta>PERGUNTA 4 · ESCOLARIDADE</Etiqueta>
-      <h1>Quem estuda mais se elege mais?</h1>
-      <p className="texto-enunciado">
-        Enunciado: grau de escolaridade do candidato × grau de escolaridade dos votadores; existe relação entre
-        escolaridade do candidato e sua chance de ser eleito? Locais com menor escolaridade costumam eleger pessoas de
-        semelhante escolaridade? [2022, 2024]
-      </p>
-
-      <Resposta D={D} f={f} ufs={ufs} r={r} t={t} />
-
-      <Mapa
-        D={D}
-        MUN={MUN}
-        MUN_BY={MUN_BY}
-        ELEITOS={ELEITOS}
-        f={f}
-        ufs={ufs}
-        sel={sel}
-        svgRef={svgMapa}
-        aoSelecionar={setSel}
-        aoMudarMapaUf={mudarMapaUf}
-        aoMudarMetrica={(metrica: Metrica) => mudar({ metrica })}
-        aoBuscar={m => {
-          mudar({ mapaUf: m.u });
-          setSel(m.cod);
-        }}
+    <div className="livro-palco">
+      <Livro
+        aberto={aberto}
+        aoAbrir={() => setAberto(true)}
+        pagina={pagina}
+        desenhar={desenhar}
+        titulo={TITULO}
+        capa={<Capa />}
+        guarda={<Guarda aoFechar={fechar} />}
+        aoIrAoSumario={() => irPara(0)}
       />
-
-      <Perfil D={D} f={f} ufs={ufs} />
-      <Graus f={f} ufs={ufs} r={r} t={t} ELEITOS={ELEITOS} MUN_BY={MUN_BY} />
-      <Cidades MUN={MUN} f={f} ufs={ufs} aoMudarSemCap={semCap => mudar({ semCap })} aoEscolher={escolherNaDispersao} />
-      <Moda MUN={MUN} ufs={ufs} />
-
-      <VerMais titulo="Como calculamos">
-        <ul>
-          <li>
-            <b>Candidatos:</b> TSE, cadastro de candidaturas (<i>consulta_cand</i>) de 2022 e 2024. Escolaridade
-            declarada pelo próprio candidato.
-          </li>
-          <li>
-            <b>População:</b> IBGE, Censo 2022, tabela SIDRA 10061: pessoas de 18 anos ou mais por nível de instrução. É
-            escolaridade medida, não declarada no título de eleitor.
-          </li>
-          <li>
-            <b>Quem entra:</b> eleições ordinárias, sem presidente, vices e suplentes, só quem foi a voto e informou a
-            escolaridade.{" "}
-            <span>
-              Total: {int(totais.n22)} candidaturas em 2022 ({int(totais.e22)} eleitos) e {int(totais.n24)} em 2024 (
-              {int(totais.e24)} eleitos).
-            </span>
-          </li>
-          <li>
-            <b>Chance de se eleger:</b> eleitos ÷ candidatos de cada nível, sempre dentro do mesmo cargo. O teste é o
-            qui-quadrado.
-          </li>
-          <li>
-            <b>Exceções:</b> 9 cidades sem prefeito eleito na eleição normal de 2024 (eleição anulada); 17 cidades sem
-            resultado de vereador no arquivo do TSE; Boa Esperança do Norte (MT) foi criada depois do Censo.
-          </li>
-          <li>
-            <b>Cuidado:</b> isso mostra o que anda junto, não o que causa. E o mapa compara cidades, não pessoas: não
-            sabemos em quem cada eleitor votou.
-          </li>
-        </ul>
-      </VerMais>
-    </Pagina>
+      <div className="livro-barra">
+        {aberto ? (
+          <>
+            <button type="button" className="livro-botao" disabled={pagina === 0} onClick={() => irPara(pagina - 1)}>
+              ‹ Página anterior
+            </button>
+            <button type="button" className="livro-botao" disabled={pagina === 0} onClick={() => irPara(0)}>
+              Sumário
+            </button>
+            <button
+              type="button"
+              className="livro-botao"
+              disabled={pagina === CAPITULOS.length - 1}
+              onClick={() => irPara(pagina + 1)}
+            >
+              Próxima página ›
+            </button>
+            <button type="button" className="livro-botao ml-3" onClick={fechar}>
+              Fechar o livro
+            </button>
+            {erro && <span role="alert">Não deu para carregar este capítulo ({erro.message}).</span>}
+          </>
+        ) : (
+          <span className="font-livro text-[17px] italic motion-safe:animate-[livro-chama_2.2s_ease-in-out_infinite]">
+            Clique no livro para abrir
+          </span>
+        )}
+      </div>
+    </div>
   );
 }
 
 export default function Painel() {
-  const { dados, erro } = useDados<DadosQ4>("q4.json");
-  if (!dados) return <Carregando erro={erro} />;
-  return <Conteudo D={dados} />;
+  const { dados: D, erro } = useDados<DadosQ4>("q4.json");
+  const { dados: B, erro: erroB } = useDados<MalhaBrasil>("malhas/brasil.json");
+  if (!D || !B) return <Carregando erro={erro ?? erroB} />;
+  return <Conteudo D={D} B={B} />;
 }

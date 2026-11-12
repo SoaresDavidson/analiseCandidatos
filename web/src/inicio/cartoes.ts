@@ -2,7 +2,7 @@
 // atualize junto quando o gerador mudar os dados.
 // números conferidos no banco (6 estados): Q4, Q8 e Q10 em 15/10/2026; Q3 e Q7 em 17/10/2026; Q2 e Q6 em 20/10/2026;
 // Q9 em 22/10/2026 (64,2%: a soma exata, não a das partes arredondadas, 36% + 29%); Q1 e Q5 em 10/11/2026.
-// Q1, Q2, Q3 e Q5 refeitos com o país inteiro (27 UFs) em 12/11/2026
+// Q1, Q2, Q3, Q4 e Q5 refeitos com o país inteiro (27 UFs) em 12/11/2026
 
 export interface Cartao {
   n: number;
@@ -38,7 +38,7 @@ export const CARTOES: Cartao[] = [
     aba: "q4",
     assunto: "Escolaridade",
     perg: "Quem estuda mais se elege mais?",
-    resp: "Só **15%** dos adultos têm faculdade; entre os eleitos de 2024, **37%**.",
+    resp: "No Brasil, só **17%** dos adultos têm faculdade; entre os eleitos de 2024, **37%**.",
   },
   {
     n: 6,

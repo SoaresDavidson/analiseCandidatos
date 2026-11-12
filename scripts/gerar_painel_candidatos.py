@@ -3,12 +3,12 @@
 Lê a view ficha_eleito (sql/13_ficha_candidato.sql) e a linha do tempo da Q10
 (sql/07_q10_carreira.sql) e grava, para o app React:
 
-    web/public/dados/candidatos-eleitos.json   as fichas, sem as fotos (~3 MB)
+    web/public/dados/candidatos/<UF>.json      as fichas de cada estado, sem as fotos
     web/public/fotos/<ano>/<sq_candidato>.jpg  as fotos, do TSE (fora do git;
                  scripts/baixar_fotos_web.py baixa as que faltarem, sem precisar do banco)
 
 Pré-requisitos (da raiz do repositório):
-    uv run python -m scripts.coleta.coleta_tse candidatos historico recorte_remoto --uf AM,GO,MA,MT,RS,SE
+    uv run python -m scripts.coleta.coleta_tse candidatos historico recorte_remoto
     uv run python scripts/carregar_staging.py 00_limpeza 00_modelo 01_staging 02_fonte 03_tipo \\
         04_politico 05_marts 06_carga_nucleo 07_q10 13_ficha
 
@@ -24,14 +24,14 @@ from pathlib import Path
 import duckdb
 
 from scripts.coleta import fotos_tse
-from scripts.painel_web import gravar
+from scripts.painel_web import UFS_BR, gravar
 
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
 FOTOS = RAIZ / "web" / "public" / "fotos"
 
-UFS = ["AM", "GO", "MA", "MT", "RS", "SE"]
-RESULTADO = {"ELEITO": 0, "NAO ELEITO": 1, "SEM RESULTADO": 2}
+# "aguardando 2º turno": o arquivo do TSE saiu antes do desfecho; na ficha conta como sem resultado
+RESULTADO = {"ELEITO": 0, "NAO ELEITO": 1, "SEM RESULTADO": 2, "AGUARDANDO 2º TURNO": 2}
 # a ordem fixa dos canais de propaganda é a da Q9 (gerar_painel_q8_q9.py)
 CANAIS = ["IMPRESSO", "RUA", "RADIO E TV", "ADESIVO", "DIGITAL", "JINGLE", "CARRO DE SOM", "JORNAL E REVISTA"]
 
@@ -43,7 +43,6 @@ SELECT
     vr_receita, vr_publico, vr_privado, vr_proprio, vr_partidario, vr_transferencia, qt_doadores,
     vr_propaganda, ds_canal_principal, coalesce(cod_ibge, 0) AS cod_ibge
 FROM ficha_eleito
-WHERE sg_uf IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE')
 ORDER BY ano DESC, cd_cargo, sg_uf, nm_ue, qt_votos DESC NULLS LAST
 """
 
@@ -74,61 +73,72 @@ def main() -> None:
     ).fetchone()
     con.close()
 
-    listas: dict[str, list[str]] = {k: [] for k in ("ues", "partidos", "ocupacoes", "graus", "cores", "generos")}
-    mapas: dict[str, dict[str, int]] = {k: {} for k in listas}
-
-    def ind(tipo: str, valor: str | None) -> int:
-        valor = valor or ""
-        if valor not in mapas[tipo]:
-            mapas[tipo][valor] = len(listas[tipo])
-            listas[tipo].append(valor)
-        return mapas[tipo][valor]
-
-    # carreira: [ano - 2000, cargo, ue, partido, resultado] em linhas planas de 5 em 5
-    carreira: dict[str, list[int]] = {}
-    for titulo, ano, uf, nm_ue, cargo, partido, res in carreira_bruta:
-        local = nm_ue if nm_ue and nm_ue.upper() != uf else uf
-        carreira.setdefault(titulo, []).extend(
-            [ano - 2000, cargo, ind("ues", f"{local}|{uf}"), ind("partidos", partido), RESULTADO[res]]
-        )
-
     def reais(x: object) -> int | None:
         return None if x is None else round(float(x))
 
-    eleitos = []
-    for (
-        ano, uf, nm_ue, cargo, _sq, titulo, urna, civil, partido, idade, genero, cor, grau, ocupacao, situacao,
-        votos, mun_votos, patrimonio, qt_bens, receita, publico, privado, proprio, partidario, transf,
-        doadores, propaganda, canal, cod_ibge,
-    ) in linhas:  # fmt: skip
+    # carreira de cada pessoa: (ano, UF, local, cargo, partido, resultado)
+    carreira: dict[str, list[tuple]] = {}
+    for titulo, ano, uf, nm_ue, cargo, partido, res in carreira_bruta:
         local = nm_ue if nm_ue and nm_ue.upper() != uf else uf
-        eleitos.append(
-            [
-                ano - 2000, UFS.index(uf), cargo, ind("ues", f"{local}|{uf}"), ind("partidos", partido),
-                urna or civil or "", civil if civil and civil != urna else "",
-                idade, ind("generos", genero), ind("cores", cor), ind("graus", grau), ind("ocupacoes", ocupacao),
-                situacao, votos, ind("ues", f"{mun_votos}|{uf}") if mun_votos else -1,
-                reais(patrimonio), qt_bens or 0,
-                reais(receita), reais(publico), reais(privado), reais(proprio), reais(partidario), reais(transf),
-                doadores, reais(propaganda), CANAIS.index(canal) if canal in CANAIS else -1,
-                carreira.get(titulo, []),
-                cod_ibge,
-            ]
-        )  # fmt: skip
+        carreira.setdefault(titulo, []).append((ano, uf, local, cargo, partido, RESULTADO[res]))
 
-    # sq_candidato do TSE, na mesma ordem: nome da foto e chave para as outras abas abrirem a ficha
-    dados = {
-        "ufs": UFS,
-        "canais": CANAIS,
-        **listas,
-        "eleitos": eleitos,
-        "sq": [r[4] for r in linhas],
-        "espectro": espectro,
-        "regua": [regua[0], float(regua[1]), regua[2], float(regua[3])],
-    }
-    gravar("candidatos-eleitos.json", dados)
+    # um arquivo por estado, cada um com as próprias listas de nomes (cidades, partidos, ocupações...)
+    for sigla in UFS_BR:
+        do_estado = [r for r in linhas if r[1] == sigla]
+        listas: dict[str, list[str]] = {k: [] for k in ("ues", "partidos", "ocupacoes", "graus", "cores", "generos")}
+        mapas: dict[str, dict[str, int]] = {k: {} for k in listas}
+
+        def ind(tipo: str, valor: str | None, listas=listas, mapas=mapas) -> int:
+            valor = valor or ""
+            if valor not in mapas[tipo]:
+                mapas[tipo][valor] = len(listas[tipo])
+                listas[tipo].append(valor)
+            return mapas[tipo][valor]
+
+        eleitos = []
+        for (
+            ano, uf, nm_ue, cargo, _sq, titulo, urna, civil, partido, idade, genero, cor, grau, ocupacao, situacao,
+            votos, mun_votos, patrimonio, qt_bens, receita, publico, privado, proprio, partidario, transf,
+            doadores, propaganda, canal, cod_ibge,
+        ) in do_estado:  # fmt: skip
+            local = nm_ue if nm_ue and nm_ue.upper() != uf else uf
+            # carreira: [ano - 2000, cargo, ue, partido, resultado] em linhas planas de 5 em 5
+            passos = [
+                x
+                for a, u, lugar, c, part, res in carreira.get(titulo, [])
+                for x in (a - 2000, c, ind("ues", f"{lugar}|{u}"), ind("partidos", part), res)
+            ]
+            eleitos.append(
+                [
+                    ano - 2000, UFS_BR.index(uf), cargo, ind("ues", f"{local}|{uf}"), ind("partidos", partido),
+                    urna or civil or "", civil if civil and civil != urna else "",
+                    idade, ind("generos", genero), ind("cores", cor), ind("graus", grau), ind("ocupacoes", ocupacao),
+                    situacao, votos, ind("ues", f"{mun_votos}|{uf}") if mun_votos else -1,
+                    reais(patrimonio), qt_bens or 0,
+                    reais(receita), reais(publico), reais(privado), reais(proprio), reais(partidario), reais(transf),
+                    doadores, reais(propaganda), CANAIS.index(canal) if canal in CANAIS else -1,
+                    passos,
+                    cod_ibge,
+                ]
+            )  # fmt: skip
+
+        # sq_candidato do TSE, na mesma ordem: nome da foto e chave para as outras abas abrirem a ficha
+        gravar(
+            f"candidatos/{sigla}.json",
+            {
+                "ufs": UFS_BR,
+                "canais": CANAIS,
+                **listas,
+                "eleitos": eleitos,
+                "sq": [r[4] for r in do_estado],
+                "espectro": espectro,
+                "regua": [regua[0], float(regua[1]), regua[2], float(regua[3])],
+            },
+        )
+
+    print(f"{len(linhas)} eleitos; buscando as fotos que faltam…")
     com_foto = fotos_tse.garantir([(r[0], r[1], r[4]) for r in linhas], FOTOS)
-    print(f"{len(eleitos)} eleitos, {com_foto} com foto em {FOTOS.relative_to(RAIZ)}")
+    print(f"{len(linhas)} eleitos, {com_foto} com foto em {FOTOS.relative_to(RAIZ)}")
 
 
 if __name__ == "__main__":

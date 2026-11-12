@@ -10,6 +10,6 @@ export { Alternador, Botao, Seletor, SeletorUf } from "./controles";
 export { ProvedorDica, useDica } from "./Dica";
 export { FotoEleito } from "./FotoEleito";
 export { Aneis, Anel, Barra, Barras, Empilhada } from "./graficos";
-export { type CamadaMunicipios, MapaBrasil } from "./MapaBrasil";
+export { type CamadaMunicipios, type MalhaBrasil, type MalhaUf, MapaBrasil } from "./MapaBrasil";
 export { Campo, Pagina } from "./Pagina";
 export { type Assento, Plenario } from "./Plenario";

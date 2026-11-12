@@ -5,6 +5,9 @@
    painéis também as leem em style={} e em SVG (var(--color-verde-esc)) */
 @theme static {
   --font-sans: "Open Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* o livro da Pergunta 4: letra de carta na capa e nos títulos, serifada no texto */
+  --font-carta: "Pinyon Script", "Snell Roundhand", "Apple Chancery", cursive;
+  --font-livro: "EB Garamond", "Iowan Old Style", Palatino, Georgia, serif;
 
   --color-fundo: #f4f4f4;
   --color-branco: #ffffff;
@@ -24,6 +27,10 @@
   --color-sem-dado: #d9d6cf;
   --color-sem-nota: #b9b6ae;
   --color-capital: #c0392b;
+  /* papel e tinta do livro */
+  --color-tinta: #3a2d1c;
+  --color-tinta-2: #7b6748;
+  --color-papel-linha: #d6c59c;
 
   /* 4 níveis ordinais (escolaridade etc.): um tom de verde, do claro ao escuro */
   --color-nivel-1: #a5bd4e;

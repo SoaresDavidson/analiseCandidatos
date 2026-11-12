@@ -1,7 +1,7 @@
-// Contas do painel de escolaridade: agregações dos dados, qui-quadrado, correlações e a rampa do mapa.
-import { nomeProprio, pc } from "../../lib/formato";
+// Contas da pergunta de escolaridade: agregações dos dados, qui-quadrado e a rampa do mapa.
+import { nomeLugar, nomeProprio, pc } from "../../lib/formato";
 import {
-  type DadosQ4,
+  type DadosUf,
   type Eleito,
   GRAU_NIVEL,
   type LinhaChance,
@@ -11,15 +11,15 @@ import {
 } from "./tipos";
 
 const soma = (v: number[]): number => v.reduce((a, b) => a + b, 0);
-export const media = (v: number[]): number => soma(v) / v.length;
 
 // ---------- preparo dos dados ----------
-export function prepararMunicipios(D: DadosQ4): Municipio[] {
+export function prepararMunicipios(D: DadosUf): Municipio[] {
   return Object.entries(D.mun).map(([cod, b]) => {
     const tp = b.pop ? soma(b.pop) : 0;
     const te = soma(b.el);
     return {
       ...b,
+      n: nomeLugar(b.n),
       cod: +cod,
       ok: !!b.pop && b.ver > 0,
       te,
@@ -32,7 +32,7 @@ export function prepararMunicipios(D: DadosQ4): Municipio[] {
   });
 }
 
-export function prepararEleitos(D: DadosQ4): Eleito[] {
+export function prepararEleitos(D: DadosUf): Eleito[] {
   return D.eleitos.map(([ano, uf, cod, cargo, grau, urna, partido, civil, sq]) => ({
     ano,
     uf,
@@ -90,7 +90,8 @@ export function chance(
   const r: Record<number, Contagem> = {};
   for (let g = 1; g <= 8; g++) r[g] = { n: 0, e: 0 };
   for (const [a, u, c, g, n, e] of linhas) {
-    if (a === ano && ufs.includes(u) && c === cargo) {
+    // o deputado distrital do DF (8) conta com os estaduais (7)
+    if (a === ano && ufs.includes(u) && (c === cargo || (cargo === 7 && c === 8))) {
       r[g].n += n;
       r[g].e += e;
     }
@@ -191,55 +192,6 @@ export function teste(r: Record<number, Contagem>): Teste {
   return { N, E, p: gl > 0 && E > 0 && E < N ? pQui2(q, gl) : null, conf: minEsp >= 5 };
 }
 
-// ---------- correlações ----------
-export function pearson(xs: number[], ys: number[]): number | null {
-  const n = xs.length;
-  if (n < 3) return null;
-  const mx = media(xs),
-    my = media(ys);
-  let sxy = 0,
-    sxx = 0,
-    syy = 0;
-  for (let i = 0; i < n; i++) {
-    const dx = xs[i] - mx,
-      dy = ys[i] - my;
-    sxy += dx * dy;
-    sxx += dx * dx;
-    syy += dy * dy;
-  }
-  return sxx && syy ? sxy / Math.sqrt(sxx * syy) : null;
-}
-
-function postos(v: number[]): number[] {
-  const idx = v.map((x, i) => [x, i]).sort((a, b) => a[0] - b[0]);
-  const r = new Array<number>(v.length);
-  let i = 0;
-  while (i < idx.length) {
-    let j = i;
-    while (j + 1 < idx.length && idx[j + 1][0] === idx[i][0]) j++;
-    const m = (i + j) / 2 + 1;
-    for (let k = i; k <= j; k++) r[idx[k][1]] = m;
-    i = j + 1;
-  }
-  return r;
-}
-export const spearman = (xs: number[], ys: number[]): number | null => pearson(postos(xs), postos(ys));
-
-/** Reta de mínimos quadrados y = a·x + b. */
-export function reta(xs: number[], ys: number[]) {
-  const n = xs.length,
-    mx = media(xs),
-    my = media(ys);
-  let sxy = 0,
-    sxx = 0;
-  for (let i = 0; i < n; i++) {
-    sxy += (xs[i] - mx) * (ys[i] - my);
-    sxx += (xs[i] - mx) ** 2;
-  }
-  const a = sxy / sxx;
-  return { a, b: my - a * mx };
-}
-
 // ---------- mapa ----------
 const RAMPA = ["#eef3d9", "#cfe08f", "#a5bd4e", "#7e9a2e", "#576f14", "#32440a"];
 const hex = (h: string): number[] => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
@@ -263,3 +215,28 @@ export const METRICA: Record<
   el: { rot: "Eleitos com faculdade", v: m => m.pEl as number, dom: [0, 100] },
   dist: { rot: "Diferença", v: m => (m.pEl as number) - (m.pPop as number), dom: [0, 80], un: true },
 };
+
+/** Fração (0 a 1) de uma métrica na rampa; null quando a cidade não tem o dado. */
+export function naRampa(metrica: Metrica, m: Municipio): number | null {
+  // a população só precisa do Censo; as outras duas também do resultado de vereador
+  if (metrica === "pop" ? m.pPop == null : !m.ok) return null;
+  const M = METRICA[metrica];
+  return (M.v(m) - M.dom[0]) / (M.dom[1] - M.dom[0]);
+}
+
+// ---------- o livro ----------
+/** Número romano das páginas e capítulos (1 a 3999). */
+export function romano(n: number): string {
+  const tabela: [number, string][] = [
+    [1000, "M"], [900, "CM"], [500, "D"], [400, "CD"], [100, "C"], [90, "XC"],
+    [50, "L"], [40, "XL"], [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"],
+  ]; // biome-ignore format: tabela
+  let s = "";
+  for (const [v, r] of tabela) {
+    while (n >= v) {
+      s += r;
+      n -= v;
+    }
+  }
+  return s;
+}

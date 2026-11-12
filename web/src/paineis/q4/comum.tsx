@@ -1,48 +1,26 @@
-import type { ReactNode, SVGProps } from "react";
+import type { ReactNode } from "react";
+import { Empilhada } from "../../componentes";
 import { fmt } from "../../lib/formato";
 import { useNavegacao } from "../../lib/navegacao";
-import type { Eleito, Municipio } from "./tipos";
+import { COR_NIVEL, type Eleito, type Municipio, NIVEL } from "./tipos";
 
-/** "nos 6 estados", "no Maranhão", "em Goiás". */
-
-/** Texto de SVG centrado na vertical; `cls` é uma classe de styles/utilitarios.css. */
-export function Texto({
-  x,
-  y,
-  cls = "svg-rotulo",
-  anchor = "start",
-  children,
-  ...resto
-}: {
-  x: number;
-  y: number;
-  cls?: string;
-  anchor?: "start" | "middle" | "end";
-  children: ReactNode;
-} & Omit<SVGProps<SVGTextElement>, "x" | "y">) {
-  return (
-    <text x={x} y={y} className={cls} textAnchor={anchor} dominantBaseline="middle" {...resto}>
-      {children}
-    </text>
-  );
-}
-
-/** Nome do eleito: abre a ficha com foto na página de candidatos. */
+/** Nome do eleito: abre a ficha com foto por cima do livro. O deputado distrital não tem ficha. */
 export function NomeEleito({ e }: { e: Eleito }) {
   const { abrirCandidato } = useNavegacao();
+  if (e.cargo === 8) return <b>{e.urna}</b>;
   return (
     <button
       type="button"
-      title="Ver a ficha com foto"
-      onClick={() => abrirCandidato(e.ano, e.sq)}
-      className="cursor-pointer border-0 bg-transparent p-0 text-left font-bold text-texto underline decoration-ouro underline-offset-3 hover:text-verde-esc"
+      title="Abrir a ficha com foto"
+      onClick={() => abrirCandidato(e.ano, e.sq, e.uf)}
+      className="cursor-pointer border-0 bg-transparent p-0 text-left font-bold text-tinta underline decoration-ouro decoration-2 underline-offset-3 hover:text-verde-esc"
     >
       {e.urna}
     </button>
   );
 }
 
-/** Conteúdo do balão sobre uma cidade (mapa e dispersão). */
+/** Conteúdo do balão sobre uma cidade do mapa. */
 export function DicaMun({ m }: { m: Municipio }) {
   if (!m.pop)
     return (
@@ -73,12 +51,40 @@ export function DicaMun({ m }: { m: Municipio }) {
   );
 }
 
-/** Linha de lista de eleitos (esquerda e direita). */
-export function LinhaEleito({ esq, dir }: { esq: ReactNode; dir: ReactNode }) {
+/** Faixa 100% empilhada dos 4 níveis, com o título em cima (população × eleitos). */
+export function BarraNiveis({ vals, titulo }: { vals: number[]; titulo: ReactNode }) {
+  const tot = vals.reduce((a, b) => a + b, 0);
+  const partes = vals
+    .map((v, i) => ({ w: tot ? (100 * v) / tot : 0, i }))
+    .filter(x => x.w > 0)
+    .map(({ w, i }) => ({
+      pct: w,
+      cor: COR_NIVEL(i + 1),
+      titulo: `${NIVEL[i + 1]}: ${fmt(w, 0)}%`,
+      rotulo: w >= 11 ? `${fmt(w, 0)}%` : "",
+    }));
   return (
-    <div className="flex justify-between gap-2.5 border-b border-linha px-0.5 py-1.5 text-[13.5px]">
-      {esq}
-      {dir}
+    <div className="grid gap-1">
+      <span className="text-[13px] font-semibold">{titulo}</span>
+      <Empilhada partes={partes} />
+    </div>
+  );
+}
+
+/** Legenda dos 4 níveis, em linha. */
+export function LegendaNiveis() {
+  return (
+    <div className="flex flex-wrap gap-x-3.5 gap-y-1 text-[12px] text-tinta-2">
+      {[1, 2, 3, 4].map(n => (
+        <span key={n} className="inline-flex items-center gap-1.5">
+          <i
+            aria-hidden="true"
+            className="inline-block size-[11px] rounded-[2px]"
+            style={{ background: COR_NIVEL(n) }}
+          />
+          {NIVEL[n]}
+        </span>
+      ))}
     </div>
   );
 }

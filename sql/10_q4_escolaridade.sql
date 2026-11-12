@@ -1,4 +1,4 @@
--- 10_q4_escolaridade.sql — pergunta de escolaridade (candidato × população), 6 UFs, 2022 e 2024.
+-- 10_q4_escolaridade.sql — pergunta de escolaridade (candidato × população), Brasil, 2022 e 2024.
 -- Lê só o schema `modelo`. Métrica de escolaridade do município: Censo 2022 (SIDRA 10061).
 
 -- ---------------------------------------------------------------------------
@@ -26,7 +26,7 @@ WHERE
     AND c.cd_cargo NOT IN (1, 2, 4, 9, 10, 12)       -- presidente, vices e suplentes
     AND c.ds_sit_tot_turno IS NOT NULL               -- foi a voto (indeferido fica fora)
     AND c.cd_grau_instrucao BETWEEN 1 AND 8          -- tira 0 e -4 (não informado)
-    AND coalesce(m.sg_uf, c.sg_ue) IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE');
+    AND coalesce(m.sg_uf, c.sg_ue) != 'BR';          -- cargo nacional não tem estado
 
 -- ---------------------------------------------------------------------------
 -- Parte B — chance de ser eleito por grau (1 a 8), por ano e cargo
@@ -77,7 +77,7 @@ WITH contagem AS (
     FROM modelo.censo_instrucao AS ci
     INNER JOIN modelo.municipio AS m ON ci.cod_ibge = m.cod_ibge
     CROSS JOIN (VALUES (2022), (2024)) AS a (ano)
-    WHERE ci.ano_censo = 2022 AND m.sg_uf IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE')
+    WHERE ci.ano_censo = 2022
     GROUP BY a.ano, m.sg_uf, ci.cd_nivel
 )
 
@@ -125,7 +125,6 @@ grade AS (   -- todo município × os 4 níveis, para nível sem ninguém valer 
         n.ds_nivel
     FROM modelo.municipio AS m
     CROSS JOIN modelo.nivel_instrucao AS n
-    WHERE m.sg_uf IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE')
 )
 
 SELECT

@@ -4,8 +4,19 @@ import Ficha from "./Ficha";
 import { useEleitos } from "./modelo";
 
 /** Só a ficha de um eleito, para abrir por cima de qualquer página (o fundo escuro é do App). */
-export default function FichaEleito({ ano, sq, aoFechar }: { ano: number; sq: number; aoFechar: () => void }) {
-  const { modelo, erro } = useEleitos();
+export default function FichaEleito({
+  ano,
+  sq,
+  uf,
+  aoFechar,
+}: {
+  ano: number;
+  sq: number;
+  /** estado do eleito: com ele, a ficha vem das fichas do país (um arquivo por estado) */
+  uf?: string;
+  aoFechar: () => void;
+}) {
+  const { modelo, erro } = useEleitos(uf);
   const eleito = useMemo(() => modelo?.eleitos.find(e => e.sq === sq && e.ano === ano) ?? null, [modelo, ano, sq]);
 
   return (

@@ -3,7 +3,7 @@
 Painel do grupo em React + Vite + TypeScript + Tailwind CSS v4. Substitui os HTML
 gerados em `docs/*-painel/`.
 
-O app mostra as respostas às perguntas do trabalho. As Perguntas 1, 2 e 3 usam a base do
+O app mostra as respostas às perguntas do trabalho. As Perguntas 1 a 5 usam a base do
 Brasil inteiro (27 UFs); as outras, por enquanto, os 6 estados do recorte original (AM, GO,
 MA, MT, RS, SE). É um site estático: não tem servidor nem banco. Os dados chegam já prontos
 em `public/dados/`, gravados pelos geradores Python (ver [Dados](#dados)).
@@ -76,7 +76,7 @@ public/bandeiras/  bandeiras dos 6 estados
 ## Fotos
 
 As fotos dos eleitos não vão para o git. `npm run fotos` baixa do TSE as que faltam
-para `public/fotos/<ano>/<sq>.jpg` (~14 mil, uns 3 minutos na primeira vez; reaproveita
+para `public/fotos/<ano>/<sq>.jpg` (~65 mil, uns 15 minutos na primeira vez; reaproveita
 as de `docs/candidatos-painel/fotos/` se existirem). Daí em diante o `npm run dev` as
 serve e o `npm run build` as copia para `dist/`. Sem a foto, aparece a inicial do nome.
 
@@ -91,16 +91,23 @@ e gravam cada arquivo de `public/dados/` por `scripts/painel_web.py`:
 | `q3.json`, `q7.json` | `uv run python -m scripts.gerar_painel_q3_q7` |
 | `q2.json`, `q6.json`, `q2-fotos/` | `uv run python -m scripts.gerar_painel_q2_q6` |
 | `malhas/brasil.json`, `malhas/<UF>.json` | `uv run python -m scripts.gerar_malhas_web` |
-| `q4.json` | `uv run python -m scripts.gerar_painel_q4` |
+| `q4.json` (o país) e `q4/<UF>.json` (cada estado) | `uv run python -m scripts.gerar_painel_q4` |
 | `q8.json`, `q9.json` | `uv run python -m scripts.gerar_painel_q8_q9` |
 | `q10.json`, `q10-financas/NN.json` | `uv run python -m scripts.gerar_painel_q10` |
-| `candidatos-eleitos.json` (+ fotos) | `uv run python -m scripts.gerar_painel_candidatos` |
+| `candidatos/<UF>.json` (+ fotos): as fichas do país, um arquivo por estado | `uv run python -m scripts.gerar_painel_candidatos` |
+| `candidatos-eleitos.json` | as fichas dos 6 estados, das páginas ainda no recorte original (não é mais gerado) |
 | `municipios-cidades.json` | `uv run python -m scripts.gerar_painel_municipios` |
 
 Os geradores de duas perguntas aceitam o nome de uma só (`... gerar_painel_q1_q5 q1`). As
-Perguntas 1, 2 e 3 saem com o país inteiro (`ufs` com as 27 siglas, `UFS_BR` em
-`painel_web.py`); a 5, a 6 e a 7 seguem nos 6 estados. Para o país inteiro, a coleta é
+Perguntas 1 a 5 e as fichas dos eleitos saem com o país inteiro (`ufs` com as 27 siglas,
+`UFS_BR` em `painel_web.py`); a 6 e a 7 seguem nos 6 estados. Para o país inteiro, a coleta é
 `recorte_remoto --uf` com as 27 siglas (uns 31 GB em `dados/raw/`).
+
+A Pergunta 4 é um livro (`src/paineis/q4/`, estilos em `src/styles/livro.css`): a capa abre
+girando na lombada, o sumário lista os 27 estados e cada capítulo traz o mapa do estado na
+página da esquerda e a resposta na da direita. O `Livro.tsx` cuida da capa e das folhas que
+viram; `capitulos.ts` diz a ordem das aberturas. Os dados de cada estado (`q4/<UF>.json`) só
+são buscados quando o capítulo é aberto.
 
 `malhas/` são os mapas: os 27 estados e os municípios de cada um, no mesmo sistema de
 coordenadas, para o `MapaBrasil` (`src/componentes`) dar zoom do país para um estado.

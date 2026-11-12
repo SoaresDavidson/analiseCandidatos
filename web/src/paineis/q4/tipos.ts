@@ -1,4 +1,4 @@
-// Tipos do JSON de public/dados/q4.json e constantes do painel de escolaridade.
+// Tipos dos JSON de public/dados/q4.json (o país) e q4/<UF>.json (cada estado), e constantes do livro.
 
 /** [ano, uf, grupo (0 população, 1 candidatos, 2 eleitos), nível 1-4, quantidade] */
 export type LinhaPerfil = [ano: number, uf: string, grupo: number, nivel: number, valor: number];
@@ -27,24 +27,28 @@ export interface MunicipioBruto {
   el: number[];
   /** Eleitos de 2024 por grau (1-8). */
   g: number[];
-  pref: number;
+  pref: number | null;
   emp: boolean;
   cap?: boolean;
 }
 
-export interface MapaUf {
-  w: number;
-  h: number;
-  p: Record<string, string>;
-}
-
+/** O país: perfil e chance por estado, e a comparação entre cidades já resumida. */
 export interface DadosQ4 {
-  eleitos: LinhaEleito[];
+  ufs: string[];
   perfil: LinhaPerfil[];
   chance: LinhaChance[];
+  /** "BR" ou a sigla -> [nº de cidades, % de eleitos com faculdade no quinto de cidades menos formado,
+   *  no quinto mais formado, correlação, correlação sem o quinto mais formado] */
+  cidades: Record<string, ResumoCidades>;
+  excecoes: { semPrefeito: number; semVereador: number; semCenso: string[] };
+}
+export type ResumoCidades = [n: number, q1: number | null, q5: number | null, r: number | null, r80: number | null];
+
+/** Um estado: os municípios e os eleitos de 2022 e 2024. */
+export interface DadosUf {
+  uf: string;
   mun: Record<string, MunicipioBruto>;
-  mapas: Record<string, MapaUf>;
-  cap: Record<string, string>;
+  eleitos: LinhaEleito[];
 }
 
 /** Município com os campos derivados que o painel usa. */
@@ -73,13 +77,10 @@ export interface Eleito {
 
 export type Metrica = "pop" | "el" | "dist";
 
+/** O que o leitor escolheu e o livro lembra: o cargo (que já diz a eleição) e o que o mapa pinta. */
 export interface Filtros {
-  ano: number;
-  uf: string;
   cargo: number;
-  mapaUf: string;
   metrica: Metrica;
-  semCap: boolean;
 }
 
 /** Nomes simples dos 4 níveis do Censo (a nota explica o que cada um inclui). */
@@ -100,12 +101,15 @@ export const GRAU: Record<number, string> = {
   8: "Superior completo",
 };
 export const GRAU_NIVEL: Record<number, number> = { 1: 1, 2: 1, 3: 1, 4: 2, 5: 2, 6: 3, 7: 3, 8: 4 };
-export const CARGOS: Record<number, number[]> = { 2022: [7, 6, 5, 3], 2024: [13, 11] };
+/** Os cargos na ordem dos botões; o 7 (deputado estadual) inclui o distrital do DF (8). */
+export const ORDEM_CARGOS: readonly number[] = [13, 11, 7, 6, 5, 3];
+export const ANO_DO_CARGO: Record<number, number> = { 13: 2024, 11: 2024, 7: 2022, 8: 2022, 6: 2022, 5: 2022, 3: 2022 };
 export const CARGO: Record<number, string> = {
   3: "Governador",
   5: "Senador",
   6: "Dep. federal",
   7: "Dep. estadual",
+  8: "Dep. distrital",
   11: "Prefeito",
   13: "Vereador",
 };
@@ -114,16 +118,19 @@ export const PLURAL: Record<number, string> = {
   5: "senador",
   6: "deputado federal",
   7: "deputado estadual",
+  8: "deputado distrital",
   11: "prefeito",
   13: "vereador",
 };
-export const PLURAIS: Record<number, string> = {
-  3: "governadores",
-  5: "senadores",
-  6: "deputados federais",
-  7: "deputados estaduais",
-  11: "prefeitos",
-  13: "vereadores",
-};
 /** Cor de cada nível (tokens de styles/tema.css). */
 export const COR_NIVEL = (n: number): string => `var(--color-nivel-${n})`;
+
+/** Um estado já carregado e pronto para as páginas dele. */
+export interface EstadoPronto {
+  uf: string;
+  MUN: Municipio[];
+  MUN_BY: Record<number, Municipio>;
+  ELEITOS: Eleito[];
+  /** contornos dos municípios: código IBGE -> [caminho, x do centro, y do centro] */
+  malha: { bb: [number, number, number, number]; p: Record<string, [string, number, number]> };
+}

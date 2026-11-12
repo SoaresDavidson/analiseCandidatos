@@ -115,9 +115,10 @@ function preparar(D: DadosCandidatos): Modelo {
 // os 14 mil registros são montados uma vez só, mesmo que a página e a ficha em janela peçam
 const montados = new WeakMap<DadosCandidatos, Modelo>();
 
-/** Carrega o JSON e monta os eleitos; modelo = null enquanto carrega. */
-export function useEleitos() {
-  const { dados, erro } = useDados<DadosCandidatos>("candidatos-eleitos.json");
+/** Carrega o JSON e monta os eleitos; modelo = null enquanto carrega. Com `uf`, lê as fichas daquele
+ *  estado na base do país (candidatos/<UF>.json); sem, as dos 6 estados do recorte original. */
+export function useEleitos(uf?: string) {
+  const { dados, erro } = useDados<DadosCandidatos>(uf ? `candidatos/${uf}.json` : "candidatos-eleitos.json");
   const modelo = useMemo(() => {
     if (!dados) return null;
     let m = montados.get(dados);

@@ -1,10 +1,13 @@
-"""Gera os dados da pergunta de escolaridade (Q4) para o app React: web/public/dados/q4.json.
+"""Gera os dados da pergunta de escolaridade (Q4) para o app React, com o Brasil inteiro:
 
-Lê o banco (dados/processed/tse.duckdb) e as malhas do IBGE.
+    web/public/dados/q4.json        o país: perfil e chance por estado, e o resumo das cidades
+    web/public/dados/q4/<UF>.json   cada estado: os municípios e os eleitos de 2022 e 2024
+
+Os mapas são os de web/public/dados/malhas/ (scripts/gerar_malhas_web.py).
 
 Pré-requisitos (da raiz do repositório):
-    uv run python -m scripts.coleta.coleta_tse candidatos municipio_tse_ibge --uf AM,GO,MA,MT,RS,SE
-    uv run python -m scripts.coleta.coleta_ibge sidra malha --uf AM,GO,MA,MT,RS,SE
+    uv run python -m scripts.coleta.coleta_tse candidatos municipio_tse_ibge
+    uv run python -m scripts.coleta.coleta_ibge sidra
     uv run python scripts/carregar_staging.py 00_modelo 06_carga_nucleo 10_q4
 
 Uso:
@@ -13,29 +16,18 @@ Uso:
 
 from __future__ import annotations
 
-import json
-import math
 import os
+import statistics
 from pathlib import Path
 
 import duckdb
 
-from scripts.painel_web import gravar
+from scripts.painel_web import CAPITAIS_BR, UFS_BR, gravar
 
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
-MALHAS = RAIZ / "dados" / "raw" / "territorio"
 
-UFS = ["AM", "GO", "MA", "MT", "RS", "SE"]
 GRUPO = {"População 18+ (Censo 2022)": 0, "Candidatos": 1, "Eleitos": 2}
-CAPITAIS = {
-    1302603: "Manaus",
-    5208707: "Goiânia",
-    2111300: "São Luís",
-    5103403: "Cuiabá",
-    4314902: "Porto Alegre",
-    2800308: "Aracaju",
-}
 
 # Nome de urna: fora do DER (o dicionário o deixa de fora), então vem do arquivo do
 # TSE pela chave da candidatura. O nome civil vem de POLITICO, no modelo.
@@ -98,46 +90,47 @@ def municipios(con: duckdb.DuckDBPyConnection) -> dict[int, dict]:
     for m in mun.values():
         if sum(m["pop"]) == 0:  # sem Censo (criado depois de 2022)
             m["pop"] = None
-    for cod in CAPITAIS:
+    for cod in CAPITAIS_BR & mun.keys():
         mun[cod]["cap"] = 1
     return mun
 
 
-def aneis(geometria: dict) -> list[list[list[float]]]:
-    poligonos = geometria["coordinates"] if geometria["type"] == "MultiPolygon" else [geometria["coordinates"]]
-    return [anel for poligono in poligonos for anel in poligono]
+def cidades(mun: list[dict]) -> list[float | int | None]:
+    """Cidades com mais gente formada elegem mais gente formada? [nº de cidades, % de eleitos com
+    faculdade no quinto menos formado, no quinto mais formado, correlação, correlação sem o quinto
+    mais formado]. Só entram cidades com Censo e com resultado de vereador."""
+    pontos = sorted(
+        (100 * m["pop"][3] / sum(m["pop"]), 100 * m["el"][3] / sum(m["el"]))
+        for m in mun
+        if m["pop"] and m["ver"] > 0 and sum(m["el"]) > 0
+    )
+    k = len(pontos) // 5
 
+    def media(ps: list[tuple[float, float]]) -> float | None:
+        return round(statistics.fmean(y for _, y in ps), 1) if ps else None
 
-def mapa(uf: str, largura: float = 640.0) -> dict:
-    """Malha da UF em caminhos SVG: equiretangular com correção do cosseno da latitude."""
-    geo = json.loads((MALHAS / f"malha_municipios_{uf}.geojson").read_text(encoding="utf-8"))
-    pontos = [p for f in geo["features"] for anel in aneis(f["geometry"]) for p in anel]
-    lon0, lon1 = min(p[0] for p in pontos), max(p[0] for p in pontos)
-    lat0, lat1 = min(p[1] for p in pontos), max(p[1] for p in pontos)
-    k = math.cos(math.radians((lat0 + lat1) / 2))
-    escala = largura / ((lon1 - lon0) * k)
-    caminhos = {}
-    for f in geo["features"]:
-        partes = []
-        for anel in aneis(f["geometry"]):
-            saida, ultimo = [], None
-            for lon, lat in anel:
-                x, y = (lon - lon0) * k * escala, (lat1 - lat) * escala
-                if ultimo is None or abs(x - ultimo[0]) + abs(y - ultimo[1]) >= 0.7:  # simplifica
-                    saida.append(f"{round(x, 1):g},{round(y, 1):g}")
-                    ultimo = (x, y)
-            if len(saida) >= 3:
-                partes.append("M" + "L".join(saida) + "Z")
-        caminhos[int(f["properties"]["codarea"])] = "".join(partes)
-    return {"w": round(largura), "h": round((lat1 - lat0) * escala), "p": caminhos}
+    def r(ps: list[tuple[float, float]]) -> float | None:
+        if len(ps) < 3 or len({x for x, _ in ps}) < 2 or len({y for _, y in ps}) < 2:
+            return None
+        return round(statistics.correlation([x for x, _ in ps], [y for _, y in ps]), 3)
+
+    return [
+        len(pontos),
+        media(pontos[:k]),
+        media(pontos[len(pontos) - k :] if k else []),
+        r(pontos),
+        r(pontos[: len(pontos) - k]),
+    ]
 
 
 def main() -> None:
     os.chdir(RAIZ)  # os caminhos do read_csv são relativos à raiz
     con = duckdb.connect(str(BANCO), read_only=True)
     con.execute("INSTALL encodings; LOAD encodings;")
-    dados = {
-        "eleitos": [list(r) for r in con.execute(SQL_ELEITOS).fetchall()],
+    eleitos = [list(r) for r in con.execute(SQL_ELEITOS).fetchall()]
+    mun = municipios(con)
+    pais = {
+        "ufs": UFS_BR,
         "perfil": [
             [ano, uf, GRUPO[grupo], nivel, int(qt)]
             for ano, uf, grupo, nivel, qt in con.execute(
@@ -151,14 +144,30 @@ def main() -> None:
                    FROM q4_candidatura GROUP BY ALL ORDER BY 1, 2, 3, 4"""
             ).fetchall()
         ],
-        "mun": municipios(con),
-        "mapas": {uf: mapa(uf) for uf in UFS},
-        "cap": CAPITAIS,
+        "cidades": {
+            "BR": cidades(list(mun.values())),
+            **{uf: cidades([m for m in mun.values() if m["u"] == uf]) for uf in UFS_BR},
+        },
+        # exceções citadas em "Notas e fontes": o DF não tem eleição municipal e fica de fora da conta
+        "excecoes": {
+            "semPrefeito": sum(1 for m in mun.values() if m["pref"] is None and m["u"] != "DF"),
+            "semVereador": sum(1 for m in mun.values() if m["ver"] == 0 and m["u"] != "DF"),
+            "semCenso": sorted(f"{m['n']} ({m['u']})" for m in mun.values() if m["pop"] is None),
+        },
     }
     con.close()
 
-    gravar("q4.json", dados)
-    print(f"{len(dados['eleitos'])} eleitos")
+    gravar("q4.json", pais)
+    for uf in UFS_BR:
+        gravar(
+            f"q4/{uf}.json",
+            {
+                "uf": uf,
+                "mun": {cod: m for cod, m in mun.items() if m["u"] == uf},
+                "eleitos": [e for e in eleitos if e[1] == uf],
+            },
+        )
+    print(f"{len(eleitos)} eleitos, {len(mun)} municípios; exceções: {pais['excecoes']}")
 
 
 if __name__ == "__main__":

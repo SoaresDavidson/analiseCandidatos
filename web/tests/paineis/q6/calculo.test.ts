@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   afastar,
-  corCabelo,
   corIdade,
   doFiltro,
   entre,
@@ -120,11 +119,6 @@ describe("rosto", () => {
     expect(entre(30, 36, 50)).toBe(0);
     expect(entre(43, 36, 50)).toBe(0.5);
     expect(entre(70, 36, 50)).toBe(1);
-  });
-  it("cabelo escuro, grisalho e branco", () => {
-    expect(corCabelo(25)).toBe("rgb(43,31,23)");
-    expect(corCabelo(56)).toBe("rgb(143,139,134)");
-    expect(corCabelo(80)).toBe("rgb(239,239,235)");
   });
 });
 

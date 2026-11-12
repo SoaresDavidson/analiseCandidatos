@@ -5,8 +5,13 @@ candidatos/<UF>.json, e as do recorte original, candidatos-eleitos.json. Só bai
 faltam; na primeira vez são ~65 mil fotos, uns 15 minutos.
 Se já houver fotos em docs/candidatos-painel/fotos (do servir_painel), copia de lá antes.
 
+Com --grandes, baixa as mesmas fotos no tamanho do TSE (161×225 px) para
+web/public/fotos-grandes/: são os retratos em destaque (a Carreira da Pergunta 10 e a ficha do
+eleito). Uns 600 MB para os 65 mil eleitos; quem não baixar vê a foto pequena no lugar.
+
 Uso (da raiz do repositório):
     uv run python -m scripts.baixar_fotos_web
+    uv run python -m scripts.baixar_fotos_web --grandes
 ou, de web/:
     npm run fotos
 """
@@ -15,6 +20,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import sys
 from pathlib import Path
 
 from scripts.coleta import fotos_tse
@@ -22,11 +28,14 @@ from scripts.coleta import fotos_tse
 RAIZ = Path(__file__).resolve().parent.parent
 DADOS = RAIZ / "web" / "public" / "dados"
 DESTINO = RAIZ / "web" / "public" / "fotos"
+GRANDES = RAIZ / "web" / "public" / "fotos-grandes"
 ANTIGAS = RAIZ / "docs" / "candidatos-painel" / "fotos"
 
 
 def main() -> None:
-    if ANTIGAS.is_dir() and ANTIGAS.resolve() != DESTINO.resolve():
+    grandes = "--grandes" in sys.argv
+    destino = GRANDES if grandes else DESTINO
+    if not grandes and ANTIGAS.is_dir() and ANTIGAS.resolve() != DESTINO.resolve():
         shutil.copytree(ANTIGAS, DESTINO, dirs_exist_ok=True)
     pedidos = set()
     for arquivo in [*sorted((DADOS / "candidatos").glob("*.json")), DADOS / "candidatos-eleitos.json"]:
@@ -38,8 +47,8 @@ def main() -> None:
         )
     print(f"Conferindo as fotos de {len(pedidos)} eleitos…")
     try:
-        n = fotos_tse.garantir(pedidos, DESTINO)
-        print(f"{n} de {len(pedidos)} fotos prontas em {DESTINO.relative_to(RAIZ)}.")
+        n = fotos_tse.garantir(pedidos, destino, original=grandes)
+        print(f"{n} de {len(pedidos)} fotos prontas em {destino.relative_to(RAIZ)}.")
     except OSError as e:  # sem internet: o app abre assim mesmo, com as iniciais
         raise SystemExit(f"Não deu para buscar as fotos no TSE ({e}). O app mostra as iniciais no lugar.") from e
 

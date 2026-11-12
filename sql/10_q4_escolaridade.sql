@@ -1,4 +1,5 @@
--- 10_q4_escolaridade.sql — pergunta de escolaridade (candidato × população), Brasil, 2022 e 2024.
+-- 10_q4_escolaridade.sql — pergunta de escolaridade (candidato × população), Brasil, 2022, 2024 e
+-- 2026 (este com o resultado do 1º turno, como estava no arquivo do TSE na coleta).
 -- Lê só o schema `modelo`. Métrica de escolaridade do município: Censo 2022 (SIDRA 10061).
 
 -- ---------------------------------------------------------------------------
@@ -22,7 +23,7 @@ INNER JOIN modelo.cargo AS g ON c.cd_cargo = g.cd_cargo
 INNER JOIN modelo.grau_instrucao AS gi ON c.cd_grau_instrucao = gi.cd_grau_instrucao
 LEFT JOIN modelo.municipio AS m ON c.cod_ibge = m.cod_ibge
 WHERE
-    c.ano IN (2022, 2024)
+    c.ano IN (2022, 2024, 2026)
     AND c.cd_cargo NOT IN (1, 2, 4, 9, 10, 12)       -- presidente, vices e suplentes
     AND c.ds_sit_tot_turno IS NOT NULL               -- foi a voto (indeferido fica fora)
     AND c.cd_grau_instrucao BETWEEN 1 AND 8          -- tira 0 e -4 (não informado)
@@ -67,7 +68,7 @@ WITH contagem AS (
     WHERE fl_eleito
     GROUP BY ano, sg_uf, cd_nivel
     UNION ALL
-    -- o Censo é de 2022 e serve às duas eleições
+    -- o Censo é de 2022 e serve às três eleições
     SELECT
         a.ano,
         m.sg_uf,
@@ -76,7 +77,7 @@ WITH contagem AS (
         sum(ci.qt_pessoas) AS qt
     FROM modelo.censo_instrucao AS ci
     INNER JOIN modelo.municipio AS m ON ci.cod_ibge = m.cod_ibge
-    CROSS JOIN (VALUES (2022), (2024)) AS a (ano)
+    CROSS JOIN (VALUES (2022), (2024), (2026)) AS a (ano)
     WHERE ci.ano_censo = 2022
     GROUP BY a.ano, m.sg_uf, ci.cd_nivel
 )

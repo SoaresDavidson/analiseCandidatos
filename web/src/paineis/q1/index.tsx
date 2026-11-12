@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import {
   Alternador,
   Barra,
@@ -62,7 +62,16 @@ function Conteudo({ D }: { D: DadosQ1 }) {
     setF(x => ({ ...x, cargo, ano }));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  const escolherUf = (uf: string | null) => setF(x => ({ ...x, uf: uf ?? "TODAS" }));
+  // clicar num estado do mapa sobe até a cadeira; a contagem só começa quando ela já está na tela
+  const destaque = useRef<HTMLDivElement>(null);
+  const escolherUf = (uf: string | null) => {
+    const el = destaque.current;
+    const escondido = !!el && el.getBoundingClientRect().top < 0;
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const aplicar = () => setF(x => ({ ...x, uf: uf ?? "TODAS" }));
+    if (escondido) setTimeout(aplicar, 450);
+    else aplicar();
+  };
 
   return (
     <Pagina
@@ -93,7 +102,9 @@ function Conteudo({ D }: { D: DadosQ1 }) {
       <Etiqueta>PERGUNTA 1 · CUSTO DA CAMPANHA</Etiqueta>
       <h1>Quanto custa uma cadeira?</h1>
 
-      <Destaque D={D} f={f} s={s} />
+      <div ref={destaque} className="scroll-mt-24">
+        <Destaque D={D} f={f} s={s} />
+      </div>
       <NoMapa f={f} porUf={porUf} geral={somar(filtrar(D, f.cargo, f.ano, "TODAS")).custo} aoEscolher={escolherUf} />
 
       {mun && <MaisCaras ues={ues} ufs={D.ufs} f={f} />}

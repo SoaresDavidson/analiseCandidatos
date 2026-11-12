@@ -2,7 +2,8 @@
 
 Só as fotos pedidas são buscadas, sem baixar o zip inteiro (zip_remoto), reduzidas
 a 81×113 px (~2 KB) e gravadas como <pasta>/<ano>/<sq_candidato>.jpg. Quem já está
-no disco não é buscado de novo.
+no disco não é buscado de novo. Com `original=True`, a foto fica no tamanho do TSE
+(161×225 px, ~9 KB): é a versão grande, para os retratos em destaque.
 """
 
 from __future__ import annotations
@@ -30,7 +31,17 @@ def reduzir(jpg: bytes) -> bytes:
     return pix.tobytes("jpg", jpg_quality=50)
 
 
-def garantir(pedidos: Iterable[tuple[int, str, int]], pasta: Path) -> int:
+def inteira(jpg: bytes) -> bytes:
+    """O tamanho do TSE (161×225), só regravada em JPEG qualidade 74 para ocupar menos."""
+    pix = pymupdf.Pixmap(jpg)
+    if pix.n - pix.alpha != 3:
+        pix = pymupdf.Pixmap(pymupdf.csRGB, pix)
+    if pix.alpha:
+        pix = pymupdf.Pixmap(pix, 0)
+    return pix.tobytes("jpg", jpg_quality=74)
+
+
+def garantir(pedidos: Iterable[tuple[int, str, int]], pasta: Path, original: bool = False) -> int:
     """Grava as fotos de (ano, UF, sq_candidato) que ainda faltam. Devolve quantas existem."""
     pedidos = set(pedidos)
     for ano, uf in sorted({(a, u) for a, u, _ in pedidos}):
@@ -50,7 +61,7 @@ def garantir(pedidos: Iterable[tuple[int, str, int]], pasta: Path) -> int:
         for nome, dados in zip_remoto.ler_varios(url, pedir):
             sq = int(re.search(r"(\d{6,})", nome).group(1))
             try:
-                (destino / f"{sq}.jpg").write_bytes(reduzir(dados))
+                (destino / f"{sq}.jpg").write_bytes(inteira(dados) if original else reduzir(dados))
             except Exception as e:  # foto corrompida no TSE: segue sem ela
                 log(f"  foto ilegível {nome}: {e}")
     return sum(1 for a, _, sq in pedidos if (pasta / str(a) / f"{sq}.jpg").exists())

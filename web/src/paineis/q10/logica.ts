@@ -1,9 +1,11 @@
 import { fmt, int, nomeProprio, pc } from "../../lib/formato";
-import { semAcento, UF_NOME, UFS } from "../../lib/uf";
-import type { DadosQ10, LinhaFin } from "./tipos";
+import { semAcento, UF_NOME } from "../../lib/uf";
+import type { DadosQ10, LinhaFin, PessoasQ10 } from "./tipos";
 
-export const ANOS = [2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022, 2024];
-export const RES = ["Eleito", "Não eleito", "Sem resultado"];
+export const ANOS = [2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022, 2024, 2026];
+/** 2026 entra na linha do tempo com o resultado do 1º turno, como estava no TSE na coleta. */
+export const ANO_PARCIAL = 2026;
+export const RES = ["Eleito", "Não eleito", "Sem resultado", "Aguardando o 2º turno"];
 export const ABREV: Record<number, string> = {
   1: "Presidente",
   2: "Vice-pres.",
@@ -47,8 +49,8 @@ export const FAIXA_NOME = [
   "Vice-presidente",
   "Presidente",
 ];
-/** Último ano do eixo: fim do mandato de quem venceu em 2024. */
-export const ANO_FIM = 2028;
+/** Último ano do eixo: fim do mandato de quem venceu em 2026. */
+export const ANO_FIM = 2030;
 // senador e seus suplentes: mandato de 8 anos
 const OITO_ANOS = new Set([5, 9, 10]);
 
@@ -145,7 +147,7 @@ export function mandatos(r: Candidatura[], anoFim = ANO_FIM): Mandato[] {
 }
 
 /** Desempacota as linhas planas do JSON em pessoas com as contas já feitas. */
-export function montarPessoas(D: DadosQ10): Pessoa[] {
+export function montarPessoas(D: PessoasQ10): Pessoa[] {
   return D.pessoas.map((p, id) => {
     const r: Candidatura[] = [];
     for (let i = 0; i < p[2].length; i += 6) {
@@ -197,8 +199,8 @@ export function curva(
   return out.map(([n, ok], k) => (k === 0 ? 100 : n >= 30 ? pc(ok, n) : null));
 }
 
-// Receita acima disso é erro de digitação na prestação de contas do TSE: nenhuma campanha das 6 UFs
-// passa de R$ 20 milhões (a maior, de governador em 2022, fica abaixo). Caso conhecido: 12 vereadores
+// Receita acima disso é erro de digitação na prestação de contas do TSE: fora a de presidente, as
+// maiores campanhas do país (governador de estado grande) ficam nessa ordem de grandeza. Caso conhecido: 12 vereadores
 // do AM em 2020 com R$ 207 milhões cada (V5 de sql/validacao/q8_q9.sql).
 export const RECEITA_MAXIMA = 20_000_000;
 export const receitaComErro = (receita: number | null): boolean => receita != null && receita > RECEITA_MAXIMA;
@@ -238,4 +240,5 @@ export function anosFin(D: DadosQ10, linhas: LinhaFin[]): AnoFin[] {
   });
 }
 
-export const ufsSel = (uf: string): readonly string[] => (uf === "TODAS" ? UFS : [uf]);
+/** Os estados do filtro: todos ("TODAS" = Brasil) ou só um. */
+export const ufsSel = (D: DadosQ10, uf: string): readonly string[] => (uf === "TODAS" ? D.ufs : [uf]);

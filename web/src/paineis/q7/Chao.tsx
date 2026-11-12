@@ -1,8 +1,7 @@
 import { useEffect, useId, useState } from "react";
-import { Alternador } from "../../componentes";
 import { CATEGORIAS, CORTES } from "../../lib/espectro";
 import { Mascote } from "./Mascote";
-import type { DadosQ7, Filtros, Notas, Par } from "./tipos";
+import type { DadosQ7, Filtros, Notas } from "./tipos";
 import { anoDe, corNota, f2, naCategoria, PARADAS, PARES, paraOnde, sinal } from "./util";
 
 const W = 1200,
@@ -18,13 +17,13 @@ const FOTO = (nome: string) => `${import.meta.env.BASE_URL}img/q7/${nome}.jpg`;
 
 /** O chão da esquerda à direita: a régua de 0 a 10 pintada do vermelho ao azul, com o PT de Lula e
  *  o PL de Bolsonaro plantados nas notas dos dois partidos. A urninha corre até a nota do lugar
- *  escolhido no mapa; as setas embaixo marcam as duas eleições do mesmo cargo. */
+ *  escolhido no mapa, na eleição marcada nos filtros; as setas embaixo marcam as duas eleições
+ *  do mesmo cargo. */
 export function Chao({
   D,
   nome,
   notas,
   f,
-  aoMudar,
   children,
 }: {
   D: DadosQ7;
@@ -32,7 +31,6 @@ export function Chao({
   nome: string;
   notas: Notas;
   f: Filtros;
-  aoMudar: (p: Partial<Filtros>) => void;
   /** a trilha (Brasil › estado › cidade), no alto à esquerda */
   children?: React.ReactNode;
 }) {
@@ -47,29 +45,9 @@ export function Chao({
 
   return (
     <section className="relative grid gap-1.5 rounded-caixa bg-branco px-5 pt-3 pb-2.5 shadow-[0_6px_18px_rgb(27_34_43/.1)]">
-      {/* em tela larga, a trilha e os controles ficam sobre os cantos vazios do desenho */}
-      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2.5 min-[981px]:pointer-events-none min-[981px]:absolute min-[981px]:inset-x-5 min-[981px]:top-3 min-[981px]:z-[1]">
-        <div className="pointer-events-auto max-w-[min(100%,330px)]">{children}</div>
-        <div className="pointer-events-auto flex flex-wrap gap-2 min-[981px]:flex-col min-[981px]:items-end">
-          <Alternador<Par>
-            rotulo="Voto para"
-            valor={f.par}
-            aoMudar={par => aoMudar({ par })}
-            opcoes={[
-              ["mun", "Vereador"],
-              ["ger", "Dep. federal"],
-            ]}
-          />
-          <Alternador<0 | 1>
-            rotulo="Eleição"
-            valor={f.quando}
-            aoMudar={quando => aoMudar({ quando })}
-            opcoes={[
-              [0, aa],
-              [1, ab],
-            ]}
-          />
-        </div>
+      {/* em tela larga, a trilha fica sobre o canto vazio do desenho */}
+      <div className="min-[981px]:absolute min-[981px]:top-3 min-[981px]:left-5 min-[981px]:z-[1] min-[981px]:max-w-[330px]">
+        {children}
       </div>
 
       <svg
@@ -148,27 +126,22 @@ export function Chao({
           cor={corNota(nota)}
         />
       </svg>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-        <p className="texto-simples m-0">
-          {d != null ? (
-            <>
-              <b>{nome}</b> {paraOnde(d)}: de <b>{f2(na)}</b> em {aa} para <b>{f2(nb)}</b> em {ab}
-              {Math.abs(d) >= 0.005 ? ` (${sinal(d)} ponto)` : ""}.
-            </>
-          ) : nota != null ? (
-            <>
-              Em {ano}, o voto para {cargo} em <b>{nome}</b> ficou em <b>{f2(nota)}</b>, {naCategoria(nota)}.
-            </>
-          ) : (
-            <>
-              <b>{nome}</b> não tem votos para {cargo} em {ano} no arquivo do TSE.
-            </>
-          )}
-        </p>
-        <p className="texto-nota m-0">
-          0 = esquerda, 10 = direita. A nota é a média dos partidos votados para {cargo} (TSE).
-        </p>
-      </div>
+      <p className="texto-simples m-0 text-center">
+        {d != null ? (
+          <>
+            <b>{nome}</b> {paraOnde(d)}: de <b>{f2(na)}</b> em {aa} para <b>{f2(nb)}</b> em {ab}
+            {Math.abs(d) >= 0.005 ? ` (${sinal(d)} ponto)` : ""}.
+          </>
+        ) : nota != null ? (
+          <>
+            Em {ano}, o voto para {cargo} em <b>{nome}</b> ficou em <b>{f2(nota)}</b>, {naCategoria(nota)}.
+          </>
+        ) : (
+          <>
+            <b>{nome}</b> não tem votos para {cargo} em {ano} no arquivo do TSE.
+          </>
+        )}
+      </p>
     </section>
   );
 }

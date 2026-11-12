@@ -38,7 +38,7 @@ export const reais = (v: number): string =>
   v >= 1e6 ? `R$ ${fmt(v / 1e6, 1)} milhões` : v >= 1e3 ? `R$ ${fmt(v / 1e3, 0)} mil` : `R$ ${int(v)}`;
 
 export const indicesUf = (d: DadosQ9, uf: string): number[] =>
-  uf === "TODAS" ? [0, 1, 2, 3, 4, 5] : [d.ufs.indexOf(uf)];
+  uf === "TODAS" ? d.ufs.map((_, i) => i) : [d.ufs.indexOf(uf)];
 
 /** Valor e nº de despesas por canal: [não eleitos / eleitos][canal]. */
 export function somarCanais(d: DadosQ9, uf: string, anos: number[], cargos: number[]) {
@@ -54,16 +54,16 @@ export function somarCanais(d: DadosQ9, uf: string, anos: number[], cargos: numb
   return { v, nd };
 }
 
-export const chaveT = (d: DadosQ9, f: Filtros, eleito: number, canal: number): string =>
-  `${f.ano}|${f.cargo}|${f.uf === "TODAS" ? 6 : d.ufs.indexOf(f.uf)}|${eleito}|${canal}`;
+/** A chave de um recorte da nuvem; `d` já traz a nuvem do lugar escolhido (o país ou o estado). */
+export const chaveT = (f: Filtros, eleito: number, canal: number): string => `${f.ano}|${f.cargo}|${eleito}|${canal}`;
 
 export function grupoT(d: DadosQ9, f: Filtros, eleito: number, canal: number): Palavra[] {
-  const g = d.q9t[chaveT(d, f, eleito, canal)];
+  const g = d.q9t[chaveT(f, eleito, canal)];
   return g ? g[0].map((t, i) => ({ t, termo: d.termos[t], n: g[1][i], vr: g[2][i] })) : [];
 }
 
 export const totalT = (d: DadosQ9, f: Filtros, eleito: number, canal: number): number =>
-  d.q9tot[chaveT(d, f, eleito, canal)] || 0;
+  d.q9tot[chaveT(f, eleito, canal)] || 0;
 
 /** Valor por canal e participação (%) de cada um no gasto total de [anos] x [cargos]. */
 export function participacoes(d: DadosQ9, uf: string, anos: number[], cargos: number[]) {

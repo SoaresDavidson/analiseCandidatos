@@ -17,3 +17,4 @@ __pycache__/
 
 # fotos dos eleitos no app React: o scripts/baixar_fotos_web.py baixa do TSE
 /web/public/fotos/
+/web/public/fotos-grandes/

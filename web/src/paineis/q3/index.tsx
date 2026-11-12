@@ -76,11 +76,15 @@ function Q3({ D }: { D: DadosQ3 }) {
         uf={st.uf}
         sel={sel}
         aoEscolherUf={uf => setSt(s => ({ ...s, uf: uf ?? "TODAS", sel: null }))}
-        aoEscolherCidade={cod => setSt(s => ({ ...s, sel: cod }))}
+        aoEscolherCidade={cod =>
+          setSt(s => ({ ...s, sel: cod, uf: cod == null ? s.uf : (todos.find(m => m.cod === cod)?.uf ?? s.uf) }))
+        }
       />
       <Potes xs={xs} onde={onde} riqueza={st.riqueza} aoMudar={r => setSt(s => ({ ...s, riqueza: r }))} />
 
-      <VerMaisQ3 xs={xs} onde={onde} corPartido={corPartido} />
+      <VerMais titulo="Mais recortes: perfil econômico, isentos e eleitores por habitante">
+        <VerMaisQ3 xs={xs} onde={onde} corPartido={corPartido} />
+      </VerMais>
       <VerMais titulo="De onde vêm os dados e como calculamos">
         <ul>
           <li>
@@ -102,8 +106,10 @@ function Q3({ D }: { D: DadosQ3 }) {
             estimada (IBGE, SIDRA 6579), os dois de 2024.
           </li>
           <li>
-            <b>Os 5 potes:</b> as cidades em ordem de riqueza, divididas em 5 grupos do mesmo tamanho. O valor do pote é
-            a mediana do grupo: metade das cidades está acima, metade abaixo.
+            <b>Os 5 potes:</b> as cidades com prefeito eleito, em ordem de riqueza, divididas em 5 grupos do mesmo
+            tamanho. O valor do pote é a mediana do grupo: metade das cidades está acima, metade abaixo. A barra embaixo
+            mostra de que partido são os prefeitos. Parecer igual nos 5 potes não prova que dinheiro não importa: mostra
+            só que o partido vencedor não muda com a riqueza da cidade.
           </li>
           <li>
             <b>Cores:</b> os 5 partidos com mais prefeituras no país têm cor própria; os demais entram como "outros

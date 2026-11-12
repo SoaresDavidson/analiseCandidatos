@@ -104,8 +104,6 @@ export function Potes({
                     ))}
                   </div>
                   <span className="text-[12.5px] leading-tight">
-                    mais venceu:
-                    <br />
                     <b className="inline-flex items-center gap-1">
                       <i className="size-2.5 rounded-[3px]" style={{ background: corPartido(lider) }} />
                       {lider}
@@ -116,12 +114,6 @@ export function Potes({
               );
             })}
           </div>
-          <p className="texto-nota m-0">
-            As cidades com prefeito eleito em 2024 {onde}, em ordem de riqueza, divididas em 5 grupos do mesmo tamanho.
-            O pote mostra o valor típico do grupo (mediana) em {R.unidade}; a barra, de que partido são os prefeitos.
-            Parecer igual nos 5 potes não prova que dinheiro não importa: mostra só que o partido vencedor não muda com
-            a riqueza da cidade.
-          </p>
         </>
       )}
     </Caixa>

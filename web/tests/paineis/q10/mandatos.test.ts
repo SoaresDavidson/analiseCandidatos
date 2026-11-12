@@ -39,7 +39,8 @@ describe("mandatos", () => {
     ]);
   });
 
-  it("o eixo termina em 2028", () => {
-    expect(mandatos([c(2022, 5)])).toEqual([{ faixa: FAIXA[5], inicio: 2022, fim: 2028 }]);
+  it("o eixo termina em 2030, o fim do mandato de quem venceu em 2026", () => {
+    expect(mandatos([c(2022, 5)])).toEqual([{ faixa: FAIXA[5], inicio: 2022, fim: 2030 }]);
+    expect(mandatos([c(2026, 7)])).toEqual([{ faixa: FAIXA[7], inicio: 2026, fim: 2030 }]);
   });
 });

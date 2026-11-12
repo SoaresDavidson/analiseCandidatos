@@ -5,8 +5,7 @@ import { nomeLugar } from "../../lib/formato";
 import { semAcento } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
 import { doFiltro } from "./calculo";
-import { Eleitos, Metodo } from "./Eleitos";
-import { Idades } from "./Idades";
+import { Metodo } from "./Metodo";
 import { Palco } from "./Palco";
 import { Respostas } from "./Respostas";
 import type { DadosQ6, Filtros, Municipio } from "./tipos";
@@ -53,15 +52,9 @@ function Conteudo({ D }: { D: DadosQ6 }) {
   return (
     <Pagina>
       <Etiqueta>PERGUNTA 6 · IDADE</Etiqueta>
-      <h1>Cidade jovem vota em jovem? E a velha, em velho?</h1>
-      <p className="texto-enunciado">
-        Enunciado: idade média do município (mais velho × mais jovem): há alternância de poder? Qual a idade média dos
-        eleitos? Jovem vota em jovem e velho em velho? [2018–2024]
-      </p>
+      <h1>Jovem vota em jovem? E velho, em velho?</h1>
       <Palco D={D} M={M} f={f} aoMudar={p => setF(s => ({ ...s, ...p }))} />
       <Respostas D={D} escopo={escopo} f={f} />
-      <Idades escopo={escopo} f={f} />
-      <Eleitos D={D} f={f} />
       <Metodo />
     </Pagina>
   );

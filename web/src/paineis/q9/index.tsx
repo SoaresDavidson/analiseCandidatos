@@ -13,7 +13,7 @@ import {
 } from "../../componentes";
 import { useDados } from "../../lib/dados";
 import { fmt, maiusculaInicial, pc } from "../../lib/formato";
-import { noEstado } from "../../lib/uf";
+import { noLugar } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
 import {
   ANOS,
@@ -31,7 +31,7 @@ import {
 import { Nuvem } from "./Nuvem";
 import { DetalhePalavra } from "./Palavra";
 import { temaDoCanal } from "./temas";
-import type { DadosQ9, Filtros } from "./tipos";
+import type { DadosQ9, Filtros, NuvemUf } from "./tipos";
 
 const ELEITO_OPCOES = [
   [2, "Todos"],
@@ -54,8 +54,16 @@ export default function Painel() {
   return <Q9 d={dados} />;
 }
 
-function Q9({ d }: { d: DadosQ9 }) {
-  const [salvo, setSalvo] = usePersistente<Filtros>("q9-tse", FILTROS_PADRAO);
+function Q9({ d: pais }: { d: DadosQ9 }) {
+  const [gravado, setSalvo] = usePersistente<Filtros>("q9-brasil", FILTROS_PADRAO);
+  // valor salvo de outra versão: estado que não existe volta para o Brasil
+  const salvo: Filtros = gravado.uf !== "TODAS" && !pais.ufs.includes(gravado.uf) ? FILTROS_PADRAO : gravado;
+  // a nuvem do país vem no q9.json; a de um estado, do arquivo dele (vazia enquanto carrega)
+  const { dados: nuvemUf } = useDados<NuvemUf>(salvo.uf === "TODAS" ? null : `q9/${salvo.uf}.json`);
+  const d = useMemo<DadosQ9>(
+    () => (salvo.uf === "TODAS" ? pais : { ...pais, q9t: nuvemUf?.q9t ?? {}, q9tot: nuvemUf?.q9tot ?? {} }),
+    [pais, salvo.uf, nuvemUf],
+  );
   const [canal, setCanal] = useState(TODOS_CANAIS);
   const [termo, setTermo] = useState<number | null>(null);
 
@@ -93,7 +101,7 @@ function Q9({ d }: { d: DadosQ9 }) {
   const filtros = (
     <>
       <Campo rotulo="Estado">
-        <SeletorUf value={f.uf} onChange={e => mudarUf(e.target.value)} />
+        <SeletorUf brasil value={f.uf} onChange={e => mudarUf(e.target.value)} />
       </Campo>
       <Campo rotulo="Eleição" grupo>
         <Alternador rotulo="Eleição" opcoes={ANOS} valor={f.ano} aoMudar={mudarAno} />
@@ -207,13 +215,13 @@ function SecaoNuvem({
           "Sem despesas de propaganda neste recorte."
         ) : canal === TODOS_CANAIS ? (
           <>
-            Os {quem} de {f.ano} {noEstado(f.uf)} gastaram <b>{reais(soma)}</b> com propaganda. De cada R$ 100,{" "}
+            Os {quem} de {f.ano} {noLugar(f.uf)} gastaram <b>{reais(soma)}</b> com propaganda. De cada R$ 100,{" "}
             <b>R$ {de100(ordem[0][0])}</b> foram para {CANAL_FRASE[ordem[0][0]]} e <b>R$ {de100(ordem[1][0])}</b> para{" "}
             {CANAL_FRASE[ordem[1][0]]}.
           </>
         ) : (
           <>
-            De cada R$ 100 que os {quem} de {f.ano} {noEstado(f.uf)} gastaram com propaganda, <b>R$ {de100(canal)}</b>{" "}
+            De cada R$ 100 que os {quem} de {f.ano} {noLugar(f.uf)} gastaram com propaganda, <b>R$ {de100(canal)}</b>{" "}
             foram para {CANAL_FRASE[canal]}: <b>{reais(valores[canal])}</b>.
           </>
         )}
@@ -327,7 +335,7 @@ function Tendencia({ d, f }: { d: DadosQ9; f: Filtros }) {
   return (
     <>
       <p className="texto-simples !text-[15.5px]">
-        {maiusculaInicial(noEstado(f.uf))}, a internet foi de R$ {fmt(mun[0][4], 0)} para R$ {fmt(mun[1][4], 0)} em cada
+        {maiusculaInicial(noLugar(f.uf))}, a internet foi de R$ {fmt(mun[0][4], 0)} para R$ {fmt(mun[1][4], 0)} em cada
         R$ 100 nas municipais e de R$ {fmt(ger[0][4], 0)} para R$ {fmt(ger[1][4], 0)} nas estaduais e federais. O que
         mais cresceu nas municipais: {cresceu(mun)}; nas estaduais e federais: {cresceu(ger)}.
       </p>

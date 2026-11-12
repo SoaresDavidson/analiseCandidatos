@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { Alternador, Cor, useDica } from "../../componentes";
 import { brl, fmt } from "../../lib/formato";
 import type { Foto } from "./fotos";
-import { type AnoFin, GRUPO_COR, GRUPO_NOME, type Pessoa } from "./logica";
+import { ABREV, type AnoFin, brlCurto, GRUPO_COR, GRUPO_NOME, type Pessoa, receitaComErro } from "./logica";
 import { Retrato } from "./Retrato";
 import type { DadosQ10 } from "./tipos";
 import { quadricular, type Ret } from "./treemap";
@@ -58,7 +58,10 @@ function analisar(D: DadosQ10, anos: AnoFin[]) {
   return { comBens, suspeitos, frase };
 }
 
-/** Pop-up do patrimônio: o rosto em cima e, embaixo, um retângulo por bem, do tamanho do valor declarado. */
+type Aba = "bens" | "campanha";
+
+/** Pop-up do dinheiro do político: os bens declarados (um retângulo por tipo de bem, a lista completa
+ *  ao lado e a evolução de eleição em eleição) e, na outra aba, quanto a campanha arrecadou e gastou. */
 export function Patrimonio({
   D,
   p,
@@ -74,64 +77,80 @@ export function Patrimonio({
 }) {
   const analise = useMemo(() => (fin.anos ? analisar(D, fin.anos) : null), [D, fin.anos]);
   const comBens = analise?.comBens ?? [];
+  const campanhas = (fin.anos ?? []).filter(y => y.receita != null);
+  const [aba, setAba] = useState<Aba>("bens");
   const [escolhido, setEscolhido] = useState<number | null>(null);
   // abre no ano mais recente, até a pessoa escolher outro
   const x = comBens.find(y => y.ano === escolhido) ?? comBens[comBens.length - 1];
   const suspeito = x != null && analise?.suspeitos.includes(x);
   const fator = x ? D.fin.fator[x.ano] || 1 : 1;
+  const vitoria = p.r.findLast(c => c.res === 0) ?? p.ult;
 
   return (
-    <Janela titulo={`Patrimônio declarado de ${p.nome}`} aoFechar={aoFechar}>
-      <header className="grid justify-items-center gap-1 text-center">
+    <Janela titulo={`Patrimônio e campanha de ${p.nome}`} aoFechar={aoFechar}>
+      <header className="flex flex-wrap items-center gap-x-5 gap-y-3 pr-10">
         <Retrato
           foto={foto}
           nome={p.nome}
-          className="size-[104px] text-4xl shadow-[0_0_0_4px_#fff,0_0_0_7px_var(--color-ouro)]"
+          className="aspect-[3/4] w-[92px] !rounded-xl text-4xl shadow-[0_0_0_3px_#fff,0_0_0_6px_var(--color-ouro)]"
         />
-        <h2 className="mt-2">{p.nome}</h2>
-        {x ? (
-          <p className="leading-tight">
-            <b className="block text-[clamp(26px,5vw,36px)] font-extrabold tabular-nums">{brl(x.total)}</b>
-            <span className="text-[13.5px] text-texto-2">
-              em bens declarados ao TSE em {x.ano}
-              {x.ano < 2024 && fator !== 1 && ` · ${brl(x.total * fator)} em reais de 2024`}
+        <div className="grid min-w-0 flex-1 gap-0.5">
+          <h2 className="text-[22px]!">{p.nome}</h2>
+          <span className="text-[13.5px] text-texto-2">
+            {ABREV[vitoria.cargo]} · {vitoria.local} · {vitoria.ano}
+          </span>
+          <div className="mt-1.5">
+            <Alternador<Aba>
+              rotulo="O que ver"
+              valor={aba}
+              aoMudar={setAba}
+              opcoes={[
+                ["bens", "Patrimônio declarado"],
+                ["campanha", "Dinheiro da campanha"],
+              ]}
+            />
+          </div>
+        </div>
+        {aba === "bens" && x && (
+          <p className="text-right leading-tight">
+            <b className="block text-[clamp(26px,4vw,38px)] font-extrabold tabular-nums">{brl(x.total)}</b>
+            <span className="text-[13px] text-texto-2">
+              declarados ao TSE em {x.ano}
+              {x.ano < 2024 && fator !== 1 && (
+                <>
+                  <br />
+                  {brl(x.total * fator)} em reais de 2024
+                </>
+              )}
             </span>
-          </p>
-        ) : (
-          <p className="max-w-[46ch] text-texto-2">
-            {fin.falhou
-              ? "Não deu para carregar a declaração de bens."
-              : fin.anos
-                ? "Sem declaração de bens no TSE nos anos da carreira (o TSE publica bens a partir de 2006)."
-                : "Carregando…"}
           </p>
         )}
       </header>
 
-      {x && (
+      {aba === "campanha" ? (
+        <Campanha p={p} fin={fin} campanhas={campanhas} />
+      ) : !x ? (
+        <p className="py-6 text-center text-texto-2">
+          {fin.falhou
+            ? "Não deu para carregar a declaração de bens."
+            : fin.anos
+              ? "Sem declaração de bens no TSE nos anos da carreira (o TSE publica bens a partir de 2006)."
+              : "Carregando…"}
+        </p>
+      ) : (
         <>
           {comBens.length > 1 && (
-            <div className="justify-self-center">
-              <Alternador
-                rotulo="Eleição da declaração"
-                opcoes={comBens.map(y => [y.ano, `${analise?.suspeitos.includes(y) ? "⚠ " : ""}${y.ano}`] as const)}
-                valor={x.ano}
-                aoMudar={setEscolhido}
-              />
-            </div>
+            <Evolucao
+              anos={comBens}
+              fator={D.fin.fator}
+              suspeitos={analise?.suspeitos ?? []}
+              ano={x.ano}
+              aoEscolher={setEscolhido}
+            />
           )}
-          <Mapa key={x.ano} x={x} fator={fator} />
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 text-[13px]">
-            {x.grupos
-              .map((v, g) => ({ v, g }))
-              .filter(it => it.v > 0)
-              .sort((a, b) => b.v - a.v)
-              .map(({ v, g }) => (
-                <span key={g} className="inline-flex items-center gap-1.5">
-                  <Cor cor={GRUPO_COR[g]} />
-                  {GRUPO_NOME[g]} <b className="font-extrabold tabular-nums">{pctDe(v, x.total)}</b>
-                </span>
-              ))}
+          <div className="grid items-start gap-4 min-[861px]:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+            <Mapa key={x.ano} x={x} fator={fator} />
+            <Lista x={x} />
           </div>
           {suspeito && (
             <p className="rounded-md border-l-4 border-ouro bg-ouro-claro px-3 py-2 text-sm">
@@ -140,13 +159,205 @@ export function Patrimonio({
             </p>
           )}
           {analise?.frase && <p className="text-center text-[15px]">{analise.frase}</p>}
+          <p className="texto-nota text-center">
+            Fonte: TSE, declaração de bens no registro da candidatura (2006 e 2008 sem o tipo do bem). Inflação: IPCA,
+            IBGE.
+          </p>
         </>
       )}
-      <p className="texto-nota text-center">
-        Cada retângulo é um tipo de bem; a área é o valor declarado. Fonte: TSE, declaração de bens no registro da
-        candidatura (2006 e 2008 sem o tipo do bem). Inflação: IPCA, IBGE.
-      </p>
     </Janela>
+  );
+}
+
+/** A evolução do patrimônio: uma coluna por eleição com declaração, em reais de 2024. Clicar troca o ano. */
+function Evolucao({
+  anos,
+  fator,
+  suspeitos,
+  ano,
+  aoEscolher,
+}: {
+  anos: AnoFin[];
+  fator: Record<string, number>;
+  suspeitos: AnoFin[];
+  ano: number;
+  aoEscolher: (ano: number) => void;
+}) {
+  const real = (y: AnoFin) => y.total * (fator[y.ano] || 1);
+  // um ano com cara de erro de digitação não achata as outras colunas
+  const mx = Math.max(1, ...anos.filter(y => !suspeitos.includes(y)).map(real));
+  return (
+    <div className="grid gap-1">
+      <b className="text-[13px]">De eleição em eleição (em reais de 2024). Clique num ano para ver os bens.</b>
+      <div className="grid grid-flow-col auto-cols-fr items-end gap-2 rounded-xl bg-fundo px-3 pt-3 pb-2">
+        {anos.map(y => {
+          const sel = y.ano === ano,
+            erro = suspeitos.includes(y);
+          return (
+            <button
+              key={y.ano}
+              type="button"
+              aria-pressed={sel}
+              onClick={() => aoEscolher(y.ano)}
+              title={`${y.ano}: ${brl(y.total)} declarados (${brl(real(y))} em reais de 2024)`}
+              className="group grid cursor-pointer justify-items-center gap-0.5 border-0 bg-transparent p-0"
+            >
+              <span className={`text-[12px] tabular-nums ${sel ? "font-extrabold" : "text-texto-2"}`}>
+                {erro ? "⚠ " : ""}
+                R$ {brlCurto(real(y))}
+              </span>
+              <span className="flex h-[64px] w-full max-w-[84px] items-end">
+                <span
+                  className={`block w-full rounded-t-[5px] transition-[height] duration-500 group-hover:brightness-90 ${
+                    sel ? "bg-verde-esc" : "bg-verde"
+                  }`}
+                  style={{ height: `${Math.max(4, Math.min(100, (100 * real(y)) / mx))}%` }}
+                />
+              </span>
+              <span
+                className={`w-full max-w-[84px] rounded-[5px] py-px text-center text-[13px] font-bold ${sel ? "bg-texto text-white" : ""}`}
+              >
+                {y.ano}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/** Todos os bens declarados no ano, do maior para o menor, com o valor e a parte do total. */
+function Lista({ x }: { x: AnoFin }) {
+  const itens = useMemo(() => {
+    // o mesmo tipo de bem pode aparecer mais de uma vez: soma
+    const porTipo = new Map<string, { nome: string; g: number; v: number }>();
+    for (const it of x.itens) {
+      if (it.v <= 0) continue;
+      const k = `${it.g}|${it.nome}`;
+      const ja = porTipo.get(k);
+      if (ja) ja.v += it.v;
+      else porTipo.set(k, { nome: nomeBem(it.nome), g: it.g, v: it.v });
+    }
+    return [...porTipo.values()].sort((a, b) => b.v - a.v);
+  }, [x]);
+  const mx = itens[0]?.v ?? 1;
+  return (
+    <div className="grid gap-1.5">
+      <b className="text-[13px]">
+        Tudo o que declarou em {x.ano}: {itens.length} {itens.length === 1 ? "tipo de bem" : "tipos de bem"}
+      </b>
+      <ol className="m-0 grid max-h-[360px] list-none gap-px overflow-y-auto overscroll-contain p-0 pr-1 text-[13.5px]">
+        {itens.map(it => (
+          <li key={`${it.g}|${it.nome}`} className="grid gap-0.5 border-b border-linha py-1.5">
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="inline-flex min-w-0 items-baseline gap-1.5">
+                <Cor cor={GRUPO_COR[it.g]} />
+                <span className="truncate" title={`${it.nome} · ${GRUPO_NOME[it.g]}`}>
+                  {it.nome}
+                </span>
+              </span>
+              <span className="flex-none tabular-nums">
+                <b>{brl(it.v)}</b> <span className="text-texto-2">{pctDe(it.v, x.total)}</span>
+              </span>
+            </div>
+            <span className="h-1.5 rounded-full bg-bege">
+              <i
+                className="block h-full rounded-full"
+                style={{ width: `${Math.max(1.5, (100 * it.v) / mx)}%`, background: GRUPO_COR[it.g] }}
+              />
+            </span>
+          </li>
+        ))}
+      </ol>
+      <div className="flex flex-wrap gap-x-3.5 gap-y-1 text-[12.5px] text-texto-2">
+        {x.grupos
+          .map((v, g) => ({ v, g }))
+          .filter(it => it.v > 0)
+          .sort((a, b) => b.v - a.v)
+          .map(({ v, g }) => (
+            <span key={g} className="inline-flex items-center gap-1.5">
+              <Cor cor={GRUPO_COR[g]} />
+              {GRUPO_NOME[g]} <b className="font-extrabold text-texto tabular-nums">{pctDe(v, x.total)}</b>
+            </span>
+          ))}
+      </div>
+    </div>
+  );
+}
+
+/** A campanha: quanto arrecadou, quanto veio do fundo público e quanto gastou em cada eleição (2018 em diante). */
+function Campanha({ p, fin, campanhas }: { p: Pessoa; fin: Financas; campanhas: AnoFin[] }) {
+  const cargoDo = (ano: number) => {
+    const c = p.r.find(r => r.ano === ano);
+    return c ? `${ABREV[c.cargo]}${c.res === 0 ? " · eleito" : c.res === 1 ? " · não eleito" : ""}` : "";
+  };
+  const validas = campanhas.filter(y => !receitaComErro(y.receita));
+  const mx = Math.max(1, ...validas.flatMap(y => [y.receita ?? 0, y.despesa ?? 0]));
+  if (!campanhas.length)
+    return (
+      <p className="py-6 text-center text-texto-2">
+        {fin.falhou
+          ? "Não deu para carregar a prestação de contas."
+          : fin.anos
+            ? "Sem prestação de contas desta pessoa: o painel tem receita e gasto de campanha de 2018 em diante."
+            : "Carregando…"}
+      </p>
+    );
+  const barra = (rotulo: string, v: number, cor: string, parte?: number) => (
+    <div className="grid grid-cols-[7.2em_minmax(0,1fr)_7.4em] items-center gap-2.5 text-[13.5px]">
+      <span>{rotulo}</span>
+      <span className="h-[18px] overflow-hidden rounded-[4px] bg-bege">
+        <i className="flex h-full rounded-[4px]" style={{ width: `${(100 * v) / mx}%`, background: cor }}>
+          {parte != null && parte > 0 && (
+            <i className="block h-full bg-ouro-esc" style={{ width: `${Math.min(100, parte)}%` }} />
+          )}
+        </i>
+      </span>
+      <b className="text-right tabular-nums">{brl(v)}</b>
+    </div>
+  );
+  return (
+    <div className="grid gap-3">
+      {campanhas.map(y => {
+        const erro = receitaComErro(y.receita);
+        const pub = !erro && y.receita ? (100 * (y.publico || 0)) / y.receita : null;
+        return (
+          <div key={y.ano} className="grid gap-1.5 rounded-xl bg-fundo px-4 py-3">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4">
+              <b className="text-[16px]">
+                {y.ano} <span className="text-[13px] font-semibold text-texto-2">{cargoDo(y.ano)}</span>
+              </b>
+              {pub != null && (
+                <span className="text-[13px]">
+                  <b>{fmt(pub, 0)}%</b> do que arrecadou veio do fundo público
+                </span>
+              )}
+            </div>
+            {erro ? (
+              <p className="texto-nota m-0">
+                O TSE publicou {brl(y.receita)} arrecadados: é erro de digitação no arquivo, e o valor fica fora.
+              </p>
+            ) : (
+              barra("Arrecadou", y.receita ?? 0, "var(--color-ouro)", pub ?? undefined)
+            )}
+            {barra("Gastou", y.despesa ?? 0, "var(--color-verde-esc)")}
+          </div>
+        );
+      })}
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-texto-2">
+        <span className="inline-flex items-center gap-1.5">
+          <Cor cor="var(--color-ouro-esc)" /> parte que veio do fundo público
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <Cor cor="var(--color-ouro)" /> outras fontes
+        </span>
+      </div>
+      <p className="texto-nota text-center">
+        Fonte: TSE, prestação de contas das campanhas, de 2018 em diante. O dinheiro arrecadado é da campanha, não do
+        patrimônio pessoal.
+      </p>
+    </div>
   );
 }
 
@@ -332,7 +543,7 @@ function Janela({ titulo, aoFechar, children }: { titulo: string; aoFechar: () =
         aria-modal="true"
         aria-label={titulo}
         tabIndex={-1}
-        className="q10-janela relative grid w-full max-w-[900px] gap-3.5 rounded-caixa bg-branco px-5 pt-6 pb-5 shadow-[0_20px_60px_rgb(0_0_0/0.35)] outline-none"
+        className="q10-janela relative grid w-full max-w-[1120px] gap-3.5 rounded-caixa bg-branco px-5 pt-6 pb-5 shadow-[0_20px_60px_rgb(0_0_0/0.35)] outline-none"
       >
         <button
           type="button"

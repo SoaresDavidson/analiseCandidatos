@@ -81,7 +81,12 @@ export type Metrica = "pop" | "el" | "dist";
 export interface Filtros {
   cargo: number;
   metrica: Metrica;
+  /** a eleição geral na tela: 2022 ou 2026 (2026 é parcial: o resultado do 1º turno) */
+  geral?: number;
 }
+
+/** 2026 entra à parte: o arquivo do TSE na coleta tinha só o resultado do 1º turno. */
+export const ANO_PARCIAL = 2026;
 
 /** Nomes simples dos 4 níveis do Censo (a nota explica o que cada um inclui). */
 export const NIVEL: Record<number, string> = {

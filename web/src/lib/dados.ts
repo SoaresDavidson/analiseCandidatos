@@ -7,6 +7,9 @@ const base = import.meta.env.BASE_URL;
 export const urlDados = (arquivo: string): string => `${base}dados/${arquivo}`;
 /** Foto do registro no TSE; pode faltar (o componente FotoEleito mostra a inicial). */
 export const urlFoto = (ano: number, sq: number | string): string => `${base}fotos/${ano}/${sq}.jpg`;
+/** A mesma foto no tamanho do TSE (161×225), para os retratos em destaque; só existe se foi baixada
+ *  (scripts/baixar_fotos_web.py --grandes). */
+export const urlFotoGrande = (ano: number, sq: number | string): string => `${base}fotos-grandes/${ano}/${sq}.jpg`;
 export const urlBandeira = (uf: string): string => `${base}bandeiras/${uf}.svg`;
 
 const cache = new Map<string, Promise<unknown>>();

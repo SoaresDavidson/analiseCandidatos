@@ -1,46 +1,36 @@
 import { useMemo, useState } from "react";
-import { BuscaComLista, MapaBrasil, Rampa } from "../../componentes";
-import { fmt, int, maiusculaInicial } from "../../lib/formato";
-import { noLugar, semAcento, UF_NOME } from "../../lib/uf";
-import { corIdade, doFiltro, idadesDe, linhasEleitos, MAPA_COR, PASSOS, TERCO_CURTO } from "./calculo";
+import { BuscaComLista, MapaBrasil } from "../../componentes";
+import { fmt } from "../../lib/formato";
+import { semAcento, UF_NOME } from "../../lib/uf";
+import { corIdade, doFiltro, idadesDe, linhasEleitos } from "./calculo";
+import { COR_CANDIDATOS, COR_ELEITORES, Regua } from "./Regua";
 import { Rosto } from "./Rosto";
 import type { DadosQ6, Filtros, Municipio } from "./tipos";
 
-const GRADIENTE = `linear-gradient(90deg,${MAPA_COR.map((c, i) => `${c} ${i * 20}%,${c} ${(i + 1) * 20}%`).join(",")})`;
-const MARCAS = ["", ...PASSOS.map(String), ""];
 const anos = (v: number | null, casas = 1) => (v == null ? "–" : `${fmt(v, casas)} anos`);
 
-/** Um rosto com a idade embaixo. */
-function Retrato({ idade, titulo, fonte }: { idade: number | null; titulo: string; fonte: string }) {
+/** Um rosto com o nome do grupo e a idade embaixo. */
+function Retrato({ idade, titulo, cor, nota }: { idade: number | null; titulo: string; cor: string; nota: string }) {
   return (
-    <figure className="m-0 grid justify-items-center gap-1 text-center">
+    <figure className="m-0 grid justify-items-center gap-0.5 text-center" title={nota}>
       <Rosto
         idade={idade}
         rotulo={idade == null ? `${titulo}: sem dado` : `${titulo}: rosto de ${fmt(idade, 0)} anos`}
-        className="w-full max-w-[210px]"
+        className="w-full max-w-[290px]"
       />
       <figcaption className="grid gap-0.5">
-        <b className="text-[clamp(26px,3vw,36px)] leading-none font-extrabold text-verde-esc tabular-nums">
-          {anos(idade)}
-        </b>
-        <span className="text-[15px] leading-tight font-extrabold">{titulo}</span>
-        <span className="text-[12.5px] leading-tight text-texto-2">{fonte}</span>
+        <span className="inline-flex items-center justify-center gap-1.5 text-[17px] leading-tight font-extrabold">
+          <i aria-hidden="true" className="inline-block size-3.5 rounded-full" style={{ background: cor }} />
+          {titulo}
+        </span>
+        <b className="text-[clamp(28px,3.2vw,40px)] leading-none font-extrabold tabular-nums">{anos(idade)}</b>
       </figcaption>
     </figure>
   );
 }
 
-function Fato({ valor, rotulo }: { valor: string; rotulo: string }) {
-  return (
-    <div className="grid content-start gap-0.5 rounded-xl bg-fundo px-3 py-2.5">
-      <b className="text-[19px] leading-tight font-extrabold tabular-nums">{valor}</b>
-      <span className="text-[12.5px] leading-snug text-texto-2">{rotulo}</span>
-    </div>
-  );
-}
-
 /** O mapa do país (clicar num estado aproxima e mostra as cidades) e, ao lado, os dois rostos:
- *  a idade de quem vota e a de quem recebeu os votos, no lugar escolhido. */
+ *  os eleitores e os candidatos em quem eles votaram, no lugar escolhido. */
 export function Palco({
   D,
   M,
@@ -70,8 +60,6 @@ export function Palco({
     const de = (cargo: number) => linhas.find(l => l.cargo === cargo && l.ano === 2024)?.idadeEleitos ?? null;
     return { ver: de(0), pref: de(1) };
   }, [D, f.uf]);
-  const idVer = cidade ? cidade.idVer : eleitos.ver;
-  const idPref = cidade ? cidade.idPref : eleitos.pref;
 
   const q = semAcento(texto.trim());
   const achados = useMemo(
@@ -84,28 +72,9 @@ export function Palco({
     [M, q],
   );
 
-  const onde = cidade ? `em ${cidade.nome}` : noLugar(f.uf ?? "TODAS");
   const dif = id.vota != null && id.votado != null ? id.votado - id.vota : null;
-  const frase =
-    dif == null ? (
-      cidade ? (
-        "Sem resultado de vereador desta cidade em 2024 no arquivo do TSE."
-      ) : (
-        "Sem votação para vereador aqui."
-      )
-    ) : Math.abs(dif) < 1 ? (
-      <>
-        {maiusculaInicial(onde)}, quem vota e quem recebe o voto têm <b>quase a mesma idade</b>.
-      </>
-    ) : (
-      <>
-        {maiusculaInicial(onde)}, o voto vai para gente{" "}
-        <b>
-          {fmt(Math.abs(dif))} {Math.abs(dif) < 2 ? "ano" : "anos"} mais {dif > 0 ? "velha" : "nova"}
-        </b>{" "}
-        que o eleitor médio.
-      </>
-    );
+  const passo =
+    "cursor-pointer rounded-full border-2 border-ouro bg-white px-2.5 py-0.5 hover:bg-ouro-claro disabled:cursor-default disabled:bg-ouro";
 
   return (
     <section className="grid items-start gap-[18px] min-[981px]:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
@@ -130,9 +99,7 @@ export function Palco({
             <>
               <b>{UF_NOME[uf]}</b>
               <br />
-              quem mora: {anos(idadeUf[uf])} em média
-              <br />
-              clique para ver as cidades
+              quem mora: {anos(idadeUf[uf])}
             </>
           )}
           municipios={{
@@ -144,100 +111,72 @@ export function Palco({
               return m ? (
                 <>
                   <b>{m.nome}</b>
-                  {m.cap ? " · capital" : ""}
                   <br />
-                  quem mora: {anos(m.idade)}
-                  <br />
-                  quem vota: {anos(m.idEl)}
-                  <br />
-                  em quem vota: {anos(m.voto?.[7] ?? null)}
+                  eleitores: {anos(m.idEl)} · candidatos: {anos(m.voto?.[7] ?? null)}
                 </>
               ) : null;
             },
           }}
         />
-        <div className="grid gap-1">
-          <b className="text-[12.5px]">Idade média de quem mora, em anos (IBGE, Censo 2022)</b>
-          <Rampa gradiente={GRADIENTE} marcas={MARCAS} />
-          <span className="texto-nota">
-            {f.uf ? "Clique numa cidade: os rostos passam a ser os dela." : "Clique num estado para ver as cidades."}
-          </span>
-        </div>
       </div>
 
-      <div className="grid min-w-0 gap-3.5 rounded-caixa bg-branco px-5 py-[18px] shadow-cartao">
-        <div className="grid gap-1">
-          <nav aria-label="Lugar escolhido" className="flex flex-wrap items-center gap-1.5 text-[13px] font-bold">
-            <button
-              type="button"
-              disabled={!f.uf}
-              onClick={() => aoMudar({ uf: null, sel: null })}
-              className="cursor-pointer rounded-full border-2 border-ouro bg-white px-2.5 py-0.5 hover:bg-ouro-claro disabled:cursor-default disabled:bg-ouro"
-            >
-              Brasil
-            </button>
-            {f.uf && (
-              <>
-                <span className="text-texto-2">›</span>
-                <button
-                  type="button"
-                  disabled={!cidade}
-                  onClick={() => aoMudar({ sel: null })}
-                  className="cursor-pointer rounded-full border-2 border-ouro bg-white px-2.5 py-0.5 hover:bg-ouro-claro disabled:cursor-default disabled:bg-ouro"
-                >
-                  {UF_NOME[f.uf]}
-                </button>
-              </>
-            )}
-            {cidade && (
-              <>
-                <span className="text-texto-2">›</span>
-                <span className="rounded-full border-2 border-ouro bg-ouro px-2.5 py-0.5">{cidade.nome}</span>
-              </>
-            )}
-          </nav>
-          <h2 className="text-[22px]!">
-            {cidade ? `${cidade.nome} (${cidade.uf})` : f.uf ? UF_NOME[f.uf] : "Brasil"}: a idade do voto
-          </h2>
-        </div>
+      <div className="grid min-w-0 gap-3 rounded-caixa bg-branco px-5 py-[18px] shadow-cartao">
+        <nav aria-label="Lugar escolhido" className="flex flex-wrap items-center gap-1.5 text-[13px] font-bold">
+          <button type="button" disabled={!f.uf} onClick={() => aoMudar({ uf: null, sel: null })} className={passo}>
+            Brasil
+          </button>
+          {f.uf && (
+            <>
+              <span className="text-texto-2">›</span>
+              <button type="button" disabled={!cidade} onClick={() => aoMudar({ sel: null })} className={passo}>
+                {UF_NOME[f.uf]}
+              </button>
+            </>
+          )}
+          {cidade && (
+            <>
+              <span className="text-texto-2">›</span>
+              <span className="rounded-full border-2 border-ouro bg-ouro px-2.5 py-0.5">{cidade.nome}</span>
+            </>
+          )}
+        </nav>
 
-        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2">
-          <Retrato idade={id.vota} titulo="Quem vota" fonte="os eleitores · TSE, 2024" />
-          <div aria-hidden="true" className="grid justify-items-center pb-16 text-[13px] font-bold text-texto-2">
-            vota em
-            <span className="text-[30px] leading-none text-ouro">→</span>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-1">
+          <Retrato
+            idade={id.vota}
+            titulo="Eleitores"
+            cor={COR_ELEITORES}
+            nota="Idade média dos eleitores em 2024 (TSE)"
+          />
+          <div aria-hidden="true" className="grid justify-items-center gap-0.5 pb-20">
+            <span className="text-[34px] leading-none text-ouro">→</span>
+            {dif != null && (
+              <b className="rounded-full bg-texto px-2.5 py-0.5 text-[13.5px] whitespace-nowrap text-white tabular-nums">
+                {dif > 0 ? "+" : "−"}
+                {fmt(Math.abs(dif))} {Math.abs(dif) < 2 ? "ano" : "anos"}
+              </b>
+            )}
           </div>
-          <Retrato idade={id.votado} titulo="Em quem vota" fonte="candidatos a vereador, pelos votos · 2024" />
-        </div>
-
-        <p className="texto-simples m-0 text-center">{frase}</p>
-
-        <div className="grid gap-2 min-[521px]:grid-cols-3">
-          <Fato valor={anos(id.mora)} rotulo="quem mora (Censo 2022, com as crianças)" />
-          <Fato
-            valor={anos(idVer)}
-            rotulo={cidade ? "vereadores eleitos em 2024" : "vereadores eleitos em 2024, em média"}
-          />
-          <Fato
-            valor={anos(idPref, cidade ? 0 : 1)}
-            rotulo={cidade ? "prefeito eleito em 2024" : "prefeitos eleitos em 2024, em média"}
+          <Retrato
+            idade={id.votado}
+            titulo="Candidatos"
+            cor={COR_CANDIDATOS}
+            nota="Idade média dos candidatos a vereador em 2024, cada um contando pelos votos que recebeu (TSE)"
           />
         </div>
 
-        {cidade && (
-          <p className="texto-nota m-0">
-            {int(cidade.pop)} habitantes
-            {cidade.tercoUf ? ` · entre as ${TERCO_CURTO[cidade.tercoUf - 1]} do estado` : ""}.
-            {cidade.sg[1] &&
-              ` Prefeitura: ${cidade.sg[0] || "–"} em 2020, ${cidade.sg[1]} em 2024${
-                cidade.troca == null ? "" : cidade.troca ? " (trocou de partido)" : " (manteve)"
-              }.`}
-          </p>
-        )}
-        <p className="texto-nota m-0">
-          Cada rosto tem a idade do número embaixo dele. "Em quem vota" é a idade média dos candidatos a vereador, cada
-          um contando pelos votos que recebeu.
-        </p>
+        <Regua
+          eleitores={id.vota}
+          candidatos={id.votado}
+          outras={[
+            { rotulo: "quem mora", valor: id.mora },
+            {
+              rotulo: cidade ? "vereadores eleitos" : "vereadores eleitos",
+              valor: cidade ? cidade.idVer : eleitos.ver,
+            },
+            { rotulo: cidade ? "prefeito" : "prefeitos", valor: cidade ? cidade.idPref : eleitos.pref },
+          ]}
+        />
       </div>
     </section>
   );

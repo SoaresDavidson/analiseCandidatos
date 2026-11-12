@@ -133,8 +133,8 @@ export function Guarda({ aoFechar }: { aoFechar: () => void }) {
       <h3 className="livro-secao">De onde vêm os dados</h3>
       <ul className="m-0 grid list-none gap-2 p-0 text-[13.5px] leading-snug">
         <li>
-          <b>Quem se candidatou e quem se elegeu:</b> TSE, registro de candidaturas de 2022 e 2024. A escolaridade é a
-          que o próprio candidato declarou.
+          <b>Quem se candidatou e quem se elegeu:</b> TSE, registro de candidaturas de 2022, 2024 e 2026. A escolaridade
+          é a que o próprio candidato declarou.
         </li>
         <li>
           <b>Quanto a população estudou:</b> IBGE, Censo 2022: adultos de 18 anos ou mais, por nível de instrução, em

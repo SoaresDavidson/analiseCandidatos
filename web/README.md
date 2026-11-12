@@ -3,9 +3,9 @@
 Painel do grupo em React + Vite + TypeScript + Tailwind CSS v4. Substitui os HTML
 gerados em `docs/*-painel/`.
 
-O app mostra as respostas às perguntas do trabalho. As Perguntas 1 a 8 usam a base do
-Brasil inteiro (27 UFs); as outras, por enquanto, os 6 estados do recorte original (AM, GO,
-MA, MT, RS, SE). É um site estático: não tem servidor nem banco. Os dados chegam já prontos
+O app mostra as respostas às perguntas do trabalho. As 10 perguntas e a página dos presidentes usam a base
+do Brasil inteiro (27 UFs); as páginas de exploração (municípios, quem são os eleitos, plenários,
+Arena e Jogos) ainda usam os 6 estados do recorte original (AM, GO, MA, MT, RS, SE). É um site estático: não tem servidor nem banco. Os dados chegam já prontos
 em `public/dados/`, gravados pelos geradores Python (ver [Dados](#dados)).
 
 As páginas ficam em três temas, definidos em `src/paineis/registro.ts`:
@@ -91,17 +91,18 @@ e gravam cada arquivo de `public/dados/` por `scripts/painel_web.py`:
 | `q3.json`, `q7-brasil.json` | `uv run python -m scripts.gerar_painel_q3_q7` |
 | `q7.json` | a Pergunta 7 antiga (6 estados), que só o jogo da candidatura ainda lê (não é mais gerado) |
 | `q2.json`, `q6.json`, `q2-fotos/` | `uv run python -m scripts.gerar_painel_q2_q6` |
-| `malhas/brasil.json`, `malhas/<UF>.json` | `uv run python -m scripts.gerar_malhas_web` |
+| `malhas/brasil.json`, `malhas/<UF>.json`, `malhas/municipios.json` (as 5.570 cidades num arquivo leve) | `uv run python -m scripts.gerar_malhas_web` |
 | `q4.json` (o país) e `q4/<UF>.json` (cada estado) | `uv run python -m scripts.gerar_painel_q4` |
-| `q8.json`, `q9.json` | `uv run python -m scripts.gerar_painel_q8_q9` (com `q8`, só a Pergunta 8) |
-| `q10.json`, `q10-financas/NN.json` | `uv run python -m scripts.gerar_painel_q10` |
+| `q8.json`, `q9.json` (o país) e `q9/<UF>.json` (a nuvem de cada estado) | `uv run python -m scripts.gerar_painel_q8_q9` (com `q8` ou `q9`, só uma) |
+| `q10.json` (o país), `q10/<UF>.json` e `q10/BR.json` (as pessoas), `q10-financas/<UF>-NN.json` | `uv run python -m scripts.gerar_painel_q10` |
+| `presidentes.json` e as fotos de `public/img/presidentes/` | `uv run python -m scripts.gerar_painel_presidentes` (busca no TSE os arquivos nacionais; não usa o banco) |
 | `candidatos/<UF>.json` (+ fotos): as fichas do país, um arquivo por estado | `uv run python -m scripts.gerar_painel_candidatos` |
 | `candidatos-eleitos.json` | as fichas dos 6 estados, das páginas ainda no recorte original (não é mais gerado) |
 | `municipios-cidades.json` | `uv run python -m scripts.gerar_painel_municipios` |
 
 Os geradores de duas perguntas aceitam o nome de uma só (`... gerar_painel_q1_q5 q1`). As
-Perguntas 1 a 8 e as fichas dos eleitos saem com o país inteiro (`ufs` com as 27 siglas,
-`UFS_BR` em `painel_web.py`); a 9 e a 10 seguem nos 6 estados. Para o país inteiro, a coleta é
+10 perguntas e as fichas dos eleitos saem com o país inteiro (`ufs` com as 27 siglas, `UFS_BR`
+em `painel_web.py`). Para o país inteiro, a coleta é
 `recorte_remoto --uf` com as 27 siglas (uns 31 GB em `dados/raw/`).
 
 A Pergunta 4 é um livro (`src/paineis/q4/`, estilos em `src/styles/livro.css`): a capa abre
@@ -110,9 +111,16 @@ página da esquerda e a resposta na da direita. O `Livro.tsx` cuida da capa e da
 viram; `capitulos.ts` diz a ordem das aberturas. Os dados de cada estado (`q4/<UF>.json`) só
 são buscados quando o capítulo é aberto.
 
-A Pergunta 6 (`src/paineis/q6/`) tem o mapa do país com zoom e dois rostos desenhados
-(`Rosto.tsx`): cada um tem a idade do número embaixo dele, a de quem vota e a de quem recebeu
-os votos no lugar escolhido.
+A Pergunta 3 (`src/paineis/q3/`) usa o `MapaBrasil` com `relevo` (espessura e inclinação com o
+mouse) e `pais` (as 5.570 cidades já no mapa do país, de `malhas/municipios.json`). A página
+dos presidentes usa o mesmo mapa.
+
+A Pergunta 6 (`src/paineis/q6/`) tem o mapa do país com zoom e dois rostos (`Rosto.tsx`), o dos
+eleitores e o dos candidatos: a mesma ilustração (`public/img/q6/`), com uma camada grisalha por
+cima e rugas que entram conforme a idade. `Regua.tsx` põe as idades do lugar numa régua só.
+
+A rolagem é a da página inteira (o cabeçalho sobe junto); `Transicao.tsx` é a cortina branca
+com a caricatura que aparece ao trocar de tela.
 
 A Pergunta 7 (`src/paineis/q7/`) tem um chão que vai do vermelho (nota 0, esquerda) ao azul
 (nota 10, direita): a urninha (`Mascote.tsx`) corre até a nota do lugar clicado no mapa
@@ -130,8 +138,13 @@ coordenadas, para o `MapaBrasil` (`src/componentes`) dar zoom do país para um e
 `q2-fotos/` tem a foto original do TSE (161×225) do candidato de maior patrimônio de cada
 cargo, eleição e estado; essas vão para o git, porque são poucas (uma por destaque).
 
-`q8.json` foi refeito com o país inteiro (27 UFs), direto do banco. `q9.json` ainda guarda
-os números publicados por Enrico para os 6 estados: o banco atual tem as atualizações
-posteriores do TSE (1 ou 2 candidatos de diferença por linha), e rodar `gerar_painel_q8_q9`
-sem argumento troca esses números pelos do banco. Para mexer só na Pergunta 8, rode
-`gerar_painel_q8_q9 q8`.
+`q8.json` e `q9.json` foram refeitos com o país inteiro (27 UFs), direto do banco: os números
+não são mais os publicados por Enrico para os 6 estados.
+
+2026 entra à parte, onde a base tem dado: a linha do tempo da Pergunta 10, a caixinha "2026*"
+da Pergunta 4 (resultado do 1º turno, como estava no arquivo do TSE na coleta) e a página dos
+presidentes. Votos, bens e prestação de contas de 2026 ainda não foram coletados.
+
+As fotos dos retratos em destaque (Pergunta 10) ficam em `public/fotos-grandes/`, no tamanho
+do TSE (161×225): `uv run python -m scripts.baixar_fotos_web --grandes` (uns 600 MB, fora do
+git). Sem elas, o retrato usa a foto pequena de `public/fotos/`.

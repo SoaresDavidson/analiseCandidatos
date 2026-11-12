@@ -101,23 +101,6 @@ export function votoGrupo(ms: readonly Municipio[]): VotoGrupo {
   };
 }
 
-/** As quatro idades comparadas no gráfico: quem mora, quem vota e quem foi eleito. */
-export const SERIES_IDADE: readonly {
-  nome: string;
-  curto: string;
-  cor: string;
-  valor: (m: Municipio) => number | null;
-}[] = [
-  { nome: "Quem mora (Censo 2022)", curto: "Quem mora", cor: "#2a78d6", valor: m => m.idade },
-  { nome: "Quem vota (eleitores, 2024)", curto: "Quem vota", cor: "#1baf7a", valor: m => m.idEl },
-  { nome: "Vereadores eleitos (2024)", curto: "Vereadores", cor: "#eda100", valor: m => m.idVer },
-  { nome: "Prefeitos eleitos (2024)", curto: "Prefeitos", cor: "#c2378e", valor: m => m.idPref },
-];
-
-/** Idade média de cada série em cada terço: matriz [terço][série]. Cada cidade conta uma vez. */
-export const idadesPorGrupo = (g: readonly (readonly Municipio[])[]): (number | null)[][] =>
-  g.map(ms => SERIES_IDADE.map(s => media(ms.map(s.valor))));
-
 export interface Idades {
   /** idade média de quem mora, pesada pela população */
   mora: number | null;
@@ -228,17 +211,3 @@ export function linhasEleitos(eleitos: readonly LinhaEleitos[], iu: number): Lin
 const limitar = (v: number) => Math.max(0, Math.min(1, v));
 /** 0 até a idade `de`, 1 a partir de `ate`, subindo em linha reta no meio. */
 export const entre = (idade: number, de: number, ate: number): number => limitar((idade - de) / (ate - de));
-export const mix = (a: number, b: number, t: number): number => a + (b - a) * t;
-const hex = (h: string): number[] => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
-/** Cor entre duas, em hexadecimal. */
-export function corEntre(a: string, b: string, t: number): string {
-  const x = hex(a),
-    y = hex(b);
-  return `rgb(${x.map((v, i) => Math.round(mix(v, y[i], t))).join(",")})`;
-}
-/** Cabelo: escuro até os 36, grisalho aos 56, branco aos 72. */
-export function corCabelo(idade: number): string {
-  return idade < 56
-    ? corEntre("#2b1f17", "#8f8b86", entre(idade, 36, 56))
-    : corEntre("#8f8b86", "#efefeb", entre(idade, 56, 72));
-}

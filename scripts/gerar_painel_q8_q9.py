@@ -13,12 +13,12 @@ Atenção: os q8.json e q9.json do repositório guardam os números publicados p
 Enrico. O banco atual já tem as atualizações posteriores do TSE, e rodar este script
 troca os números publicados pelos do banco (1 ou 2 candidatos por linha).
 
-A Q8 usa o país inteiro (27 UFs). A Q9 segue nos 6 estados até ser migrada: as consultas
-dela filtram esses estados, porque as views já têm o país.
+As duas usam o país inteiro (27 UFs). A nuvem da Q9 fica dividida: q9.json traz as palavras do
+país e q9/<UF>.json, as de cada estado (a página só busca o do estado escolhido).
 
 Uso:
     uv run python -m scripts.gerar_painel_q8_q9        # as duas
-    uv run python -m scripts.gerar_painel_q8_q9 q8     # só a Q8 (não toca no q9.json)
+    uv run python -m scripts.gerar_painel_q8_q9 q8     # só a Q8
 """
 
 from __future__ import annotations
@@ -34,16 +34,13 @@ from scripts.painel_web import UFS_BR, gravar
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
 
-# a Q9 ainda está nos 6 estados
-UFS = ["AM", "GO", "MA", "MT", "RS", "SE"]
-SO_6_UFS = "sg_uf IN ('AM', 'GO', 'MA', 'MT', 'RS', 'SE')"
 CARGOS = ["VEREADOR", "PREFEITO", "DEPUTADO ESTADUAL", "DEPUTADO FEDERAL", "SENADOR", "GOVERNADOR"]
 # do maior ao menor valor no período (ordem fixa: a cor e a posição seguem o canal)
 CANAIS = ["IMPRESSO", "RUA", "RADIO E TV", "ADESIVO", "DIGITAL", "JINGLE", "CARRO DE SOM", "JORNAL E REVISTA"]
 # nuvem: quantas palavras guardar por combinação de filtros
 TOP_TERMOS = 40
 
-# Índices "todos" nas chaves da nuvem: UF 6, eleito 2, canal 8.
+# Índices "todos" nas chaves da nuvem: eleito 2, canal 8. O país inteiro sai como UF "TODAS".
 SQL_TERMOS = f"""
 WITH g AS (
     SELECT
@@ -56,7 +53,6 @@ WITH g AS (
         sum(qt_despesas) AS qt,
         sum(vr_despesa) AS vr
     FROM q9_termo
-    WHERE {SO_6_UFS}
     GROUP BY GROUPING SETS (
         (ano, ds_cargo, ds_termo, sg_uf, fl_eleito, ds_canal),
         (ano, ds_cargo, ds_termo, sg_uf, fl_eleito),
@@ -77,7 +73,7 @@ ORDER BY ano, ds_cargo, sg_uf, eleito, ds_canal, qt DESC, ds_termo
 """
 
 # total de despesas com descrição em cada combinação (o denominador do "% das despesas")
-SQL_TOTAIS = f"""
+SQL_TOTAIS = """
 SELECT
     ano,
     ds_cargo,
@@ -86,7 +82,6 @@ SELECT
     coalesce(ds_canal, 'TODOS') AS ds_canal,
     count(*) AS qt
 FROM q9_despesa
-WHERE {SO_6_UFS}
 GROUP BY GROUPING SETS (
     (ano, ds_cargo, sg_uf, fl_eleito, ds_canal),
     (ano, ds_cargo, sg_uf, fl_eleito),
@@ -100,10 +95,10 @@ GROUP BY GROUPING SETS (
 """
 
 
-def chave(ano: int, cargo: str, uf: str, eleito: int, canal: str) -> str:
-    u = 6 if uf == "TODAS" else UFS.index(uf)
+def chave(ano: int, cargo: str, eleito: int, canal: str) -> str:
+    """Chave de um recorte da nuvem dentro do arquivo do país ou de um estado."""
     c = 8 if canal == "TODOS" else CANAIS.index(canal)
-    return f"{ano}|{CARGOS.index(cargo)}|{u}|{eleito}|{c}"
+    return f"{ano}|{CARGOS.index(cargo)}|{eleito}|{c}"
 
 
 def dados_q8(con: duckdb.DuckDBPyConnection) -> dict:
@@ -118,39 +113,43 @@ def dados_q8(con: duckdb.DuckDBPyConnection) -> dict:
 
 
 def dados_q9(con: duckdb.DuckDBPyConnection) -> dict:
+    """Grava q9/<UF>.json (a nuvem de cada estado) e devolve o q9.json: os canais de todas as UFs,
+    o dicionário de palavras e a nuvem do país."""
     q9c = [
-        [ano, UFS.index(uf), CARGOS.index(cargo), int(el), CANAIS.index(canal), int(nc), int(nd), round(float(vr))]
+        [ano, UFS_BR.index(uf), CARGOS.index(cargo), int(el), CANAIS.index(canal), int(nc), int(nd), round(float(vr))]
         for ano, uf, cargo, el, canal, nc, nd, vr in con.execute(
-            f"""SELECT ano, sg_uf, ds_cargo, fl_eleito, ds_canal, qt_candidatos, qt_despesas, vr_despesa
-               FROM q9_canal WHERE {SO_6_UFS} ORDER BY 1, 2, 3, 4, 5"""
+            """SELECT ano, sg_uf, ds_cargo, fl_eleito, ds_canal, qt_candidatos, qt_despesas, vr_despesa
+               FROM q9_canal ORDER BY 1, 2, 3, 4, 5"""
         ).fetchall()
     ]
 
     termos: list[str] = []
     indice: dict[str, int] = {}
-    q9t: dict[str, list[list[int]]] = {}
+    # por escopo ("TODAS" ou a sigla): as palavras e o total de despesas de cada recorte
+    q9t: dict[str, dict[str, list[list[int]]]] = {}
+    q9tot: dict[str, dict[str, int]] = {}
     for ano, cargo, uf, eleito, canal, termo, qt, vr in con.execute(SQL_TERMOS).fetchall():
         if termo not in indice:
             indice[termo] = len(termos)
             termos.append(termo)
-        grupo = q9t.setdefault(chave(ano, cargo, uf, eleito, canal), [[], [], []])
+        grupo = q9t.setdefault(uf, {}).setdefault(chave(ano, cargo, eleito, canal), [[], [], []])
         grupo[0].append(indice[termo])
         grupo[1].append(int(qt))
         grupo[2].append(round(float(vr)))
+    for ano, cargo, uf, eleito, canal, qt in con.execute(SQL_TOTAIS).fetchall():
+        q9tot.setdefault(uf, {})[chave(ano, cargo, eleito, canal)] = int(qt)
 
-    q9tot = {
-        chave(ano, cargo, uf, eleito, canal): int(qt)
-        for ano, cargo, uf, eleito, canal, qt in con.execute(SQL_TOTAIS).fetchall()
-    }
-    print(f"nuvem: {len(termos)} termos, {len(q9t)} grupos")
+    for uf in UFS_BR:
+        gravar(f"q9/{uf}.json", {"q9t": q9t.get(uf, {}), "q9tot": q9tot.get(uf, {})})
+    print(f"nuvem: {len(termos)} termos, {sum(len(g) for g in q9t.values())} grupos")
     return {
-        "ufs": UFS,
+        "ufs": UFS_BR,
         "cargos": CARGOS,
         "canais": CANAIS,
         "q9c": q9c,
         "termos": termos,
-        "q9t": q9t,
-        "q9tot": q9tot,
+        "q9t": q9t.get("TODAS", {}),
+        "q9tot": q9tot.get("TODAS", {}),
         "top": TOP_TERMOS,
     }
 

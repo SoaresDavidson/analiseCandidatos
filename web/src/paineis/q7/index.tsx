@@ -1,15 +1,16 @@
 import { useMemo } from "react";
-import { Carregando, Etiqueta, Pagina } from "../../componentes";
+import { Alternador, Campo, Carregando, Etiqueta, Pagina } from "../../componentes";
 import { useDados } from "../../lib/dados";
 import { nomeLugar } from "../../lib/formato";
 import { semAcento, UF_NOME } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
 import { Chao } from "./Chao";
-import { Metodo, Partidos, Prefeitos, Regioes } from "./Detalhes";
+import { Metodo } from "./Detalhes";
 import { Mapa } from "./Mapa";
-import type { Ctx, DadosQ7, Filtros } from "./tipos";
+import type { Ctx, DadosQ7, Filtros, Par } from "./tipos";
+import { PARES } from "./util";
 
-const PADRAO: Filtros = { uf: null, sel: null, par: "mun", quando: 1, modo: "lado" };
+const PADRAO: Filtros = { uf: null, sel: null, par: "mun", quando: 1 };
 
 export default function Painel() {
   const { dados, erro } = useDados<DadosQ7>("q7-brasil.json");
@@ -25,21 +26,17 @@ function Conteudo({ D }: { D: DadosQ7 }) {
         cod: r[0],
         nome: nomeLugar(r[1]),
         uf: D.ufs[r[2]],
-        cap: !!r[4],
-        notas: r[5],
-        pref: r[6],
+        cap: !!r[3],
+        notas: r[4],
+        pref: r[5],
         busca: semAcento(r[1]),
       })),
-    [D],
-  );
-  const R = useMemo<Ctx["R"]>(
-    () => D.regioes.map(r => ({ cd: r[0], nome: r[1], uf: D.ufs[r[2]], n: r[3], notas: r[4] })),
     [D],
   );
   // valor salvo de outra versão: estado que não existe volta para o Brasil
   const f: Filtros = salvo.uf && !D.ufs.includes(salvo.uf) ? PADRAO : salvo;
   const aoMudar = (p: Partial<Filtros>) => setF(s => ({ ...s, ...p }));
-  const ctx: Ctx = { D, M, R, f };
+  const [, , , aa, ab] = PARES[f.par];
 
   const cidade = f.sel != null ? M.find(m => m.cod === f.sel && m.uf === f.uf) : undefined;
   const nome = cidade ? `${cidade.nome} (${cidade.uf})` : f.uf ? UF_NOME[f.uf] : "Brasil";
@@ -50,16 +47,40 @@ function Conteudo({ D }: { D: DadosQ7 }) {
   const aqui = "rounded-full bg-ouro px-3 py-1 text-[13px] font-bold";
 
   return (
-    <Pagina>
+    <Pagina
+      filtros={
+        <>
+          <Campo rotulo="Cargo" grupo>
+            <Alternador<Par>
+              rotulo="Cargo"
+              valor={f.par}
+              aoMudar={par => aoMudar({ par })}
+              opcoes={[
+                ["mun", "Vereador"],
+                ["ger", "Dep. federal"],
+              ]}
+            />
+          </Campo>
+          <Campo rotulo="Eleição" grupo>
+            <Alternador<0 | 1>
+              rotulo="Eleição"
+              valor={f.quando}
+              aoMudar={quando => aoMudar({ quando })}
+              opcoes={[
+                [0, aa],
+                [1, ab],
+              ]}
+            />
+          </Campo>
+        </>
+      }
+    >
       <Etiqueta>PERGUNTA 7 · VIÉS POLÍTICO</Etiqueta>
       <h1>Para que lado vota cada cidade?</h1>
-      <p className="texto-enunciado">
-        Enunciado: viés político de um município/região na linha do tempo? [2018, 2020, 2022, 2024]
-      </p>
       <div className="grid gap-[18px]">
-        {/* o chão acompanha a rolagem enquanto o mapa está na tela */}
-        <div className="z-[4] min-[981px]:sticky min-[981px]:top-2">
-          <Chao D={D} nome={nome} notas={notas} f={f} aoMudar={aoMudar}>
+        {/* o chão acompanha a rolagem, logo abaixo dos filtros, enquanto o mapa está na tela */}
+        <div className="z-[4] min-[981px]:sticky min-[981px]:top-[88px]">
+          <Chao D={D} nome={nome} notas={notas} f={f}>
             <nav aria-label="Lugar escolhido" className="flex flex-wrap items-center gap-1.5">
               {f.uf ? (
                 <button type="button" className={passo} onClick={() => aoMudar({ uf: null, sel: null })}>
@@ -82,11 +103,8 @@ function Conteudo({ D }: { D: DadosQ7 }) {
             </nav>
           </Chao>
         </div>
-        <Mapa {...ctx} aoMudar={aoMudar} />
+        <Mapa D={D} M={M} f={f} aoMudar={aoMudar} />
       </div>
-      <Regioes {...ctx} />
-      <Partidos {...ctx} />
-      <Prefeitos {...ctx} />
       <Metodo />
     </Pagina>
   );

@@ -1,10 +1,11 @@
 import { memo, type RefObject, useMemo, useState } from "react";
 import { Botao, BuscaComLista, Caixa, useDica } from "../../componentes";
-import { noEstado, semAcento, UF_NOME } from "../../lib/uf";
+import { noLugar, semAcento, UF_NOME } from "../../lib/uf";
 import type { Foto } from "./fotos";
 import {
   ABREV,
   ANO_FIM,
+  ANO_PARCIAL,
   ANOS,
   COR_OURO,
   COR_SEM_DADO,
@@ -25,7 +26,6 @@ const PONTO = "inline-block size-3.5 flex-none rounded-full";
 /** Seção "A carreira de um político": busca por nome, cartão com a foto e os cargos ao longo do tempo. */
 export function Carreira({
   pessoas,
-  doEstado,
   uf,
   sel,
   foto,
@@ -34,9 +34,8 @@ export function Carreira({
   aoPatrimonio,
   raiz,
 }: {
+  /** as pessoas do estado do filtro (no país: quem já foi governador, senador ou deputado) */
   pessoas: Pessoa[];
-  /** quem aparece na busca (o filtro de estado do topo) */
-  doEstado: Pessoa[];
   uf: string;
   sel: number;
   /** foto casada com a lista de eleitos; `fotosProntas` = a lista já chegou */
@@ -52,9 +51,11 @@ export function Carreira({
     <Caixa>
       <h2>A carreira de um político, eleição por eleição</h2>
       <label htmlFor="f-busca" className="text-[13px] font-bold">
-        Busque qualquer político que já se elegeu {noEstado(uf)}
+        {uf === "TODAS"
+          ? "Busque um governador, senador ou deputado do país (para prefeitos e vereadores, escolha o estado no alto)"
+          : `Busque qualquer político que já se elegeu ${noLugar(uf)}`}
       </label>
-      <Busca pessoas={doEstado} aoEscolher={aoEscolher} />
+      <Busca pessoas={pessoas} aoEscolher={aoEscolher} />
       <div ref={raiz} className="grid items-start gap-[18px] min-[801px]:grid-cols-[236px_minmax(0,1fr)]">
         <Cartao p={p} foto={foto} fotosProntas={fotosProntas} aoPatrimonio={aoPatrimonio} />
         <div className="grid min-w-0 gap-2.5">
@@ -89,7 +90,7 @@ export function Carreira({
           </div>
           <p className="texto-nota">
             Barra = mandato conquistado na urna (4 anos; 8 para senador), até a vitória seguinte. Fonte: TSE, cadastro
-            de candidaturas, 2002 a 2024.
+            de candidaturas, 2002 a 2026. Em {ANO_PARCIAL}, o resultado é o do 1º turno, como estava no TSE na coleta.
           </p>
         </div>
       </div>
@@ -215,7 +216,7 @@ function Busca({ pessoas, aoEscolher }: { pessoas: Pessoa[]; aoEscolher: (id: nu
       aoEscolher={p => aoEscolher(p.id)}
       vazio="Ninguém com esse nome entre os eleitos."
       ariaLabel="Buscar político pelo nome"
-      placeholder="Digite um nome: Flávio Dino, Caiado, Eduardo Leite, o vereador da sua cidade…"
+      placeholder="Digite um nome (3 letras ou mais)"
       className="max-w-[520px]"
     />
   );
@@ -226,7 +227,7 @@ const W = 780,
   R = 22,
   T = 6,
   LH = 56;
-// eixo de 2 em 2 anos, até o fim do mandato de quem venceu em 2024
+// eixo de 2 em 2 anos, até o fim do mandato de quem venceu em 2026
 const EIXO = Array.from({ length: (ANO_FIM - ANOS[0]) / 2 + 1 }, (_, k) => ANOS[0] + 2 * k);
 const X = (ano: number) => L + ((W - L - R) * (ano - ANOS[0])) / (ANO_FIM - ANOS[0]);
 const PASSO = X(ANOS[1]) - X(ANOS[0]);
@@ -261,8 +262,15 @@ const LinhaDoTempo = memo(function LinhaDoTempo({ p }: { p: Pessoa }) {
       {EIXO.map(a => (
         <g key={a}>
           <line x1={X(a)} x2={X(a)} y1={T} y2={T + faixas.length * LH} className="svg-grade" />
-          <text x={X(a)} y={H - 11} textAnchor="middle" dominantBaseline="middle" className="svg-eixo">
+          <text
+            x={X(a)}
+            y={H - 11}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            className={a === ANO_PARCIAL ? "svg-eixo font-extrabold fill-ouro-esc" : "svg-eixo"}
+          >
             {a}
+            {a === ANO_PARCIAL ? "*" : ""}
           </text>
         </g>
       ))}
@@ -297,9 +305,9 @@ const LinhaDoTempo = memo(function LinhaDoTempo({ p }: { p: Pessoa }) {
               cy={cy}
               r={x.res === 0 ? 10 : 8.5}
               fill={x.res === 0 ? COR_VERDE_ESC : "#fff"}
-              stroke={x.res === 1 ? COR_OURO : x.res === 2 ? COR_TEXTO_2 : "#fff"}
+              stroke={x.res === 1 ? COR_OURO : x.res >= 2 ? COR_TEXTO_2 : "#fff"}
               strokeWidth={x.res === 0 ? 2 : 3}
-              strokeDasharray={x.res === 2 ? "4 3" : undefined}
+              strokeDasharray={x.res >= 2 ? "4 3" : undefined}
             />
             {mudouPartido && (
               <text x={cx} y={cy - 22} textAnchor="middle" dominantBaseline="middle" className="svg-eixo font-bold">

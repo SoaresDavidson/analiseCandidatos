@@ -10,12 +10,16 @@ export interface DadosQ9 {
   canais: string[];
   q9c: LinhaCanal[];
   termos: string[];
-  /** chave: "ano|cargo|uf (6 = todas)|eleito (0/1/2)|canal (0-7, 8 = todos)" */
+  /** A nuvem do lugar na tela: no q9.json, a do país; a de um estado vem de q9/<UF>.json.
+   *  chave: "ano|cargo|eleito (0/1/2)|canal (0-7, 8 = todos)" */
   q9t: Record<string, GrupoTermos>;
   /** total de despesas com descrição no mesmo recorte de q9t */
   q9tot: Record<string, number>;
   top: number;
 }
+
+/** Um arquivo q9/<UF>.json: a nuvem de um estado. */
+export type NuvemUf = Pick<DadosQ9, "q9t" | "q9tot">;
 
 export interface Palavra {
   t: number;

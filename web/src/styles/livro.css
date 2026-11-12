@@ -11,7 +11,8 @@
     grid-template-rows: minmax(0, 1fr) auto;
     justify-items: center;
     align-items: center;
-    height: 100%;
+    /* a mesa ocupa a tela abaixo do cabeçalho (uns 150 px) */
+    height: calc(100dvh - 150px);
     min-height: 600px;
     overflow: hidden;
     padding: 6px 12px 10px;

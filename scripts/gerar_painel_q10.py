@@ -1,17 +1,20 @@
-"""Gera os dados da Q10 (carreira do político) para o app React: web/public/dados/q10.json.
+"""Gera os dados da Q10 (carreira do político) para o app React, com o país inteiro.
 
-Lê as views de sql/07_q10_carreira.sql no banco (dados/processed/tse.duckdb).
+Lê as views de sql/07_q10_carreira.sql no banco (dados/processed/tse.duckdb) e grava em
+web/public/dados/:
 
-Quem entra na busca: quem se elegeu pelo menos uma vez entre 2002 e 2024 nas 6 UFs.
-Entram todas as participações dessas pessoas, inclusive derrotas. 2026 fica de fora
-(fl_divulgado, #15).
+    q10.json                  o que vale para o país: reeleição, curvas, tipos de bem, IPCA
+    q10/<UF>.json             as pessoas de cada estado (quem já disputou ali)
+    q10/BR.json               quem já se elegeu governador, senador ou deputado, no país inteiro
+    q10-financas/<UF>-NN.json patrimônio e campanha (pessoa i do arquivo do estado em i % 16)
 
-Patrimônio e campanha de cada pessoa (sql/14_q10_patrimonio.sql) vão em 64 arquivos
-pequenos, web/public/dados/q10-financas/NN.json (pessoa i no arquivo i % 64): a página
-só busca o da pessoa aberta.
+Quem entra na busca: quem se elegeu pelo menos uma vez de 2002 a 2026. Entram todas as
+participações dessas pessoas, inclusive derrotas. As contas de reeleição e as curvas vão só
+até 2024 (fl_divulgado, #15); a linha do tempo de cada pessoa já mostra 2026, com o resultado
+que estava no arquivo do TSE na coleta (1º turno).
 
 Pré-requisitos (da raiz do repositório):
-    uv run python -m scripts.coleta.coleta_tse candidatos historico recorte_remoto --uf AM,GO,MA,MT,RS,SE
+    uv run python -m scripts.coleta.coleta_tse candidatos historico recorte_remoto --uf <as 27>
     uv run python -m scripts.coleta.coleta_ibge ipca
     uv run python scripts/carregar_staging.py 00_limpeza 04_politico 07_q10 13_ficha 14_q10
 
@@ -26,15 +29,17 @@ from pathlib import Path
 
 import duckdb
 
-from scripts.painel_web import gravar
+from scripts.painel_web import DADOS_WEB, UFS_BR, gravar
 
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "dados" / "processed" / "tse.duckdb"
-PARTES = 64
+PARTES = 16
+# cargos de estado e federais: quem já venceu um deles entra na busca do país (q10/BR.json)
+CARGOS_DO_PAIS = {3, 5, 6, 7, 8}
 # grupos de bem de q10_bem_tipo, na ordem do gráfico (de baixo para cima)
 GRUPOS = ["IMOVEIS", "EMPRESAS", "APLICACOES", "DINHEIRO", "VEICULOS", "OUTROS", "SEM TIPO"]
 
-RESULTADO = {"ELEITO": 0, "NAO ELEITO": 1, "SEM RESULTADO": 2}
+RESULTADO = {"ELEITO": 0, "NAO ELEITO": 1, "SEM RESULTADO": 2, "AGUARDANDO 2º TURNO": 3}
 
 # Nome de urna mais recente de cada título: é como o eleitor conhece o político.
 # Não está nas views (fica fora do DER), então vem do consulta_cand.
@@ -55,20 +60,19 @@ SQL_LINHA = """
 WITH eleitos AS (
     SELECT DISTINCT nr_titulo_eleitoral
     FROM q10_linha_do_tempo
-    WHERE fl_divulgado AND fl_eleito
+    WHERE fl_eleito
 )
 SELECT
     t.nr_titulo_eleitoral, t.nm_candidato, t.ano, t.sg_uf, t.nm_ue, t.cd_cargo, t.ds_cargo,
     t.sg_partido, t.resultado, t.fl_reeleito, t.fl_tentou_reeleicao
 FROM q10_linha_do_tempo AS t
 INNER JOIN eleitos USING (nr_titulo_eleitoral)
-WHERE t.fl_divulgado
 ORDER BY t.nr_titulo_eleitoral, t.ano
 """
 
 
-def ler_financas(con: duckdb.DuckDBPyConnection, titulos: list[str]) -> tuple[dict[int, list], list[list]]:
-    """Por pessoa (índice em titulos): [ano - 2000, receita, público, despesa, bens] de cada eleição.
+def ler_financas(con: duckdb.DuckDBPyConnection, titulos: list[str]) -> tuple[dict[str, list], list[list]]:
+    """Por pessoa (título de eleitor): [ano - 2000, receita, público, despesa, bens] de cada eleição.
 
     bens = [tipo, valor, tipo, valor, ...] (tipo indexa a lista de tipos); None quando
     não declarou nenhum bem. Receita e despesa: None antes de 2018.
@@ -91,14 +95,16 @@ def ler_financas(con: duckdb.DuckDBPyConnection, titulos: list[str]) -> tuple[di
     def reais(x: object) -> int | None:
         return None if x is None else round(float(x))
 
-    financas: dict[int, list] = {}
-    for i, ano, cand, receita, publico, despesa in con.execute(
-        """SELECT p.i, f.ano, f.id_candidatura, f.vr_receita, f.vr_publico, f.vr_despesa
+    financas: dict[str, list] = {}
+    for titulo, ano, cand, receita, publico, despesa in con.execute(
+        """SELECT p.nr_titulo_eleitoral, f.ano, f.id_candidatura, f.vr_receita, f.vr_publico, f.vr_despesa
            FROM q10_financas AS f INNER JOIN pessoa_q10 AS p USING (nr_titulo_eleitoral)
            WHERE f.ano <= 2024 AND (f.vr_patrimonio IS NOT NULL OR f.vr_receita IS NOT NULL)
            ORDER BY p.i, f.ano"""
     ).fetchall():
-        financas.setdefault(i, []).append([ano - 2000, reais(receita), reais(publico), reais(despesa), bens.get(cand)])
+        financas.setdefault(titulo, []).append(
+            [ano - 2000, reais(receita), reais(publico), reais(despesa), bens.get(cand)]
+        )
     return financas, tipos
 
 
@@ -109,19 +115,8 @@ def main() -> None:
     urna = dict(con.execute(SQL_URNA).fetchall())
 
     cargos: dict[int, str] = {}
-    partidos: list[str] = []
-    ues: list[str] = []
-    idx_partido: dict[str, int] = {}
-    idx_ue: dict[str, int] = {}
-
-    def indice(valor: str | None, lista: list[str], mapa: dict[str, int]) -> int:
-        valor = valor or ""
-        if valor not in mapa:
-            mapa[valor] = len(lista)
-            lista.append(valor)
-        return mapa[valor]
-
-    pessoas: dict[str, list] = {}
+    # por pessoa: nome de urna, nome civil, as participações e onde ela disputou e venceu
+    pessoas: dict[str, dict] = {}
     for titulo, nome, ano, uf, nm_ue, cargo, ds_cargo, partido, res, reeleito, tentou in con.execute(
         SQL_LINHA
     ).fetchall():
@@ -129,20 +124,14 @@ def main() -> None:
         if titulo not in pessoas:
             civil = nome or ""
             nm = urna.get(titulo) or civil
-            pessoas[titulo] = [nm, civil if civil != nm else "", []]
-        # [ano - 2000, cargo, ue, partido, resultado, reeleito (1) / tentou e perdeu (2) / 0]
+            pessoas[titulo] = {"nome": nm, "civil": civil if civil != nm else "", "r": [], "ufs": set(), "pais": False}
+        p = pessoas[titulo]
         flag = 1 if reeleito else (2 if tentou else 0)
         local = nm_ue if nm_ue and nm_ue.upper() != uf else uf
-        pessoas[titulo][2].extend(
-            [
-                ano - 2000,
-                cargo,
-                indice(f"{local}|{uf}", ues, idx_ue),
-                indice(partido, partidos, idx_partido),
-                RESULTADO[res],
-                flag,
-            ]
-        )
+        p["r"].append((ano - 2000, cargo, f"{local}|{uf}", partido or "", RESULTADO[res], flag))
+        p["ufs"].add(uf)
+        if res == "ELEITO" and cargo in CARGOS_DO_PAIS:
+            p["pais"] = True
 
     sobrevivencia = [
         list(r)
@@ -165,15 +154,43 @@ def main() -> None:
     fatores = dict(con.execute("SELECT ano, fator_2024 FROM q10_ipca").fetchall())
     con.close()
 
-    for parte in range(PARTES):
-        bloco = {i: financas[i] for i in range(parte, len(pessoas), PARTES) if i in financas}
-        gravar(f"q10-financas/{parte:02d}.json", bloco)
+    # arquivos antigos (64 partes sem estado) saem antes de gravar os novos
+    for antigo in (DADOS_WEB / "q10-financas").glob("*.json"):
+        antigo.unlink()
+
+    def gravar_escopo(escopo: str, titulos: list[str]) -> None:
+        """Um arquivo de pessoas e os de finanças para o país (BR) ou um estado."""
+        partidos: list[str] = []
+        ues: list[str] = []
+        idx_partido: dict[str, int] = {}
+        idx_ue: dict[str, int] = {}
+
+        def indice(valor: str, lista: list[str], mapa: dict[str, int]) -> int:
+            if valor not in mapa:
+                mapa[valor] = len(lista)
+                lista.append(valor)
+            return mapa[valor]
+
+        linhas = []
+        for t in titulos:
+            p = pessoas[t]
+            plano: list[int] = []
+            for ano, cargo, ue, partido, res, flag in p["r"]:
+                # [ano - 2000, cargo, ue, partido, resultado, reeleito (1) / tentou e perdeu (2) / 0]
+                plano.extend([ano, cargo, indice(ue, ues, idx_ue), indice(partido, partidos, idx_partido), res, flag])
+            linhas.append([p["nome"], p["civil"], plano])
+        gravar(f"q10/{escopo}.json", {"pessoas": linhas, "partidos": partidos, "ues": ues})
+        for parte in range(PARTES):
+            bloco = {i: financas[t] for i, t in enumerate(titulos) if i % PARTES == parte and t in financas}
+            gravar(f"q10-financas/{escopo}-{parte:02d}.json", bloco)
+
+    gravar_escopo("BR", [t for t, p in pessoas.items() if p["pais"]])
+    for uf in UFS_BR:
+        gravar_escopo(uf, [t for t, p in pessoas.items() if uf in p["ufs"]])
 
     dados = {
-        "pessoas": list(pessoas.values()),
+        "ufs": UFS_BR,
         "cargos": cargos,
-        "partidos": partidos,
-        "ues": ues,
         "sobrevivencia": sobrevivencia,
         "curva": curva,
         "totais": {"participacoes": totais[0], "pessoas": totais[1], "eleitos": len(pessoas)},

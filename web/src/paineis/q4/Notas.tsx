@@ -14,8 +14,9 @@ export function NotasFontes({ D }: { D: DadosQ4 }) {
       </div>
       <ul className="m-0 grid list-none gap-2.5 p-0 text-[14px] leading-snug">
         <li>
-          <b>Candidatos e eleitos.</b> TSE, cadastro de candidaturas (arquivo <i>consulta_cand</i>) de 2022 e 2024. A
-          escolaridade é a declarada pelo próprio candidato no registro.
+          <b>Candidatos e eleitos.</b> TSE, cadastro de candidaturas (arquivo <i>consulta_cand</i>) de 2022 e 2024; a de
+          2026 entra à parte, com o resultado do 1º turno. A escolaridade é a declarada pelo próprio candidato no
+          registro.
         </li>
         <li>
           <b>População.</b> IBGE, Censo 2022, tabela SIDRA 10061: pessoas de 18 anos ou mais por nível de instrução. É

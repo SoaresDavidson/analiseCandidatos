@@ -2,7 +2,7 @@
 // atualize junto quando o gerador mudar os dados.
 // números conferidos no banco (6 estados): Q4, Q8 e Q10 em 15/10/2026; Q3 e Q7 em 17/10/2026; Q2 e Q6 em 20/10/2026;
 // Q9 em 22/10/2026 (64,2%: a soma exata, não a das partes arredondadas, 36% + 29%); Q1 e Q5 em 10/11/2026.
-// Q1 a Q8 refeitos com o país inteiro (27 UFs) em 12/11/2026
+// Q1 a Q10 refeitos com o país inteiro (27 UFs) em 12/11/2026
 
 export interface Cartao {
   n: number;
@@ -62,7 +62,7 @@ export const CARTOES: Cartao[] = [
     aba: "q9",
     assunto: "Propaganda",
     perg: "Onde o candidato gasta com propaganda?",
-    resp: "Nas eleições de 2024, **64%** foi para papel impresso e campanha de rua. Internet: 7%.",
+    resp: "No Brasil, nas eleições de 2024, **63%** foi para papel impresso e campanha de rua. Internet: 10%.",
   },
   {
     n: 1,
@@ -86,7 +86,7 @@ export const CARTOES: Cartao[] = [
     aba: "q10",
     assunto: "Carreira",
     perg: "Quanto dura a carreira de um político?",
-    resp: "De cada 100 vereadores novatos, só **27** seguem eleitos 8 anos depois.",
+    resp: "No Brasil, de cada 100 vereadores novatos, só **28** seguem eleitos 8 anos depois.",
   },
   {
     n: 5,

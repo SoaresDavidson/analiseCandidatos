@@ -3,10 +3,9 @@
   :root {
     color-scheme: light;
   }
-  html,
-  body,
-  #root {
-    height: 100%;
+  html {
+    /* a barra de rolagem não empurra a página quando aparece */
+    scrollbar-gutter: stable;
   }
   body {
     @apply m-0 bg-fundo font-sans text-[15px] leading-[1.55] text-texto;

@@ -31,7 +31,7 @@ export function Comparar({ D, f, mudar }: { D: DadosQ10; f: Filtros; mudar: Muda
       Y = (v: number) => T + (H - T - B) * (1 - v / 100);
     const rotulos: [number, number, string][] = [];
     const linhas = TURMAS.map(([c], i) => {
-      const pts = curva(D, ufsSel(f.uf), c, f.medida)
+      const pts = curva(D, ufsSel(D, f.uf), c, f.medida)
         .map((v, k) => [k, v] as const)
         .filter((p): p is readonly [number, number] => p[1] != null);
       if (pts.length) {
@@ -111,7 +111,7 @@ export function Comparar({ D, f, mudar }: { D: DadosQ10; f: Filtros; mudar: Muda
 
 export function Reeleicao({ D, f, mudar }: { D: DadosQ10; f: Filtros; mudar: Mudar }) {
   const d = useMemo(() => {
-    const ufs = ufsSel(f.uf),
+    const ufs = ufsSel(D, f.uf),
       anos: Record<number, { e: number; t: number; r: number }> = {};
     for (const [ano, uf, cargo, e, t, r] of D.sobrevivencia) {
       if (cargo === f.cargoRe && ufs.includes(uf)) {
@@ -276,7 +276,7 @@ export function Metodo({ D }: { D: DadosQ10 }) {
     <VerMais titulo="Como calculamos">
       <ul>
         <li>
-          <b>Fonte:</b> TSE, cadastro de candidaturas (<i>consulta_cand</i>) de 2002 a 2024, nos 6 estados.
+          <b>Fonte:</b> TSE, cadastro de candidaturas (<i>consulta_cand</i>) de 2002 a 2026, no país inteiro.
         </li>
         <li>
           <b>Político:</b> uma pessoa = um título de eleitor. Nunca o CPF (em 2024 o TSE gravou todos como -4).
@@ -295,11 +295,12 @@ export function Metodo({ D }: { D: DadosQ10 }) {
         </li>
         <li>
           <b>Busca:</b> quem se elegeu ao menos uma vez, {int(D.totais.eleitos)} pessoas, com todas as candidaturas
-          delas ({int(D.totais.participacoes)} candidaturas de {int(D.totais.pessoas)} pessoas no total). 2026 fica de
-          fora até o resultado final.
+          delas ({int(D.totais.participacoes)} candidaturas de {int(D.totais.pessoas)} pessoas até 2024). As contas de
+          reeleição e as curvas vão até 2024; a linha do tempo de cada pessoa já mostra 2026.
         </li>
         <li>
-          <b>Limite:</b> a carreira só aparece dentro dos 6 estados.
+          <b>Limite:</b> presidente e vice ainda não entram; 2026 traz o resultado do 1º turno, como estava no TSE na
+          coleta.
         </li>
       </ul>
     </VerMais>

@@ -93,3 +93,17 @@
     animation: boneco-pulo 0.95s cubic-bezier(0.35, 0.5, 0.65, 0.5) both;
   }
 }
+
+/* --- A cortina entre as telas: a caricatura pula para perto e volta ---------------------- */
+@keyframes transicao-pula {
+  0% {
+    transform: scale(0.55);
+  }
+  100% {
+    transform: scale(1.45);
+  }
+}
+.transicao-pula {
+  will-change: transform;
+  animation: transicao-pula 0.3s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}

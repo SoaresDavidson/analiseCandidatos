@@ -1,10 +1,10 @@
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Carregando, ProvedorDica } from "./componentes";
 import { Inicio } from "./inicio/Inicio";
 import { type Navegacao, NavegacaoContexto } from "./lib/navegacao";
 import { irPara, useHash } from "./lib/useHash";
-import { useRecolheAoRolar } from "./lib/useRecolheAoRolar";
 import { ESCONDIDAS, FichaEleito, PAGINAS, type PaginaComTema, TEMAS } from "./paineis/registro";
+import { Transicao } from "./Transicao";
 
 // Navegação por tema: poucas abas no topo; dentro de cada tema, as perguntas viram
 // botões (como "PRESIDENTE | GOVERNADOR | ..." no site do TSE). Cada pergunta é um painel.
@@ -37,7 +37,11 @@ export default function App() {
   const [id, extra] = useHash();
   const pagina = resolver(id);
   const escondida = pagina ? null : (ESCONDIDAS.find(x => x.id === id) ?? null);
-  const [recolhido, aoRolar] = useRecolheAoRolar(pagina?.id ?? escondida?.id ?? "inicio");
+  const chave = pagina?.id ?? escondida?.id ?? "inicio";
+  // quem rola é a página inteira (o cabeçalho sobe junto): cada tela nova começa do alto
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [chave]);
   const [ficha, setFicha] = useState<{ ano: number; sq: number; uf?: string } | null>(null);
   const [aviso, setAviso] = useState(false);
 
@@ -138,14 +142,11 @@ export default function App() {
   return (
     <NavegacaoContexto.Provider value={nav}>
       <ProvedorDica>
-        <div className="flex h-full flex-col">
-          {/* faixa, abas e perguntas do tema: recolhem ao rolar a página para baixo e voltam ao
-              rolar para cima; a barra de filtros do painel (sticky dentro do main) continua */}
-          <div
-            inert={recolhido}
-            className={`grid flex-none transition-[grid-template-rows] duration-300 ease-out ${recolhido ? "grid-rows-[0fr]" : "grid-rows-[1fr]"}`}
-          >
-            <div className="min-h-0 overflow-hidden">
+        <div className="flex min-h-dvh flex-col">
+          {/* faixa, abas e perguntas do tema: sobem com a página; a barra de filtros do painel
+              (sticky dentro do main) fica presa no alto */}
+          <div className="flex-none">
+            <div>
               <div className="flex flex-none flex-wrap items-center justify-end gap-3 bg-ouro px-5 pt-[calc(4px+env(safe-area-inset-top,0px))] pb-1 text-[12.5px] font-bold text-white motion-safe:animate-desce">
                 <span>Banco de Dados Relacionais · UFPI</span>
                 <span aria-hidden="true">|</span>
@@ -223,12 +224,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* a chave reinicia a rolagem e a animação de entrada a cada página */}
-          <main
-            key={pagina?.id ?? escondida?.id ?? "inicio"}
-            onScroll={aoRolar}
-            className="min-h-0 flex-1 overflow-y-auto"
-          >
+          {/* a chave reinicia a animação de entrada a cada página */}
+          <main key={chave} className="flex-1">
             {pagina || escondida ? (
               <Suspense fallback={<Carregando />}>
                 {pagina ? <pagina.Componente extra={extra} /> : escondida && <escondida.Componente extra={extra} />}
@@ -254,7 +251,7 @@ export default function App() {
         {/* a ficha de um eleito abre por cima da página atual; ao fechar, a página continua onde estava */}
         {ficha && (
           <div
-            className="fixed inset-0 z-50 overflow-y-auto bg-black/40"
+            className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-black/40"
             role="dialog"
             aria-modal="true"
             aria-label="Ficha do eleito"
@@ -270,6 +267,7 @@ export default function App() {
             </Suspense>
           </div>
         )}
+        <Transicao chave={chave} />
       </ProvedorDica>
     </NavegacaoContexto.Provider>
   );

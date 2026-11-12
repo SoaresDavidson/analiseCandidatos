@@ -9,23 +9,28 @@ export interface Financas {
   falhou: boolean;
 }
 
-/** Patrimônio e campanha da pessoa aberta. Os dados vêm de q10-financas/NN.json, buscado só quando preciso. */
-export function useFinancas(D: DadosQ10, p: Pessoa): Financas {
-  const [estado, setEstado] = useState<{ id: number; anos: AnoFin[] | null; erro: boolean }>({
-    id: -1,
+/** Patrimônio e campanha da pessoa aberta. Os dados vêm de q10-financas/<escopo>-NN.json (escopo = a
+ *  sigla do estado, ou BR), buscado só quando preciso. */
+export function useFinancas(D: DadosQ10, escopo: string, p: Pessoa | undefined): Financas {
+  const id = p?.id ?? -1;
+  const chave = id < 0 ? "" : `${escopo}|${id}`;
+  const [estado, setEstado] = useState<{ id: string; anos: AnoFin[] | null; erro: boolean }>({
+    id: "",
     anos: null,
     erro: false,
   });
   useEffect(() => {
+    if (id < 0) return;
     let vivo = true;
-    const nn = String(p.id % D.fin.partes).padStart(2, "0");
-    carregarDados<ParteFin>(`q10-financas/${nn}.json`).then(
-      parte => vivo && setEstado({ id: p.id, anos: anosFin(D, parte[p.id] || []), erro: false }),
-      () => vivo && setEstado({ id: p.id, anos: null, erro: true }),
+    const chave = `${escopo}|${id}`;
+    const nn = String(id % D.fin.partes).padStart(2, "0");
+    carregarDados<ParteFin>(`q10-financas/${escopo}-${nn}.json`).then(
+      parte => vivo && setEstado({ id: chave, anos: anosFin(D, parte[id] || []), erro: false }),
+      () => vivo && setEstado({ id: chave, anos: null, erro: true }),
     );
     return () => {
       vivo = false;
     };
-  }, [D, p.id]);
-  return estado.id === p.id ? { anos: estado.anos, falhou: estado.erro } : { anos: null, falhou: false };
+  }, [D, escopo, id]);
+  return chave && estado.id === chave ? { anos: estado.anos, falhou: estado.erro } : { anos: null, falhou: false };
 }

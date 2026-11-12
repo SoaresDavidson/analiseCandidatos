@@ -63,7 +63,7 @@ LEFT JOIN modelo.politico AS p ON c.nr_titulo_eleitoral = p.nr_titulo_eleitoral
 LEFT JOIN modelo.partido AS pa ON c.ano = pa.ano AND c.nr_partido = pa.nr_partido
 LEFT JOIN urna AS u
     ON c.ano = u.ano AND c.sg_ue = u.sg_ue AND c.cd_cargo = u.cd_cargo AND c.sq_candidato = u.sq_candidato
-WHERE q.fl_eleito
+WHERE q.fl_eleito AND q.ano IN (2022, 2024)  -- a lista de nomes fica nas eleições com resultado final
 ORDER BY 1, 2, 4, 5 DESC, 6
 """
 

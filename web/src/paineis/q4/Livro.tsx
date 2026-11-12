@@ -47,7 +47,7 @@ function Pag({
         )}
       </div>
       <div className="pag-corpo">{children}</div>
-      <div className="pag-rodape">Fontes: TSE, candidaturas de 2022 e 2024 · IBGE, Censo 2022</div>
+      <div className="pag-rodape">Fontes: TSE, candidaturas de 2022, 2024 e 2026 · IBGE, Censo 2022</div>
     </div>
   );
 }

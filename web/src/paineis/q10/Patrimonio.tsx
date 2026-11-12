@@ -11,7 +11,8 @@ import type { Financas } from "./useFinancas";
 /** Frase de evolução e anos com cara de erro de digitação. */
 function analisar(D: DadosQ10, anos: AnoFin[]) {
   const comBens = anos.filter(x => x.temBens);
-  const fat = (ano: number) => D.fin.fator[ano] || 1;
+  // sem o IPCA do ano não há valor corrigido: a frase fica só com os valores declarados
+  const fat = (ano: number): number | null => D.fin.fator[ano] ?? null;
   const suspeitos = anosSuspeitos(comBens);
   // a comparação deixa de fora os anos com cara de erro de digitação, e diz isso na frase
   const confiaveis = comBens.filter(x => !suspeitos.includes(x));
@@ -23,9 +24,10 @@ function analisar(D: DadosQ10, anos: AnoFin[]) {
   else {
     const a = confiaveis[0],
       b = confiaveis[confiaveis.length - 1],
-      ra = a.total * fat(a.ano),
-      rb = b.total * fat(b.ano);
-    const variacao = ra > 0 ? (100 * (rb - ra)) / ra : null;
+      fa = fat(a.ano),
+      fb = fat(b.ano);
+    const variacao =
+      fa != null && fb != null && a.total > 0 ? (100 * (b.total * fb - a.total * fa)) / (a.total * fa) : null;
     frase = (
       <>
         De {a.ano} a {b.ano}
@@ -74,7 +76,7 @@ export function Patrimonio({
   // abre no ano mais recente, até a pessoa escolher outro
   const x = comBens.find(y => y.ano === escolhido) ?? comBens[comBens.length - 1];
   const suspeitos = analise?.suspeitos ?? [];
-  const fator = x ? D.fin.fator[x.ano] || 1 : 1;
+  const fator: number | null = x ? (D.fin.fator[x.ano] ?? null) : null;
 
   return (
     <Janela titulo={`Patrimônio declarado de ${p.nome}`} aoFechar={aoFechar}>
@@ -90,7 +92,7 @@ export function Patrimonio({
             <b className="block text-[clamp(26px,5vw,36px)] font-extrabold tabular-nums">{brl(x.total)}</b>
             <span className="text-[13.5px] text-texto-2">
               em bens declarados ao TSE em {x.ano}
-              {x.ano < 2024 && fator !== 1 && ` · ${brl(x.total * fator)} em reais de 2024`}
+              {fator != null && fator !== 1 && ` · ${brl(x.total * fator)} em reais de 2024`}
             </span>
           </p>
         ) : (
@@ -164,8 +166,10 @@ interface Bloco {
 }
 
 /** Treemap dos bens de um ano: primeiro divide a área entre os grupos, depois cada grupo entre os seus bens. */
-function Mapa({ x, fator }: { x: AnoFin; fator: number }) {
+function Mapa({ x, fator }: { x: AnoFin; fator: number | null }) {
   const dica = useDica();
+  // se o mapa sair da tela com o mouse em cima (Esc, troca de ano), o balão vai junto
+  useEffect(() => dica.esconder, [dica]);
   const caixa = useRef<HTMLDivElement>(null);
   const [larg, setLarg] = useState(0);
   useEffect(() => {
@@ -255,7 +259,7 @@ function Mapa({ x, fator }: { x: AnoFin; fator: number }) {
                   {GRUPO_NOME[b.g]}
                   <br />
                   {brl(b.v)} · {pct} do patrimônio de {x.ano}
-                  {fator !== 1 && (
+                  {fator != null && fator !== 1 && (
                     <>
                       <br />
                       {brl(b.v * fator)} em reais de 2024

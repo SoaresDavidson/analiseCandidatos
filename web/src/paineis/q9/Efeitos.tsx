@@ -217,8 +217,13 @@ function Chuvisco() {
 function ChuvaDeCodigo() {
   const ref = useQuadros(
     (ctx, tela) => {
-      const w = (tela.width = tela.clientWidth || 1000);
-      const h = (tela.height = tela.clientHeight || 430);
+      // pixels físicos (até 2x, para não pesar) e desenho em unidades CSS
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const w = tela.clientWidth || 1000;
+      const h = tela.clientHeight || 430;
+      tela.width = w * dpr;
+      tela.height = h * dpr;
+      ctx.scale(dpr, dpr);
       const fs = 15;
       const colunas = Array.from({ length: Math.ceil(w / fs) }, () => Math.random() * -40);
       return () => {

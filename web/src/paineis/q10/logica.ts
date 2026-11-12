@@ -19,6 +19,39 @@ export const ABREV: Record<number, string> = {
   12: "Vice-prefeito",
   13: "Vereador",
 };
+/** Faixa da linha do tempo de cada cargo (de baixo para cima: vereador ... presidente). */
+export const FAIXA: Record<number, number> = {
+  13: 0,
+  12: 1,
+  11: 2,
+  7: 3,
+  8: 3,
+  6: 4,
+  9: 5,
+  10: 5,
+  4: 5,
+  5: 6,
+  3: 7,
+  2: 8,
+  1: 9,
+};
+export const FAIXA_NOME = [
+  "Vereador",
+  "Vice-prefeito",
+  "Prefeito",
+  "Dep. estadual",
+  "Dep. federal",
+  "Vice ou suplente",
+  "Senador",
+  "Governador",
+  "Vice-presidente",
+  "Presidente",
+];
+/** Último ano do eixo: fim do mandato de quem venceu em 2024. */
+export const ANO_FIM = 2028;
+// senador e seus suplentes: mandato de 8 anos
+const OITO_ANOS = new Set([5, 9, 10]);
+
 export const TURMAS: readonly (readonly [number, string, string])[] = [
   [13, "Vereador", "vereadores"],
   [11, "Prefeito", "prefeitos"],
@@ -83,6 +116,32 @@ export interface Pessoa {
   partidos: number;
   ufs: string[];
   ult: Candidatura;
+}
+
+export interface Mandato {
+  faixa: number;
+  inicio: number;
+  fim: number;
+}
+
+/**
+ * Mandatos conquistados na urna, para desenhar como barras: cada vitória vale 4 anos (8 para senador)
+ * e termina antes se a pessoa vencer outra eleição. Vitórias seguidas na mesma faixa viram uma barra só.
+ * É o mandato conquistado, não o exercido: o TSE não informa licença, renúncia ou cassação após a posse.
+ */
+export function mandatos(r: Candidatura[], anoFim = ANO_FIM): Mandato[] {
+  const vitorias = r.filter(x => x.res === 0);
+  const saida: Mandato[] = [];
+  vitorias.forEach((x, i) => {
+    const proxima = vitorias.slice(i + 1).find(y => y.ano > x.ano)?.ano ?? Number.POSITIVE_INFINITY;
+    const fim = Math.min(x.ano + (OITO_ANOS.has(x.cargo) ? 8 : 4), proxima, anoFim);
+    if (fim <= x.ano) return;
+    const faixa = FAIXA[x.cargo];
+    const anterior = saida[saida.length - 1];
+    if (anterior && anterior.faixa === faixa && anterior.fim >= x.ano) anterior.fim = Math.max(anterior.fim, fim);
+    else saida.push({ faixa, inicio: x.ano, fim });
+  });
+  return saida;
 }
 
 /** Desempacota as linhas planas do JSON em pessoas com as contas já feitas. */

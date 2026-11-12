@@ -1,24 +1,25 @@
-import { useCallback, useMemo, useRef } from "react";
-import { Alternador, Campo, Carregando, Etiqueta, Pagina, SeletorUf } from "../../componentes";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Campo, Carregando, Etiqueta, Pagina, SeletorUf } from "../../componentes";
 import { useDados } from "../../lib/dados";
 import { semAcento } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
+import type { DadosCandidatos } from "../candidatos/tipos";
 import type { PainelProps } from "../tipos";
+import { Campanha } from "./Campanha";
 import { Carreira } from "./Carreira";
 import { Comparar, Metodo, Ranking, Reeleicao } from "./Detalhes";
-import { Financas } from "./Financas";
-import { montarPessoas, TURMAS } from "./logica";
-import { Resposta } from "./Resposta";
+import { fotoDe, indiceFotos } from "./fotos";
+import { montarPessoas } from "./logica";
+import { Patrimonio } from "./Patrimonio";
 import type { DadosQ10, Filtros } from "./tipos";
+import { useFinancas } from "./useFinancas";
 
 const PADRAO: Filtros = {
   uf: "TODAS",
-  turma: 13,
   sel: null,
   medida: "mandato",
   cargoRe: 13,
   ordem: "vit",
-  valor: "real",
 };
 
 export default function Painel(_props: PainelProps) {
@@ -44,6 +45,15 @@ function Conteudo({ D }: { D: DadosQ10 }) {
     [pessoas, f.uf],
   );
 
+  // patrimônio e campanha de quem está aberto; a foto vem da lista de eleitos de 2022 e 2024
+  const p = pessoas[sel];
+  const fin = useFinancas(D, p);
+  const { dados: eleitos } = useDados<DadosCandidatos>("candidatos-eleitos.json");
+  const fotos = useMemo(() => (eleitos ? indiceFotos(eleitos) : null), [eleitos]);
+  const foto = useMemo(() => (fotos ? fotoDe(p, fotos) : null), [fotos, p]);
+  const [patrimonioAberto, setPatrimonioAberto] = useState(false);
+  const fecharPatrimonio = useCallback(() => setPatrimonioAberto(false), []);
+
   const abrir = (id: number) => {
     mudar("sel", id);
     escada.current?.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -53,14 +63,6 @@ function Conteudo({ D }: { D: DadosQ10 }) {
     <>
       <Campo rotulo="Estado">
         <SeletorUf id="f-uf" value={f.uf} onChange={e => mudar("uf", e.target.value)} />
-      </Campo>
-      <Campo rotulo="Primeira vitória como" grupo>
-        <Alternador
-          rotulo="Primeira vitória como"
-          opcoes={TURMAS.map(([c, n]) => [c, n] as const)}
-          valor={f.turma}
-          aoMudar={v => mudar("turma", v)}
-        />
       </Campo>
     </>
   );
@@ -74,9 +76,19 @@ function Conteudo({ D }: { D: DadosQ10 }) {
         vitórias, derrotas e reeleições)? [máximo possível: 2002 a 2024]
       </p>
 
-      <Resposta D={D} pessoas={doEstado} f={f} />
-      <Carreira pessoas={pessoas} sel={sel} aoEscolher={id => mudar("sel", id)} raiz={escada} />
-      <Financas D={D} p={pessoas[sel]} f={f} aoMudarValor={v => mudar("valor", v)} />
+      <Carreira
+        pessoas={pessoas}
+        doEstado={doEstado}
+        uf={f.uf}
+        sel={sel}
+        foto={foto}
+        fotosProntas={fotos != null}
+        aoEscolher={id => mudar("sel", id)}
+        aoPatrimonio={() => setPatrimonioAberto(true)}
+        raiz={escada}
+      />
+      {patrimonioAberto && <Patrimonio D={D} p={p} fin={fin} foto={foto} aoFechar={fecharPatrimonio} />}
+      <Campanha p={p} fin={fin} />
 
       <Comparar D={D} f={f} mudar={mudar} />
       <Reeleicao D={D} f={f} mudar={mudar} />

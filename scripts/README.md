@@ -50,6 +50,7 @@ por meio de `painel_web.py`.
 | `gerar_painel_2026.py` | `e2026.json`: a aba 2026, com as contas de cada pergunta para a eleição geral de 2026 ao lado de 2022 | as tabelas do modelo e as views das perguntas (`q1_custo_cargo`, `mart_q8`, `mart_q9`, `q5_partido`, `q10_sobrevivencia`…), sem o corte de `fl_divulgado` |
 | `gerar_painel_presidentes.py` | `presidentes.json` e `web/public/img/presidentes/` | os arquivos nacionais do TSE (votação, bens e fotos de 2002 a 2026), buscados pelo próprio script em `dados/raw/presidente/`; do banco, só o de-para de município |
 | `gerar_painel_candidatos.py` | `candidatos/<UF>.json` (as fichas do país, um arquivo por estado) e as fotos | `13_ficha_candidato`, `07_q10_carreira` |
+| `gerar_painel_decisoes.py` | `candidatos-decisoes.json`: as decisões da Justiça Eleitoral de cada eleito (bola preta) | `24_motivo_cassacao` |
 | `gerar_painel_municipios.py` | `municipios-cidades.json` | `15_espectro` |
 | `painel_web.py` | (código comum) | `gravar()`, usado por todos os geradores; as 27 siglas e capitais; `mapa()`, o mapa das páginas ainda nos 6 estados |
 | `baixar_fotos_web.py` | `web/public/fotos/<ano>/<sq>.jpg`; com `--grandes`, `web/public/fotos-grandes/` no tamanho do TSE | `candidatos/<UF>.json` e `candidatos-eleitos.json` (não precisa do banco). Também roda com `npm run fotos` em `web/`. |

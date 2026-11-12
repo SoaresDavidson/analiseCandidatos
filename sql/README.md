@@ -51,6 +51,7 @@ falha com `Table with name candidatura does not exist!` quando o `04` ainda não
 | `21_q3_indices.sql` | Q3: índices do município × quem venceu em 2024 | 16, 17 |
 | `22_q1_custo_cadeira.sql` | Q1: custo da cadeira (gasto ÷ vagas) e parte paga com dinheiro público | 01, 02, 06, 14 |
 | `23_q5_voto_legenda.sql` | Carrega os votos de legenda no `modelo` e refaz a distribuição das cadeiras com e sem eles (Q5) | 06, 13 |
+| `24_motivo_cassacao.sql` | Decisões da Justiça Eleitoral sobre candidaturas (registro negado, cassação) e a família de cada motivo: a bola preta na ficha dos eleitos | 06 |
 
 ## Subpastas
 

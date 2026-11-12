@@ -216,7 +216,15 @@ export default function Painel({ extra }: PainelProps) {
             eleitor (a mesma linha do tempo da Pergunta 10).
           </li>
           <li>
-            <b>Consulta no banco:</b> view <i>ficha_eleito</i> em <i>sql/13_ficha_candidato.sql</i>.
+            <b>Bola preta:</b> a pessoa tem decisão da Justiça Eleitoral contra alguma candidatura sua de 2018 a 2024
+            (arquivo de motivos de cassação do TSE): cassação, ou registro negado por ilícito na campanha (abuso de
+            poder, compra de voto, conduta vedada, gasto ilícito, fraude à cota de gênero) ou por inelegibilidade (Ficha
+            Limpa e outras). Registro negado por falha de papelada ou do partido não conta. São decisões, não
+            investigações; quem perdeu o mandato depois de eleito costuma sair da lista de eleitos do TSE.
+          </li>
+          <li>
+            <b>Consulta no banco:</b> view <i>ficha_eleito</i> em <i>sql/13_ficha_candidato.sql</i>; decisões em{" "}
+            <i>cassacao_decisao</i> (<i>sql/24_motivo_cassacao.sql</i>).
           </li>
         </ul>
       </VerMais>

@@ -50,6 +50,12 @@ export const TEMAS: Tema[] = [
       { id: "presidentes", nome: "Presidentes", Componente: lazy(() => import("./presidentes")) },
     ],
   },
+  {
+    // a eleição geral de 2026 fica numa aba só dela: as perguntas vão até 2024
+    id: "2026",
+    nome: "2026",
+    paginas: [{ id: "e2026", nome: "Eleições 2026", Componente: lazy(() => import("./e2026")) }],
+  },
 ];
 
 /** Páginas fora das abas de tema: a Arena e os Jogos abrem pelas abas ⚔ e 🎮 na faixa do topo

@@ -95,6 +95,7 @@ e gravam cada arquivo de `public/dados/` por `scripts/painel_web.py`:
 | `q4.json` (o país) e `q4/<UF>.json` (cada estado) | `uv run python -m scripts.gerar_painel_q4` |
 | `q8.json`, `q9.json` (o país) e `q9/<UF>.json` (a nuvem de cada estado) | `uv run python -m scripts.gerar_painel_q8_q9` (com `q8` ou `q9`, só uma) |
 | `q10.json` (o país), `q10/<UF>.json` e `q10/BR.json` (as pessoas), `q10-financas/<UF>-NN.json` | `uv run python -m scripts.gerar_painel_q10` |
+| `e2026.json` (a aba 2026) | `uv run python -m scripts.gerar_painel_2026` |
 | `presidentes.json` e as fotos de `public/img/presidentes/` | `uv run python -m scripts.gerar_painel_presidentes` (busca no TSE os arquivos nacionais; não usa o banco) |
 | `candidatos/<UF>.json` (+ fotos): as fichas do país, um arquivo por estado | `uv run python -m scripts.gerar_painel_candidatos` |
 | `candidatos-eleitos.json` | as fichas dos 6 estados, das páginas ainda no recorte original (não é mais gerado) |
@@ -141,9 +142,11 @@ cargo, eleição e estado; essas vão para o git, porque são poucas (uma por de
 `q8.json` e `q9.json` foram refeitos com o país inteiro (27 UFs), direto do banco: os números
 não são mais os publicados por Enrico para os 6 estados.
 
-2026 entra à parte, onde a base tem dado: a linha do tempo da Pergunta 10, a caixinha "2026*"
-da Pergunta 4 (resultado do 1º turno, como estava no arquivo do TSE na coleta) e a página dos
-presidentes. Votos, bens e prestação de contas de 2026 ainda não foram coletados.
+2026 fica numa aba só dela (`src/paineis/e2026/`, dados em `e2026.json`): as contas de cada
+pergunta para os deputados, senadores e governadores de 2026, ao lado de 2022. As páginas das
+perguntas seguem até 2024 (macro `ano_divulgado`, em `sql/00_limpeza.sql`), porque a prestação
+de contas de 2026 ainda pode mudar no TSE. Fora da aba, 2026 aparece só na linha do tempo da
+Pergunta 10, na caixinha "2026*" da Pergunta 4 e na página dos presidentes.
 
 As fotos dos retratos em destaque (Pergunta 10) ficam em `public/fotos-grandes/`, no tamanho
 do TSE (161×225): `uv run python -m scripts.baixar_fotos_web --grandes` (uns 600 MB, fora do

@@ -134,7 +134,7 @@ def coletar_ipca(force: bool, _ufs: Ufs) -> None:
     porque lá os metadados (servicodados.ibge.gov.br) podem falhar no certificado.
     """
     log("[ibge/ipca]")
-    meses = ",".join(f"{ano}08" for ano in range(2006, 2026, 2))
+    meses = ",".join(f"{ano}08" for ano in range(2006, 2028, 2))
     baixar_json(f"{SIDRA}/t/1737/n1/all/v/2266/p/{meses}", RAW / "ibge" / "sidra" / "1737_ipca_agosto.json", force)
 
 

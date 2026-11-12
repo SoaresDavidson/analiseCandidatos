@@ -200,7 +200,7 @@ export default function App() {
                 </div>
               </header>
 
-              {pagina && (
+              {pagina && pagina.tema.paginas.length > 1 && (
                 <nav className="flex-none border-t border-linha bg-branco" aria-label="Perguntas do tema">
                   <div className="mx-auto flex max-w-pagina flex-wrap gap-2 px-5 py-2">
                     {pagina.tema.paginas.map(q => (

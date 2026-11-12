@@ -111,6 +111,14 @@ export const DESTAQUES: Record<
     perg: "Tudo sobre cada cidade",
     resp: "A régua do espectro, a câmara eleita cadeira por cadeira, o dinheiro das campanhas e os eleitos com foto.",
   },
+  "2026": {
+    aba: "e2026",
+    lado: "Eleição",
+    numero: "2026",
+    assunto: "Eleições 2026",
+    perg: "O que a eleição de 2026 já mostra?",
+    resp: "As contas de cada pergunta para os deputados, senadores e governadores de 2026, ao lado de 2022.",
+  },
   politicos: {
     aba: "candidatos",
     lado: "Fichas",

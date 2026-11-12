@@ -47,6 +47,7 @@ por meio de `painel_web.py`.
 | `gerar_painel_q4.py` | `q4.json` (o país) e `q4/<UF>.json` (cada estado) | `10_q4_escolaridade`; os mapas são os de `gerar_malhas_web.py` |
 | `gerar_painel_q8_q9.py` | `q8.json`, `q9.json` e `q9/<UF>.json` (país inteiro) | `11_q8_publico`, `12_q9_propaganda` |
 | `gerar_painel_q10.py` | `q10.json`, `q10/<UF>.json`, `q10/BR.json`, `q10-financas/<UF>-NN.json` (país inteiro, com 2026 na linha do tempo) | `07_q10_carreira`, `14_q10_patrimonio` |
+| `gerar_painel_2026.py` | `e2026.json`: a aba 2026, com as contas de cada pergunta para a eleição geral de 2026 ao lado de 2022 | as tabelas do modelo e as views das perguntas (`q1_custo_cargo`, `mart_q8`, `mart_q9`, `q5_partido`, `q10_sobrevivencia`…), sem o corte de `fl_divulgado` |
 | `gerar_painel_presidentes.py` | `presidentes.json` e `web/public/img/presidentes/` | os arquivos nacionais do TSE (votação, bens e fotos de 2002 a 2026), buscados pelo próprio script em `dados/raw/presidente/`; do banco, só o de-para de município |
 | `gerar_painel_candidatos.py` | `candidatos/<UF>.json` (as fichas do país, um arquivo por estado) e as fotos | `13_ficha_candidato`, `07_q10_carreira` |
 | `gerar_painel_municipios.py` | `municipios-cidades.json` | `15_espectro` |

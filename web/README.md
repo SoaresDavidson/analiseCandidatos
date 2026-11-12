@@ -80,6 +80,15 @@ para `public/fotos/<ano>/<sq>.jpg` (~65 mil, uns 15 minutos na primeira vez; rea
 as de `docs/candidatos-painel/fotos/` se existirem). Daí em diante o `npm run dev` as
 serve e o `npm run build` as copia para `dist/`. Sem a foto, aparece a inicial do nome.
 
+## Publicação
+
+O workflow `.github/workflows/pages.yml` publica o painel no GitHub Pages a cada push na
+`main` (ou à mão, pelo botão "Run workflow" na aba Actions). Ele baixa as fotos pequenas do
+TSE (com cache), roda `npm ci` e `npm run build` em `web/` e publica `web/dist`. Antes da
+primeira vez, o dono do repositório precisa ligar o Pages em Settings > Pages > Source:
+"GitHub Actions". O endereço fica `https://<dono>.github.io/analiseCandidatos/`. As fotos
+grandes (`fotos-grandes/`) não vão para o site publicado: lá os retratos usam a foto pequena.
+
 ## Dados
 
 Os geradores Python (`scripts/gerar_painel_*.py`, da raiz do repositório) leem o banco
@@ -146,7 +155,7 @@ não são mais os publicados por Enrico para os 6 estados.
 pergunta para os deputados, senadores e governadores de 2026, ao lado de 2022. As páginas das
 perguntas seguem até 2024 (macro `ano_divulgado`, em `sql/00_limpeza.sql`), porque a prestação
 de contas de 2026 ainda pode mudar no TSE. Fora da aba, 2026 aparece só na linha do tempo da
-Pergunta 10, na caixinha "2026*" da Pergunta 4 e na página dos presidentes.
+Pergunta 10, na caixinha "2026" da Pergunta 4 e na página dos presidentes.
 
 As fotos dos retratos em destaque (Pergunta 10) ficam em `public/fotos-grandes/`, no tamanho
 do TSE (161×225): `uv run python -m scripts.baixar_fotos_web --grandes` (uns 600 MB, fora do

@@ -3,8 +3,8 @@ import { fmt, int, maiusculaInicial, pc } from "../../lib/formato";
 import { noLugar, UF_NOME } from "../../lib/uf";
 import { chance, perfil, porNivel, romano, teste } from "./calculo";
 import {
+  ANO_2026,
   ANO_DO_CARGO,
-  ANO_PARCIAL,
   CARGO,
   COR_NIVEL,
   type DadosQ4,
@@ -88,10 +88,10 @@ export function Resumo({
   // nos cargos de eleição geral dá para trocar 2022 por 2026, se o lugar tem candidato em 2026
   const eleicaoGeral = ANO_DO_CARGO[cargo] === 2022;
   const tem2026 = useMemo(
-    () => eleicaoGeral && teste(chance(D.chance, ANO_PARCIAL, ufs, cargo)).N > 0,
+    () => eleicaoGeral && teste(chance(D.chance, ANO_2026, ufs, cargo)).N > 0,
     [D, eleicaoGeral, ufs, cargo],
   );
-  const ano = tem2026 && f.geral === ANO_PARCIAL ? ANO_PARCIAL : ANO_DO_CARGO[cargo];
+  const ano = tem2026 && f.geral === ANO_2026 ? ANO_2026 : ANO_DO_CARGO[cargo];
 
   const q = useMemo(() => perfil(D.perfil, ano, ufs), [D, ano, ufs]);
   const p = q.map(l => {
@@ -157,17 +157,15 @@ export function Resumo({
         ))}
         {tem2026 && (
           <span role="group" aria-label="Eleição" className="ml-auto flex items-center gap-1">
-            {[2022, ANO_PARCIAL].map(a => (
+            {[2022, ANO_2026].map(a => (
               <button
                 key={a}
                 type="button"
                 className="livro-aba"
                 aria-pressed={a === ano}
-                title={a === ANO_PARCIAL ? "2026: resultado do 1º turno, como estava no TSE na coleta" : undefined}
                 onClick={() => aoMudar({ geral: a })}
               >
                 {a}
-                {a === ANO_PARCIAL ? "*" : ""}
               </button>
             ))}
           </span>
@@ -218,7 +216,6 @@ export function Resumo({
           <>
             {int(t.N)} candidatos, {int(t.E)} eleitos. Linha tracejada: a média ({fmt(geral, (geral ?? 0) < 10 ? 1 : 0)}{" "}
             em 100).{brasil && cargo === 7 ? " Inclui os deputados distritais do DF." : ""}
-            {ano === ANO_PARCIAL ? " * 2026: resultado do 1º turno, como estava no TSE na coleta." : ""}
           </>
         )}
       </p>

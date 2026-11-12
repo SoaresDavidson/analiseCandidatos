@@ -106,7 +106,7 @@ WITH por_lista AS (
     FROM modelo.votacao_legenda_municipio AS l
     INNER JOIN modelo.eleicao AS e ON l.cd_eleicao = e.cd_eleicao
     INNER JOIN modelo.municipio AS m ON l.cod_ibge = m.cod_ibge
-    WHERE l.cd_cargo IN (6, 7, 13) AND l.ano BETWEEN 2018 AND 2024
+    WHERE l.cd_cargo IN (6, 7, 13) AND l.ano BETWEEN 2018 AND 2026
     GROUP BY ALL
 ),
 
@@ -188,7 +188,7 @@ base AS (
             AND c.nr_partido = pl.nr_partido
     INNER JOIN modelo.partido AS pa ON c.ano = pa.ano AND c.nr_partido = pa.nr_partido
     LEFT JOIN modelo.politico AS po ON c.nr_titulo_eleitoral = po.nr_titulo_eleitoral
-    WHERE c.cd_cargo IN (6, 7, 13) AND c.ano BETWEEN 2018 AND 2024
+    WHERE c.cd_cargo IN (6, 7, 13) AND c.ano BETWEEN 2018 AND 2026
 )
 
 SELECT

@@ -3,8 +3,6 @@ import { semAcento, UF_NOME } from "../../lib/uf";
 import type { DadosQ10, LinhaFin, PessoasQ10 } from "./tipos";
 
 export const ANOS = [2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022, 2024, 2026];
-/** 2026 entra na linha do tempo com o resultado do 1º turno, como estava no TSE na coleta. */
-export const ANO_PARCIAL = 2026;
 export const RES = ["Eleito", "Não eleito", "Sem resultado", "Aguardando o 2º turno"];
 export const ABREV: Record<number, string> = {
   1: "Presidente",

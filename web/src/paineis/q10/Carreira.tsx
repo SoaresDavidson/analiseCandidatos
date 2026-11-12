@@ -5,7 +5,6 @@ import type { Foto } from "./fotos";
 import {
   ABREV,
   ANO_FIM,
-  ANO_PARCIAL,
   ANOS,
   COR_OURO,
   COR_SEM_DADO,
@@ -90,7 +89,7 @@ export function Carreira({
           </div>
           <p className="texto-nota">
             Barra = mandato conquistado na urna (4 anos; 8 para senador), até a vitória seguinte. Fonte: TSE, cadastro
-            de candidaturas, 2002 a 2026. Em {ANO_PARCIAL}, o resultado é o do 1º turno, como estava no TSE na coleta.
+            de candidaturas, 2002 a 2026.
           </p>
         </div>
       </div>
@@ -262,15 +261,8 @@ const LinhaDoTempo = memo(function LinhaDoTempo({ p }: { p: Pessoa }) {
       {EIXO.map(a => (
         <g key={a}>
           <line x1={X(a)} x2={X(a)} y1={T} y2={T + faixas.length * LH} className="svg-grade" />
-          <text
-            x={X(a)}
-            y={H - 11}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className={a === ANO_PARCIAL ? "svg-eixo font-extrabold fill-ouro-esc" : "svg-eixo"}
-          >
+          <text x={X(a)} y={H - 11} textAnchor="middle" dominantBaseline="middle" className="svg-eixo">
             {a}
-            {a === ANO_PARCIAL ? "*" : ""}
           </text>
         </g>
       ))}

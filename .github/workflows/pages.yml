@@ -1,0 +1,62 @@
+name: pages
+
+# Publica o painel (web/) no GitHub Pages a cada push na main, ou à mão pelo botão
+# "Run workflow". Antes da primeira vez, o dono do repositório precisa ligar o Pages em
+# Settings > Pages > Source: "GitHub Actions".
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# uma publicação de cada vez; a mais nova cancela a que ainda estiver rodando
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      # As fotos dos eleitos não ficam no git: vêm do TSE. O cache evita baixar as 65 mil a cada
+      # publicação (só muda quando as fichas mudam). Se o TSE estiver fora do ar, o painel sai
+      # assim mesmo, com a inicial do nome no lugar da foto.
+      - uses: actions/cache@v4
+        with:
+          path: web/public/fotos
+          key: fotos-${{ hashFiles('web/public/dados/candidatos/*.json', 'web/public/dados/candidatos-eleitos.json') }}
+          restore-keys: fotos-
+      - uses: astral-sh/setup-uv@v6
+      - name: Fotos dos eleitos (TSE)
+        continue-on-error: true
+        run: uv run python -m scripts.baixar_fotos_web
+
+      - run: npm ci
+        working-directory: web
+      - run: npm run build
+        working-directory: web
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

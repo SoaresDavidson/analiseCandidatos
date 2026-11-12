@@ -1,5 +1,4 @@
--- 10_q4_escolaridade.sql — pergunta de escolaridade (candidato × população), Brasil, 2022, 2024 e
--- 2026 (este com o resultado do 1º turno, como estava no arquivo do TSE na coleta).
+-- 10_q4_escolaridade.sql — pergunta de escolaridade (candidato × população), Brasil, 2022, 2024 e 2026.
 -- Lê só o schema `modelo`. Métrica de escolaridade do município: Censo 2022 (SIDRA 10061).
 
 -- ---------------------------------------------------------------------------

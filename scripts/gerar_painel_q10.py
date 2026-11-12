@@ -10,8 +10,7 @@ web/public/dados/:
 
 Quem entra na busca: quem se elegeu pelo menos uma vez de 2002 a 2026. Entram todas as
 participações dessas pessoas, inclusive derrotas. As contas de reeleição e as curvas vão só
-até 2024 (fl_divulgado, #15); a linha do tempo de cada pessoa já mostra 2026, com o resultado
-que estava no arquivo do TSE na coleta (1º turno).
+até 2024 (fl_divulgado, #15); a linha do tempo de cada pessoa já mostra 2026.
 
 Pré-requisitos (da raiz do repositório):
     uv run python -m scripts.coleta.coleta_tse candidatos historico recorte_remoto --uf <as 27>

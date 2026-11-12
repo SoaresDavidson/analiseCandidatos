@@ -299,8 +299,7 @@ export function Metodo({ D }: { D: DadosQ10 }) {
           reeleição e as curvas vão até 2024; a linha do tempo de cada pessoa já mostra 2026.
         </li>
         <li>
-          <b>Limite:</b> presidente e vice ainda não entram; 2026 traz o resultado do 1º turno, como estava no TSE na
-          coleta.
+          <b>Limite:</b> presidente e vice não entram (estão na página dos presidentes).
         </li>
       </ul>
     </VerMais>

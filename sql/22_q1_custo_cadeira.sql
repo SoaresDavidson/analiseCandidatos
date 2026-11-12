@@ -89,7 +89,7 @@ SELECT
 FROM modelo.candidatura AS c
 LEFT JOIN despesa AS d ON c.ano = d.ano AND c.sq_candidato = d.sq_candidato
 LEFT JOIN publico AS r ON c.ano = r.ano AND c.sq_candidato = r.sq_candidato
-WHERE c.ano BETWEEN 2018 AND 2024;
+WHERE c.ano BETWEEN 2018 AND 2026;
 
 -- ---------------------------------------------------------------------------
 -- Custo da cadeira em cada UE: a página do município lê daqui

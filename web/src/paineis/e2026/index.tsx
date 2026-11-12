@@ -75,12 +75,15 @@ function Cartao({
   assunto,
   pergunta,
   aba,
+  atalho = "ver até 2024 ›",
   children,
 }: {
   n?: number;
   assunto: string;
   pergunta: string;
   aba?: string;
+  /** o texto do atalho para a página da pergunta */
+  atalho?: string;
   children: ReactNode;
 }) {
   return (
@@ -92,7 +95,7 @@ function Cartao({
         </span>
         {aba && (
           <a href={`#${aba}`} className="whitespace-nowrap text-verde-esc no-underline hover:underline">
-            ver até 2024 ›
+            {atalho}
           </a>
         )}
       </div>
@@ -336,7 +339,7 @@ function Conteudo({ D }: { D: Dados2026 }) {
             </Nota>
           </Cartao>
 
-          <Cartao assunto="Presidência" pergunta="E para presidente?" aba="presidentes">
+          <Cartao assunto="Presidência" pergunta="E para presidente?" aba="presidentes" atalho="abrir a página ›">
             <p className="texto-simples m-0 text-[15.5px]!">
               A eleição de presidente de 2026, com os dois turnos e o mapa de quem venceu em cada cidade, está na página
               dos presidentes.

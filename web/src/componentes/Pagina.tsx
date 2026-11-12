@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 
-/** Esqueleto de todo painel: barra de filtros fixa no topo (opcional) e a coluna central. */
-export function Pagina({ filtros, children }: { filtros?: ReactNode; children: ReactNode }) {
+/** Esqueleto de todo painel: barra de filtros fixa no topo (opcional) e a coluna central.
+ *  `palco` é uma faixa que ocupa a largura inteira da tela, entre os filtros e a coluna. */
+export function Pagina({ filtros, palco, children }: { filtros?: ReactNode; palco?: ReactNode; children: ReactNode }) {
   return (
     <div className="pagina">
       {filtros && (
@@ -11,6 +12,7 @@ export function Pagina({ filtros, children }: { filtros?: ReactNode; children: R
           </div>
         </div>
       )}
+      {palco}
       <main className="mx-auto grid max-w-pagina gap-[18px] px-5 pt-[22px] pb-16">{children}</main>
     </div>
   );

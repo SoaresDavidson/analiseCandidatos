@@ -147,3 +147,84 @@ export function contarMaisRicosGanham(D: DadosQ2, uf: string): { favoraveis: num
     }
   return { favoraveis, total };
 }
+
+// ---------- o nome em destaque cabe sempre no espaço dele ----------
+
+/** Largura de cada caractere em Open Sans ExtraBold (a fonte do destaque), em centésimos do
+ *  tamanho da fonte. Medida no navegador; letra fora da tabela conta como larga. */
+const LARGURA: Record<string, number> = {
+  A: 73,
+  B: 67,
+  C: 65,
+  D: 73,
+  E: 55,
+  F: 54,
+  G: 74,
+  H: 77,
+  I: 35,
+  J: 35,
+  K: 69,
+  L: 58,
+  M: 97,
+  N: 83,
+  O: 80,
+  P: 63,
+  Q: 80,
+  R: 68,
+  S: 58,
+  T: 59,
+  U: 76,
+  V: 69,
+  W: 104,
+  X: 72,
+  Y: 66,
+  Z: 61,
+  ".": 29,
+  "-": 32,
+  "'": 29,
+  " ": 26,
+  $: 59,
+  "?": 52,
+};
+const LARGURA_PADRAO = 85;
+
+/** Largura de um texto em maiúsculas, em múltiplos do tamanho da fonte ("LEINHO" ≈ 3,9). */
+export function larguraEm(texto: string): number {
+  let soma = 0;
+  // sem os acentos: Ã tem a largura de A
+  for (const ch of texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase())
+    soma += /\d/.test(ch) ? 59 : (LARGURA[ch] ?? LARGURA_PADRAO);
+  return soma / 100;
+}
+
+/** Linha que termina em preposição ("MARIS DA") ou é só ela: a quebra fica melhor antes dela. */
+const TERMINA_SOLTA = /(^| )(DE|DA|DO|DAS|DOS|E)$/i;
+
+/** Quebra um nome em até 3 linhas de palavras inteiras, para a letra ficar o maior possível:
+ *  procura a divisão em que a linha mais larga é a mais estreita, e só gasta uma linha a mais
+ *  quando isso estreita o bloco em pelo menos 10%. Evita deixar preposição no fim da linha. */
+export function linhasDoNome(nome: string): string[] {
+  const palavras = nome.trim().split(/\s+/).filter(Boolean);
+  let melhor: string[] = [palavras.join(" ")];
+  let nota = Infinity;
+  // cada bit da máscara diz se há quebra depois da palavra i
+  for (let mascara = 0; mascara < 1 << Math.max(0, palavras.length - 1); mascara++) {
+    const linhas: string[] = [];
+    let atual = palavras[0] ?? "";
+    for (let i = 1; i < palavras.length; i++) {
+      if (mascara & (1 << (i - 1))) {
+        linhas.push(atual);
+        atual = palavras[i];
+      } else atual += ` ${palavras[i]}`;
+    }
+    linhas.push(atual);
+    if (linhas.length > 3) continue;
+    const soltas = linhas.filter(l => TERMINA_SOLTA.test(l)).length;
+    const n = Math.max(...linhas.map(larguraEm)) * (1 + 0.1 * (linhas.length - 1)) * (1 + 0.25 * soltas);
+    if (n < nota) {
+      nota = n;
+      melhor = linhas;
+    }
+  }
+  return melhor;
+}

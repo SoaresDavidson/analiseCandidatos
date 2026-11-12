@@ -30,6 +30,12 @@ function Conteudo({ D }: { D: DadosQ2 }) {
 
   return (
     <Pagina
+      palco={
+        <Destaque D={D} f={f}>
+          <Etiqueta>PERGUNTA 2 · PATRIMÔNIO × SUCESSO</Etiqueta>
+          <h1>Quem tem mais patrimônio se elege mais?</h1>
+        </Destaque>
+      }
       filtros={
         <>
           <Campo rotulo="Onde">
@@ -54,10 +60,6 @@ function Conteudo({ D }: { D: DadosQ2 }) {
         </>
       }
     >
-      <Etiqueta>PERGUNTA 2 · PATRIMÔNIO × SUCESSO</Etiqueta>
-      <h1>Quem tem mais patrimônio se elege mais?</h1>
-
-      <Destaque D={D} f={f} />
       <Chances D={D} f={f} s={s} />
 
       <Todos D={D} f={f} escolher={escolher} />

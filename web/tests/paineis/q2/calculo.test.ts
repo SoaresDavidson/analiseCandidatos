@@ -4,6 +4,8 @@ import {
   contarMaisRicosGanham,
   faixaValor,
   intervalo,
+  larguraEm,
+  linhasDoNome,
   pQui2,
   pTexto,
   somarFaixas,
@@ -118,5 +120,35 @@ describe("filtros", () => {
   });
   it("sem dados nenhuma combinação é contada", () => {
     expect(contarMaisRicosGanham({ ...D, faixas: [] }, "TODAS")).toEqual({ favoraveis: 0, total: 0 });
+  });
+});
+
+describe("o nome em destaque", () => {
+  it("mede a largura pelas letras, sem contar os acentos", () => {
+    expect(larguraEm("I")).toBeLessThan(larguraEm("M"));
+    expect(larguraEm("MARANHÃO")).toBe(larguraEm("MARANHAO"));
+    expect(larguraEm("R$ 1.000")).toBeCloseTo(0.68 + 0.59 + 0.26 + 0.59 + 0.29 + 3 * 0.59, 5);
+  });
+
+  it("põe uma palavra por linha quando o nome é curto", () => {
+    expect(linhasDoNome("JUAREZ LEINHO")).toEqual(["JUAREZ", "LEINHO"]);
+    expect(linhasDoNome("  ZECA   VIANA ")).toEqual(["ZECA", "VIANA"]);
+    expect(linhasDoNome("TIRIRICA")).toEqual(["TIRIRICA"]);
+  });
+
+  it("nunca passa de 3 linhas nem quebra uma palavra", () => {
+    const nome = "DR SANDOVAL CHEIRO DO POVO DA SILVA";
+    const linhas = linhasDoNome(nome);
+    expect(linhas.length).toBeLessThanOrEqual(3);
+    expect(linhas.join(" ")).toBe(nome);
+  });
+
+  it("não deixa preposição no fim da linha", () => {
+    expect(linhasDoNome("FRANCIS MARIS DA COMETA")).toEqual(["FRANCIS", "MARIS", "DA COMETA"]);
+    expect(linhasDoNome("PAULINHO DE CARACARAÍ")).toEqual(["PAULINHO", "DE CARACARAÍ"]);
+  });
+
+  it("devolve uma linha vazia para um nome vazio", () => {
+    expect(linhasDoNome("")).toEqual([""]);
   });
 });

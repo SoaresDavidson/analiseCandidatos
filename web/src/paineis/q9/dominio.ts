@@ -21,6 +21,8 @@ export const CANAL = [
   "Carro de som",
   "Jornal e revista",
 ];
+/** Os mesmos tipos, como entram no meio de uma frase ("foram para rádio e TV"). */
+export const CANAL_FRASE = CANAL.map(c => c.toLowerCase().replace("tv", "TV"));
 export const ANOS: readonly (readonly [number, string])[] = [
   [2018, "2018"],
   [2020, "2020"],

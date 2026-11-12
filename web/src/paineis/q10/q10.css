@@ -1,0 +1,45 @@
+/* Movimentos da Q10. Tudo parte do estado final (fill "backwards"): com "reduzir movimento"
+   ligado, base.css zera as animações e a tela aparece pronta. */
+
+/* barras de mandato crescem da esquerda para a direita ao trocar de político */
+.q10-mandato {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: q10-mandato 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+}
+@keyframes q10-mandato {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* pop-up do patrimônio */
+.q10-veu {
+  animation: q10-veu 0.2s ease backwards;
+}
+@keyframes q10-veu {
+  from {
+    opacity: 0;
+  }
+}
+.q10-janela {
+  animation: q10-janela 0.32s cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+}
+@keyframes q10-janela {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+}
+/* cada bem "toma o seu espaço": cresce a partir do canto, do maior para o menor */
+.q10-bem {
+  transform-origin: top left;
+  animation: q10-bem 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+  animation-delay: calc(0.18s + var(--k) * 45ms);
+}
+@keyframes q10-bem {
+  from {
+    opacity: 0;
+    transform: scale(0.15);
+  }
+}

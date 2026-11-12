@@ -1,27 +1,36 @@
 import { useMemo, useState } from "react";
 import {
   Alternador,
-  Aneis,
-  Anel,
-  Barra,
   Barras,
   Caixa,
   Campo,
   Carregando,
   Etiqueta,
   Legenda,
-  Linha,
   Pagina,
   SeletorUf,
   VerMais,
 } from "../../componentes";
 import { useDados } from "../../lib/dados";
-import { fmt, int, maiusculaInicial, pc } from "../../lib/formato";
+import { fmt, maiusculaInicial, pc } from "../../lib/formato";
 import { noEstado } from "../../lib/uf";
 import { usePersistente } from "../../lib/usePersistente";
-import { ANOS, CANAL, CARGO, cargosDoAno, grupoT, PLUR, participacoes, reais, TODOS_CANAIS, totalT } from "./dominio";
+import {
+  ANOS,
+  CANAL,
+  CANAL_FRASE,
+  CARGO,
+  cargosDoAno,
+  grupoT,
+  PLUR,
+  participacoes,
+  reais,
+  TODOS_CANAIS,
+  totalT,
+} from "./dominio";
 import { Nuvem } from "./Nuvem";
 import { DetalhePalavra } from "./Palavra";
+import { temaDoCanal } from "./temas";
 import type { DadosQ9, Filtros } from "./tipos";
 
 const ELEITO_OPCOES = [
@@ -108,8 +117,6 @@ function Q9({ d }: { d: DadosQ9 }) {
         Enunciado: onde o candidato investe em propaganda (nuvem de palavras)? [2018, 2020, 2022, 2024]
       </p>
 
-      <Resposta d={d} f={f} />
-
       <SecaoNuvem
         d={d}
         f={f}
@@ -158,67 +165,12 @@ function Q9({ d }: { d: DadosQ9 }) {
   );
 }
 
-/** Ordem dos canais do maior para o menor gasto. */
+/** Ordem dos tipos de gasto, do maior para o menor. */
 function ordenar(p: (number | null)[]): [number, number][] {
   return p.map((x, k): [number, number] => [k, x || 0]).sort((a, b) => b[1] - a[1]);
 }
 
-function Resposta({ d, f }: { d: DadosQ9; f: Filtros }) {
-  const { nd, tot, T, p } = participacoes(d, f.uf, [f.ano], [f.cargo]);
-  const ordem = ordenar(p);
-  const ir = (p[0] || 0) + (p[1] || 0);
-  const top = grupoT(d, f, 2, TODOS_CANAIS);
-  const mx = Math.max(...p.map(x => x || 0)) * 1.12;
-
-  return (
-    <div className="grade-duas">
-      <Caixa>
-        <h2>A resposta</h2>
-        <p className="texto-simples">
-          {!T ? (
-            "Sem despesas de propaganda neste recorte."
-          ) : (
-            <>
-              Os {PLUR[f.cargo]} de {f.ano} {noEstado(f.uf)} gastaram <b>{reais(T)}</b> com propaganda. De cada R$ 100,{" "}
-              <b>R$ {fmt(p[0], 0)}</b> foram para material impresso e <b>R$ {fmt(p[1], 0)}</b> para campanha de rua. A
-              internet ficou com R$ {fmt(p[4], 0)}.
-            </>
-          )}
-        </p>
-        <div>
-          <Linha rotulo="Gasto total com propaganda" valor={reais(T)} />
-          <Linha rotulo="Despesas declaradas" valor={int(nd[0] + nd[1])} />
-          <Linha rotulo="Palavra mais escrita" valor={top.length ? `"${top[0].termo}"` : "–"} />
-        </div>
-      </Caixa>
-      <div className="grid min-w-0 gap-3.5">
-        <Aneis>
-          <Anel pct={ir} legenda="do gasto" nome="Impresso e rua" />
-          <Anel pct={p[4]} legenda="do gasto" nome="Internet" variante="verde" />
-        </Aneis>
-        <Caixa>
-          <h2>Para onde vai cada R$ 100 gastos com propaganda</h2>
-          <Barras>
-            {ordem.map(([k, x]) => (
-              <Barra
-                key={k}
-                titulo={reais(tot[k])}
-                rotulo={CANAL[k]}
-                pct={(100 * x) / mx}
-                valor={`R$ ${fmt(x, 0)}`}
-                cor={k === ordem[0][0] ? "var(--color-verde-esc)" : "var(--color-verde)"}
-              />
-            ))}
-          </Barras>
-          <p className="texto-nota">
-            {maiusculaInicial(PLUR[f.cargo])} em {f.ano} {noEstado(f.uf)}, todos os candidatos. Passe o mouse para ver o
-            valor em reais.
-          </p>
-        </Caixa>
-      </div>
-    </div>
-  );
-}
+const QUEM = ["não eleitos", "eleitos", ""];
 
 function SecaoNuvem({
   d,
@@ -239,51 +191,57 @@ function SecaoNuvem({
 }) {
   const ws = useMemo(() => grupoT(d, f, f.eleito, canal), [d, f.ano, f.cargo, f.uf, f.eleito, canal]); // eslint-disable-line react-hooks/exhaustive-deps
   const tot = totalT(d, f, f.eleito, canal);
-  const quem = ["os não eleitos", "os eleitos", "os candidatos"][f.eleito];
+
+  // o dinheiro por tipo de gasto do mesmo grupo da nuvem (todos, eleitos ou não eleitos)
+  const { v, tot: todos } = participacoes(d, f.uf, [f.ano], [f.cargo]);
+  const valores = f.eleito === 2 ? todos : v[f.eleito];
+  const soma = valores.reduce((a, b) => a + b, 0);
+  const de100 = (k: number) => fmt(pc(valores[k], soma), 0);
+  const ordem = ordenar(valores);
+  const quem = `${PLUR[f.cargo]} ${QUEM[f.eleito]}`.trim();
 
   return (
     <Caixa>
-      <h2>O que os candidatos escrevem quando declaram o gasto</h2>
-      <p className="texto-simples !text-base">
-        {ws.length ? (
+      <p className="texto-simples">
+        {!soma ? (
+          "Sem despesas de propaganda neste recorte."
+        ) : canal === TODOS_CANAIS ? (
           <>
-            Entre {quem}
-            {canal === TODOS_CANAIS ? "" : ` (só ${CANAL[canal].toLowerCase()})`}, as palavras mais escritas são{" "}
-            <b>"{ws[0].termo}"</b>
-            {ws[1] && (
-              <>
-                , <b>"{ws[1].termo}"</b>
-              </>
-            )}
-            {ws[2] && (
-              <>
-                {" "}
-                e <b>"{ws[2].termo}"</b>
-              </>
-            )}
-            : a primeira aparece em {fmt(pc(ws[0].n, tot), 0)}% das despesas.
+            Os {quem} de {f.ano} {noEstado(f.uf)} gastaram <b>{reais(soma)}</b> com propaganda. De cada R$ 100,{" "}
+            <b>R$ {de100(ordem[0][0])}</b> foram para {CANAL_FRASE[ordem[0][0]]} e <b>R$ {de100(ordem[1][0])}</b> para{" "}
+            {CANAL_FRASE[ordem[1][0]]}.
           </>
         ) : (
-          "Sem despesas com descrição neste recorte."
+          <>
+            De cada R$ 100 que os {quem} de {f.ano} {noEstado(f.uf)} gastaram com propaganda, <b>R$ {de100(canal)}</b>{" "}
+            foram para {CANAL_FRASE[canal]}: <b>{reais(valores[canal])}</b>.
+          </>
         )}
       </p>
       <div className="flex flex-wrap items-end gap-x-[18px] gap-y-2.5">
+        <Campo rotulo="Tipo de gasto" grupo>
+          <Alternador rotulo="Tipo de gasto" opcoes={CANAL_OPCOES} valor={canal} aoMudar={aoCanal} />
+        </Campo>
         <Campo rotulo="Quem" grupo>
           <Alternador rotulo="Quem" opcoes={ELEITO_OPCOES} valor={f.eleito} aoMudar={aoEleito} />
         </Campo>
-        <Campo rotulo="Só um tipo de gasto" grupo>
-          <Alternador rotulo="Só um tipo de gasto" opcoes={CANAL_OPCOES} valor={canal} aoMudar={aoCanal} />
-        </Campo>
       </div>
-      <div className="grade-mapa">
-        <Nuvem palavras={ws} total={tot} termo={termo} aoEscolher={aoTermo} />
-        <div className="grid gap-2.5">
-          <DetalhePalavra d={d} f={f} termo={termo} eleito={f.eleito} canal={canal} />
-        </div>
-      </div>
+      {ws.length ? (
+        <Nuvem
+          palavras={ws}
+          total={tot}
+          termo={termo}
+          aoEscolher={aoTermo}
+          tema={temaDoCanal(canal)}
+          recorte={`${f.ano}|${f.cargo}|${f.uf}|${f.eleito}`}
+        />
+      ) : (
+        <p className="texto-nota">Sem despesas com descrição neste recorte.</p>
+      )}
+      <DetalhePalavra d={d} f={f} termo={termo} eleito={f.eleito} canal={canal} />
       <p className="texto-nota">
-        Tamanho da palavra = em quantas despesas ela aparece (frequência, não valor). Clique numa palavra para ver o
-        dinheiro por trás dela.
+        As palavras são as que o próprio candidato escreveu ao declarar cada despesa. Tamanho = em quantas despesas a
+        palavra aparece (frequência, não valor). Fonte: TSE, prestação de contas das campanhas.
       </p>
     </Caixa>
   );
@@ -361,7 +319,7 @@ function Tendencia({ d, f }: { d: DadosQ9; f: Filtros }) {
       "nenhum canal cresceu"
     ) : (
       <>
-        <b>{CANAL[k].toLowerCase()}</b> (R$ {fmt(par[0][k], 0)} → R$ {fmt(par[1][k], 0)})
+        <b>{CANAL_FRASE[k]}</b> (R$ {fmt(par[0][k], 0)} → R$ {fmt(par[1][k], 0)})
       </>
     );
   };

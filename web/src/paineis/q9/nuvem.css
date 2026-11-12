@@ -1,0 +1,480 @@
+/* Nuvem de palavras da Q9: cada tipo de gasto tem uma cena (data-tema no palco).
+   Tudo que é movimento parte de um estado parado legível: com "reduzir movimento"
+   ligado (base.css zera as animações), a nuvem aparece pronta e sem efeitos. */
+
+.nuvem-palco {
+  --p-cor: var(--color-verde);
+  --p-topo: var(--color-verde-esc);
+  --p-sel: var(--color-ouro-esc);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #f7f7f3;
+  transition: background-color 0.35s ease;
+}
+.nuvem-palco > svg {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.nuvem-camada {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.nuvem-camada[data-camada="fundo"] {
+  z-index: 0;
+}
+.nuvem-camada[data-camada="frente"] {
+  z-index: 2;
+}
+
+/* ---------- palavras ---------- */
+.nuvem-palavra {
+  cursor: pointer;
+  outline: none;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.nuvem-palavra text {
+  fill: var(--p-cor);
+}
+.nuvem-palavra[data-topo] text {
+  fill: var(--p-topo);
+}
+.nuvem-palavra[data-sel] text {
+  fill: var(--p-sel);
+}
+.nuvem-palavra:hover text,
+.nuvem-palavra:focus-visible text {
+  text-decoration: underline;
+}
+
+/* todos: as palavras brotam do centro */
+@keyframes nuvem-brota {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+.nuvem-palco[data-tema="todos"] .nuvem-palavra {
+  animation: nuvem-brota 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.25) backwards;
+  animation-delay: calc(var(--i) * 14ms);
+}
+
+/* ---------- impresso: papéis voando ---------- */
+.nuvem-palco[data-tema="impresso"] {
+  --p-cor: #6d675b;
+  --p-topo: #1f1f1f;
+  --p-sel: #a8321f;
+  background:
+    radial-gradient(rgb(0 0 0 / 0.055) 1px, transparent 1.3px) 0 0 / 9px 9px,
+    #fbf8ef;
+}
+@keyframes nuvem-folha {
+  0% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) rotate(var(--giro)) scale(0.55);
+  }
+  55% {
+    opacity: 1;
+  }
+}
+.nuvem-palco[data-tema="impresso"] .nuvem-palavra {
+  animation: nuvem-folha 0.95s cubic-bezier(0.15, 0.8, 0.25, 1) backwards;
+  animation-delay: calc(0.25s + var(--i) * 22ms);
+}
+.papel-voando {
+  position: absolute;
+  top: var(--y0);
+  left: -12%;
+  width: var(--larg);
+  aspect-ratio: 3 / 4;
+  opacity: 0;
+  border-radius: 2px;
+  background:
+    linear-gradient(var(--color-ouro) 0 0) 0 0 / 100% 16% no-repeat,
+    repeating-linear-gradient(to bottom, transparent 0 13%, rgb(0 0 0 / 0.16) 13% 17%) 12% 30% / 76% 62% no-repeat,
+    #fff;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.18);
+  animation: papel-voa var(--dur) linear var(--espera) var(--vezes, 1) both;
+}
+@keyframes papel-voa {
+  0% {
+    top: var(--y0);
+    left: -12%;
+    opacity: 1;
+    transform: rotate3d(1, 0.5, 0.3, 0deg);
+  }
+  50% {
+    top: var(--ym);
+  }
+  100% {
+    top: var(--y1);
+    left: 108%;
+    opacity: 1;
+    transform: rotate3d(1, 0.5, 0.3, var(--giro));
+  }
+}
+
+/* ---------- campanha de rua: bandeiras de passeata ---------- */
+.nuvem-palco[data-tema="rua"] {
+  --p-sel: #a8321f;
+  background: linear-gradient(#e6f1fb 0%, #f6f9f1 62%, #e9e5d8 100%);
+}
+.nuvem-palco[data-tema="rua"] .nuvem-palavra[data-cartaz] text {
+  fill: #222;
+}
+.nuvem-palco[data-tema="rua"] .nuvem-palavra[data-cartaz][data-sel] text {
+  fill: var(--p-sel);
+}
+.nuvem-cartaz {
+  fill: #fff;
+  stroke: #2b2b2b;
+  stroke-width: 2.5;
+}
+.nuvem-palavra[data-sel] .nuvem-cartaz {
+  fill: var(--color-ouro-claro);
+}
+.nuvem-cabo {
+  stroke: #8a6a3a;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+@keyframes nuvem-chega {
+  from {
+    opacity: 0;
+    transform: translateY(70px);
+  }
+}
+@keyframes nuvem-marcha {
+  from {
+    transform: translateY(-2.5px) rotate(-1.1deg);
+  }
+  to {
+    transform: translateY(2.5px) rotate(1.1deg);
+  }
+}
+.nuvem-palco[data-tema="rua"] .nuvem-palavra {
+  animation:
+    nuvem-chega 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) backwards,
+    nuvem-marcha 0.9s ease-in-out infinite alternate;
+  animation-delay: calc(0.35s + var(--ordem) * 28ms), calc(0.95s + var(--ordem) * 28ms);
+}
+.bandeira {
+  position: absolute;
+  bottom: -3%;
+  width: var(--larg, 7%);
+}
+.bandeira svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  transform-origin: 10% 100%;
+}
+/* a passeata cruza a cena uma vez */
+.bandeira[data-tipo="passeata"] {
+  left: -14%;
+  animation: bandeira-cruza 2.9s linear calc(var(--k) * 0.17s) both;
+}
+.bandeira[data-tipo="passeata"] svg {
+  animation: bandeira-passo 0.42s ease-in-out calc(var(--k) * -0.11s) infinite alternate;
+}
+@keyframes bandeira-cruza {
+  from {
+    left: -14%;
+  }
+  to {
+    left: 108%;
+  }
+}
+@keyframes bandeira-passo {
+  from {
+    transform: translateY(0) rotate(-5deg);
+  }
+  to {
+    transform: translateY(-7%) rotate(5deg);
+  }
+}
+/* depois ficam algumas nos cantos, atrás das palavras */
+.bandeira[data-tipo="fincada"] {
+  left: var(--x);
+  opacity: 0.9;
+  animation: bandeira-sobe 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) calc(1.9s + var(--k) * 0.08s) backwards;
+}
+.bandeira[data-tipo="fincada"] svg {
+  animation: bandeira-balanca 1.6s ease-in-out calc(var(--k) * -0.3s) infinite alternate;
+}
+@keyframes bandeira-sobe {
+  from {
+    transform: translateY(110%);
+  }
+}
+@keyframes bandeira-balanca {
+  from {
+    transform: rotate(-3deg);
+  }
+  to {
+    transform: rotate(3deg);
+  }
+}
+
+/* ---------- internet: ruído de terminal ---------- */
+.nuvem-palco[data-tema="internet"] {
+  --p-cor: #27c463;
+  --p-topo: #6bff9c;
+  --p-sel: #fff36b;
+  background: #06120b;
+}
+.nuvem-palco[data-tema="internet"] > svg {
+  filter: drop-shadow(0 0 5px rgb(60 255 130 / 0.4));
+  animation: net-tremor 7s steps(1) 2.5s infinite;
+}
+@keyframes nuvem-pisca {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.2;
+  }
+}
+.nuvem-palco[data-tema="internet"] .nuvem-palavra {
+  animation: nuvem-pisca 0.35s steps(3) backwards;
+  animation-delay: calc(0.15s + var(--i) * 12ms);
+}
+@keyframes net-tremor {
+  0%,
+  100% {
+    transform: none;
+  }
+  88% {
+    transform: translateX(-6px) skewX(2deg);
+  }
+  89.5% {
+    transform: translateX(5px);
+  }
+  91% {
+    transform: none;
+  }
+}
+.net-chuva {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.2;
+  animation: net-chuva-some 1.6s ease-out both;
+}
+@keyframes net-chuva-some {
+  from {
+    opacity: 0.95;
+  }
+}
+.cena-linhas {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.3) 0 1px, transparent 1px 3px);
+}
+.net-barra {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: var(--alt);
+  opacity: 0;
+  background: rgb(107 255 156 / 0.22);
+  mix-blend-mode: screen;
+  animation: net-barra 0.95s steps(1) var(--espera) both;
+}
+@keyframes net-barra {
+  0% {
+    top: 12%;
+    opacity: 1;
+    transform: translateX(-3%);
+  }
+  20% {
+    top: 64%;
+    transform: translateX(4%);
+  }
+  40% {
+    top: 34%;
+    opacity: 0.5;
+  }
+  60% {
+    top: 82%;
+    opacity: 1;
+    transform: translateX(-5%);
+  }
+  80% {
+    top: 22%;
+    opacity: 0.7;
+  }
+  100% {
+    top: 50%;
+    opacity: 0;
+  }
+}
+
+/* ---------- rádio e TV: canal fora do ar ---------- */
+.nuvem-palco[data-tema="radiotv"] {
+  --p-cor: #b9bec8;
+  --p-topo: #ffffff;
+  --p-sel: #ffd23c;
+  background: #0e1014;
+}
+.nuvem-palco[data-tema="radiotv"] > svg {
+  filter: drop-shadow(1.6px 0 0 rgb(255 0 70 / 0.75)) drop-shadow(-1.6px 0 0 rgb(0 225 255 / 0.75));
+  animation: tv-rasgo 6s steps(1) 2.6s infinite;
+}
+@keyframes tv-rasgo {
+  0%,
+  100% {
+    transform: none;
+  }
+  90% {
+    transform: translateX(-10px) skewX(-3deg);
+  }
+  91.5% {
+    transform: translateX(7px) skewX(2deg);
+  }
+  93% {
+    transform: none;
+  }
+}
+@keyframes nuvem-sintoniza {
+  0% {
+    opacity: 0;
+    transform: translateX(calc(var(--dx) * 0.1)) skewX(25deg);
+  }
+  30% {
+    opacity: 0.9;
+    transform: translateX(-9px) skewX(-14deg);
+  }
+  45% {
+    opacity: 0.15;
+  }
+  62% {
+    opacity: 1;
+    transform: translateX(5px);
+  }
+}
+.nuvem-palco[data-tema="radiotv"] .nuvem-palavra {
+  animation: nuvem-sintoniza 0.55s steps(6) backwards;
+  animation-delay: calc(0.85s + var(--i) * 9ms);
+}
+.tv-chuvisco {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.13;
+  image-rendering: pixelated;
+  animation: tv-chuvisco-some 1.5s steps(8) both;
+}
+@keyframes tv-chuvisco-some {
+  0%,
+  55% {
+    opacity: 1;
+  }
+}
+.tv-faixa {
+  position: absolute;
+  top: -22%;
+  right: 0;
+  left: 0;
+  height: 20%;
+  background: linear-gradient(transparent, rgb(255 255 255 / 0.1) 45%, rgb(255 255 255 / 0.03) 55%, transparent);
+  animation: tv-faixa 4.6s linear 1.2s infinite;
+}
+@keyframes tv-faixa {
+  to {
+    top: 110%;
+  }
+}
+.tv-aviso {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 0.35em 0.9em;
+  translate: -50% -50%;
+  opacity: 0;
+  background: #000;
+  color: #fff;
+  font:
+    800 clamp(15px, 3vw, 26px) / 1.2 ui-monospace,
+    Menlo,
+    Consolas,
+    monospace;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  animation: tv-aviso 1.05s steps(1) both;
+}
+@keyframes tv-aviso {
+  0%,
+  40%,
+  70% {
+    opacity: 1;
+  }
+  28%,
+  58% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---------- adesivos: colagem de post-its ---------- */
+.nuvem-palco[data-tema="adesivos"] {
+  --p-cor: #262626;
+  --p-topo: #111;
+  --p-sel: #111;
+  background:
+    radial-gradient(rgb(0 0 0 / 0.045) 1px, transparent 1.4px) 0 0 / 7px 7px,
+    #ece5d8;
+}
+.nuvem-sombra {
+  fill: rgb(0 0 0 / 0.2);
+}
+.nuvem-fita {
+  fill: rgb(255 255 255 / 0.6);
+  stroke: rgb(0 0 0 / 0.1);
+  stroke-width: 0.6;
+}
+.nuvem-palavra[data-sel] .nuvem-papel {
+  stroke: #111;
+  stroke-width: 3;
+}
+.nuvem-palco[data-tema="adesivos"] .nuvem-palavra:hover text,
+.nuvem-palco[data-tema="adesivos"] .nuvem-palavra:focus-visible text {
+  text-decoration: none;
+}
+.nuvem-palco[data-tema="adesivos"] .nuvem-palavra {
+  transition: transform 0.15s ease;
+  animation: nuvem-cola 0.42s cubic-bezier(0.3, 0.7, 0.3, 1) backwards;
+  animation-delay: calc(0.1s + var(--i) * 42ms);
+}
+.nuvem-palco[data-tema="adesivos"] .nuvem-palavra:hover,
+.nuvem-palco[data-tema="adesivos"] .nuvem-palavra:focus-visible {
+  transform: scale(1.07) rotate(-1.5deg);
+}
+@keyframes nuvem-cola {
+  0% {
+    opacity: 0;
+    transform: scale(2) rotate(var(--giro));
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.93);
+  }
+  78% {
+    transform: scale(1.04);
+  }
+}

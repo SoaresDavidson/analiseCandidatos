@@ -36,10 +36,8 @@ export type ParteFin = Record<string, LinhaFin[]>;
 /** Filtros lembrados no navegador (localStorage "q10-tse"). */
 export interface Filtros {
   uf: string;
-  turma: number;
   sel: number | null;
   medida: "mandato" | "disputa";
   cargoRe: number;
   ordem: "vit" | "anos" | "reel";
-  valor: "real" | "nominal";
 }

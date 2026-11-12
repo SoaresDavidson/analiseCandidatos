@@ -43,7 +43,7 @@ SELECT
     trim(ds_motivo) AS ds_motivo
 FROM read_csv(
     'dados/raw/candidatos/*/motivo_cassacao_*/motivo_cassacao_*_??.csv',
-    delim = ';', quote = '"', header = TRUE, encoding = 'latin-1',
+    delim = ';', quote = '"', header = TRUE, encoding = 'cp1252',
     all_varchar = TRUE, union_by_name = TRUE
 );
 

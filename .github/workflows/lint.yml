@@ -25,3 +25,22 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       # só o grupo dev: o sqlfluff não precisa de pandas, jupyter etc.
       - run: uv run --only-group dev sqlfluff lint sql/ --format github-annotation-native
+
+  # o app React: lint, testes e o build, para a quebra aparecer antes do merge
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build

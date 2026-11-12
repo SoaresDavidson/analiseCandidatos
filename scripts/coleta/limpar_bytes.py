@@ -16,6 +16,7 @@ Uso (da raiz do repositório):
 
 from __future__ import annotations
 
+import codecs
 from pathlib import Path
 
 from scripts.coleta.coleta_comum import RAW, ROOT, log
@@ -24,15 +25,30 @@ INVALIDOS = bytes([0x81, 0x8D, 0x8F, 0x90, 0x9D])
 PEDACO = 1 << 26  # 64 MB por vez: há arquivos de mais de 1 GB
 
 
+def eh_utf8(arquivo: Path) -> bool:
+    """True se o arquivo inteiro é UTF-8 válido. Nesse caso os bytes 0x81, 0x8D... fazem parte de
+    letras acentuadas ("Á" é C3 81) e tirá-los estragaria o texto."""
+    decodificador = codecs.getincrementaldecoder("utf-8")()
+    try:
+        with arquivo.open("rb") as f:
+            while bloco := f.read(PEDACO):
+                decodificador.decode(bloco)
+        decodificador.decode(b"", final=True)
+    except UnicodeDecodeError:
+        return False
+    return True
+
+
 def limpar(arquivo: Path) -> int:
-    """Reescreve o arquivo sem os bytes inválidos. Devolve quantas linhas mudaram (0 = intacto)."""
+    """Reescreve o arquivo sem os bytes inválidos. Devolve quantas linhas mudaram (0 = intacto).
+    Arquivo em UTF-8 válido não é tocado."""
     with arquivo.open("rb") as f:
         tem = False
         while bloco := f.read(PEDACO):
             if any(b in bloco for b in INVALIDOS):
                 tem = True
                 break
-    if not tem:
+    if not tem or eh_utf8(arquivo):
         return 0
     linhas = 0
     parcial = arquivo.with_suffix(arquivo.suffix + ".part")

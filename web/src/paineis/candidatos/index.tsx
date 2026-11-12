@@ -232,7 +232,7 @@ export default function Painel({ extra }: PainelProps) {
       {aberto && (
         // a ficha abre por cima da página; Esc, o botão × e o clique fora fecham
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/45"
+          className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-black/45"
           role="dialog"
           aria-modal="true"
           aria-label="Ficha do eleito"

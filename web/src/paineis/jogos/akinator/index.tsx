@@ -111,9 +111,9 @@ export default function Jogo() {
 
   const { respostas, excluidos, ultimoChute } = partida;
   const proposta = useMemo(() => {
-    const { probs, lider, topo, plausiveis } = avaliar(tabela, respostas, new Set(excluidos));
-    // ninguém fica dentro da tolerância de contradições: o gênio desiste
-    if (!plausiveis) return { vivos: 0, pergunta: null, chute: null };
+    const { probs, lider, topo, contraLider, plausiveis } = avaliar(tabela, respostas, new Set(excluidos));
+    // nem o líder fica dentro da tolerância de contradições: o gênio desiste
+    if (lider < 0 || contraLider > TOLERANCIA) return { vivos: 0, pergunta: null, chute: null };
     const pergunta = melhorPergunta(tabela, probs, new Set(respostas.map(r => r.id)));
     const chuta = deveChutar({ topo, haPergunta: pergunta !== null, respondidas: respostas.length, ultimoChute });
     return { vivos: plausiveis, pergunta: chuta ? null : pergunta, chute: chuta ? pool[lider] : null };
@@ -243,7 +243,7 @@ export default function Jogo() {
           {semOpcoes && (
             <Genio>
               <p className="m-0 text-lg font-bold">
-                Desisto! Todos os eleitos do baralho contradizem mais de {TOLERANCIA} das suas respostas.
+                Desisto! Até o candidato mais provável contradiz mais de {TOLERANCIA} das suas respostas.
               </p>
             </Genio>
           )}

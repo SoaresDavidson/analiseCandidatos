@@ -39,10 +39,13 @@ export const CHUTE_A_CADA = 20;
 /** Chutes errados a partir dos quais o jogador pode dizer quem era. */
 export const ERROS_PARA_REVELAR = 3;
 /**
- * Contradições toleradas para um eleito continuar entre os "candidatos possíveis" ("Sim"/"Não"
- * contam 1, "provavelmente" conta 0,5). Quando ninguém fica dentro disso, o gênio desiste.
+ * Contradições a mais que o líder toleradas para um eleito continuar entre os "candidatos
+ * possíveis" ("Sim"/"Não" contam 1, "provavelmente" conta 0,5). Quando o próprio líder passa
+ * disso, o gênio desiste.
  */
 export const TOLERANCIA = 2;
+/** Na escolha da pergunta, ignora quem tem probabilidade abaixo desta fração da do líder. */
+export const PODA = 1e-4;
 /** Ganho mínimo, em bits, para uma pergunta valer a pena; abaixo disso o gênio chuta. */
 export const GANHO_MINIMO = 0.01;
 
@@ -204,7 +207,9 @@ export interface Avaliacao {
   lider: number;
   /** Probabilidade do líder. */
   topo: number;
-  /** Eleitos não excluídos com no máximo TOLERANCIA de contradições: a contagem na tela. */
+  /** Contradições do líder. */
+  contraLider: number;
+  /** Eleitos não excluídos com no máximo TOLERANCIA contradições a mais que o líder: a contagem na tela. */
   plausiveis: number;
 }
 
@@ -244,7 +249,7 @@ export function avaliar(
     else if (logs[i] > max) max = logs[i];
   }
   const probs = new Float64Array(n);
-  if (max === Number.NEGATIVE_INFINITY) return { probs, lider: -1, topo: 0, plausiveis: 0 };
+  if (max === Number.NEGATIVE_INFINITY) return { probs, lider: -1, topo: 0, contraLider: 0, plausiveis: 0 };
   let total = 0;
   for (let i = 0; i < n; i++) {
     probs[i] = Math.exp(logs[i] - max);
@@ -252,18 +257,19 @@ export function avaliar(
   }
   let lider = -1;
   let topo = 0;
-  let plausiveis = 0;
   for (let i = 0; i < n; i++) {
     const p = probs[i] / total;
     probs[i] = p;
     if (p === 0) continue;
-    if (contra[i] <= TOLERANCIA) plausiveis++;
     if (p > topo || (p === topo && (eleitos[i].votos ?? 0) > (eleitos[lider].votos ?? 0))) {
       lider = i;
       topo = p;
     }
   }
-  return { probs, lider, topo, plausiveis };
+  const contraLider = contra[lider];
+  let plausiveis = 0;
+  for (let i = 0; i < n; i++) if (probs[i] > 0 && contra[i] - contraLider <= TOLERANCIA) plausiveis++;
+  return { probs, lider, topo, contraLider, plausiveis };
 }
 
 /**
@@ -282,6 +288,7 @@ function entropiaApos(s: readonly number[], t: readonly number[], w: readonly nu
  * Pergunta ainda não feita que mais reduz, em média, a entropia da distribuição. A redução usa a
  * mesma `chance` de `avaliar` (eleito sem o dado não se mexe). Para prever a resposta, supõe-se
  * "Sim" ou "Não" (errando com chance ERRO) e que quem não tem o dado responde qualquer um dos dois.
+ * Quem tem probabilidade abaixo de PODA vezes a do líder fica fora da conta.
  * Empate sorteado. null se nenhuma pergunta rende pelo menos GANHO_MINIMO bits.
  */
 export function melhorPergunta(
@@ -291,18 +298,30 @@ export function melhorPergunta(
   rnd: () => number = Math.random,
 ): Pergunta | null {
   const n = probs.length;
-  const plnp = new Float64Array(n);
-  let h0 = 0;
+  // só entra na conta quem está a menos de PODA do líder, renormalizado
+  let topo = 0;
+  for (let i = 0; i < n; i++) if (probs[i] > topo) topo = probs[i];
+  const corte = topo * PODA;
+  const ps = new Float64Array(n);
+  let massa = 0;
   let ativos = 0;
   for (let i = 0; i < n; i++) {
-    const p = probs[i];
-    if (p > 0) {
+    if (probs[i] > 0 && probs[i] >= corte) {
+      ps[i] = probs[i];
+      massa += ps[i];
       ativos++;
-      plnp[i] = p * Math.log(p);
-      h0 -= plnp[i];
     }
   }
   if (ativos < 2) return null;
+  const plnp = new Float64Array(n);
+  let h0 = 0;
+  for (let i = 0; i < n; i++) {
+    if (ps[i] > 0) {
+      ps[i] /= massa;
+      plnp[i] = ps[i] * Math.log(ps[i]);
+      h0 -= plnp[i];
+    }
+  }
   const wSim = [chance(1, 1), chance(-1, 1), 1];
   const wNao = [chance(1, -1), chance(-1, -1), 1];
   const pontuadas: { p: Pergunta; ganho: number }[] = [];
@@ -314,7 +333,7 @@ export function melhorPergunta(
     const s = [0, 0, 0];
     const t = [0, 0, 0];
     for (let i = 0; i < n; i++) {
-      const q = probs[i];
+      const q = ps[i];
       if (q === 0) continue;
       const g = linha[i] === 1 ? 0 : linha[i] === -1 ? 1 : 2;
       s[g] += q;

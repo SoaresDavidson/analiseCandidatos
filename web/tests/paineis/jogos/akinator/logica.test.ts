@@ -83,7 +83,7 @@ describe("avaliar", () => {
     expect(um.plausiveis).toBe(3);
     const nada = avaliarEm(es, [], [], new Set(es.map(e => e.id)));
     expect([...nada.probs]).toEqual([0, 0, 0, 0]);
-    expect(nada).toMatchObject({ lider: -1, topo: 0, plausiveis: 0 });
+    expect(nada).toMatchObject({ lider: -1, topo: 0, contraLider: 0, plausiveis: 0 });
   });
   it("tolera uma resposta errada do jogador", () => {
     const alvo = eleito({ uf: "GO" });
@@ -119,7 +119,7 @@ describe("avaliar", () => {
 });
 
 describe("candidatos possíveis", () => {
-  const ufs: Pergunta[] = ["AM", "GO", "RS"].map(uf => ({ id: uf, texto: "", teste: e => e.uf === uf }));
+  const ufs: Pergunta[] = ["AM", "GO", "RS", "SE"].map(uf => ({ id: uf, texto: "", teste: e => e.uf === uf }));
   const lote = [
     eleito({ uf: "AM" }),
     eleito({ uf: "GO" }),
@@ -127,15 +127,17 @@ describe("candidatos possíveis", () => {
     eleito({ uf: "SE" }),
     eleito({ uf: "SE", genero: "MASCULINO" }),
   ];
-  it(`conta quem contradiz no máximo ${TOLERANCIA} respostas, sem depender de ERRO`, () => {
+  it(`conta quem contradiz no máximo ${TOLERANCIA} respostas a mais que o líder, sem depender de ERRO`, () => {
     const rs = [
       { id: "m", valor: 1 },
       { id: "AM", valor: 1 },
     ];
-    // SE masculino contradiz as duas e ainda conta; ninguém sai depois de uma contradição
-    expect(avaliarEm(lote, [mulher, ...ufs], rs).plausiveis).toBe(5);
-    // com mais uma resposta, o SE masculino passa da tolerância
-    const mais = [...rs, { id: "RS", valor: 1 }];
+    // líder (AM) sem contradição; SE masculino contradiz as duas e ainda conta
+    const r = avaliarEm(lote, [mulher, ...ufs], rs);
+    expect(r.contraLider).toBe(0);
+    expect(r.plausiveis).toBe(5);
+    // com mais uma resposta, o SE masculino fica 3 contradições atrás do líder
+    const mais = [...rs, { id: "SE", valor: -1 }];
     expect(avaliarEm(lote, [mulher, ...ufs], mais).plausiveis).toBe(4);
   });
   it("'provavelmente' pesa meia contradição", () => {
@@ -143,15 +145,16 @@ describe("candidatos possíveis", () => {
     // cada um contradiz 2 ou 3 "provavelmente": 1 a 1,5 contradição, todos dentro
     expect(avaliarEm(lote, [mulher, ...ufs], rs).plausiveis).toBe(5);
   });
-  it("a contagem não sobe quando o líder leva uma contradição", () => {
+  it("a contagem acompanha o líder quando ele também leva contradições", () => {
     const rs = [
       { id: "AM", valor: 1 },
-      { id: "GO", valor: -1 },
-      { id: "RS", valor: -1 },
+      { id: "GO", valor: 1 },
+      { id: "RS", valor: 1 },
     ];
-    const antes = avaliarEm(lote, [mulher, ...ufs], rs).plausiveis;
-    const depois = avaliarEm(lote, [mulher, ...ufs], [...rs, { id: "m", valor: -1 }]).plausiveis;
-    expect(depois).toBeLessThanOrEqual(antes);
+    // todos contradizem ao menos 2; o líder define a régua
+    const r = avaliarEm(lote, [mulher, ...ufs], rs);
+    expect(r.contraLider).toBe(2);
+    expect(r.plausiveis).toBe(5);
   });
 });
 

@@ -1,85 +1,120 @@
-import { type CSSProperties, useState } from "react";
+import { type CSSProperties, type PointerEvent, useState } from "react";
 import { urlFoto } from "../../lib/dados";
-import { brl, CARGO, EL, fmt, GRAU_CURTO, vitoriasTexto } from "./jogo";
-import type { CartaEleito, ElementoId, Lado } from "./tipos";
+import { brl, CARGO, EL, fmt, GRAU_CURTO, PODER_ICONE, RARIDADE, vitoriasTexto } from "./jogo";
+import { DESENHO, ESTRELA_ACESA, ESTRELA_APAGADA, ICONE } from "./sprites";
+import type { CartaEleito, Rodada } from "./tipos";
 
-// Fundo "pergaminho" tingido pela cor do elemento (--cor) e moldura mais escura da mesma cor.
-const PAPEL =
-  "bg-[linear-gradient(160deg,color-mix(in_srgb,var(--cor)_55%,#f6efdc),color-mix(in_srgb,var(--cor)_30%,#e9dfc4))]";
-const MOLDURA = "border-2 border-[color:color-mix(in_srgb,var(--cor)_70%,#000)]";
+/** Os seis poderes da carta, na ordem dos ladrilhos. `id` é a rodada que usa aquele poder. */
+const PODERES: readonly { id: Rodada["id"]; rotulo: string; valor: (t: CartaEleito) => string }[] = [
+  { id: "voto", rotulo: "Votos", valor: t => fmt(t.votos) },
+  { id: "fogo", rotulo: "Campanha", valor: t => brl(t.receita) },
+  { id: "verba", rotulo: "Verba pública", valor: t => (t.publico == null ? "sem dado" : brl(t.publico)) },
+  { id: "agua", rotulo: "Custo do voto", valor: t => (t.porVoto == null ? "sem dado" : `R$ ${fmt(t.porVoto, 2)}`) },
+  { id: "terra", rotulo: "Vitórias", valor: t => String(t.vit) },
+  { id: "luz", rotulo: "Estudo", valor: t => (t.grau >= 0 ? GRAU_CURTO[t.grau] : "–") },
+];
 
-function Poder({ el, rotulo, valor, destaque }: { el: ElementoId; rotulo: string; valor: string; destaque?: boolean }) {
-  return (
-    <li
-      className={`grid grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-1 ${destaque ? "rounded bg-[#ffe9a6]" : ""}`}
-    >
-      <span>{EL[el].ico}</span>
-      <span>{rotulo}</span>
-      <b>{valor}</b>
-    </li>
-  );
+/** Quanto a carta inclina com o mouse: só as holográficas, e mais quanto mais rara. */
+const INCLINACAO: Partial<Record<CartaEleito["raridade"], number>> = { rara: 6, epica: 12, lendaria: 18 };
+const reduzMovimento = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function moveHolo(e: PointerEvent<HTMLElement>, forca: number | undefined) {
+  const c = e.currentTarget,
+    b = c.getBoundingClientRect();
+  const x = (e.clientX - b.left) / b.width,
+    y = (e.clientY - b.top) / b.height;
+  c.style.setProperty("--mx", `${x * 100}%`);
+  c.style.setProperty("--my", `${y * 100}%`);
+  if (forca && !reduzMovimento()) {
+    c.style.setProperty("--ry", `${(x - 0.5) * forca}deg`);
+    c.style.setProperty("--rx", `${(0.5 - y) * forca}deg`);
+  }
+}
+function soltaHolo(e: PointerEvent<HTMLElement>) {
+  const c = e.currentTarget;
+  for (const v of ["--mx", "--my"]) c.style.setProperty(v, "50%");
+  for (const v of ["--rx", "--ry"]) c.style.setProperty(v, "0deg");
 }
 
-/** Carta no estilo de Magic: o eleito como criatura política. `campea` marca a vencedora. */
-export function Carta({ t, lado, vida, campea }: { t: CartaEleito; lado: Lado; vida: number; campea: boolean }) {
-  const e = EL[t.el];
+/** Carta em pixel-art: a cor e a textura vêm da raridade (votos no próprio cargo); da rara para cima, holográfica.
+ * `destaque` marca o ladrilho do poder da rodada em jogo. */
+export function Carta({ t, vida, destaque }: { t: CartaEleito; vida: number; destaque?: Rodada["id"] | null }) {
   const [semFoto, setSemFoto] = useState(false);
+  const rar = RARIDADE[t.raridade],
+    desenho = DESENHO[t.raridade],
+    forca = INCLINACAO[t.raridade];
+  const gema = <img src={desenho.gema} alt="" />;
   return (
     <article
-      data-lado={lado}
-      style={{ "--cor": e.cor } as CSSProperties}
-      className={`grid w-[260px] max-w-full transform-3d gap-1.5 rounded-[14px] bg-[#15181c] p-[9px] ${campea ? "shadow-[0_0_0_4px_#ffd86b,0_0_50px_14px_rgb(255_216_107/.55)]" : "shadow-[0_10px_24px_rgb(0_0_0/.45)]"}`}
+      className={`carta-px ${t.raridade}`}
+      style={{ "--textura": `url("${desenho.textura}")` } as CSSProperties}
+      aria-label={`Carta ${rar.nome.toLowerCase()} de ${t.nome}`}
+      onPointerMove={e => moveHolo(e, forca)}
+      onPointerLeave={soltaHolo}
     >
-      <header
-        className={`flex items-center justify-between gap-1.5 rounded-[8px_8px_4px_4px] px-[9px] py-[5px] ${PAPEL} ${MOLDURA}`}
-      >
-        <b className="overflow-hidden text-sm text-ellipsis whitespace-nowrap text-[#1b1b1b]">{t.nome}</b>
-        <span className="text-[13px] tracking-[1px] whitespace-nowrap text-[color:var(--cor)] [text-shadow:0_0_1px_#000]">
-          {"●".repeat(t.mana)}
+      <span className="holo" />
+      <span className="purpurina" />
+      <span className="reflexo" />
+      {["g1", "g2", "g3", "g4"].map(g => (
+        <span key={g} className={`gema ${g}`} aria-hidden="true">
+          {gema}
         </span>
-      </header>
-      <div
-        className={`relative h-[150px] overflow-hidden rounded-[3px] bg-[radial-gradient(circle_at_50%_35%,color-mix(in_srgb,var(--cor)_25%,#fff),color-mix(in_srgb,var(--cor)_60%,#222))] ${MOLDURA}`}
-      >
-        {!semFoto && (
-          <img
-            src={urlFoto(t.ano, t.sq)}
-            alt={`Foto de ${t.nome}`}
-            onError={() => setSemFoto(true)}
-            className="mx-auto block h-full object-cover"
-          />
-        )}
-        <span
-          title={`Elemento: ${e.nome}`}
-          className="absolute right-1.5 bottom-1.5 text-[22px] [filter:drop-shadow(0_0_4px_#fff)]"
-        >
-          {e.ico}
-        </span>
+      ))}
+      <div className="miolo">
+        <header className="fita">
+          <span className="nome fonte-pixel">{t.nome}</span>
+        </header>
+        <div className="meio">
+          <div className="moldura-foto">
+            <div className="foto">
+              {semFoto ? (
+                (t.nome[0] || "?").toUpperCase()
+              ) : (
+                <img src={urlFoto(t.ano, t.sq)} alt={`Foto de ${t.nome}`} onError={() => setSemFoto(true)} />
+              )}
+              <span className="holo-foto" />
+            </div>
+            <span className="elemento" title={`Elemento: ${EL[t.el].nome}`}>
+              <img src={ICONE[PODER_ICONE[t.el]]} alt="" />
+            </span>
+          </div>
+          <div className="lado">
+            <div className="estrelas" title={`${rar.estrelas} de 5 estrelas`}>
+              {[1, 2, 3, 4, 5].map(n => (
+                <img key={n} src={n <= rar.estrelas ? ESTRELA_ACESA : ESTRELA_APAGADA} alt="" />
+              ))}
+            </div>
+            <span className="selo fonte-pixel">{rar.nome.toUpperCase()}</span>
+            <p className="info m-0">
+              <b>{CARGO[t.cargo]}</b>
+              <br />
+              {t.partido} · {t.local} ({t.uf})
+              <br />
+              {t.ano}
+            </p>
+            <span className="tipo fonte-pixel">{EL[t.el].nome.toUpperCase()}</span>
+          </div>
+        </div>
+        <div className="poderes">
+          {PODERES.map(p => (
+            <div key={p.id} data-poder={p.id} className={`poder ${destaque === p.id ? "destaque" : ""}`}>
+              <img src={ICONE[PODER_ICONE[p.id]]} alt="" />
+              <span className="rotulo">{p.rotulo}</span>
+              <b title={p.id === "terra" ? vitoriasTexto(t.vit) : undefined}>{p.valor(t)}</b>
+            </div>
+          ))}
+        </div>
+        <footer className="pe">
+          <span className="placa-pe" title="Ataque">
+            <img src={ICONE.espada} alt="" />
+            <b className="fonte-pixel">{t.atq}</b>
+          </span>
+          <span className="placa-pe" title="Vida">
+            <img src={ICONE.coracao} alt="" />
+            <b className="fonte-pixel">{vida}</b>
+          </span>
+        </footer>
       </div>
-      <div
-        className={`overflow-hidden rounded px-2 py-1 text-[11.5px] font-bold text-ellipsis whitespace-nowrap text-[#1b1b1b] ${PAPEL} ${MOLDURA}`}
-      >
-        Criatura Política — {CARGO[t.cargo]} · {t.partido}
-      </div>
-      <ul className="m-0 grid list-none gap-[3px] rounded bg-[#f6f0e1] px-2 py-1.5 text-[11.5px] text-[#222]">
-        <Poder el="raio" rotulo="Voto de confiança" valor={`${fmt(t.votos)} votos`} />
-        <Poder el="fogo" rotulo="Fogo da campanha" valor={brl(t.receita)} />
-        <Poder el="ouro" rotulo="Verba pública" valor={t.publico == null ? "sem dado" : brl(t.publico)} />
-        <Poder el="agua" rotulo="Custo do voto" valor={t.porVoto == null ? "sem dado" : `R$ ${fmt(t.porVoto, 2)}`} />
-        <Poder el="terra" rotulo="Raízes" valor={vitoriasTexto(t.vit)} />
-        <Poder el="luz" rotulo="Luz do saber" valor={t.grau >= 0 ? GRAU_CURTO[t.grau] : "–"} />
-      </ul>
-      <p className={`m-0 rounded px-2 py-[3px] text-[11px] text-[#333] italic ${PAPEL}`}>
-        {t.local} ({t.uf}), {t.ano}
-      </p>
-      <footer
-        className={`flex justify-self-end gap-2.5 rounded-md px-2.5 py-[3px] text-sm font-extrabold text-[#1b1b1b] ${PAPEL} ${MOLDURA}`}
-      >
-        <span>⚔ {t.atq}</span>
-        <span>
-          ❤ <b>{vida}</b>
-        </span>
-      </footer>
     </article>
   );
 }

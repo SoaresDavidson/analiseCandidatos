@@ -1,6 +1,7 @@
 import { fmt as fmtKit, nomeProprio } from "../../lib/formato";
 import { semAcento } from "../../lib/uf";
-import type { CartaEleito, DadosEleitos, ElementoId, Lado, Rodada } from "./tipos";
+import type { IconeId } from "./sprites";
+import type { CartaEleito, DadosEleitos, ElementoId, Lado, Raridade, Rodada } from "./tipos";
 
 // Regras da Arena (funções puras): cartas, posições, vencedor de cada rodada.
 
@@ -47,6 +48,27 @@ export const EL: Record<ElementoId, { ico: string; nome: string; cor: string }> 
   luz: { ico: "✨", nome: "Luz", cor: "#b58a2c" },
   ouro: { ico: "💰", nome: "Ouro", cor: "#c9a400" },
 };
+/** Ícone em pixel de cada elemento e de cada rodada (o poder que a rodada usa). */
+export const PODER_ICONE: Record<ElementoId | Rodada["id"], IconeId> = {
+  raio: "raio",
+  voto: "raio",
+  fogo: "fogo",
+  agua: "gota",
+  terra: "folha",
+  luz: "livro",
+  ouro: "moeda",
+  verba: "moeda",
+};
+/** Cor do rastro e da explosão do projétil de cada rodada. */
+export const COR_PODER: Record<Rodada["id"], string> = {
+  voto: "#ffd84a",
+  fogo: "#ff8a2a",
+  verba: "#f2c230",
+  agua: "#3b8fe0",
+  terra: "#5fa62e",
+  luz: "#a98bff",
+};
+
 export const RODADAS: readonly Rodada[] = [
   {
     id: "voto",
@@ -88,6 +110,29 @@ export const brl = (v: number | null): string =>
 export const vitoriasTexto = (n: number): string => `${n} vitória${n === 1 ? "" : "s"}`;
 /** Governadores e senadores ficam no mesmo baralho. */
 export const grupo = (t: CartaEleito): string => `${t.ano % 100}-${t.cargo === 5 ? 3 : t.cargo}`;
+
+/** As cinco raridades, da mais comum à mais rara. A cor e o desenho de cada uma ficam em arena.css. */
+export const RARIDADE: Record<Raridade, { nome: string; estrelas: number }> = {
+  comum: { nome: "Comum", estrelas: 1 },
+  incomum: { nome: "Incomum", estrelas: 2 },
+  rara: { nome: "Rara", estrelas: 3 },
+  epica: { nome: "Épica", estrelas: 4 },
+  lendaria: { nome: "Lendária", estrelas: 5 },
+};
+
+/** Raridade pela fração (0 a 1) de eleitos do baralho com menos votos: 40% comuns, 30% incomuns, 20% raras,
+ * 8% épicas e os 2% mais votados lendários. */
+export const raridadeDe = (frac: number): Raridade =>
+  frac < 0.4 ? "comum" : frac < 0.7 ? "incomum" : frac < 0.9 ? "rara" : frac < 0.98 ? "epica" : "lendaria";
+
+/** Dá a raridade a cada carta de um baralho (mesmo cargo e eleição), pela ordem de votos. Sem votos, comum. */
+export function atribuirRaridade(lista: CartaEleito[]): void {
+  const v = lista.filter(t => t.votos != null).sort((a, b) => a.votos - b.votos);
+  for (const t of lista) t.raridade = "comum";
+  v.forEach((t, k) => {
+    t.raridade = raridadeDe(v.length === 1 ? 1 : k / (v.length - 1));
+  });
+}
 
 type Campo = "votos" | "receita" | "porVoto";
 /** Posição de 1 a 10 de cada carta da lista em `campo` (invertida quando menor é melhor). */
@@ -137,6 +182,8 @@ export function montarCartas(C: DadosEleitos): CartaEleito[] {
       el: "raio",
       atq: 1,
       mana: 1,
+      raridade: "comum",
+      fem: C.generos?.[r[8] as number] === "FEMININO",
     });
   });
   const porGrupo = new Map<string, CartaEleito[]>();
@@ -150,6 +197,7 @@ export function montarCartas(C: DadosEleitos): CartaEleito[] {
     posicoes(g, "votos");
     posicoes(g, "receita");
     posicoes(g, "porVoto", true);
+    atribuirRaridade(g);
   });
   T.forEach(t => {
     const p: Record<ElementoId, number> = {

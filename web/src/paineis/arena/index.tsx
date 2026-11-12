@@ -1,14 +1,30 @@
-import { type ReactNode, useEffect, useLayoutEffect, useMemo, useReducer, useRef } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useLayoutEffect, useMemo, useReducer, useRef } from "react";
 import { Caixa, Campo, Carregando, Etiqueta, Pagina, Seletor, SeletorUf, VerMais } from "../../componentes";
 import { useDados } from "../../lib/dados";
 import { useNavegacao } from "../../lib/navegacao";
 
 import { Busca } from "./Busca";
 import { Carta } from "./Carta";
-import { type Entrada, FIM, ganhador, type Jogo, novoJogo, reduzir, somarVida } from "./duelo";
-import { animarCarta, clarao, espera, flutuar, movimento, particula, relampago } from "./efeitos";
-import { BARALHOS, danoRodada, EL, grupo, montarCartas, outroLado, sortearDe, valorRodada, vencedor } from "./jogo";
-import type { CartaEleito, DadosEleitos, ElementoId, Lado } from "./tipos";
+import { type Entrada, FIM, type Jogo, novoJogo, reduzir, somarVida } from "./duelo";
+import { animarCarta, brilhos, canhao, carregar, centroEm, espera, movimento, numero, tremer } from "./efeitos";
+import {
+  BARALHOS,
+  COR_PODER,
+  danoRodada,
+  EL,
+  grupo,
+  montarCartas,
+  outroLado,
+  PODER_ICONE,
+  sortearDe,
+  valorRodada,
+  vencedor,
+} from "./jogo";
+import { ICONE } from "./sprites";
+import type { CartaEleito, DadosEleitos, Lado, Rodada } from "./tipos";
+import "@fontsource/press-start-2p/latin.css";
+import "@fontsource/press-start-2p/latin-ext.css";
+import "./arena.css";
 
 /** Escolhe as duas cartas do duelo. `manter` conserva as que o jogador já tinha. */
 function escolherCartas(
@@ -48,7 +64,6 @@ function Arena({ dados }: { dados: DadosEleitos }) {
   const lutar = useRef<(() => void) | null>(null);
   const arena = useRef<HTMLElement>(null);
   const efeitos = useRef<HTMLDivElement>(null);
-  const flash = useRef<HTMLDivElement>(null);
   const anuncioEl = useRef<HTMLDivElement>(null);
 
   /** Recomeça o duelo; `manter` conserva as cartas que o jogador escolheu. */
@@ -82,93 +97,54 @@ function Arena({ dados }: { dados: DadosEleitos }) {
     }
   }, [pula]);
 
-  // a campeã flutua
-  const campea = g?.campea ?? null;
-  useEffect(() => {
-    if (!campea || !arena.current) return;
-    return flutuar(arena.current.querySelector(`[data-lado="${campea}"]`));
-  }, [campea, duelo]);
-
   if (!g) return <Carregando erro={new Error("nenhuma carta encontrada")} />;
 
-  const carta = (l: Lado) => arena.current?.querySelector<HTMLElement>(`[data-lado="${l}"]`) ?? null;
+  /** A caixa da carta (é ela que anima); a carta em si fica livre para inclinar com o holo. */
+  const caixa = (l: Lado) => arena.current?.querySelector<HTMLElement>(`[data-lado="${l}"]`) ?? null;
   const centroDe = (l: Lado): [number, number] => {
-    const r = carta(l)?.getBoundingClientRect(),
-      a = arena.current?.getBoundingClientRect();
-    return r && a ? [r.left - a.left + r.width / 2, r.top - a.top + r.height / 2] : [0, 0];
-  };
-  const solta = (
-    x: number,
-    y: number,
-    txt: string,
-    tipo: Parameters<typeof particula>[4],
-    dx: number,
-    dy: number,
-    dur: number,
-  ) => {
-    if (efeitos.current) particula(efeitos.current, x, y, txt, tipo, dx, dy, dur);
+    const c = caixa(l);
+    return c && efeitos.current ? centroEm(efeitos.current, c) : [0, 0];
   };
 
   /** Mudança de vida durante uma rodada: atualiza o estado e a conta que a rodada acompanha. */
   type MudaVida = (l: Lado, d: number) => void;
 
-  async function golpe(de: Lado, para: Lado, el: ElementoId, dano: number, n: number, mudaVida: MudaVida) {
-    const [x0, y0] = centroDe(de),
-      [x1, y1] = centroDe(para),
-      ico = EL[el].ico;
-    animarCarta(carta(de), "ataca");
-    if (movimento()) {
-      // o projétil atravessa a arena
-      const q = el === "fogo" ? 7 : el === "agua" ? 6 : 4;
-      for (let k = 0; k < q; k++)
-        setTimeout(() => solta(x0, y0 + (k - q / 2) * 8, ico, "voa", x1 - x0, y1 - y0 + (k - q / 2) * 6, 520), k * 45);
-      await espera(520);
-      if (dueloAtual.current !== n) return;
-      if (el === "raio") {
-        clarao(flash.current);
-        if (efeitos.current) relampago(efeitos.current, x1, y1);
-      }
-      if (el === "agua") for (let k = 0; k < 3; k++) setTimeout(() => solta(x1, y1, "", "onda", 0, 0, 700), k * 140);
-      // a explosão no alvo
-      for (let k = 0; k < 12; k++) {
-        const a = (k / 12) * Math.PI * 2;
-        solta(x1, y1, el === "terra" ? "🍃" : ico, "estoura", Math.cos(a) * 90, Math.sin(a) * 90, 650);
-      }
-    }
-    animarCarta(carta(para), "apanha");
-    solta(x1, y1 - 60, `−${dano}`, "dano", 0, -70, 1100);
+  /** O ladrilho do poder da rodada carrega, o ícone sai voando em arco até a outra carta e explode. */
+  async function golpe(de: Lado, para: Lado, r: Rodada, dano: number, n: number, mudaVida: MudaVida) {
+    const origem = caixa(de)?.querySelector(`[data-poder="${r.id}"]`) ?? null,
+      alvo = caixa(para)?.querySelector(".carta-px") ?? null,
+      cor = COR_PODER[r.id],
+      icone = PODER_ICONE[r.id];
+    carregar(origem, cor);
+    await espera(260);
+    if (dueloAtual.current !== n) return;
+    animarCarta(caixa(de), "ataca", 0, de);
+    if (efeitos.current && origem && alvo)
+      await canhao(efeitos.current, origem, alvo, { id: icone, src: ICONE[icone] }, cor);
+    if (dueloAtual.current !== n) return;
+    tremer(arena.current);
+    animarCarta(caixa(para), "apanha");
+    const [x, y] = centroDe(para);
+    if (efeitos.current) numero(efeitos.current, x, y - 60, `-${dano}`, "dano");
     mudaVida(para, -dano);
     await espera(700);
   }
 
   async function cura(l: Lado, valor: number, mudaVida: MudaVida) {
     const [x, y] = centroDe(l);
-    animarCarta(carta(l), "brilha");
-    if (movimento())
-      for (let k = 0; k < 10; k++)
-        solta(x + (Math.random() - 0.5) * 140, y + 60, "✨", "sobe", (Math.random() - 0.5) * 30, -160, 900);
-    solta(x, y - 60, `+${valor}`, "cura", 0, -70, 1100);
+    carregar(caixa(l)?.querySelector('[data-poder="luz"]') ?? null, COR_PODER.luz);
+    if (efeitos.current) {
+      brilhos(efeitos.current, x, y, COR_PODER.luz);
+      numero(efeitos.current, x, y - 60, `+${valor}`, "cura");
+    }
     mudaVida(l, valor);
     await espera(700);
   }
 
-  /** Fecha o duelo; `vida` é a que a rodada acompanhou (o estado ainda não foi redesenhado). */
-  function fim(vida: Record<Lado, number>) {
+  /** Fecha o duelo: o palco treme e os carimbos descem (eles são desenhados a partir do estado). */
+  function fim() {
     despachar({ tipo: "fim" });
-    const ganhou = ganhador(vida);
-    if (ganhou && movimento()) {
-      const [x, y] = centroDe(ganhou);
-      for (let k = 0; k < 28; k++)
-        solta(
-          x,
-          y - 120,
-          ["🎉", "⭐", "✨", "🎊"][k % 4],
-          "confete",
-          (Math.random() - 0.5) * 420,
-          160 + Math.random() * 200,
-          1600,
-        );
-    }
+    tremer(arena.current);
   }
 
   /** O duelo inteiro: cada rodada mostra a pergunta, espera o "Lutar!" e os dados decidem o golpe. */
@@ -195,7 +171,7 @@ function Arena({ dados }: { dados: DadosEleitos }) {
       if (v && v !== "empate") {
         if (r.id === "luz") await cura(v, 3, mudaVida);
         // no fogo e na verba, v é quem arrecadou ou usou menos: o outro leva o golpe
-        else await golpe(v, outroLado(v), r.el, danoRodada(r, a, b), n, mudaVida);
+        else await golpe(v, outroLado(v), r, danoRodada(r, a, b), n, mudaVida);
       } else if (v === "empate" && r.id === "luz") {
         await Promise.all([cura("a", 1, mudaVida), cura("b", 1, mudaVida)]);
       }
@@ -203,7 +179,7 @@ function Arena({ dados }: { dados: DadosEleitos }) {
       await espera(300);
       if (dueloAtual.current !== n) return;
     }
-    fim(vida);
+    fim();
   }
 
   const escolher = (l: Lado, t: CartaEleito) => {
@@ -237,28 +213,46 @@ function Arena({ dados }: { dados: DadosEleitos }) {
     </>
   );
 
+  const destaque = g.anuncio.tipo === "rodada" ? g.anuncio.r.id : null;
+  const acabou = g.r === FIM;
+
+  /** Carimbo do fim: VENCEU na campeã, DERROTADO(A) na outra, EMPATE nas duas. */
+  const carimbo = (l: Lado): ReactNode => {
+    if (!acabou) return null;
+    if (!g.campea) return <span className="carimbo-pixel empate fonte-pixel">EMPATE</span>;
+    if (g.campea === l) return <span className="carimbo-pixel venceu fonte-pixel">VENCEU</span>;
+    return (
+      <span className="carimbo-pixel perdeu fonte-pixel" style={{ "--atraso": ".28s" } as CSSProperties}>
+        {g[l].fem ? "DERROTADA" : "DERROTADO"}
+      </span>
+    );
+  };
+
   const lutador = (l: Lado) => {
     const t = g[l],
       v = g.vida[l];
+    const resultado = acabou && g.campea ? (g.campea === l ? "venceu" : "perdeu") : "";
     return (
-      <div className="grid justify-items-center gap-2">
-        <div className="relative h-[18px] w-[260px] max-w-full overflow-hidden rounded-[9px] border-2 border-[#c9a400] bg-[#0d1116]">
+      <div className="grid justify-items-center gap-3.5">
+        <div className="vida-pixel" role="img" aria-label={`${v} de vida`}>
           <i
-            className="absolute inset-y-0 left-0 transition-[width,background] duration-[600ms] ease-[ease]"
-            style={{
-              width: `${Math.min(100, (100 * v) / 20)}%`,
-              background: v > 12 ? "var(--color-verde-esc)" : v > 6 ? "var(--color-ouro)" : "#c53d33",
-            }}
+            style={
+              {
+                width: `${Math.min(100, (100 * v) / 20)}%`,
+                "--cor-vida": v > 12 ? "var(--color-verde)" : v > 6 ? "var(--color-ouro)" : "var(--color-capital)",
+              } as CSSProperties
+            }
           />
-          <span className="relative block text-center text-[11.5px] leading-[14px] font-extrabold text-white">
-            {v} de vida
-          </span>
+          <span className="fonte-pixel">{v} DE VIDA</span>
         </div>
-        <Carta key={`${g.n}-${l}`} t={t} lado={l} vida={v} campea={g.campea === l} />
+        <div data-lado={l} className={`arena-slot ${resultado}`}>
+          <Carta key={`${g.n}-${l}`} t={t} vida={v} destaque={destaque} />
+          {carimbo(l)}
+        </div>
         <button
           type="button"
           onClick={() => abrirCandidato(t.ano, t.sq)}
-          className="cursor-pointer border-0 bg-transparent font-bold text-[#f2d36b] underline"
+          className="cursor-pointer border-0 bg-transparent font-bold text-ouro-claro underline"
         >
           Ver a ficha
         </button>
@@ -304,42 +298,35 @@ function Arena({ dados }: { dados: DadosEleitos }) {
         </div>
       </Caixa>
 
-      <section
-        ref={arena}
-        className="relative overflow-hidden rounded-[18px] bg-[radial-gradient(ellipse_at_50%_30%,#3d4a57_0%,#1b222b_70%)] px-[18px] py-[22px]"
-      >
-        <div ref={flash} aria-hidden="true" className="pointer-events-none absolute inset-0 bg-white opacity-0" />
-        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,300px)_minmax(0,1fr)] items-center gap-[18px] max-[900px]:grid-cols-[minmax(0,1fr)]">
+      <section ref={arena} className="arena-palco">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,280px)_minmax(0,1fr)] items-center justify-items-center gap-[22px] max-[900px]:grid-cols-[minmax(0,1fr)]">
           {lutador("a")}
-          <div className="grid justify-items-center gap-2.5 text-center text-[#f4f1ea]">
-            <div className="text-[12.5px] tracking-[.08em] text-[#c9c3b4] uppercase">{g.rodadaTxt}</div>
-            <div
-              ref={anuncioEl}
-              className="grid min-h-[92px] content-center justify-items-center gap-1 text-sm [&_b]:text-[21px] [&_b]:text-[#ffd86b]"
-            >
+          <div className="arena-centro">
+            <div ref={anuncioEl} className="arena-placa fonte-pixel contorno-pixel">
+              <div className="rodada">{g.rodadaTxt.toUpperCase()}</div>
               <AnuncioTexto g={g} />
             </div>
-            {g.lutando && (
-              <button
-                type="button"
-                onClick={() => lutar.current?.()}
-                className="cursor-pointer rounded-[10px] border-0 bg-linear-to-b from-[#ff8a5b] to-[#c4441d] px-[30px] py-3 text-[19px] font-extrabold tracking-[.04em] text-white shadow-[0_4px_0_#7a2a10] active:translate-y-[3px] active:shadow-[0_1px_0_#7a2a10]"
-              >
-                ⚔ Lutar!
+            {/* sempre um botão no mesmo lugar: Lutar!, Começar/Revanche, ou Lutar! apagado durante o golpe */}
+            {g.lutando ? (
+              <button type="button" onClick={() => lutar.current?.()} className="botao-pixel fonte-pixel">
+                LUTAR!
               </button>
-            )}
-            {g.botao && (
+            ) : g.botao ? (
               <button
                 type="button"
                 onClick={() => (g.r === FIM ? novoDuelo(g.baralho, g.uf, { a: g.a, b: g.b }) : void duelar(g))}
-                className="cursor-pointer rounded-[10px] border-0 bg-linear-to-b from-[#ffd86b] to-[#e3a400] px-[26px] py-2.5 text-[17px] font-extrabold text-[#1b222b] shadow-[0_4px_0_#8f6c00] active:translate-y-[3px] active:shadow-[0_1px_0_#8f6c00]"
+                className="botao-pixel fonte-pixel"
               >
-                {g.botao}
+                {semSimbolo(g.botao).toUpperCase()}
+              </button>
+            ) : (
+              <button type="button" disabled className="botao-pixel fonte-pixel">
+                LUTAR!
               </button>
             )}
-            <ol className="m-0 grid max-h-[210px] list-none gap-1.5 overflow-y-auto p-0 text-left text-[12.5px] text-[#d8d3c6]">
+            <ol className="arena-registro">
               {g.registro.map((e, i) => (
-                <li key={g.registro.length - i} className="rounded-lg bg-white/[.06] px-2 py-1.5 [&_b]:text-white">
+                <li key={g.registro.length - i}>
                   <Registro e={e} />
                 </li>
               ))}
@@ -390,41 +377,44 @@ function Arena({ dados }: { dados: DadosEleitos }) {
   );
 }
 
+/** Tira o símbolo do começo ("⚔ Começar o duelo" -> "Começar o duelo"): a fonte de pixel não tem esses glifos. */
+const semSimbolo = (s: string): string => s.replace(/^[^\p{L}]+/u, "");
+
 function AnuncioTexto({ g }: { g: Jogo }): ReactNode {
   const an = g.anuncio;
   if (an.tipo === "duelo")
     return (
       <>
-        <b>{g.a.nome}</b> × <b>{g.b.nome}</b>
+        <div className="titulo">{g.a.nome}</div>
+        <div className="pergunta">contra</div>
+        <div className="titulo">{g.b.nome}</div>
       </>
     );
-  if (an.tipo === "rodada") {
+  if (an.tipo === "rodada")
     return (
       <>
-        <span className="text-[38px] leading-none">{EL[an.r.el].ico}</span>
-        <b>{an.r.nome}</b>
-        <span>{an.r.pergunta}</span>
+        <div className="titulo flex items-center gap-2">
+          <img src={ICONE[PODER_ICONE[an.r.id]]} alt="" className="size-[18px] [image-rendering:pixelated]" />
+          {an.r.nome.toUpperCase()}
+        </div>
+        <div className="pergunta">{an.r.pergunta}</div>
       </>
     );
-  }
-  if (an.ganhou) {
+  if (an.ganhou)
     return (
       <>
-        <span className="text-[38px] leading-none">🏆</span>
-        <b>{g[an.ganhou].nome} venceu!</b>
-        <span>
-          {an.a} × {an.b} de vida
-        </span>
+        <div className="titulo">🏆 {g[an.ganhou].nome.toUpperCase()}</div>
+        <div className="pergunta">
+          venceu por {an[an.ganhou]} × {an[outroLado(an.ganhou)]} de vida
+        </div>
       </>
     );
-  }
   return (
     <>
-      <span className="text-[38px] leading-none">🤝</span>
-      <b>Empate técnico</b>
-      <span>
+      <div className="titulo">🤝 EMPATE TÉCNICO</div>
+      <div className="pergunta">
         {an.a} × {an.b} de vida
-      </span>
+      </div>
     </>
   );
 }

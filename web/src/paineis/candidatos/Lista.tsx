@@ -1,5 +1,6 @@
 import { FotoEleito } from "../../componentes";
 import { brl, int } from "../../lib/formato";
+import { useDecisoes } from "./decisoes";
 import { corCategoria } from "./Ficha";
 import type { Eleito } from "./tipos";
 
@@ -17,19 +18,29 @@ function Cartao({
   e,
   ordem,
   todosEstados,
+  decisoes,
   aoAbrir,
 }: {
   e: Eleito;
   ordem: Ordem;
   todosEstados: boolean;
+  /** quantas decisões da Justiça Eleitoral a pessoa tem (bola preta no canto) */
+  decisoes: number;
   aoAbrir: (e: Eleito) => void;
 }) {
   return (
     <button
       type="button"
       onClick={() => aoAbrir(e)}
-      className="grid cursor-pointer grid-cols-[64px_minmax(0,1fr)] items-center gap-3 rounded-[10px] border border-linha bg-branco p-2 text-left hover:border-ouro hover:shadow-[0_0_0_2px_var(--color-ouro)] focus-visible:border-ouro focus-visible:shadow-[0_0_0_2px_var(--color-ouro)]"
+      aria-label={decisoes ? `${e.nome}: tem decisão da Justiça Eleitoral contra candidatura` : undefined}
+      className="relative grid cursor-pointer grid-cols-[64px_minmax(0,1fr)] items-center gap-3 rounded-[10px] border border-linha bg-branco p-2 text-left hover:border-ouro hover:shadow-[0_0_0_2px_var(--color-ouro)] focus-visible:border-ouro focus-visible:shadow-[0_0_0_2px_var(--color-ouro)]"
     >
+      {decisoes > 0 && (
+        <span
+          title="Tem decisão da Justiça Eleitoral contra candidatura (cassação ou registro negado). Abra a ficha para ver o motivo."
+          className="absolute -top-2 -right-2 size-[18px] rounded-full border-2 border-branco bg-[#111] shadow-[0_1px_3px_rgb(0_0_0/.4)]"
+        />
+      )}
       <FotoEleito ano={e.ano} sq={e.sq} nome={e.nome} className="w-16 aspect-[81/113] rounded-lg! text-[26px]" />
       <span className="grid min-w-0 gap-px">
         <b className="text-[15px] leading-tight">{e.nome}</b>
@@ -68,10 +79,18 @@ export default function Lista({
   todosEstados: boolean;
   aoAbrir: (e: Eleito) => void;
 }) {
+  const decisoesDe = useDecisoes();
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-2.5">
       {eleitos.map(e => (
-        <Cartao key={e.id} e={e} ordem={ordem} todosEstados={todosEstados} aoAbrir={aoAbrir} />
+        <Cartao
+          key={e.id}
+          e={e}
+          ordem={ordem}
+          todosEstados={todosEstados}
+          decisoes={decisoesDe(e.ano, e.sq).length}
+          aoAbrir={aoAbrir}
+        />
       ))}
     </div>
   );

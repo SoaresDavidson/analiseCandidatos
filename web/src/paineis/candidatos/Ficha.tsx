@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { FotoEleito, Linha, Selo } from "../../componentes";
 import { CATEGORIAS, CORES_ESPECTRO } from "../../lib/espectro";
-import { brl, fmt, int } from "../../lib/formato";
+import { brl, fmt, int, nomeProprio } from "../../lib/formato";
+import { UF_NOME } from "../../lib/uf";
+import { type Decisao, explicarMotivo, tipoDecisao, useDecisoes } from "./decisoes";
 import { CANAL, CARGO, CARGO_CURTO, frase, RESULTADO } from "./modelo";
 import type { Eleito } from "./tipos";
 
@@ -160,6 +162,46 @@ function Carreira({ e }: { e: Eleito }) {
   );
 }
 
+/** Bloco preto com as decisões da Justiça Eleitoral (cassação ou registro negado) da pessoa. */
+function Decisoes({ ds }: { ds: Decisao[] }) {
+  const cassada = ds.some(d => d.cassacao && d.propria);
+  return (
+    <section
+      aria-label="Decisões da Justiça Eleitoral"
+      className="grid gap-2.5 rounded-xl bg-[#111] p-4 text-[#f4f1ea]"
+    >
+      <h3 className="m-0! flex items-center gap-2 text-white">
+        <i aria-hidden="true" className="inline-block size-3.5 rounded-full border-2 border-white bg-[#111]" />
+        {cassada ? "Cassado nesta eleição" : "Decisão da Justiça Eleitoral contra candidatura"}
+      </h3>
+      <ul className="m-0 grid list-none gap-2.5 p-0">
+        {ds.map((d, i) => (
+          <li key={i} className="grid gap-1 rounded-lg bg-white/[.07] px-3 py-2.5">
+            <b className="text-[15px] text-[#ffd86b]">
+              {tipoDecisao(d)} · {d.ano}
+              {d.propria ? " (esta candidatura)" : ""}
+            </b>
+            <span className="text-[13.5px]">
+              {CARGO_CURTO[d.cargo] ?? "Candidatura"} em {nomeProprio(d.lugar)}
+              {d.lugar.toUpperCase() !== (UF_NOME[d.uf] ?? "").toUpperCase() ? ` (${d.uf})` : ""}
+              {d.partido ? ` · ${d.partido}` : ""}
+            </span>
+            <span className="text-[13.5px]">
+              <b className="text-white">Motivo:</b> {d.motivo}
+            </span>
+            <span className="text-[13px] text-[#d8d3c6]">{explicarMotivo(d.motivo)}</span>
+            {d.processo && <span className="text-[12px] text-[#b9b3a4]">Processo nº {d.processo}</span>}
+          </li>
+        ))}
+      </ul>
+      <p className="m-0 text-[12px] text-[#b9b3a4]">
+        Fonte: TSE, arquivo de motivos de cassação e de indeferimento do registro (2018 a 2024). São decisões já
+        tomadas, não investigações; o arquivo não informa recursos posteriores.
+      </p>
+    </section>
+  );
+}
+
 /** O cartão da ficha de um eleito: usado na página e na janela aberta por cima de qualquer painel. */
 export default function Ficha({
   e,
@@ -170,6 +212,7 @@ export default function Ficha({
   regua: [string, number, string, number];
   aoFechar: () => void;
 }) {
+  const decisoes = useDecisoes()(e.ano, e.sq);
   const situacao = frase(e.situacao)
     .replace(/ por qp$/, " por quociente partidário")
     .replace(/ por media$/, " por média");
@@ -213,6 +256,7 @@ export default function Ficha({
           </p>
         </div>
       </div>
+      {decisoes.length > 0 && <Decisoes ds={decisoes} />}
       <Numeros>
         <Numero
           valor={e.votos == null ? "–" : int(e.votos)}

@@ -46,6 +46,7 @@ por meio de `painel_web.py`.
 | `gerar_painel_q8_q9.py` | `q8.json`, `q9.json` | `11_q8_publico`, `12_q9_propaganda` |
 | `gerar_painel_q10.py` | `q10.json`, `q10-financas/NN.json` | `07_q10_carreira`, `14_q10_patrimonio` |
 | `gerar_painel_candidatos.py` | `candidatos-eleitos.json` e as fotos | `13_ficha_candidato`, `07_q10_carreira` |
+| `gerar_painel_decisoes.py` | `candidatos-decisoes.json`: as decisões da Justiça Eleitoral de cada eleito (bola preta) | `24_motivo_cassacao` |
 | `gerar_painel_municipios.py` | `municipios-cidades.json` | `15_espectro` |
 | `painel_web.py` | (código comum) | `gravar()`, usado por todos os geradores |
 | `baixar_fotos_web.py` | `web/public/fotos/<ano>/<sq>.jpg` | `candidatos-eleitos.json` (não precisa do banco). Também roda com `npm run fotos` em `web/`. |

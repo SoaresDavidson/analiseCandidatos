@@ -45,6 +45,7 @@ export const TEMAS: Tema[] = [
       { id: "q10", n: 10, nome: "Carreira", Componente: lazy(() => import("./q10")) },
       { id: "candidatos", nome: "Quem são os eleitos", Componente: lazy(() => import("./candidatos")) },
       { id: "plenarios", nome: "Plenários", Componente: lazy(() => import("./plenarios")) },
+      { id: "cassados", nome: "Cassados e barrados", Componente: lazy(() => import("./cassados")) },
     ],
   },
 ];

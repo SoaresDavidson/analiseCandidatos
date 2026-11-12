@@ -74,8 +74,7 @@ function Conteudo({ eleitos, D }: { eleitos: Eleito[]; D: DadosDecisoes }) {
   const doEstado = todas.filter(x => f.uf === "TODAS" || x.e.uf === f.uf);
   const xs = doEstado.filter(x => passa(f.tipo, x.ds));
   const conta = (t: Filtro) => doEstado.filter(x => passa(t, x.ds)).length;
-  const onde =
-    f.uf === "TODAS" ? `nos ${new Set(todas.map(x => x.e.uf)).size} estados` : `em ${UF_NOME[f.uf] ?? f.uf}`;
+  const onde = f.uf === "TODAS" ? `nos ${new Set(todas.map(x => x.e.uf)).size} estados` : `em ${UF_NOME[f.uf] ?? f.uf}`;
 
   const filtros = (
     <>

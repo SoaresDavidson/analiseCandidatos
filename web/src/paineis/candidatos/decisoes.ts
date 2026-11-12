@@ -59,6 +59,8 @@ export function explicarMotivo(motivo: string): string {
   if (m.includes("inelegibilidade constitucional"))
     return "Inelegível por uma regra da Constituição (art. 14), como parentesco com o chefe do Executivo ou limite de mandatos seguidos.";
   if (m.includes("inelegibilidade")) return "Inelegível por um dos casos da Lei das Inelegibilidades (LC 64/90).";
+  if (m.includes("abuso de poder") && m.includes("lc 64"))
+    return "Inelegível por condenação anterior por abuso de poder (LC 64/90, art. 1º, I, d e h): o registro foi negado por causa dessa condenação, não por algo feito nesta campanha.";
   if (m.includes("abuso de poder"))
     return "Abuso de poder: uso indevido do poder político ou econômico para influenciar a eleição (LC 64/90, art. 22).";
   if (m.includes("compra de voto") || m.includes("captacao ilicita"))

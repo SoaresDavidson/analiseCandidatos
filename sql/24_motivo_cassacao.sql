@@ -53,16 +53,22 @@ WITH classe AS (
     SELECT
         m.*,
         CASE
+            WHEN m.ds_tp_motivo ILIKE '%cassa%' THEN 1
+            -- registro negado por "Abuso de poder (LC 64/90)" é inelegibilidade por condenação
+            -- anterior (LC 64/90, art. 1º, I, d/h), não ilícito naquela campanha
             WHEN
-                m.ds_tp_motivo ILIKE '%cassa%'
-                OR m.ds_motivo ILIKE '%abuso%'
+                m.ds_motivo ILIKE '%ficha limpa%'
+                OR m.ds_motivo ILIKE '%inelegibilidade%'
+                OR (m.ds_motivo ILIKE '%abuso%' AND m.ds_motivo ILIKE '%LC 64/90%')
+                THEN 2
+            WHEN
+                m.ds_motivo ILIKE '%abuso%'
                 OR m.ds_motivo ILIKE '%compra de voto%'
                 OR m.ds_motivo ILIKE '%capta%'
                 OR m.ds_motivo ILIKE '%conduta vedada%'
                 OR m.ds_motivo ILIKE '%gasto il%'
                 OR m.ds_motivo ILIKE '%fraude%'
                 THEN 1
-            WHEN m.ds_motivo ILIKE '%ficha limpa%' OR m.ds_motivo ILIKE '%inelegibilidade%' THEN 2
             ELSE 3
         END AS nr_familia
     FROM motivo_cassacao AS m

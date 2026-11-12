@@ -74,7 +74,8 @@ function Conteudo({ eleitos, D }: { eleitos: Eleito[]; D: DadosDecisoes }) {
   const doEstado = todas.filter(x => f.uf === "TODAS" || x.e.uf === f.uf);
   const xs = doEstado.filter(x => passa(f.tipo, x.ds));
   const conta = (t: Filtro) => doEstado.filter(x => passa(t, x.ds)).length;
-  const onde = f.uf === "TODAS" ? "nos 6 estados" : `em ${UF_NOME[f.uf]}`;
+  const onde =
+    f.uf === "TODAS" ? `nos ${new Set(todas.map(x => x.e.uf)).size} estados` : `em ${UF_NOME[f.uf] ?? f.uf}`;
 
   const filtros = (
     <>
@@ -103,9 +104,9 @@ function Conteudo({ eleitos, D }: { eleitos: Eleito[]; D: DadosDecisoes }) {
           {onde[0].toUpperCase() + onde.slice(1)}, <b>{int(doEstado.length)}</b> dos eleitos têm decisão da Justiça
           Eleitoral contra alguma candidatura: <b>{conta("cassacao")}</b> foram cassados na própria eleição em que se
           elegeram, <b>{conta("ilicito")}</b> tiveram decisão por ilícito na campanha e{" "}
-          <b>{conta("inelegibilidade")}</b> por inelegibilidade (a mesma pessoa pode ter mais de uma). Nos outros{" "}
-          {int(doEstado.length - conta("cassacao"))}, a decisão foi sobre uma candidatura anterior, não sobre o mandato
-          de 2022 ou 2024.
+          <b>{conta("inelegibilidade")}</b> por inelegibilidade (a mesma pessoa pode ter mais de uma).{" "}
+          <b>{int(doEstado.filter(x => !x.ds.some(d => d.propria)).length)}</b> só têm decisão sobre outra candidatura,
+          anterior ou posterior, e não sobre a de 2022 ou 2024.
         </p>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2.5">
           {FILTROS.map(([t, rot]) => (
